@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-e4999ed0-97ab-4601-8ba7-9f585f131b54",
+  "title": "Vocabulary: analysis + manifests (annotations.clips, transient markers, shot-N, manifest v2, /api/samples)",
+  "description": "See design/vocabulary.md.\n- Markup writes clips / transient / shot-N; manifest version 2 (readers accept 1).\n- A migration script for the manifests; server /api/samples.\n- Owner: engine session.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9c905694-cf46-4c85-9f39-af8caa18386e",
+  "labels": [
+    "vocabulary"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T16:41:48.107624Z",
+  "updated_at": "2026-09-24T16:41:48.107672Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

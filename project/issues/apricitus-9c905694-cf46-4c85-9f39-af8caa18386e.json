@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-9c905694-cf46-4c85-9f39-af8caa18386e",
+  "title": "Vocabulary aligned with Ableton Live",
+  "description": "Decided by the user 2026-09-24. Spec: design/vocabulary.md.\n\n- Sample (file) · Clip (a named region, saved with the sample or defined in a score) · Transient · Kit · Slice (was chop) · Pad · Track · Note (was trigger) · Return/Group track (was bus) · Volume (was gain) · time 4/4 (was meter) · warp repitch (was off) · Collection (was crate).\n- Old words become errors that name the new ones.\n- Tasks 1+2 land together with task 4 so master never speaks two vocabularies.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "vocabulary"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T16:41:48.021638Z",
+  "updated_at": "2026-09-24T16:41:48.022822Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
