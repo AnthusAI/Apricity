@@ -15,7 +15,7 @@ pub struct Rendered {
     /// The master's loudness make-up gain (dB).
     pub makeup_db: f64,
     pub stems: usize,
-    /// One line per track and bus: routing, level, and compressor gain reduction.
+    /// One line per track, group and return: routing, level, and compressor gain reduction.
     pub report: Vec<String>,
 }
 
@@ -25,13 +25,13 @@ pub fn render(tl: &Timeline, beats: Option<(f64, f64)>) -> Result<Rendered, Stri
     let mix = arr.bounce();
     let lufs = apricity_dsp::fx::loudness_lufs(&mix[0], &mix[1], OUT_SR as f64);
     let peak = mix.iter().flatten().fold(0f32, |m, x| m.max(x.abs()));
-    let report = mix_report(&r, &arr);
+    let report = mix_report(&r, &arr, tl);
     Ok(Rendered { mix, unique_events: stats.rendered, lufs, peak_db: 20.0 * (peak.max(1e-9) as f64).log10(), makeup_db: arr.master.gain_db, stems: arr.stems.len(), report })
 }
 
 /// Level of each stem as it enters the mix, and how hard each compressor worked (deepest gain
 /// reduction over the loop).
-fn mix_report(r: &Renderer, arr: &apricity_engine::Arrangement) -> Vec<String> {
+fn mix_report(r: &Renderer, arr: &apricity_engine::Arrangement, tl: &Timeline) -> Vec<String> {
     let Some(m) = r.mix() else { return Vec::new() };
     let level = |b: &Stereo| {
         let lufs = apricity_dsp::fx::loudness_lufs(&b[0], &b[1], OUT_SR as f64);
@@ -45,10 +45,11 @@ fn mix_report(r: &Renderer, arr: &apricity_engine::Arrangement) -> Vec<String> {
         let route = if t.sends.is_empty() { t.out.clone() } else { format!("{} + {}", t.out, t.sends.iter().map(|s| s.0.as_str()).collect::<Vec<_>>().join(", ")) };
         out.push(format!("track {:<14} → {:<16} {}{}", t.name, route, level(&t.buf), comps(&t.reductions)));
     }
+    let kind = |n: &str| tl.buses.iter().find(|b| b.name == n).map_or("group", |b| if b.kind == "return" { "return" } else { "group" });
     for b in &m.buses {
         let lvl = arr.stems.iter().find(|s| s.name == b.name).map_or_else(|| format!("(inside {})", b.out), |s| level(&s.buf));
         let red = r.bus_report().iter().find(|(n, _)| *n == b.name).map_or(String::new(), |(_, red)| comps(red));
-        out.push(format!("bus   {:<14} → {:<16} {lvl}{red}", b.name, b.out));
+        out.push(format!("{:<6}{:<14} → {:<16} {lvl}{red}", kind(&b.name), b.name, b.out));
     }
     out
 }

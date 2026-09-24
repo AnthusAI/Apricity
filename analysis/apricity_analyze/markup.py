@@ -1,10 +1,10 @@
-"""Automatic markup: sections, loop candidates and hits, written into a clip's annotations.
+"""Automatic markup: sections, loops, transients and one-shots, saved as clips and markers in a sample's manifest.
 
     PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.markup samples/marine-band
 
 Everything found here is saved with `"source": "ml"`. Re-running replaces earlier ML markup but
-never touches annotations a person made (`source` "user" or unset); ML slices whose names collide
-with a user slice are skipped.
+never touches annotations a person made (`source` "user" or unset); ML clips whose names collide
+with one of yours are skipped.
 
 Method (beat-synchronous, so results land on the beat grid):
 - features per beat: the manifest's chroma plus MFCC timbre (librosa), standardized;
@@ -13,9 +13,10 @@ Method (beat-synchronous, so results land on the beat grid):
   a section in the subdominant of the clip's key is tagged "trio";
 - loops: windows of 4, 8 and 16 beats scored for self-repetition (does the next window sound the
   same?), steady beat, static harmony and level;
-- hits: onset-strength peaks well above their surroundings, one per few bars at most;
+- transients: onset-strength peaks well above their surroundings, one per few bars at most, each
+  also saved as a one-shot clip (`shot-1`, `shot-2`, …);
 - phrases: what lies between pauses (a quarter second or more well below the clip's speaking
-  level). Made for speech (`chop … by phrases` cuts a talk into sentences), but a horn line with
+  level). Made for speech (`slice … by phrases` cuts a talk into sentences), but a horn line with
   rests gets its phrases too. Found without a beat grid, so free-time clips get them as well.
 """
 
@@ -27,7 +28,7 @@ import sys
 
 import numpy as np
 
-from .analyze import SR, validate
+from .analyze import SR, upgrade_annotations, validate
 from .theory import PITCH_NAMES, rank_keys
 
 HOP = 512
@@ -301,7 +302,7 @@ def phrases(audio: np.ndarray) -> list[tuple[float, float]]:
 # ------------------------------------------------------------------ annotations
 
 def markup(audio_path: pathlib.Path) -> dict:
-    """Compute ML annotations for one clip (reads its manifest; returns the new annotations)."""
+    """Compute ML annotations for one sample (reads its manifest; returns the new annotations)."""
     import essentia.standard as es
 
     mpath = audio_path.with_name(audio_path.name + ".apricity.json")
@@ -315,8 +316,8 @@ def markup(audio_path: pathlib.Path) -> dict:
         spb = float(np.median(np.diff(beats))) if len(beats) > 1 else 0.5
         dur = m["source"]["duration"]
         return {
-            "markers": [{"name": "hit", "seconds": round(h, 3), "source": "ml"} for h, _ in hts],
-            "slices": phr + [{"name": f"hit-{i}", "start": round(h, 3), "end": round(min(h + spb, dur), 3), "source": "ml", "tags": ["hit"], "evidence": {"standout": st}} for i, (h, st) in enumerate(hts, 1) if h < dur],
+            "markers": [{"name": "transient", "seconds": round(h, 3), "source": "ml"} for h, _ in hts],
+            "clips": phr + [{"name": f"shot-{i}", "start": round(h, 3), "end": round(min(h + spb, dur), 3), "source": "ml", "tags": ["shot"], "evidence": {"standout": st}} for i, (h, st) in enumerate(hts, 1) if h < dur],
         }
     f = beat_features(audio, beats, t.get("beat_chroma", []))
     pcps = t.get("beat_chroma", [])
@@ -337,22 +338,23 @@ def markup(audio_path: pathlib.Path) -> dict:
     for i, lp in enumerate(lps, 1):
         slices.append({"name": f"loop-{i}", "start": round(lp["start"], 3), "end": round(lp["end"], 3), "source": "ml", "tags": ["loop", f"{lp['size']}beats", lp["key"]], "evidence": lp["evidence"]})
     for i, (h, st) in enumerate(hts, 1):
-        markers.append({"name": "hit", "seconds": round(h, 3), "source": "ml"})
-        slices.append({"name": f"hit-{i}", "start": round(h, 3), "end": round(min(h + spb, m["source"]["duration"]), 3), "source": "ml", "tags": ["hit"], "evidence": {"standout": st}})
+        markers.append({"name": "transient", "seconds": round(h, 3), "source": "ml"})
+        slices.append({"name": f"shot-{i}", "start": round(h, 3), "end": round(min(h + spb, m["source"]["duration"]), 3), "source": "ml", "tags": ["shot"], "evidence": {"standout": st}})
 
     dur = m["source"]["duration"]
     slices = [s for s in slices if 0 <= s["start"] < s["end"] <= dur]
     markers = [x for x in markers if 0 <= x["seconds"] <= dur]
-    return {"slices": slices, "markers": markers}
+    return {"clips": slices, "markers": markers}
 
 
 def merge(existing: dict, ml: dict) -> dict:
-    """Keep everything a person made; replace earlier ML markup; never clobber a user slice name."""
-    keep_slices = [s for s in existing.get("slices", []) if s.get("source") != "ml"]
+    """Keep everything a person made; replace earlier ML markup; never clobber a name you gave."""
+    existing = upgrade_annotations(existing)
+    keep_slices = [s for s in existing.get("clips", []) if s.get("source") != "ml"]
     keep_markers = [x for x in existing.get("markers", []) if x.get("source") != "ml"]
     taken = {s["name"] for s in keep_slices}
     out = dict(existing)
-    out["slices"] = keep_slices + [s for s in ml["slices"] if s["name"] not in taken]
+    out["clips"] = keep_slices + [s for s in ml["clips"] if s["name"] not in taken]
     out["markers"] = keep_markers + ml["markers"]
     return out
 
@@ -361,6 +363,7 @@ def run(path: pathlib.Path) -> dict:
     mpath = path.with_name(path.name + ".apricity.json")
     m = json.loads(mpath.read_text())
     m["annotations"] = merge(m.get("annotations", {}), markup(path))
+    m["apricity_manifest"] = 2
     validate(m)
     mpath.write_text(json.dumps(m, indent=1) + "\n")
     return m["annotations"]
@@ -374,11 +377,11 @@ def main(argv: list[str]) -> int:
             if not p.with_name(p.name + ".apricity.json").exists():
                 continue
             ann = run(p)
-            secs = [s for s in ann["slices"] if s.get("source") == "ml" and "section" in s.get("tags", [])]
+            secs = [s for s in ann["clips"] if s.get("source") == "ml" and "section" in s.get("tags", [])]
             form = " ".join(s["name"].removeprefix("sec-") for s in secs)
-            nl = sum(1 for s in ann["slices"] if s["name"].startswith("loop-") and s.get("source") == "ml")
-            nh = sum(1 for x in ann["markers"] if x["name"] == "hit")
-            print(f"  {str(p.relative_to(root.parent if root.is_dir() else p.parent))[:60]:60} {form or '-':40} {nl} loops, {nh} hits")
+            nl = sum(1 for s in ann["clips"] if s["name"].startswith("loop-") and s.get("source") == "ml")
+            nh = sum(1 for x in ann["markers"] if x["name"] == "transient")
+            print(f"  {str(p.relative_to(root.parent if root.is_dir() else p.parent))[:60]:60} {form or '-':40} {nl} loops, {nh} transients")
     return 0
 
 

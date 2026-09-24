@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
   "sha256": "e4bf34fc99dd97ea56d19bca0a94541392f53c4c7689029cae100d02dc7146c1",
@@ -1762,7 +1762,35 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.3,
+    "source": "ml",
+    "note": "63beats, F"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.3,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 16.66,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 23.72,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 27.42,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.3,
@@ -1819,7 +1847,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.3,
     "end": 0.78,
     "source": "ml",
@@ -1828,7 +1856,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 16.66,
     "end": 17.14,
     "source": "ml",
@@ -1837,7 +1865,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 23.72,
     "end": 24.2,
     "source": "ml",
@@ -1846,41 +1874,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 27.42,
     "end": 27.9,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.3,
-    "source": "ml",
-    "note": "63beats, F"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.3,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 16.66,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 23.72,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 27.42,
-    "source": "ml"
    }
   ]
  }

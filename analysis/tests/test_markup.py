@@ -10,24 +10,26 @@ MARCHES = sorted((ROOT / "samples/marine-band").glob("*.mp3.apricity.json"))
 
 
 def test_merge_keeps_user_work_and_replaces_old_ml():
+    # A version-1 manifest ("slices", "hit"): merge upgrades it on the way.
     existing = {
         "slices": [
             {"name": "hook", "start": 1, "end": 2, "source": "user"},
             {"name": "mine", "start": 3, "end": 4},  # no source = a person made it
             {"name": "loop-1", "start": 5, "end": 6, "source": "ml"},
         ],
-        "markers": [{"name": "old", "seconds": 1, "source": "ml"}, {"name": "cue", "seconds": 2, "source": "user"}],
+        "markers": [{"name": "old", "seconds": 1, "source": "ml"}, {"name": "cue", "seconds": 2, "source": "user"}, {"name": "hit", "seconds": 4, "source": "user"}],
         "tags": ["keep me"],
     }
     ml = {
-        "slices": [{"name": "loop-1", "start": 7, "end": 8, "source": "ml"}, {"name": "hook", "start": 9, "end": 10, "source": "ml"}],
-        "markers": [{"name": "hit", "seconds": 3, "source": "ml"}],
+        "clips": [{"name": "loop-1", "start": 7, "end": 8, "source": "ml"}, {"name": "hook", "start": 9, "end": 10, "source": "ml"}],
+        "markers": [{"name": "transient", "seconds": 3, "source": "ml"}],
     }
     out = merge(existing, ml)
-    names = [(s["name"], s.get("source")) for s in out["slices"]]
-    assert names == [("hook", "user"), ("mine", None), ("loop-1", "ml")], "user slices kept; ML 'hook' skipped (name taken)"
-    assert [s for s in out["slices"] if s["name"] == "loop-1"][0]["start"] == 7, "old ML markup replaced"
-    assert [m["name"] for m in out["markers"]] == ["cue", "hit"]
+    assert "slices" not in out
+    names = [(s["name"], s.get("source")) for s in out["clips"]]
+    assert names == [("hook", "user"), ("mine", None), ("loop-1", "ml")], "your clips kept; ML 'hook' skipped (name taken)"
+    assert [s for s in out["clips"] if s["name"] == "loop-1"][0]["start"] == 7, "old ML markup replaced"
+    assert [m["name"] for m in out["markers"]] == ["cue", "transient", "transient"], "your hit marker is a transient now"
     assert out["tags"] == ["keep me"]
 
 
@@ -35,7 +37,7 @@ needs_marches = pytest.mark.skipif(not MARCHES, reason="no analyzed marches")
 
 
 def ml(m, tag=None):
-    return [s for s in m.get("annotations", {}).get("slices", []) if s.get("source") == "ml" and (tag is None or tag in s.get("tags", []))]
+    return [s for s in m.get("annotations", {}).get("clips", []) if s.get("source") == "ml" and (tag is None or tag in s.get("tags", []))]
 
 
 @needs_marches

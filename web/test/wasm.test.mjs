@@ -201,7 +201,7 @@ const referencesInput1 = {
   text: `tempo 90
 key C
 bars 1
-clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
 track beat`,
   folder: "scores",
   file: "test.apr",
@@ -228,7 +228,7 @@ key C
 bars 1
 clip band = marine-band/Thunderer.mp3
 kit drums
-  crash = band  slice hit-3
+  crash = band  hit-3
 track drums  steps "crash . . ."`,
   folder: "scores",
   file: "test.apr",
@@ -260,7 +260,7 @@ const referencesInput3 = {
   text: `tempo 90
 key C
 bars 1
-clip source = @clp_abc123def45678901234  slice @slc_xyz789
+clip source = @clp_abc123def45678901234  @slc_xyz789
 track source`,
   folder: "scores",
   file: "idref.apr",

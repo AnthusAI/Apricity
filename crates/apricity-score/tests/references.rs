@@ -77,17 +77,17 @@ fn test_chop_shop_apr_references() {
     // 3. horns, marine-band/stems/Thunderer/other.wav, loop-2, None
     // 4. pdrums, marine-band/stems/WashingtonPost/drums.wav, None, None
     // 5. tdrums, marine-band/stems/Thunderer/drums.wav, None, None
-    // From chopped kits:
+    // From sliced kits:
     // 6. brk, marine-band/stems/Thunderer/drums.wav, loop-1, kit_pad="b"
     // 7. horns, marine-band/stems/Thunderer/other.wav, loop-2, kit_pad="h"
     // From kit pads:
-    // 8. band, marine-band/Thunderer.mp3, hit-3, kit_pad="drums.crash"
+    // 8. band, marine-band/Thunderer.mp3, shot-3, kit_pad="drums.crash"
     // 9. pdrums, marine-band/stems/WashingtonPost/drums.wav, None, kit_pad="drums.snare"
     // 10. tdrums, marine-band/stems/Thunderer/drums.wav, None, kit_pad="drums.kick"
 
     let expected = vec![
         ("band", "marine-band/Thunderer.mp3", Some("marine-band/Thunderer.mp3"), None, None),
-        ("band", "marine-band/Thunderer.mp3", Some("marine-band/Thunderer.mp3"), Some("hit-3"), Some("drums.crash")),
+        ("band", "marine-band/Thunderer.mp3", Some("marine-band/Thunderer.mp3"), Some("shot-3"), Some("drums.crash")),
         ("brk", "marine-band/stems/Thunderer/drums.wav", Some("marine-band/stems/Thunderer/drums.wav"), Some("loop-1"), None),
         ("brk", "marine-band/stems/Thunderer/drums.wav", Some("marine-band/stems/Thunderer/drums.wav"), Some("loop-1"), Some("b")),
         ("horns", "marine-band/stems/Thunderer/other.wav", Some("marine-band/stems/Thunderer/other.wav"), Some("loop-2"), None),
@@ -110,14 +110,14 @@ fn test_voice_layer_apr_references() {
     let refs = references(&score, path.parent().unwrap());
 
     // voice-layer.apr has:
-    // clip brk = marine-band/stems/Thunderer/drums.wav slice loop-1
-    // clip horns = marine-band/stems/Thunderer/other.wav slice loop-2
+    // clip brk = marine-band/stems/Thunderer/drums.wav loop-1
+    // clip horns = marine-band/stems/Thunderer/other.wav loop-2
     // clip voice = voice/announcer.wav
     // clip quick = voice/announcer.wav speed 1.5x
-    // kit b = chop brk
-    // kit h = chop horns
-    // kit words = chop voice
-    // kit fast = chop quick
+    // kit b = slice brk
+    // kit h = slice horns
+    // kit words = slice voice
+    // kit fast = slice quick
     // Expected references (8 total):
     // 1. brk from clips
     // 2. brk from kit b
@@ -149,7 +149,7 @@ fn test_id_forms_in_yaml() {
 tempo: 90
 key: C
 clips:
-  a: {source: '@clp_abc123', slice: '@slc_def456'}
+  a: {source: '@clp_abc123', saved: '@slc_def456'}
   b: {source: 'regular/path.wav'}
 bars: 1
 tracks: [{clip: a}]";
@@ -159,7 +159,7 @@ tracks: [{clip: a}]";
 
     // Check that the id forms are preserved in the parsed score
     assert_eq!(score.clips["a"].source, "@clp_abc123");
-    assert_eq!(score.clips["a"].slice, Some("@slc_def456".to_string()));
+    assert_eq!(score.clips["a"].saved, Some("@slc_def456".to_string()));
     assert_eq!(score.clips["b"].source, "regular/path.wav");
 
     // Check references
@@ -183,7 +183,7 @@ fn test_id_forms_in_apr() {
     let apr_with_ids = "tempo 90
 key C
 
-clip a = @clp_abc123 slice @slc_def456
+clip a = @clp_abc123 @slc_def456
 clip b = regular/path.wav
 
 bars 1
@@ -193,7 +193,7 @@ track a";
     let (score, _) = parse_score(apr_with_ids, path).expect("parse apr with ids");
 
     assert_eq!(score.clips["a"].source, "@clp_abc123");
-    assert_eq!(score.clips["a"].slice, Some("@slc_def456".to_string()));
+    assert_eq!(score.clips["a"].saved, Some("@slc_def456".to_string()));
     assert_eq!(score.clips["b"].source, "regular/path.wav");
 }
 
@@ -205,7 +205,7 @@ fn test_apr_roundtrip_with_ids() {
     let apr_text = "tempo 90
 key C
 
-clip a = @clp_abc123 slice @slc_def456
+clip a = @clp_abc123 @slc_def456
 clip b = regular/path.wav
 
 bars 1
@@ -222,6 +222,6 @@ track a";
 
     // Should be identical
     assert_eq!(score.clips["a"].source, score2.clips["a"].source);
-    assert_eq!(score.clips["a"].slice, score2.clips["a"].slice);
+    assert_eq!(score.clips["a"].saved, score2.clips["a"].saved);
     assert_eq!(score.clips["b"].source, score2.clips["b"].source);
 }

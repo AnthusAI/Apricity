@@ -54,14 +54,14 @@ def test_marine_band_tempo_is_march_cadence():
 
 
 @needs_manifests
-def test_slices_outside_the_clip_are_rejected():
+def test_saved_clips_outside_the_sample_are_rejected():
     m = json.loads(MANIFESTS[0].read_text())
     dur = m["source"]["duration"]
     ok = copy.deepcopy(m)
-    ok["annotations"] = {"slices": [{"name": "whole", "start": 0, "end": dur}]}
+    ok["annotations"] = {"clips": [{"name": "whole", "start": 0, "end": dur}]}
     validate(ok)
     for bad in ([dur - 1, dur + 5], [3, 2], [dur + 1, dur + 2]):
         m2 = copy.deepcopy(m)
-        m2["annotations"] = {"slices": [{"name": "bad", "start": bad[0], "end": bad[1]}]}
-        with pytest.raises(ValueError, match="outside the clip"):
+        m2["annotations"] = {"clips": [{"name": "bad", "start": bad[0], "end": bad[1]}]}
+        with pytest.raises(ValueError, match="outside the sample"):
             validate(m2)
