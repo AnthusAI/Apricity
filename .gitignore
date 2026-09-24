@@ -22,6 +22,8 @@ __pycache__/
 # Web app
 /web/node_modules/
 /web/dist/
+/web/.amplify/
+/web/amplify_outputs.json
 project/.overlay/
 
 # curation store lock (analysis/apricitus_analyze/curation.py)
