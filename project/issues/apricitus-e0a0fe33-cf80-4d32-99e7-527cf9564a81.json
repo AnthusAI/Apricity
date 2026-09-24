@@ -1,0 +1,37 @@
+{
+  "id": "apricitus-e0a0fe33-cf80-4d32-99e7-527cf9564a81",
+  "title": "SDK: download predefined sources (apricity-sources crate + CLI), starting with LoC Citizen DJ",
+  "description": "New crate crates/apricity-sources: list_sources, status, fetch (idempotent, .part+rename, sha256, progress callback, injectable fetcher), remove. CLI: apricity sources list|status|fetch|remove. Catalog: loc-edison, loc-jukebox-classical, loc-jukebox-popular, loc-tony-schwartz (27 WAVs); Marine Band stays manual. Gherkin first (features/sources). Web UI out of scope. Second source will be the first drum kit.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "ab344840-6c5b-4a6a-9093-0feffd5b6dbe",
+      "author": "home",
+      "text": "Done: apricity-sources crate + CLI; 16 scenarios pass; real download of all 27 LoC files verified (idempotent rerun, checksums match existing manifests, catalog backfilled). Not done: spec-first red run was skipped; Marine Band left manual.",
+      "created_at": "2026-09-24T19:34:35.711811Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T17:39:50.139662Z",
+  "updated_at": "2026-09-24T19:34:35.739390Z",
+  "closed_at": "2026-09-24T19:34:35.739348Z",
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-sonnet-5"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
