@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-26367c29-aa42-4a05-b170-c0e45c9a1798",
+  "title": "Curation domain ops as plan functions + runner wiring (split from T23a)",
+  "description": "Goal: the curation domain operations in web/src/data/domain.ts (keepCandidate, skipCandidate, putOffCandidate, mergeMarkup) are restructured as **pure plan functions plus thin I/O shells**, unit-tested for real, and wired into the TypeScript conformance runner, so that `TARGET=local` exercises them once `apricitus serve` exists (T22/T24). Split out of apricitus-0a00f3 (T23a), whose domain tests never imported domain.ts.\n\nSpecs: features/data/domain/keep.feature, features/data/domain/markup_merge.feature, and design/storage.md §1.2 (curated slice ids, verdict upsert) and §1.3 (the markup merge rule).\n\nBlocked by T23c (the same files: plans.ts, domain.ts). Start from T23c's committed plans.ts pattern.\n\n## 1. Plans (web/src/data/plans.ts)\nOne pure function per operation. It takes the records the shell fetched and returns the writes `{create, update, delete}` per model, with no I/O:\n- `planKeep(candidate, myVerdict|null, curatedSlice|null, crates-by-name, existingCrateItems, input, me)`:\n  - upsert the verdict (create, or update if it exists; the key is `[candidateId, judge=me]`);\n  - the curated slice uses the id from `rw_ids` `curated_slice_id(candidateId)`: create it if missing, otherwise update it with name/stars/tags;\n  - a CrateItem per named crate, created only if one for (crate, slice) doesn't exist yet, so keeping twice writes nothing new;\n  - a missing crate is created with that name.\n- `planSkip(...)`:\n  - set my verdict to skip;\n  - if **no other judge's verdict is keep**, delete the curated slice and its CrateItems; otherwise the slice stays.\n- `planPutOff(...)`: set my verdict to putOff only.\n- `planMerge(...)`:\n  - wraps `rw_markup_merge` output (create/keep/retire plus nameCounters) into Slice writes and a Clip `nameCounters` update;\n  - retired slices get `retired: true` and are not deleted.\n\nKeep them exactly consistent with the keep.feature and markup_merge.feature scenarios. Where the feature and the current domain.ts disagree, the feature wins.\n\n## 2. Shells (web/src/data/domain.ts)\nEach op:\n1. fetches with **index queries and `collectAll`** (never `list` with a filter or limit 1);\n2. calls the plan;\n3. applies deletes, then updates, then creates;\n4. returns the first error.\n\nThe missing-candidate case returns `{errors: [{errorType: \"NotFound\"}]}` (check keep.feature for the exact expected type).\n\n## 3. Tests: web/test/data/plans.test.ts (extend T23c's file)\n- One test per scenario in keep.feature and markup_merge.feature.\n- The input records are copied from the scenario's Given docstrings.\n- Assert the exact write sets.\n- Use the real wasm for `rw_ids` and `rw_markup_merge`.\n\n## 4. Runner wiring (web/test/conformance)\n- Replace `createPendingDomainContext` with a context that calls the real domain.ts functions, using the Amplify client configured by the runner.\n- Implement the two `Then clip {string} has these active slices:` / `…retired slices:` steps with `Slice.slicesByClip` (all pages) and the `match.ts` matcher.\n- Remove the \"Domain step not implemented\" catch-rethrows, so real errors surface.\n- Verify with `npx cucumber-js --dry-run` (every step defined) and tsc on the conformance tsconfig. A real run needs serve (T22), so don't attempt it.\n\n## Files you may touch\nweb/src/data/{plans.ts,domain.ts}, web/test/data/plans.test.ts, web/test/conformance/{domain.ts,steps.ts,world.ts}. Nothing in web/src/ui.\n\n## Verification (paste all outputs)\n```\ncd web && npx tsc --noEmit && npx tsx --test test/data/*.test.ts && npx tsc --noEmit -p test/conformance && (cd test/conformance && TARGET=local npx cucumber-js --dry-run) && npm run build\n```\n(Use the runner's documented dry-run command from its README/cucumber.mjs if it differs.)",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-8be8917b-bbf5-4f15-82d4-43ac3d07dbfd",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-bf86d998-94bf-4eaa-833a-006d22ae8028",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T06:16:55.597484Z",
+  "updated_at": "2026-09-24T06:17:12.500837Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
