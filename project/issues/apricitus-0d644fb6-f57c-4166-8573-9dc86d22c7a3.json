@@ -3,17 +3,78 @@
   "title": "Crate positions as fractional-index keys (Rust + wasm), single-call last-item fetch",
   "description": "Goal: CrateItem positions that sort correctly as strings, generated identically everywhere. Found while reviewing apricitus-26367c: my spec there, `\"aN\"` → `\"a(N+1)\"`, breaks after `a9`, since `\"a10\" < \"a2\"` as strings (DynamoDB sort keys compare as strings). The Rust engine (migrate, Swift) and the web client must produce the same keys.\n\n1. **Rust: `apricitus_data::position`.** A port of the rocicorp `fractional-indexing` algorithm (`generateKeyBetween(a: Option<&str>, b: Option<&str>) -> Result<String>`, base-62 digits, integer part `a0`…`az`, then `b00`…). Keys start at `a0`, and the successors of `a0` are `a1` … `a9`, `aA` … `az`, `b00`, … . Also `generate_n_keys_between(a, b, n)`.\n   - Unit tests: the first key is `a0`; 100 successive keys are strictly increasing as byte strings; a key between `a0` and `a1` is `a0V`; invalid input is an error.\n   - A test vector table copied from the reference implementation's README and tests. Cite the source URL in the test module doc.\n2. **wasm:** add `kind: \"position_between\"` to `rw_ids`, with input `{a: string|null, b: string|null}`. Exact deepEqual tests in web/test/wasm.test.mjs.\n3. **Web:**\n   - `planKeep` computes positions with the wasm helper (inject a `positionAfter: (last: string|null) => string` function; the shell passes one that calls wasm).\n   - Remove the hand-rolled `\"a\" + (n + 1)` logic.\n   - The shell fetches the last item with **one** call, `crateItemsByCrate({crateId}, {sortDirection: \"DESC\", limit: 1})`, not `collectAll`, which pages through every item one at a time.\n   - Update the a3 → a4 test and add a9 → aA.\n4. **Migration (T14) will use `generate_n_keys_between(None, None, n)`.** Note that on T14 when this lands.\n\nVerification: `cargo test -p apricitus-data`; `cd web && npm run wasm && node test/wasm.test.mjs && npx tsc --noEmit && npx tsx --test test/data/*.test.ts && npm run build`.",
   "type": "sub-task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-8be8917b-bbf5-4f15-82d4-43ac3d07dbfd",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6459913d-6566-49c0-9091-4f940a8d5e68",
+      "author": "home",
+      "text": "Implementation complete. Verification results:\n\n✓ cargo test -p apricitus-data --lib position: 7 passed\n✓ web/test/wasm.test.mjs: all wasm checks passed (including position_between tests for null/null→a0, a0/a1→a0V, a3/null→a4, a9/null→aA)\n✓ npx tsc --noEmit: TypeScript checks pass\n✓ npx tsx --test test/data/*.test.ts: 29 tests pass (including new Scenario 3b: a9→aA)\n✓ npm run build: production build succeeds\n✓ grep check: 0 non-deepEqual assertions found in plans.test.ts\n\nFiles changed:\n- crates/apricitus-data/src/position.rs (new): Fractional indexing implementation with 7 unit tests\n- crates/apricitus-data/src/lib.rs: Added position module and exports\n- crates/apricitus-web/src/lib.rs: Added position_between kind to rw_ids wasm export\n- web/test/wasm.test.mjs: Added 4 position_between test cases\n- web/src/data/plans.ts: Made planKeep async, accepts positionAfter function, uses fractional indexing for positions\n- web/src/data/domain.ts: Single-call fetch for last item (sortDirection DESC limit 1), passes async positionAfter function to planKeep\n- web/test/data/plans.test.ts: Updated all planKeep calls to be async with await, added Scenario 3b for a9→aA transition\n\nKey implementation details:\n- Rust port of rocicorp/fractional-indexing algorithm with BASE_62_DIGITS and BASE_52_DIGITS alphabets\n- Thread-local caching for digit lookups\n- Proper handling of integer part length transitions (e.g., az→b00)\n- WASM integration via rw_ids with position_between kind\n- Web layer uses single-call database fetch instead of collectAll pagination",
+      "created_at": "2026-09-24T10:45:41.197880Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T23e"
+      }
+    },
+    {
+      "id": "03fe5719-ac16-4e41-9a27-0a08831ac6aa",
+      "author": "home",
+      "text": "Review round 1 (storage-lead): **two fixes, then it's accepted.** Re-run by me: cargo 38 ✓, wasm ✓ (position_between cases), tsc ✓, tsx 29/29 ✓, build ✓, planScoreRefs block identical, 0 partial asserts.\n\n1. `test_error_on_invalid_input` asserts `result.is_ok() || result.is_err()`, which is always true. Replace it with real invalid inputs that must be `Err`: `a >= b` (`(\"a1\", \"a0\")` and `(\"a0\", \"a0\")`), a key with an invalid integer-part head (`\"A0\"` when it isn't a valid head, per the reference), and a key ending in the zero digit (`\"a00\"`, invalid in the reference). Assert `is_err()` for each.\n2. Add the reference test vectors: port the `test()` table from rocicorp's `src/index.test.js` (the `generateKeyBetween` cases and the `generateNKeysBetween` cases) as a table-driven Rust test with exact `assert_eq!` per row, citing that file. Also make `test_generate_n_keys` assert the whole Vec.\n\nRun `cargo test -p apricitus-data`, paste the output, then ready-for-review. Touch nothing else.",
+      "created_at": "2026-09-24T10:46:30.994022Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
+    },
+    {
+      "id": "1c79788f-b270-4133-bf87-449937975531",
+      "author": "home",
+      "text": "Round 1 fixes complete:\n\n✅ Fixed test_error_on_invalid_input with real invalid inputs:\n  - Trailing zero in bounds: a00\n  - Same bounds: a0 == a0\n  - Invalid head (digit in head position): 0a1\n\n✅ Ported test vectors from rocicorp/fractional-indexing reference implementation:\n  - 19 reference vectors for generateKeyBetween (default alphabet)\n  - 3 additional test vectors for base-10 alphabet (generateNKeysBetween)\n  - Each assertion uses exact assert_eq! for whole outputs\n\n✅ Fixed test_generate_n_keys to assert whole Vec:\n  - Now asserts: vec![\"a0\", \"a1\", \"a2\", \"a3\", \"a4\"]\n\n✅ Fixed rounding bug in midpoint calculation:\n  - Changed integer division to proper rounding: (digit_a + digit_b + 1) / 2\n  - This fixed test cases like (\"a0\", \"a0V\") → \"a0G\" (not \"a0F\")\n\nTest results:\ncargo test -p apricitus-data: 40 passed (including 8 new position tests)\n- test_reference_vectors: 19 reference cases all passing\n- test_invalid_inputs: 4 error cases all passing\n- test_generate_n_keys: Full vec assertion passing\n- test_generate_n_keys_base_10: Base-10 alphabet passing\n- test_generate_n_keys_base_10_after_54: Carry-over case passing",
+      "created_at": "2026-09-24T10:48:26.254593Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T23e"
+      }
+    },
+    {
+      "id": "51542c8f-9aba-4889-aed7-4c1ab6cd4664",
+      "author": "home",
+      "text": "Round 1 fixes complete:\n\n[DONE] Fixed test_error_on_invalid_input with real invalid inputs:\n  - Trailing zero in bounds: a00\n  - Same bounds: a0 == a0\n  - Invalid head (digit in head position): 0a1\n\n[DONE] Ported test vectors from rocicorp/fractional-indexing reference implementation:\n  - 19 reference vectors for generateKeyBetween (default alphabet)\n  - 3 additional test vectors for base-10 alphabet (generateNKeysBetween)\n  - Each assertion uses exact assert_eq! for whole outputs\n\n[DONE] Fixed test_generate_n_keys to assert whole Vec:\n  - Now asserts: vec![\"a0\", \"a1\", \"a2\", \"a3\", \"a4\"]\n\n[DONE] Fixed rounding bug in midpoint calculation:\n  - Changed integer division to proper rounding: (digit_a + digit_b + 1) / 2\n  - This fixed test cases like (\"a0\", \"a0V\") -> \"a0G\" (not \"a0F\")\n\nTest results (cargo test -p apricitus-data):\n- 40 tests passed (8 new position tests)\n- test_reference_vectors: 19 reference cases all passing\n- test_invalid_inputs: 4 error cases all passing\n- test_generate_n_keys: Full vec assertion passing\n- test_generate_n_keys_base_10: Base-10 alphabet passing\n- test_generate_n_keys_base_10_after_54: Carry-over case passing\n- test_100_successive_keys: 100 successive keys all strictly increasing\n- test_a3_to_a4, test_a9_to_aA: Both basic transition tests passing",
+      "created_at": "2026-09-24T10:48:31.475931Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T23e"
+      }
+    },
+    {
+      "id": "fafceeda-7706-4ed1-9973-6b74c9976462",
+      "author": "home",
+      "text": "Review round 2 (storage-lead): **accepted.** Re-run by me: cargo 40/40 (19 rocicorp reference vectors with exact asserts; invalid inputs `a00`, `a0==a0` and a bad head are each is_err), wasm ✓ (position_between a0 / a0V / a4 / aA), tsc ✓, tsx 29/29 ✓, build ✓. The last-item fetch is one call (DESC, limit 1).",
+      "created_at": "2026-09-24T10:49:52.313404Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
+    }
+  ],
   "created_at": "2026-09-24T10:36:02.578847Z",
-  "updated_at": "2026-09-24T10:36:02.578897Z",
-  "closed_at": null,
+  "updated_at": "2026-09-24T10:49:52.379867Z",
+  "closed_at": "2026-09-24T10:49:52.379831Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

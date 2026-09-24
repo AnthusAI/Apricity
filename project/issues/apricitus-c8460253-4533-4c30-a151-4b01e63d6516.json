@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-c8460253-4533-4c30-a151-4b01e63d6516",
+  "title": "Rename the project Apricitus → Apricity (code, crates, packages, manifests, docs) and publish to AnthusAI/Apricity",
+  "description": "User request (2026-09-24 morning): rename to Apricity and publish publicly at github.com/AnthusAI/Apricity. Scope: every tracked file except project/ (the Kanbus IDs are renamed separately by the new `kbs rekey`, filed in Kanbus); path renames (crates/apricity-*, analysis/apricity_analyze, *.apricity.json manifests, web/src/apricity.ts, contract/apricity.contract.json); content Apricitus/apricitus/APRICITUS → Apricity/apricity/APRICITY; regenerate the contract and Cargo.lock. Verification: cargo test --workspace, the wasm build and tests, tsc, the tsx data tests, the web build, pytest analysis/tests, npm run contract:check, and git grep -i apricitus empty outside project/. Then create the public repo AnthusAI/Apricity and push master. The local folder rename (~/Projects/Ripple → ~/Projects/Apricity) is done by the user at the end.",
+  "type": "chore",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T10:47:24.872652Z",
+  "updated_at": "2026-09-24T10:47:24.872700Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
