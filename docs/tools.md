@@ -8,7 +8,8 @@ Commands are run from the repository root. Python tools use the analysis environ
 ```sh
 git submodule update --init                       # Rubber Band source
 scripts/fetch-tools.sh                            # wasi-sdk, for the WebAssembly build
-scripts/fetch-samples.py                          # the public-domain sample library
+apricity sources fetch --all                      # the public-domain sample library (verified, resumable)
+scripts/fetch-samples.py                          # legacy Python fetcher, superseded by the line above
 cargo build --release -p apricity-cli               # ./target/release/apricity
 cargo build -p apricity-web --release --target wasm32-wasip1    # the engine for the browser
 python3 -m venv analysis/.venv && analysis/.venv/bin/pip install --pre -e analysis[dev]

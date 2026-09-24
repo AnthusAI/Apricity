@@ -13,8 +13,12 @@ path = "src/main.rs"
 apricity-dsp.workspace = true
 apricity-engine = { workspace = true, features = ["decode"] }
 apricity-score.workspace = true
+apricity-sources.workspace = true
 serde_json.workspace = true
 serde_yaml = "0.9"
 clap = { version = "4", features = ["derive"] }
 cpal = "0.18"
 hound = "3"
+
+[dev-dependencies]
+tempfile = "3"

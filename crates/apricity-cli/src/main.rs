@@ -2,6 +2,7 @@
 
 mod play;
 mod render;
+mod sources;
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
@@ -48,6 +49,14 @@ enum Cmd {
         #[arg(short, long)]
         out: Option<PathBuf>,
     },
+    /// List, check, download or remove predefined sample sources.
+    Sources {
+        /// Samples directory.
+        #[arg(long, default_value = "samples", global = true)]
+        samples: PathBuf,
+        #[command(subcommand)]
+        action: sources::Action,
+    },
     /// Render a score to a 48 kHz stereo WAV.
     Render {
         score: PathBuf,
@@ -61,6 +70,9 @@ enum Cmd {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    if let Cmd::Sources { samples, action } = &cli.cmd {
+        return sources::main(action, samples);
+    }
     if let Cmd::Play { score, no_audio, seconds, volume } = cli.cmd {
         return match play::run(play::Options { score, no_audio, seconds, volume_db: volume }) {
             Ok(()) => ExitCode::SUCCESS,
@@ -101,7 +113,7 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Sources { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let tl = match apricity_score::compile_file(score) {
@@ -115,7 +127,7 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Sources { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {
