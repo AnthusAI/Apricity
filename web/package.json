@@ -7,7 +7,9 @@
     "wasm": "cd .. && cargo build -p apricitus-web --release --target wasm32-wasip1",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "node test/wasm.test.mjs"
+    "test": "node test/wasm.test.mjs",
+    "contract": "tsx scripts/generate-contract.ts",
+    "contract:check": "tsx scripts/generate-contract.ts --check"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.1.0",

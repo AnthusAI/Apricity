@@ -1,0 +1,258 @@
+enum SliceSource {
+  user
+  ml
+  curated
+}
+
+enum Kind {
+  loop
+  break
+  hit
+  phrase
+  section
+  chop
+  other
+}
+
+enum VerdictValue {
+  keep
+  skip
+  later
+}
+
+type Recording @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  collection: String! @index(sortKeyFields: ["title"], queryField: "recordingsByCollection")
+  performer: String
+  composed: Int
+  recorded: String
+  credit: String
+  rights: String
+  sourcePage: AWSURL
+  url: AWSURL
+  documents: [FileRef]
+  clips: [Clip] @hasMany(references: ["recordingId"])
+}
+
+type Clip @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  recordingId: ID! @index(sortKeyFields: ["path"], queryField: "clipsByRecording")
+  recording: Recording @belongsTo(references: ["recordingId"])
+  path: String! @index(queryField: "clipsByPath")
+  aliases: [String]
+  collection: String! @index(sortKeyFields: ["path"], queryField: "clipsByCollection")
+  title: String!
+  role: ClipRole
+  stem: String
+  stemModel: String
+  parentClipId: ID @index(queryField: "clipsByParent")
+  excerptStart: Float
+  audio: FileRef!
+  analysis: FileRef
+  analysisVersion: Int
+  analyzedAt: AWSDateTime
+  status: ClipStatus
+  duration: Float
+  sampleRate: Int
+  channels: Int
+  bpm: Float
+  bpmStability: Float
+  meter: Int
+  key: String
+  camelot: String
+  keysOverTime: [String]
+  tuningCents: Float
+  noteCount: Int
+  tags: [String]
+  nameCounters: AWSJSON
+  slices: [Slice] @hasMany(references: ["clipId"])
+  markers: [Marker] @hasMany(references: ["clipId"])
+  candidates: [Candidate] @hasMany(references: ["clipId"])
+}
+
+type Slice @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["members"]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  clipId: ID! @index(sortKeyFields: ["start"], queryField: "slicesByClip") @index(sortKeyFields: ["name"], queryField: "slicesByClipAndName")
+  clip: Clip @belongsTo(references: ["clipId"])
+  name: String!
+  start: Float!
+  end: Float!
+  source: SliceSource!
+  kind: Kind
+  tags: [String]
+  evidence: AWSJSON
+  rank: Int
+  candidateId: ID @index(queryField: "slicesByCandidate")
+  retired: Boolean
+  owner: String
+}
+
+type Marker @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["members"]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  clipId: ID! @index(sortKeyFields: ["seconds"], queryField: "markersByClip")
+  clip: Clip @belongsTo(references: ["clipId"])
+  name: String!
+  seconds: Float!
+  source: SliceSource
+  note: String
+  owner: String
+}
+
+type Candidate @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  clipId: ID! @index(sortKeyFields: ["start"], queryField: "candidatesByClip")
+  clip: Clip @belongsTo(references: ["clipId"])
+  recordingId: ID! @index(sortKeyFields: ["baseScore"], queryField: "candidatesByRecording")
+  start: Float!
+  end: Float!
+  kind: Kind! @index(sortKeyFields: ["baseScore"], queryField: "candidatesByKind")
+  name: String
+  context: CandidateContext
+  proposers: [Proposer]!
+  baseScore: Float!
+  legacyId: String
+  verdicts: [Verdict] @hasMany(references: ["candidateId"])
+}
+
+type Verdict @model @auth(rules: [{allow: owner, ownerField: "judge", identityClaim: "sub"},
+  {allow: groups, operations: [read], groups: ["admins"]}])
+{
+  candidateId: ID! @primaryKey(sortKeyFields: ["judge"])
+  judge: String! @index(sortKeyFields: ["judgedAt"], queryField: "verdictsByJudge")
+  candidate: Candidate @belongsTo(references: ["candidateId"])
+  verdict: VerdictValue!
+  stars: Int
+  tags: [String]
+  name: String
+  judgedAt: AWSDateTime!
+  by: String
+}
+
+type Crate @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["members"]}])
+{
+  id: ID! @primaryKey
+  name: String!
+  note: String
+  owner: String @index(sortKeyFields: ["name"], queryField: "cratesByOwner")
+  items: [CrateItem] @hasMany(references: ["crateId"])
+}
+
+type CrateItem @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["members"]}])
+{
+  id: ID! @primaryKey
+  crateId: ID! @index(sortKeyFields: ["position"], queryField: "crateItemsByCrate")
+  crate: Crate @belongsTo(references: ["crateId"])
+  position: String!
+  candidateId: ID @index(queryField: "crateItemsByCandidate")
+  sliceId: ID
+  clipId: ID
+  note: String
+  owner: String
+}
+
+type Score @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["members"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  folder: String! @index(sortKeyFields: ["title"], queryField: "scoresByFolder")
+  format: ScoreFormat
+  text: String!
+  lastErrors: [String]
+  legacyPath: String
+  owner: String
+  refs: [ScoreRef] @hasMany(references: ["scoreId"])
+}
+
+type ScoreRef @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["members"]}])
+{
+  id: ID! @primaryKey
+  scoreId: ID! @index(queryField: "refsByScore")
+  score: Score @belongsTo(references: ["scoreId"])
+  clipAlias: String!
+  clipId: ID @index(sortKeyFields: ["scoreId"], queryField: "refsByClip")
+  clipPath: String
+  sliceName: String
+  sliceId: ID @index(queryField: "refsBySlice")
+  start: Float
+  end: Float
+  owner: String
+}
+
+type Job @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  kind: String!
+  clipId: ID
+  state: JobState @index(queryField: "jobsByState")
+  error: String
+}
+
+type FileRef 
+{
+  key: String!
+  sha256: String!
+  size: Int
+  contentType: String
+}
+
+type Proposer 
+{
+  by: String!
+  score: Float!
+  why: String!
+  evidence: AWSJSON
+  at: AWSDateTime!
+}
+
+type CandidateContext 
+{
+  seconds: Float
+  bpm: Float
+  beats: Float
+  key: String
+  stem: String
+}
+
+enum ClipRole {
+  source
+  stem
+  excerpt
+  upload
+}
+
+enum ClipStatus {
+  pending
+  analyzing
+  ready
+  failed
+}
+
+enum ScoreFormat {
+  apr
+  yaml
+}
+
+enum JobState {
+  queued
+  running
+  done
+  failed
+}

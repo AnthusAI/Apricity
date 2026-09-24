@@ -1,0 +1,2290 @@
+{
+  "version": 1,
+  "models": {
+    "Recording": {
+      "name": "Recording",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "collection": {
+          "name": "collection",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "performer": {
+          "name": "performer",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "composed": {
+          "name": "composed",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "recorded": {
+          "name": "recorded",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "credit": {
+          "name": "credit",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "rights": {
+          "name": "rights",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "sourcePage": {
+          "name": "sourcePage",
+          "isArray": false,
+          "type": "AWSURL",
+          "isRequired": false,
+          "attributes": []
+        },
+        "url": {
+          "name": "url",
+          "isArray": false,
+          "type": "AWSURL",
+          "isRequired": false,
+          "attributes": []
+        },
+        "documents": {
+          "name": "documents",
+          "isArray": true,
+          "type": {
+            "nonModel": "FileRef"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "clips": {
+          "name": "clips",
+          "isArray": true,
+          "type": {
+            "model": "Clip"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "recordingId"
+            ]
+          }
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Recordings",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "recordingsByCollectionAndTitle",
+            "queryField": "recordingsByCollection",
+            "fields": [
+              "collection",
+              "title"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Clip": {
+      "name": "Clip",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "recordingId": {
+          "name": "recordingId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "recording": {
+          "name": "recording",
+          "isArray": false,
+          "type": {
+            "model": "Recording"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "recordingId"
+            ]
+          }
+        },
+        "path": {
+          "name": "path",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "aliases": {
+          "name": "aliases",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "collection": {
+          "name": "collection",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "role": {
+          "name": "role",
+          "isArray": false,
+          "type": {
+            "enum": "ClipRole"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "stem": {
+          "name": "stem",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "stemModel": {
+          "name": "stemModel",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "parentClipId": {
+          "name": "parentClipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "excerptStart": {
+          "name": "excerptStart",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "audio": {
+          "name": "audio",
+          "isArray": false,
+          "type": {
+            "nonModel": "FileRef"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "analysis": {
+          "name": "analysis",
+          "isArray": false,
+          "type": {
+            "nonModel": "FileRef"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "analysisVersion": {
+          "name": "analysisVersion",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "analyzedAt": {
+          "name": "analyzedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": []
+        },
+        "status": {
+          "name": "status",
+          "isArray": false,
+          "type": {
+            "enum": "ClipStatus"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "duration": {
+          "name": "duration",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "sampleRate": {
+          "name": "sampleRate",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "channels": {
+          "name": "channels",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "bpm": {
+          "name": "bpm",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "bpmStability": {
+          "name": "bpmStability",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "meter": {
+          "name": "meter",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "key": {
+          "name": "key",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "camelot": {
+          "name": "camelot",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "keysOverTime": {
+          "name": "keysOverTime",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "tuningCents": {
+          "name": "tuningCents",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "noteCount": {
+          "name": "noteCount",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "nameCounters": {
+          "name": "nameCounters",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
+        "slices": {
+          "name": "slices",
+          "isArray": true,
+          "type": {
+            "model": "Slice"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "clipId"
+            ]
+          }
+        },
+        "markers": {
+          "name": "markers",
+          "isArray": true,
+          "type": {
+            "model": "Marker"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "clipId"
+            ]
+          }
+        },
+        "candidates": {
+          "name": "candidates",
+          "isArray": true,
+          "type": {
+            "model": "Candidate"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "clipId"
+            ]
+          }
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Clips",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "clipsByRecordingIdAndPath",
+            "queryField": "clipsByRecording",
+            "fields": [
+              "recordingId",
+              "path"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "clipsByPath",
+            "queryField": "clipsByPath",
+            "fields": [
+              "path"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "clipsByCollectionAndPath",
+            "queryField": "clipsByCollection",
+            "fields": [
+              "collection",
+              "path"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "clipsByParentClipId",
+            "queryField": "clipsByParent",
+            "fields": [
+              "parentClipId"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Slice": {
+      "name": "Slice",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clipId": {
+          "name": "clipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clip": {
+          "name": "clip",
+          "isArray": false,
+          "type": {
+            "model": "Clip"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "clipId"
+            ]
+          }
+        },
+        "name": {
+          "name": "name",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "start": {
+          "name": "start",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "end": {
+          "name": "end",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "source": {
+          "name": "source",
+          "isArray": false,
+          "type": {
+            "enum": "SliceSource"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "kind": {
+          "name": "kind",
+          "isArray": false,
+          "type": {
+            "enum": "Kind"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "evidence": {
+          "name": "evidence",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
+        "rank": {
+          "name": "rank",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "candidateId": {
+          "name": "candidateId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "retired": {
+          "name": "retired",
+          "isArray": false,
+          "type": "Boolean",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Slices",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "slicesByClipIdAndStart",
+            "queryField": "slicesByClip",
+            "fields": [
+              "clipId",
+              "start"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "slicesByClipIdAndName",
+            "queryField": "slicesByClipAndName",
+            "fields": [
+              "clipId",
+              "name"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "slicesByCandidateId",
+            "queryField": "slicesByCandidate",
+            "fields": [
+              "candidateId"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Marker": {
+      "name": "Marker",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clipId": {
+          "name": "clipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clip": {
+          "name": "clip",
+          "isArray": false,
+          "type": {
+            "model": "Clip"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "clipId"
+            ]
+          }
+        },
+        "name": {
+          "name": "name",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "seconds": {
+          "name": "seconds",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "source": {
+          "name": "source",
+          "isArray": false,
+          "type": {
+            "enum": "SliceSource"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "note": {
+          "name": "note",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Markers",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "markersByClipIdAndSeconds",
+            "queryField": "markersByClip",
+            "fields": [
+              "clipId",
+              "seconds"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Candidate": {
+      "name": "Candidate",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clipId": {
+          "name": "clipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clip": {
+          "name": "clip",
+          "isArray": false,
+          "type": {
+            "model": "Clip"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "clipId"
+            ]
+          }
+        },
+        "recordingId": {
+          "name": "recordingId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "start": {
+          "name": "start",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "end": {
+          "name": "end",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "kind": {
+          "name": "kind",
+          "isArray": false,
+          "type": {
+            "enum": "Kind"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "name": {
+          "name": "name",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "context": {
+          "name": "context",
+          "isArray": false,
+          "type": {
+            "nonModel": "CandidateContext"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "proposers": {
+          "name": "proposers",
+          "isArray": true,
+          "type": {
+            "nonModel": "Proposer"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": false
+        },
+        "baseScore": {
+          "name": "baseScore",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "legacyId": {
+          "name": "legacyId",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "verdicts": {
+          "name": "verdicts",
+          "isArray": true,
+          "type": {
+            "model": "Verdict"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "candidateId"
+            ]
+          }
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Candidates",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "candidatesByClipIdAndStart",
+            "queryField": "candidatesByClip",
+            "fields": [
+              "clipId",
+              "start"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "candidatesByRecordingIdAndBaseScore",
+            "queryField": "candidatesByRecording",
+            "fields": [
+              "recordingId",
+              "baseScore"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "candidatesByKindAndBaseScore",
+            "queryField": "candidatesByKind",
+            "fields": [
+              "kind",
+              "baseScore"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Verdict": {
+      "name": "Verdict",
+      "fields": {
+        "candidateId": {
+          "name": "candidateId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "judge": {
+          "name": "judge",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "candidate": {
+          "name": "candidate",
+          "isArray": false,
+          "type": {
+            "model": "Candidate"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "candidateId"
+            ]
+          }
+        },
+        "verdict": {
+          "name": "verdict",
+          "isArray": false,
+          "type": {
+            "enum": "VerdictValue"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "stars": {
+          "name": "stars",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "name": {
+          "name": "name",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "judgedAt": {
+          "name": "judgedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        },
+        "by": {
+          "name": "by",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Verdicts",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "candidateId",
+              "judge"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "verdictsByJudgeAndJudgedAt",
+            "queryField": "verdictsByJudge",
+            "fields": [
+              "judge",
+              "judgedAt"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "judge",
+                "allow": "owner",
+                "identityClaim": "sub",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "admins"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": true,
+        "primaryKeyFieldName": "candidateId",
+        "sortKeyFieldNames": [
+          "judge"
+        ]
+      }
+    },
+    "Crate": {
+      "name": "Crate",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "name": {
+          "name": "name",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "note": {
+          "name": "note",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "items": {
+          "name": "items",
+          "isArray": true,
+          "type": {
+            "model": "CrateItem"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "crateId"
+            ]
+          }
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Crates",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "cratesByOwnerAndName",
+            "queryField": "cratesByOwner",
+            "fields": [
+              "owner",
+              "name"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "CrateItem": {
+      "name": "CrateItem",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "crateId": {
+          "name": "crateId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "crate": {
+          "name": "crate",
+          "isArray": false,
+          "type": {
+            "model": "Crate"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "crateId"
+            ]
+          }
+        },
+        "position": {
+          "name": "position",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "candidateId": {
+          "name": "candidateId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "sliceId": {
+          "name": "sliceId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "clipId": {
+          "name": "clipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "note": {
+          "name": "note",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "CrateItems",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "crateItemsByCrateIdAndPosition",
+            "queryField": "crateItemsByCrate",
+            "fields": [
+              "crateId",
+              "position"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "crateItemsByCandidateId",
+            "queryField": "crateItemsByCandidate",
+            "fields": [
+              "candidateId"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Score": {
+      "name": "Score",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "folder": {
+          "name": "folder",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "format": {
+          "name": "format",
+          "isArray": false,
+          "type": {
+            "enum": "ScoreFormat"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "text": {
+          "name": "text",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "lastErrors": {
+          "name": "lastErrors",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "legacyPath": {
+          "name": "legacyPath",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "refs": {
+          "name": "refs",
+          "isArray": true,
+          "type": {
+            "model": "ScoreRef"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "scoreId"
+            ]
+          }
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Scores",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "scoresByFolderAndTitle",
+            "queryField": "scoresByFolder",
+            "fields": [
+              "folder",
+              "title"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "ScoreRef": {
+      "name": "ScoreRef",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "scoreId": {
+          "name": "scoreId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "score": {
+          "name": "score",
+          "isArray": false,
+          "type": {
+            "model": "Score"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "scoreId"
+            ]
+          }
+        },
+        "clipAlias": {
+          "name": "clipAlias",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clipId": {
+          "name": "clipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "clipPath": {
+          "name": "clipPath",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "sliceName": {
+          "name": "sliceName",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "sliceId": {
+          "name": "sliceId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "start": {
+          "name": "start",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "end": {
+          "name": "end",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "ScoreRefs",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "scoreRefsByScoreId",
+            "queryField": "refsByScore",
+            "fields": [
+              "scoreId"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "scoreRefsByClipIdAndScoreId",
+            "queryField": "refsByClip",
+            "fields": [
+              "clipId",
+              "scoreId"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "scoreRefsBySliceId",
+            "queryField": "refsBySlice",
+            "fields": [
+              "sliceId"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Job": {
+      "name": "Job",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "kind": {
+          "name": "kind",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "clipId": {
+          "name": "clipId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "state": {
+          "name": "state",
+          "isArray": false,
+          "type": {
+            "enum": "JobState"
+          },
+          "isRequired": false,
+          "attributes": []
+        },
+        "error": {
+          "name": "error",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Jobs",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "jobsByState",
+            "queryField": "jobsByState",
+            "fields": [
+              "state"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "members"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    }
+  },
+  "enums": {
+    "SliceSource": {
+      "name": "SliceSource",
+      "values": [
+        "user",
+        "ml",
+        "curated"
+      ]
+    },
+    "Kind": {
+      "name": "Kind",
+      "values": [
+        "loop",
+        "break",
+        "hit",
+        "phrase",
+        "section",
+        "chop",
+        "other"
+      ]
+    },
+    "VerdictValue": {
+      "name": "VerdictValue",
+      "values": [
+        "keep",
+        "skip",
+        "later"
+      ]
+    },
+    "ClipRole": {
+      "name": "ClipRole",
+      "values": [
+        "source",
+        "stem",
+        "excerpt",
+        "upload"
+      ]
+    },
+    "ClipStatus": {
+      "name": "ClipStatus",
+      "values": [
+        "pending",
+        "analyzing",
+        "ready",
+        "failed"
+      ]
+    },
+    "ScoreFormat": {
+      "name": "ScoreFormat",
+      "values": [
+        "apr",
+        "yaml"
+      ]
+    },
+    "JobState": {
+      "name": "JobState",
+      "values": [
+        "queued",
+        "running",
+        "done",
+        "failed"
+      ]
+    }
+  },
+  "nonModels": {
+    "FileRef": {
+      "name": "FileRef",
+      "fields": {
+        "key": {
+          "name": "key",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "sha256": {
+          "name": "sha256",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "size": {
+          "name": "size",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "contentType": {
+          "name": "contentType",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        }
+      }
+    },
+    "Proposer": {
+      "name": "Proposer",
+      "fields": {
+        "by": {
+          "name": "by",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "score": {
+          "name": "score",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": true,
+          "attributes": []
+        },
+        "why": {
+          "name": "why",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "evidence": {
+          "name": "evidence",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
+        "at": {
+          "name": "at",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        }
+      }
+    },
+    "CandidateContext": {
+      "name": "CandidateContext",
+      "fields": {
+        "seconds": {
+          "name": "seconds",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "bpm": {
+          "name": "bpm",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "beats": {
+          "name": "beats",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "key": {
+          "name": "key",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "stem": {
+          "name": "stem",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        }
+      }
+    }
+  }
+}
