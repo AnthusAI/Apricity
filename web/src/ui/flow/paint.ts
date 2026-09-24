@@ -100,15 +100,18 @@ export function wave(g: CanvasRenderingContext2D, peaks: Int8Array, win: [number
   }
 }
 
-/** A band joining span `a` (on one row) to span `b` (on a row below): "this came from there". */
-export function ribbon(g: CanvasRenderingContext2D, a: { x0: number; x1: number; y: number }, b: { x0: number; x1: number; y: number }, color: string, alpha: number) {
+/**
+ * A band joining span `a` (on one row) to span `b` (on a row below): "this came from there".
+ * `far` is how much color is left at the lower end (a lineage being traced stays bright).
+ */
+export function ribbon(g: CanvasRenderingContext2D, a: { x0: number; x1: number; y: number }, b: { x0: number; x1: number; y: number }, color: string, alpha: number, far = 0.25) {
   if (alpha <= 0.002) return;
   const my = (a.y + b.y) / 2;
   g.save();
   g.globalAlpha *= alpha;
   const grad = g.createLinearGradient(0, a.y, 0, b.y);
   grad.addColorStop(0, color);
-  grad.addColorStop(1, fade(color, 0.25));
+  grad.addColorStop(1, fade(color, far));
   g.fillStyle = grad;
   g.beginPath();
   g.moveTo(a.x0, a.y);
