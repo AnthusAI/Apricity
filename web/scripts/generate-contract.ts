@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { schema } from "../amplify/data/resource.js";
+import Ajv2020 from "ajv/dist/2020";
 
 const GENERATOR_VERSION = "1.0.0";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -13,6 +14,7 @@ const contractDir = join(repoRoot, "contract");
 const dataResourcePath = join(webDir, "amplify/data/resource.ts");
 const authResourcePath = join(webDir, "amplify/auth/resource.ts");
 const storageResourcePath = join(webDir, "amplify/storage/resource.ts");
+const schemaPath = join(scriptDir, "contract.schema.json");
 
 async function main() {
   const args = process.argv.slice(2);
@@ -107,11 +109,14 @@ async function generate(outDir: string) {
   for (const [n, d] of Object.entries(introspectionJson.nonModels || {})) {
     const f: any = {};
     for (const [fn, fd] of Object.entries((d as any).fields || {})) {
+      const fld = fd as any;
+      const kind = typeof fld.type === "string" ? "scalar" : (fld.type?.enum ? "enum" : (fld.type?.nonModel ? "customType" : (fld.type?.model ? "model" : "scalar")));
       f[fn] = {
         name: fn,
-        type: typeof (fd as any).type === "string" ? (fd as any).type : (fd as any).type?.name || "unknown",
-        isRequired: (fd as any).isRequired || false,
-        isArray: (fd as any).isArray || false,
+        type: typeof fld.type === "string" ? fld.type : fld.type?.name || "unknown",
+        isRequired: fld.isRequired || false,
+        isArray: fld.isArray || false,
+        kind,
       };
     }
     contract.customTypes[n] = f;
@@ -121,17 +126,20 @@ async function generate(outDir: string) {
     const m: any = { name: mn, fields: {}, primaryKey: [], indexes: [], relationships: [], authRules: [], ownerFields: [] };
     for (const [fn, fd] of Object.entries((md as any).fields || {})) {
       const fld = fd as any;
-      m.fields[fn] = {
-        name: fn,
-        type: (function() {
+      const fieldType = (function() {
         if (typeof fld.type === "string") return fld.type;
         if (fld.type?.model) return fld.type.model;
         if (fld.type?.nonModel) return fld.type.nonModel;
         if (fld.type?.enum) return fld.type.enum;
         return "unknown";
-      })(),
+      })();
+      const kind = typeof fld.type === "string" ? "scalar" : (fld.type?.enum ? "enum" : (fld.type?.model ? "model" : (fld.type?.nonModel ? "customType" : "scalar")));
+      m.fields[fn] = {
+        name: fn,
+        type: fieldType,
         isRequired: fld.isRequired || false,
         isArray: fld.isArray || false,
+        kind,
       };
       if (fld.association) {
         const t = typeof fld.type === "string" ? fld.type : (fld.type?.model || fld.type?.nonModel || "unknown");
@@ -207,11 +215,26 @@ async function generate(outDir: string) {
   const vs = [GENERATOR_VERSION, ds, as, ss2].join("\n");
   contract.version = createHash("sha256").update(vs).digest("hex").slice(0, 16);
 
+  // Validate contract against schema
+  const schemaJson = JSON.parse(readFileSync(schemaPath, "utf8"));
+  const ajv = new Ajv2020();
+  const validate = ajv.compile(schemaJson);
+  if (!validate(contract)) {
+    console.error("Contract validation failed:");
+    for (const error of validate.errors || []) {
+      const path = error.instancePath || "/";
+      const message = error.message || "unknown error";
+      console.error(`  ${path}: ${message}`);
+    }
+    process.exit(1);
+  }
+
   const writeJson = (p: string, o: any) => writeFileSync(p, JSON.stringify(o, null, 2) + "\n");
   writeJson(join(outDir, "apricitus.contract.json"), contract);
   writeJson(join(outDir, "model-introspection.json"), introspectionJson);
   writeFileSync(join(outDir, "appsync.graphql"), appSyncSdl.trim() + "\n");
   writeFileSync(join(outDir, "model-schema.graphql"), directiveSdl.trim() + "\n");
+  writeFileSync(join(outDir, "contract.schema.json"), readFileSync(schemaPath, "utf8"));
   writeJson(join(outDir, "schema-version.json"), {
     contractVersion: contract.version,
     sha256Hashes: {
@@ -231,6 +254,7 @@ function compareGenerated(t: string, o: string): string[] {
     "model-introspection.json",
     "appsync.graphql",
     "model-schema.graphql",
+    "contract.schema.json",
     "schema-version.json",
   ]) {
     const exp = join(o, f);

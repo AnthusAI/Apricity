@@ -8,85 +8,99 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "title": {
           "name": "title",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "collection": {
           "name": "collection",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "performer": {
           "name": "performer",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "composed": {
           "name": "composed",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "recorded": {
           "name": "recorded",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "credit": {
           "name": "credit",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "rights": {
           "name": "rights",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "sourcePage": {
           "name": "sourcePage",
           "type": "AWSURL",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "url": {
           "name": "url",
           "type": "AWSURL",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "documents": {
           "name": "documents",
           "type": "FileRef",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "customType"
         },
         "clips": {
           "name": "clips",
           "type": "Clip",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -149,211 +163,246 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "recordingId": {
           "name": "recordingId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "recording": {
           "name": "recording",
           "type": "Recording",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "path": {
           "name": "path",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "aliases": {
           "name": "aliases",
           "type": "String",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "scalar"
         },
         "collection": {
           "name": "collection",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "title": {
           "name": "title",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "role": {
           "name": "role",
           "type": "ClipRole",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "stem": {
           "name": "stem",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "stemModel": {
           "name": "stemModel",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "parentClipId": {
           "name": "parentClipId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "excerptStart": {
           "name": "excerptStart",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "audio": {
           "name": "audio",
           "type": "FileRef",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "customType"
         },
         "analysis": {
           "name": "analysis",
           "type": "FileRef",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "customType"
         },
         "analysisVersion": {
           "name": "analysisVersion",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "analyzedAt": {
           "name": "analyzedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "status": {
           "name": "status",
           "type": "ClipStatus",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "duration": {
           "name": "duration",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "sampleRate": {
           "name": "sampleRate",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "channels": {
           "name": "channels",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "bpm": {
           "name": "bpm",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "bpmStability": {
           "name": "bpmStability",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "meter": {
           "name": "meter",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "key": {
           "name": "key",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "camelot": {
           "name": "camelot",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "keysOverTime": {
           "name": "keysOverTime",
           "type": "String",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "scalar"
         },
         "tuningCents": {
           "name": "tuningCents",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "noteCount": {
           "name": "noteCount",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "tags": {
           "name": "tags",
           "type": "String",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "scalar"
         },
         "nameCounters": {
           "name": "nameCounters",
           "type": "AWSJSON",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "slices": {
           "name": "slices",
           "type": "Slice",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "markers": {
           "name": "markers",
           "type": "Marker",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "candidates": {
           "name": "candidates",
           "type": "Candidate",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -459,97 +508,113 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipId": {
           "name": "clipId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clip": {
           "name": "clip",
           "type": "Clip",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "name": {
           "name": "name",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "start": {
           "name": "start",
           "type": "Float",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "end": {
           "name": "end",
           "type": "Float",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "source": {
           "name": "source",
           "type": "SliceSource",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "kind": {
           "name": "kind",
           "type": "Kind",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "tags": {
           "name": "tags",
           "type": "String",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "scalar"
         },
         "evidence": {
           "name": "evidence",
           "type": "AWSJSON",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "rank": {
           "name": "rank",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "candidateId": {
           "name": "candidateId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "retired": {
           "name": "retired",
           "type": "Boolean",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "owner": {
           "name": "owner",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -639,61 +704,71 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipId": {
           "name": "clipId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clip": {
           "name": "clip",
           "type": "Clip",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "name": {
           "name": "name",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "seconds": {
           "name": "seconds",
           "type": "Float",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "source": {
           "name": "source",
           "type": "SliceSource",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "note": {
           "name": "note",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "owner": {
           "name": "owner",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -768,91 +843,106 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipId": {
           "name": "clipId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clip": {
           "name": "clip",
           "type": "Clip",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "recordingId": {
           "name": "recordingId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "start": {
           "name": "start",
           "type": "Float",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "end": {
           "name": "end",
           "type": "Float",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "kind": {
           "name": "kind",
           "type": "Kind",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "name": {
           "name": "name",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "context": {
           "name": "context",
           "type": "CandidateContext",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "customType"
         },
         "proposers": {
           "name": "proposers",
           "type": "Proposer",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "customType"
         },
         "baseScore": {
           "name": "baseScore",
           "type": "Float",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "legacyId": {
           "name": "legacyId",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "verdicts": {
           "name": "verdicts",
           "type": "Verdict",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -938,67 +1028,78 @@
           "name": "candidateId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "judge": {
           "name": "judge",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "candidate": {
           "name": "candidate",
           "type": "Candidate",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "verdict": {
           "name": "verdict",
           "type": "VerdictValue",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "stars": {
           "name": "stars",
           "type": "Int",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "tags": {
           "name": "tags",
           "type": "String",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "scalar"
         },
         "name": {
           "name": "name",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "judgedAt": {
           "name": "judgedAt",
           "type": "AWSDateTime",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "by": {
           "name": "by",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -1060,43 +1161,50 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "name": {
           "name": "name",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "note": {
           "name": "note",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "owner": {
           "name": "owner",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "items": {
           "name": "items",
           "type": "CrateItem",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -1159,67 +1267,78 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "crateId": {
           "name": "crateId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "crate": {
           "name": "crate",
           "type": "Crate",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "position": {
           "name": "position",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "candidateId": {
           "name": "candidateId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "sliceId": {
           "name": "sliceId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipId": {
           "name": "clipId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "note": {
           "name": "note",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "owner": {
           "name": "owner",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -1286,67 +1405,78 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "title": {
           "name": "title",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "folder": {
           "name": "folder",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "format": {
           "name": "format",
           "type": "ScoreFormat",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "text": {
           "name": "text",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "lastErrors": {
           "name": "lastErrors",
           "type": "String",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "scalar"
         },
         "legacyPath": {
           "name": "legacyPath",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "owner": {
           "name": "owner",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "refs": {
           "name": "refs",
           "type": "ScoreRef",
           "isRequired": false,
-          "isArray": true
+          "isArray": true,
+          "kind": "model"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -1409,79 +1539,92 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "scoreId": {
           "name": "scoreId",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "score": {
           "name": "score",
           "type": "Score",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "model"
         },
         "clipAlias": {
           "name": "clipAlias",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipId": {
           "name": "clipId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipPath": {
           "name": "clipPath",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "sliceName": {
           "name": "sliceName",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "sliceId": {
           "name": "sliceId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "start": {
           "name": "start",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "end": {
           "name": "end",
           "type": "Float",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "owner": {
           "name": "owner",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -1554,43 +1697,50 @@
           "name": "id",
           "type": "ID",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "kind": {
           "name": "kind",
           "type": "String",
           "isRequired": true,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "clipId": {
           "name": "clipId",
           "type": "ID",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "state": {
           "name": "state",
           "type": "JobState",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "enum"
         },
         "error": {
           "name": "error",
           "type": "String",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "AWSDateTime",
           "isRequired": false,
-          "isArray": false
+          "isArray": false,
+          "kind": "scalar"
         }
       },
       "primaryKey": [
@@ -1684,25 +1834,29 @@
         "name": "key",
         "type": "String",
         "isRequired": true,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "sha256": {
         "name": "sha256",
         "type": "String",
         "isRequired": true,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "size": {
         "name": "size",
         "type": "Int",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "contentType": {
         "name": "contentType",
         "type": "String",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       }
     },
     "Proposer": {
@@ -1710,31 +1864,36 @@
         "name": "by",
         "type": "String",
         "isRequired": true,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "score": {
         "name": "score",
         "type": "Float",
         "isRequired": true,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "why": {
         "name": "why",
         "type": "String",
         "isRequired": true,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "evidence": {
         "name": "evidence",
         "type": "AWSJSON",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "at": {
         "name": "at",
         "type": "AWSDateTime",
         "isRequired": true,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       }
     },
     "CandidateContext": {
@@ -1742,31 +1901,36 @@
         "name": "seconds",
         "type": "Float",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "bpm": {
         "name": "bpm",
         "type": "Float",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "beats": {
         "name": "beats",
         "type": "Float",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "key": {
         "name": "key",
         "type": "String",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       },
       "stem": {
         "name": "stem",
         "type": "String",
         "isRequired": false,
-        "isArray": false
+        "isArray": false,
+        "kind": "scalar"
       }
     }
   },
