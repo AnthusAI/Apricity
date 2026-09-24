@@ -8,9 +8,7 @@
   "assignee": null,
   "creator": null,
   "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
-  "labels": [
-    "ready-for-review"
-  ],
+  "labels": [],
   "dependencies": [],
   "comments": [
     {
@@ -24,10 +22,22 @@
         "model": "Claude Haiku 4.5",
         "name": "storage-T11"
       }
+    },
+    {
+      "id": "b8b5da7b-9c2e-4a44-adab-7345ec3f5a4a",
+      "author": "home",
+      "text": "Review: changes requested.\n\n1. **Kit pads are resolved wrongly.** `PadSpec.clip` is a *clip name* declared under `clips:` (e.g. `tdrums`, `band`) or a chop reference `k.3`, not a path. Resolve it: a clip name → that clip's `source`; `k.N` → kit `k`'s `clip` → its source. `alias` must be the clip *name* used in the score. An unknown name is simply skipped (the compiler reports it elsewhere).\n2. **Chopped kits** (`kit b = chop brk by beats 0.5`) must yield a Ref for their clip (`alias` = the clip name, `kit_pad: Some(\"b\")`, the clip's slice if any).\n3. **Keep the path as written, and the resolved path separately.** Change `Ref` to `{ alias: String, source: String /* exactly as written in the score, e.g. \"marine-band/stems/Thunderer/drums.wav\" or \"@clp_abc\" */, path: Option<PathBuf> /* normalized samples-relative-to-base path; None for \"@clp_…\" ids */, slice: Option<String>, kit_pad: Option<String> }`. An `@clp_…` source must never be joined onto the samples folder.\n4. **Tests must be exact.** For every file in `examples/` (`*.apr` and `*.yaml`), assert the full expected `Vec<Ref>` (sorted), hand-derived from the file. `contains` checks aren't enough. Include chop-shop's drum kit (`kick = tdrums beats 62..62.5`, `snare = pdrums beats 70..70.5`, `crash = band slice hit-3`) and its chopped kits `b`/`h`, and voice-layer's `kit words = chop voice by phrases`.\n5. **Fix the doc comment** on `alias` (it says `clips.foo`, but the code uses bare names). Move `Ref` above the `#[cfg(test)] mod tests` in `score.rs`.\n\nThen re-run `cargo test -p apricitus-score` and `cargo test --workspace`, paste the results, and re-add `ready-for-review`.",
+      "created_at": "2026-09-24T04:50:51.960825Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
     }
   ],
   "created_at": "2026-09-24T04:45:38.879318Z",
-  "updated_at": "2026-09-24T04:49:58.876223Z",
+  "updated_at": "2026-09-24T04:50:51.986844Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
