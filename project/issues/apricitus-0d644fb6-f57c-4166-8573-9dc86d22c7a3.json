@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-0d644fb6-f57c-4166-8573-9dc86d22c7a3",
+  "title": "Crate positions as fractional-index keys (Rust + wasm), single-call last-item fetch",
+  "description": "Goal: CrateItem positions that sort correctly as strings, generated identically everywhere. Found while reviewing apricitus-26367c: my spec there, `\"aN\"` → `\"a(N+1)\"`, breaks after `a9`, since `\"a10\" < \"a2\"` as strings (DynamoDB sort keys compare as strings). The Rust engine (migrate, Swift) and the web client must produce the same keys.\n\n1. **Rust: `apricitus_data::position`.** A port of the rocicorp `fractional-indexing` algorithm (`generateKeyBetween(a: Option<&str>, b: Option<&str>) -> Result<String>`, base-62 digits, integer part `a0`…`az`, then `b00`…). Keys start at `a0`, and the successors of `a0` are `a1` … `a9`, `aA` … `az`, `b00`, … . Also `generate_n_keys_between(a, b, n)`.\n   - Unit tests: the first key is `a0`; 100 successive keys are strictly increasing as byte strings; a key between `a0` and `a1` is `a0V`; invalid input is an error.\n   - A test vector table copied from the reference implementation's README and tests. Cite the source URL in the test module doc.\n2. **wasm:** add `kind: \"position_between\"` to `rw_ids`, with input `{a: string|null, b: string|null}`. Exact deepEqual tests in web/test/wasm.test.mjs.\n3. **Web:**\n   - `planKeep` computes positions with the wasm helper (inject a `positionAfter: (last: string|null) => string` function; the shell passes one that calls wasm).\n   - Remove the hand-rolled `\"a\" + (n + 1)` logic.\n   - The shell fetches the last item with **one** call, `crateItemsByCrate({crateId}, {sortDirection: \"DESC\", limit: 1})`, not `collectAll`, which pages through every item one at a time.\n   - Update the a3 → a4 test and add a9 → aA.\n4. **Migration (T14) will use `generate_n_keys_between(None, None, n)`.** Note that on T14 when this lands.\n\nVerification: `cargo test -p apricitus-data`; `cd web && npm run wasm && node test/wasm.test.mjs && npx tsc --noEmit && npx tsx --test test/data/*.test.ts && npm run build`.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-8be8917b-bbf5-4f15-82d4-43ac3d07dbfd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T10:36:02.578847Z",
+  "updated_at": "2026-09-24T10:36:02.578897Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
