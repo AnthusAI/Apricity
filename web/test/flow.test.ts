@@ -39,3 +39,17 @@ test("hero data: two real sources, every tile mapped to a chop", () => {
   const horns = d.tiles.filter((t: { source: number }) => t.source === 1);
   assert.ok(horns.some((t: { semitones: number }) => t.semitones !== 0), "the horns are transposed to the chords");
 });
+
+test("hero story cues: each step is heard, in order", async () => {
+  const { Story } = await import("../src/ui/flow/story.ts");
+  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+  const cues = new Story(d).cues();
+  assert.deepEqual(cues.map((c) => c.t), [...cues.map((c) => c.t)].sort((a, b) => a - b), "sorted by time");
+  const listen = cues.filter((c) => c.kind === "source" && c.offset === 0);
+  assert.deepEqual(listen.map((c) => c.dur), d.sources.map((s: { window: number[] }) => s.window[1] - s.window[0]), "each recording is heard whole while it's analyzed");
+  const chops = cues.filter((c) => c.kind === "source" && c.dur < 1);
+  assert.equal(chops.length, 8 + 4, "every chop is heard as it's cut");
+  const loops = cues.filter((c) => c.loop);
+  assert.equal(loops.length, 3, "the drums alone, then both tracks together");
+  for (const c of cues.filter((c) => c.kind === "track" && !c.loop)) assert.ok(c.offset + c.dur <= (d.beats * 60) / d.tempo + 1e-6, "landings stay inside the render");
+});

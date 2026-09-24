@@ -65,6 +65,12 @@
 .landing .stage figcaption { display: flex; align-items: center; gap: 16px; padding: 8px 12px; border-top: 1px solid var(--card-line); font-size: 13px; color: var(--ink-soft); }
 .landing .stage .info { margin: 0; flex: 1; min-width: 0; line-height: 1.4; min-height: 2.8em; }
 .landing .stage .info b { color: var(--ink); font-weight: 600; margin-right: 0.4em; white-space: nowrap; }
+.landing .stage .sound { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid color-mix(in srgb, var(--sun) 60%, transparent); background: color-mix(in srgb, var(--sun) 12%, transparent); color: var(--ink); border-radius: 999px; padding: 6px 12px 6px 9px; font: 600 12.5px inherit; font-family: inherit; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
+.landing .stage .sound svg { width: 16px; height: 16px; color: var(--ember); }
+.landing .stage .sound:hover { background: color-mix(in srgb, var(--sun) 22%, transparent); }
+.landing .stage .sound.on { background: var(--sun); border-color: var(--sun); color: #2a1420; box-shadow: 0 0 18px -4px var(--sun); }
+.landing .stage .sound.on svg { color: #2a1420; }
+.landing .stage .sound:disabled { opacity: 0.7; cursor: progress; }
 .landing .chapters { display: flex; gap: 2px; flex: none; }
 .landing .chapters button { border: 0; background: none; color: var(--ink-soft); font: 500 11px var(--mono); padding: 5px 8px; border-radius: 6px; cursor: pointer; }
 .landing .chapters button:hover { color: var(--ink); background: var(--card); }
@@ -101,6 +107,7 @@
   .landing .stage-canvas { height: 340px; }
   .landing .stage figcaption { flex-direction: column; align-items: stretch; gap: 6px; }
   .landing .chapters { overflow-x: auto; }
+  .landing .stage .sound { align-self: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
   .landing .wordmark { animation: none; }

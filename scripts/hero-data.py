@@ -5,7 +5,11 @@ Writes web/src/ui/flow/hero-data.json with, for the break (track `b`) and the ho
 the waveform around each slice (min/max peaks, as bytes), the beats the analysis found, the
 transients in the audio, the slice, its chops, and every place a chop lands in the compiled score
 (with its transposition).
-The samples are git-ignored; this output is committed, so the landing page needs no server.
+
+It also writes the story's sound to web/public/hero/: each source window as heard, and each track
+rendered alone by the real engine (warped and tuned), with the gain that puts it back at its level
+in the full mix. The samples are git-ignored; these outputs are committed, so the landing page
+needs no server.
 
     PATH=~/.rustup/toolchains/stable-aarch64-apple-darwin/bin:$PATH cargo build -p apricity-cli
     analysis/.venv/bin/python scripts/hero-data.py
@@ -13,7 +17,9 @@ The samples are git-ignored; this output is committed, so the landing page needs
 
 import base64
 import json
+import re
 import subprocess
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +28,8 @@ import soundfile as sf
 ROOT = Path(__file__).resolve().parent.parent
 SCORE = ROOT / "examples/chop-shop.apr"
 OUT = ROOT / "web/src/ui/flow/hero-data.json"
+AUDIO = ROOT / "web/public/hero"  # served at /hero/
+EXE = ROOT / "target/debug/apricity"
 COLUMNS = 600  # peak columns across each source window
 
 # The two stories the hero tells, in order: which track, and how its slice was cut.
@@ -32,9 +40,36 @@ STORIES = [
 
 
 def compile_score():
-    exe = ROOT / "target/debug/apricity"
-    out = subprocess.run([str(exe), "compile", str(SCORE)], capture_output=True, text=True, check=True)
+    out = subprocess.run([str(EXE), "compile", str(SCORE)], capture_output=True, text=True, check=True)
     return json.loads(out.stdout)
+
+
+def mp3(wav: Path, out: Path, mono=False, kbps=96):
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav), *(["-ac", "1"] if mono else []), "-codec:a", "libmp3lame", "-b:a", f"{kbps}k", str(out)], check=True)
+
+
+def render_tracks(tracks: list[str], tmp: Path):
+    """Render the score with only `tracks`, return (wav, master make-up dB)."""
+    text = SCORE.read_text().replace("samples ../samples", f"samples {ROOT / 'samples'}")
+    keep = [ln for ln in text.splitlines() if not (m := re.match(r"track\s+(\S+)", ln)) or m.group(1) in tracks]
+    score = tmp / f"{'-'.join(tracks)}.apr"
+    score.write_text("\n".join(keep) + "\n")
+    wav = score.with_suffix(".wav")
+    out = subprocess.run([str(EXE), "render", str(score), "-o", str(wav)], capture_output=True, text=True, check=True)
+    makeup = float(re.search(r"make-up ([+-][\d.]+) dB", out.stdout + out.stderr).group(1))
+    return wav, makeup
+
+
+def source_audio(path: Path, t0: float, t1: float, out: Path, tmp: Path):
+    """The window as recorded, at a steady level (about −18 dBFS RMS) to sit with the renders."""
+    info = sf.info(str(path))
+    x, sr = sf.read(str(path), start=int(t0 * info.samplerate), stop=int(t1 * info.samplerate), always_2d=True)
+    x = x.mean(axis=1)
+    x *= 10 ** (-18 / 20) / max(1e-9, np.sqrt(np.mean(x**2)))
+    x = np.clip(x, -0.98, 0.98)
+    wav = tmp / (out.stem + ".wav")
+    sf.write(str(wav), x, sr)
+    mp3(wav, out, mono=True, kbps=64)
 
 
 def peaks(path: Path, t0: float, t1: float):
@@ -151,8 +186,25 @@ def main():
         numeral, _, name = label.partition(" (")
         chords.append({"start": h["start_beat"], "end": h["end_beat"], "numeral": numeral, "name": name.rstrip(")")})
 
+    # The sound: each source window, and each track alone, rendered by the engine.
+    AUDIO.mkdir(parents=True, exist_ok=True)
+    audio = {"sources": [], "tracks": []}
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        for src in sources:
+            name = f"{src['id']}-source.mp3"
+            source_audio(ROOT / src["path"], *src["window"], AUDIO / name, tmp)
+            audio["sources"].append(f"hero/{name}")
+        _, full = render_tracks([s["lane"] for s in sources], tmp)
+        for src in sources:
+            wav, makeup = render_tracks([src["lane"]], tmp)
+            name = f"{src['lane']}-track.mp3"
+            mp3(wav, AUDIO / name)
+            audio["tracks"].append({"url": f"hero/{name}", "gain_db": round(full - makeup, 2)})
+
     data = {
         "score": "examples/chop-shop.apr",
+        "audio": audio,
         "tempo": tl["tempo"],
         "meter": tl["meter"],
         "key": tl["key"],
@@ -163,6 +215,8 @@ def main():
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, separators=(",", ":")) + "\n")
+    kb = sum(f.stat().st_size for f in AUDIO.glob("*.mp3")) / 1024
+    print(f"wrote {AUDIO.relative_to(ROOT)}/ ({kb:.0f} KB of audio)")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.1f} KB): "
           + ", ".join(f"{s['id']}: {len(s['chops'])} chops, {sum(t['source'] == i for t in tiles)} tiles" for i, s in enumerate(sources)))
 

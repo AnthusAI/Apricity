@@ -38,8 +38,14 @@ export interface FlowTile {
   cont: boolean; // the second half of a chop split at a chord change
 }
 
+export interface FlowAudio {
+  sources: string[]; // per source: its window, as recorded (URLs relative to the app's base)
+  tracks: { url: string; gain_db: number }[]; // per source: its track rendered alone, and the gain back to mix level
+}
+
 export interface FlowData {
   score: string;
+  audio?: FlowAudio;
   tempo: number;
   meter: number;
   key: string;

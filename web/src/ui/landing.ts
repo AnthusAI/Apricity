@@ -6,6 +6,7 @@ import { el } from "./dom";
 import heroData from "./flow/hero-data.json";
 import type { FlowData } from "./flow/model";
 import { readTheme } from "./flow/paint";
+import { StorySound } from "./flow/sound";
 import { CHAPTERS, LOOP, STILL, Story, chapterAt } from "./flow/story";
 
 const DEMO = `tempo 100
@@ -55,6 +56,11 @@ export class Landing {
   private last = 0;
   private paused = false;
   private shown = { chapter: -1, caption: "" };
+  // Sound, off until asked for: then the audio clock drives the story.
+  private sound = heroData.audio
+    ? new StorySound((heroData as FlowData).audio!, this.story.cues(), LOOP, (heroData.beats * 60) / heroData.tempo)
+    : null;
+  private soundBtn = el("button", { type: "button", className: "sound" });
 
   constructor(root: HTMLElement, go: LandingActions) {
     this.root = root;
@@ -121,6 +127,7 @@ export class Landing {
     this.loadStats(stats);
     new IntersectionObserver(([e]) => {
       this.visible = e.isIntersecting;
+      this.sound?.hold(!this.visible);
       if (this.visible && !this.raf) this.loop();
     }).observe(this.canvas);
   }
@@ -136,6 +143,7 @@ export class Landing {
       const b = el("button", { type: "button" }, c.label);
       b.addEventListener("click", () => {
         this.storyT = c.t;
+        this.sound?.on && this.sound.seek(c.t);
         this.stillT = i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].t - 0.5 : STILL;
         this.paused = false;
         this.frame();
@@ -156,14 +164,48 @@ export class Landing {
         "Play: the finished piece plays, each sound lit back to where it came from.",
       ].map((t) => el("li", {}, t)),
     );
-    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, this.info, nav), steps);
-    fig.addEventListener("pointerenter", (e) => (e.pointerType === "mouse" ? (this.paused = true) : null));
-    fig.addEventListener("pointerleave", () => (this.paused = false));
-    new ResizeObserver(() => this.reduced() && this.frame()).observe(this.stage);
+    this.soundButton(false);
+    this.soundBtn.addEventListener("click", () => this.toggleSound());
+    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [this.soundBtn] : []), this.info, nav), steps);
+    // Hovering the picture holds it still, to look closer (not while listening: the music goes on).
+    this.stage.addEventListener("pointerenter", (e) => (e.pointerType === "mouse" ? (this.paused = true) : null));
+    this.stage.addEventListener("pointerleave", () => (this.paused = false));
+    new ResizeObserver(() => this.still() && this.frame()).observe(this.stage);
     return fig;
   }
 
+  private soundButton(on: boolean, loading = false) {
+    const icon = on
+      ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13.5 8l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+    this.soundBtn.innerHTML = `${icon}<span>${loading ? "Loading…" : on ? "Sound on" : "Turn on sound"}</span>`;
+    this.soundBtn.setAttribute("aria-pressed", String(on));
+    this.soundBtn.classList.toggle("on", on);
+    this.soundBtn.disabled = loading;
+  }
+
+  private async toggleSound() {
+    if (!this.sound) return;
+    if (this.sound.on) {
+      this.storyT = this.sound.now();
+      this.sound.disable();
+      this.soundButton(false);
+      return;
+    }
+    this.soundButton(false, true);
+    try {
+      await this.sound.enable(this.storyT);
+      this.paused = false;
+      this.soundButton(true);
+      if (!this.raf && this.visible) this.loop();
+    } catch {
+      this.soundButton(false);
+    }
+  }
+
   private reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /** Hold still frames for reduced motion, unless the reader turned the sound on (then it plays). */
+  private still = () => this.reduced() && !this.sound?.on;
 
   private step(n: string, title: string, text: string) {
     return el("div", { className: "step" }, el("div", { className: "n" }, n), el("h3", {}, title), el("p", {}, text));
@@ -191,16 +233,18 @@ export class Landing {
     this.raf = 0;
     if (!this.visible) return;
     this.frame();
-    if (!this.reduced()) this.raf = requestAnimationFrame(this.loop);
+    if (!this.still()) this.raf = requestAnimationFrame(this.loop);
   };
 
   private frame() {
     const now = performance.now() / 1000;
     const dt = this.last ? Math.min(0.1, now - this.last) : 0;
     this.last = now;
-    if (!this.paused) this.storyT = (this.storyT + dt) % LOOP;
+    if (this.sound?.on) {
+      this.storyT = this.sound.now();
+    } else if (!this.paused) this.storyT = (this.storyT + dt) % LOOP;
     this.draw(now);
-    this.drawStage(this.reduced() ? this.stillT : this.storyT, this.reduced());
+    this.drawStage(this.still() ? this.stillT : this.storyT, this.still());
   }
 
   private drawStage(t: number, still: boolean) {
