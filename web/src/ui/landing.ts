@@ -3,6 +3,10 @@
 import "./landing.css";
 import { api } from "../apricity";
 import { el } from "./dom";
+import heroData from "./flow/hero-data.json";
+import type { FlowData } from "./flow/model";
+import { readTheme } from "./flow/paint";
+import { CHAPTERS, LOOP, STILL, Story, chapterAt } from "./flow/story";
 
 const DEMO = `tempo 100
 key F mixolydian
@@ -41,6 +45,16 @@ export class Landing {
   private canvas = el("canvas", { ariaHidden: "true" });
   private raf = 0;
   private visible = false;
+  // The hero story: a mashup being made, on its own clock so it can pause and jump.
+  private story = new Story(heroData as FlowData);
+  private stage = el("canvas", { className: "stage-canvas" });
+  private info = el("p", { className: "info" });
+  private chapters: HTMLButtonElement[] = [];
+  private storyT = 0;
+  private stillT = STILL; // with reduced motion: the settled frame of the chosen chapter
+  private last = 0;
+  private paused = false;
+  private shown = { chapter: -1, caption: "" };
 
   constructor(root: HTMLElement, go: LandingActions) {
     this.root = root;
@@ -49,14 +63,14 @@ export class Landing {
       b.addEventListener("click", f);
       return b;
     };
-    const hear = cta("Hear “March Blues”", "primary", async () => {
+    const hear = cta("Hear “Chop Shop”", "primary", async () => {
       hear.disabled = true;
       hear.lastChild!.textContent = "Warming up…";
       try {
         await go.hear();
       } finally {
         hear.disabled = false;
-        hear.lastChild!.textContent = "Hear “March Blues”";
+        hear.lastChild!.textContent = "Hear “Chop Shop”";
       }
     }, "▶");
     const stats = el("div", { className: "stats" });
@@ -77,6 +91,7 @@ export class Landing {
             el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every clip, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
             el("div", { className: "actions" }, hear, cta("Open the library", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Read the docs", "ghost", go.docs)),
           ),
+          this.stageFigure(),
         ),
         el(
           "section",
@@ -110,6 +125,46 @@ export class Landing {
     }).observe(this.canvas);
   }
 
+  private stageFigure() {
+    this.stage.setAttribute("role", "img");
+    this.stage.setAttribute(
+      "aria-label",
+      "Animation: two stems of Sousa's The Thunderer are analyzed, sliced, chopped, and placed into a new composition, warped to one tempo and transposed to follow its chords.",
+    );
+    const nav = el("nav", { className: "chapters", ariaLabel: "Story chapters" });
+    this.chapters = CHAPTERS.map((c, i) => {
+      const b = el("button", { type: "button" }, c.label);
+      b.addEventListener("click", () => {
+        this.storyT = c.t;
+        this.stillT = i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].t - 0.5 : STILL;
+        this.paused = false;
+        this.frame();
+      });
+      return b;
+    });
+    nav.append(...this.chapters);
+    const steps = el(
+      "ol",
+      { className: "sr-only" },
+      ...[
+        "Listen: a recording is analyzed for its beats, tempo, key and tuning.",
+        "Slice: you mark the part you want; the selection snaps to the beat.",
+        "Chop: the slice is cut into equal chops, ready to play like pads.",
+        "Warp: a step pattern places the chops in the composition, stretched to its tempo.",
+        "Again: a second recording goes through the same steps.",
+        "Tune: its chops are transposed to follow the chords.",
+        "Play: the finished piece plays, each sound lit back to where it came from.",
+      ].map((t) => el("li", {}, t)),
+    );
+    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, this.info, nav), steps);
+    fig.addEventListener("pointerenter", (e) => (e.pointerType === "mouse" ? (this.paused = true) : null));
+    fig.addEventListener("pointerleave", () => (this.paused = false));
+    new ResizeObserver(() => this.reduced() && this.frame()).observe(this.stage);
+    return fig;
+  }
+
+  private reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   private step(n: string, title: string, text: string) {
     return el("div", { className: "step" }, el("div", { className: "n" }, n), el("h3", {}, title), el("p", {}, text));
   }
@@ -131,13 +186,44 @@ export class Landing {
     }
   }
 
-  // ---- hero light: warm rings rising from below, and a slow waveform drifting through.
+  // ---- hero light: warm rings rising from below; in front of it, the story.
   private loop = () => {
     this.raf = 0;
     if (!this.visible) return;
-    this.draw(performance.now() / 1000);
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) this.raf = requestAnimationFrame(this.loop);
+    this.frame();
+    if (!this.reduced()) this.raf = requestAnimationFrame(this.loop);
   };
+
+  private frame() {
+    const now = performance.now() / 1000;
+    const dt = this.last ? Math.min(0.1, now - this.last) : 0;
+    this.last = now;
+    if (!this.paused) this.storyT = (this.storyT + dt) % LOOP;
+    this.draw(now);
+    this.drawStage(this.reduced() ? this.stillT : this.storyT, this.reduced());
+  }
+
+  private drawStage(t: number, still: boolean) {
+    const c = this.stage, dpr = Math.min(2, devicePixelRatio || 1);
+    const w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return;
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) (c.width = Math.round(w * dpr)), (c.height = Math.round(h * dpr));
+    const g = c.getContext("2d")!;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    this.story.draw(g, w, h, t, readTheme(this.root.querySelector(".landing")!), still);
+    const k = chapterAt(t);
+    if (k !== this.shown.chapter) {
+      this.chapters.forEach((b, i) => b.classList.toggle("on", i === k));
+      this.shown.chapter = k;
+    }
+    const cap = this.story.caption(t);
+    const key = cap.title + cap.text;
+    if (key !== this.shown.caption) {
+      this.info.replaceChildren(el("b", {}, cap.title), " ", cap.text);
+      this.shown.caption = key;
+    }
+  }
 
   private draw(t: number) {
     const c = this.canvas, dpr = Math.min(2, devicePixelRatio || 1);
@@ -174,20 +260,6 @@ export class Landing {
       g.stroke();
     }
 
-    // A waveform drifting across: a march, heard from far away.
-    const y0 = h * 0.8;
-    g.globalAlpha = dark ? 0.55 : 0.45;
-    g.strokeStyle = sun;
-    g.lineWidth = 1.5;
-    g.beginPath();
-    for (let x = 0; x <= w; x += 3) {
-      const u = x / w;
-      const env = Math.sin(Math.PI * u) ** 1.5;
-      const beat = 0.55 + 0.45 * Math.abs(Math.sin((u * 16 + t * 0.9) * Math.PI));
-      const y = y0 + env * beat * 26 * Math.sin(u * 90 + t * 2.1) * Math.sin(u * 7 - t * 0.6);
-      x === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
-    }
-    g.stroke();
     g.globalAlpha = 1;
   }
 }

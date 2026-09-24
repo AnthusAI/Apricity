@@ -34,8 +34,8 @@ new Landing(document.querySelector("#home")!, {
   score: () => showTab("score"),
   docs: () => showTab("docs"),
   hear: async () => {
-    await score.open("examples/march-blues.apr");
-    while (!score.timeline || score.path !== "examples/march-blues.apr") await new Promise((r) => setTimeout(r, 100));
+    await score.open("examples/chop-shop.apr");
+    while (!score.timeline || score.path !== "examples/chop-shop.apr") await new Promise((r) => setTimeout(r, 100));
     showTab("score");
     if (!player.transport.playing) playBtn.click();
   },
