@@ -1,7 +1,5 @@
 /// Markup merge: match proposed ML slices to existing ones, handle names and retirement.
 /// Implements design/storage.md §1.3 exactly.
-
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
 /// A proposed slice from markup analysis.
@@ -48,7 +46,10 @@ pub fn iou(a: (f64, f64), b: (f64, f64)) -> f64 {
 /// Action to take with an existing slice.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SliceAction {
-    Keep { new_span: (f64, f64), rank: Option<i32> },
+    Keep {
+        new_span: (f64, f64),
+        rank: Option<i32>,
+    },
     Retire,
     Delete,
 }
@@ -60,7 +61,7 @@ pub struct MergePlan {
     pub create: Vec<(String, f64, f64, Option<i32>)>, // (name, start, end, rank)
     pub retire: Vec<String>,                          // existing slice ids
     pub delete: Vec<String>,                          // existing slice ids
-    pub name_counters: HashMap<String, u32>,         // updated counters
+    pub name_counters: HashMap<String, u32>,          // updated counters
 }
 
 /// Plan a merge of proposed slices with existing active slices.
@@ -95,7 +96,10 @@ pub fn plan_merge(
                 continue; // Different kind
             }
 
-            let overlap = iou((existing.start, existing.end), (proposed.start, proposed.end));
+            let overlap = iou(
+                (existing.start, existing.end),
+                (proposed.start, proposed.end),
+            );
             if overlap >= 0.8 {
                 if best_match.is_none() || overlap > best_match.unwrap().1 {
                     best_match = Some((eidx, overlap));

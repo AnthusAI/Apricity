@@ -1,5 +1,4 @@
 /// Stable ID generation for clips, candidates, and slices.
-
 use sha1::{Digest, Sha1};
 use sha2::Sha256;
 

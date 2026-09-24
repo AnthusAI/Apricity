@@ -1,6 +1,5 @@
 /// Ranking algorithm: port of analysis/apricity_analyze/curation.py rank() function.
 /// Computes a feed ranked by proposer score × trait lift (smoothed keep rate per kind/proposer/recording/stem).
-
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -169,7 +168,10 @@ pub fn rank(candidates: &[Candidate], verdicts: &HashMap<String, Verdict>) -> Ve
         let mut reasons: Vec<(f64, usize, String)> = Vec::new(); // (lift_magnitude, trait_index, reason)
 
         for (trait_idx, (trait_name, trait_value)) in traits(c).iter().enumerate() {
-            let (kept_weight, count) = stats.get(&(trait_name.clone(), trait_value.clone())).copied().unwrap_or((0.0, 0.0));
+            let (kept_weight, count) = stats
+                .get(&(trait_name.clone(), trait_value.clone()))
+                .copied()
+                .unwrap_or((0.0, 0.0));
             if count == 0.0 {
                 continue;
             }
@@ -216,12 +218,12 @@ pub fn rank(candidates: &[Candidate], verdicts: &HashMap<String, Verdict>) -> Ve
         }
 
         // Sort by lift magnitude (descending), then by trait index (ascending) for determinism
-        reasons.sort_by(|a, b| {
-            match b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal) {
+        reasons.sort_by(
+            |a, b| match b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal) {
                 std::cmp::Ordering::Equal => a.1.cmp(&b.1),
                 other => other,
-            }
-        });
+            },
+        );
 
         let why_ranked: Vec<String> = reasons.iter().take(2).map(|(_, _, r)| r.clone()).collect();
 
@@ -245,7 +247,9 @@ pub fn rank(candidates: &[Candidate], verdicts: &HashMap<String, Verdict>) -> Ve
         if a.later != b.later {
             a.later.cmp(&b.later)
         } else {
-            b.rank.partial_cmp(&a.rank).unwrap_or(std::cmp::Ordering::Equal)
+            b.rank
+                .partial_cmp(&a.rank)
+                .unwrap_or(std::cmp::Ordering::Equal)
         }
     });
 
@@ -311,7 +315,8 @@ mod tests {
         };
 
         let t = traits(&candidate);
-        let t_map: std::collections::HashMap<&str, &str> = t.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+        let t_map: std::collections::HashMap<&str, &str> =
+            t.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
         assert_eq!(t_map.get("kind"), Some(&"loop"));
         assert_eq!(t_map.get("proposer"), Some(&"analyzer:markup/loops"));
         assert_eq!(t_map.get("recording"), Some(&"Thunderer"));
@@ -334,7 +339,8 @@ mod tests {
         };
 
         let t = traits(&candidate);
-        let t_map: std::collections::HashMap<&str, &str> = t.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+        let t_map: std::collections::HashMap<&str, &str> =
+            t.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
         assert_eq!(t_map.get("stem"), Some(&"full mix"));
     }
 
