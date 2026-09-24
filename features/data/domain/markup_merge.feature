@@ -76,7 +76,7 @@ Feature: Stable slice names across markup re-runs
       tempo 90
       key C
       bars 1
-      clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+      clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
       track beat
       """
     When I merge markup for clip "clp-1" with:

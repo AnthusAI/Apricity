@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "drums.wav",
   "sha256": "a87c8249b0d9f7b0230a0b5e1bc22778ea08ca32180920b65a9519ba9ee8ff9e",
@@ -8357,7 +8357,8 @@
   "model": "htdemucs"
  },
  "annotations": {
-  "slices": [
+  "markers": [],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.167,
@@ -8606,7 +8607,6 @@
      "level_db": -0.4
     }
    }
-  ],
-  "markers": []
+  ]
  }
 }

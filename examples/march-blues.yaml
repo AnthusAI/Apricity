@@ -13,7 +13,7 @@
 # - `F mixolydian` lets the dominant sevenths (E♭ over F, A♭ over B♭) count as in-key.
 apricity: 0.1
 tempo: 100
-meter: 4
+time: 4/4
 key: F mixolydian
 samples: ../samples
 
@@ -45,7 +45,7 @@ progression:
   - { chord: I7,  bars: 2 }
 
 tracks:
-  - { clip: groove, transpose: 0, gain: -3 }
+  - { clip: groove, transpose: 0, volume: -3 }
   - { clip: tuba,   transpose: follow }
-  - { clip: horns,  transpose: follow, bars: "13-24", gain: -2 }
-  - { clip: bugle,  pattern: { at: ["15:1", "19:1", "23:1"] }, gain: -5 }
+  - { clip: horns,  transpose: follow, bars: "13-24", volume: -2 }
+  - { clip: bugle,  pattern: { at: ["15:1", "19:1", "23:1"] }, volume: -5 }

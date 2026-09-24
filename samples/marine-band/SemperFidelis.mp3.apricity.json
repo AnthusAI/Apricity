@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "SemperFidelis.mp3",
   "sha256": "58e04e34b2854682667c9bc27d426a8b027ab44a38f916fb78b24af3d0164265",
@@ -15438,7 +15438,75 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.8,
+    "source": "ml",
+    "note": "16beats, G"
+   },
+   {
+    "name": "section B",
+    "seconds": 8.94,
+    "source": "ml",
+    "note": "128beats, C"
+   },
+   {
+    "name": "section C",
+    "seconds": 74.34,
+    "source": "ml",
+    "note": "16beats, C"
+   },
+   {
+    "name": "section D",
+    "seconds": 82.4,
+    "source": "ml",
+    "note": "96beats, F"
+   },
+   {
+    "name": "section E",
+    "seconds": 130.88,
+    "source": "ml",
+    "note": "32beats, F"
+   },
+   {
+    "name": "section F",
+    "seconds": 147.0,
+    "source": "ml",
+    "note": "30beats, F"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.738,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 9.422,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 17.607,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 33.943,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 49.361,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 73.8,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.713,
@@ -15674,7 +15742,7 @@
     }
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.738,
     "end": 1.238,
     "source": "ml",
@@ -15686,7 +15754,7 @@
     }
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 9.422,
     "end": 9.922,
     "source": "ml",
@@ -15698,7 +15766,7 @@
     }
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 17.607,
     "end": 18.107,
     "source": "ml",
@@ -15710,7 +15778,7 @@
     }
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 33.943,
     "end": 34.443,
     "source": "ml",
@@ -15722,7 +15790,7 @@
     }
    },
    {
-    "name": "hit-5",
+    "name": "shot-5",
     "start": 49.361,
     "end": 49.861,
     "source": "ml",
@@ -15734,7 +15802,7 @@
     }
    },
    {
-    "name": "hit-6",
+    "name": "shot-6",
     "start": 73.8,
     "end": 74.3,
     "source": "ml",
@@ -15744,74 +15812,6 @@
     "evidence": {
      "standout": 14.0
     }
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.8,
-    "source": "ml",
-    "note": "16beats, G"
-   },
-   {
-    "name": "section B",
-    "seconds": 8.94,
-    "source": "ml",
-    "note": "128beats, C"
-   },
-   {
-    "name": "section C",
-    "seconds": 74.34,
-    "source": "ml",
-    "note": "16beats, C"
-   },
-   {
-    "name": "section D",
-    "seconds": 82.4,
-    "source": "ml",
-    "note": "96beats, F"
-   },
-   {
-    "name": "section E",
-    "seconds": 130.88,
-    "source": "ml",
-    "note": "32beats, F"
-   },
-   {
-    "name": "section F",
-    "seconds": 147.0,
-    "source": "ml",
-    "note": "30beats, F"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.738,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 9.422,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 17.607,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 33.943,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 49.361,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 73.8,
-    "source": "ml"
    }
   ]
  }

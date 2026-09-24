@@ -1,5 +1,5 @@
 // Where the Flow rows sit. Sources stack from the top, each a title bar, its waveform and a row of
-// its chops; the composition (ruler, chord strip, one lane per track) sits at the bottom. A
+// its slices; the composition (ruler, chord strip, one lane per track) sits at the bottom. A
 // source in focus is detailed; the others shrink to a summary, so many sources stay readable.
 
 import { lerp } from "./tween";

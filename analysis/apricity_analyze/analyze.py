@@ -1,4 +1,4 @@
-"""Analyze one audio file into a Apricity clip manifest (see schema/clip-manifest.schema.json)."""
+"""Analyze one audio file (a sample) into an Apricity manifest (see schema/sample-manifest.schema.json)."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from .theory import rank_keys
 
 SR = 44100
 FRAME, HOP = 4096, 2048
-SCHEMA = pathlib.Path(__file__).resolve().parents[2] / "schema" / "clip-manifest.schema.json"
+SCHEMA = pathlib.Path(__file__).resolve().parents[2] / "schema" / "sample-manifest.schema.json"
 
 
 def _r(x: float, nd: int = 4) -> float:
@@ -222,7 +222,7 @@ def analyze(path: pathlib.Path, with_notes: bool = True, rhythm_from: dict | Non
     rh["loudness"] = time_loudness(path)
     tn = tonal(path, rh["beats"], rh["downbeats"], rh["meter"])
     m = {
-        "apricity_manifest": 1,
+        "apricity_manifest": 2,
         "source": src,
         "analysis": {
             "analyzed_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
@@ -250,9 +250,10 @@ def validate(m: dict) -> None:
 
     jsonschema.validate(m, json.loads(SCHEMA.read_text()))
     dur = m["source"]["duration"]
-    for s in m.get("annotations", {}).get("slices", []):
+    for s in m.get("annotations", {}).get("clips", []):
         if not (0 <= s["start"] < s["end"] <= dur + 1e-6):
-            raise ValueError(f"slice {s['name']!r} [{s['start']}, {s['end']}] is outside the clip (0..{dur})")
+            raise ValueError(f"saved clip {s['name']!r} [{s['start']}, {s['end']}] is outside the sample (0..{dur})")
+
 
 
 def write(m: dict, audio: pathlib.Path) -> pathlib.Path:

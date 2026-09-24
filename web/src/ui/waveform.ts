@@ -1,30 +1,30 @@
-// Waveform editor for one clip: key bands, beat ruler, slices, markers, selection, playhead.
+// Waveform editor for one sample: key bands, beat ruler, saved clips, markers, selection, playhead.
 // Everything the user can make here is kept inside the clip by construction (poka-yoke):
 // selections and slice edges are clamped to [0, duration] and snapped to beats unless Alt is held.
 
-import type { Manifest, Slice } from "../apricity";
+import type { Manifest, SavedClip } from "../apricity";
 
 export interface WaveState {
   duration: number;
   peaks: Float32Array; // min/max pairs per column at a fixed resolution
   manifest: Manifest;
-  slices: Slice[];
-  selected: number | null; // slice index
+  clips: SavedClip[];
+  selected: number | null; // clip index
   selection: [number, number] | null;
   playhead: number | null;
 }
 
 type Drag =
   | { kind: "select"; anchor: number }
-  | { kind: "edge"; slice: number; edge: "start" | "end" }
-  | { kind: "move"; slice: number; offset: number; len: number };
+  | { kind: "edge"; clip: number; edge: "start" | "end" }
+  | { kind: "move"; clip: number; offset: number; len: number };
 
-// The slice lane has three rows: your slices, auto-detected sections, auto loops and hits.
+// The clip lane has three rows: your clips, auto-detected sections, auto loops and one-shots.
 const ROW = 17;
 const H = { keys: 16, wave: 112, lane: ROW * 3 + 4, ruler: 12 };
 
-/** Which lane row a slice lives in. */
-export function sliceRow(s: Slice): 0 | 1 | 2 {
+/** Which lane row a saved clip lives in. */
+export function clipRow(s: SavedClip): 0 | 1 | 2 {
   if (s.source !== "ml") return 0;
   return s.tags?.includes("section") ? 1 : 2;
 }
@@ -54,7 +54,7 @@ export class Waveform {
   canvas = document.createElement("canvas");
   state: WaveState;
   private drag: Drag | null = null;
-  onChange: (s: WaveState, why: "slices" | "selection" | "select") => void = () => {};
+  onChange: (s: WaveState, why: "clips" | "selection" | "select") => void = () => {};
   onSeek: (seconds: number) => void = () => {};
 
   constructor(state: WaveState) {
@@ -62,16 +62,16 @@ export class Waveform {
     this.canvas.className = "wave";
     this.canvas.style.height = `${HEIGHT}px`;
     this.canvas.tabIndex = 0;
-    this.canvas.setAttribute("aria-label", "Clip waveform: drag to select a region, drag slice edges to adjust, Delete removes the selected slice");
+    this.canvas.setAttribute("aria-label", "Sample waveform: drag to select a region, drag a clip's edges to adjust it, Delete removes the selected clip");
     this.canvas.addEventListener("pointerdown", (e) => this.down(e));
     this.canvas.addEventListener("pointermove", (e) => this.move(e));
     this.canvas.addEventListener("pointerup", (e) => this.up(e));
     this.canvas.addEventListener("dblclick", (e) => this.onSeek(this.timeAt(e)));
     this.canvas.addEventListener("keydown", (e) => {
       if ((e.key === "Delete" || e.key === "Backspace") && this.state.selected !== null) {
-        this.state.slices.splice(this.state.selected, 1);
+        this.state.clips.splice(this.state.selected, 1);
         this.state.selected = null;
-        this.onChange(this.state, "slices");
+        this.onChange(this.state, "clips");
         this.draw();
         e.preventDefault();
       }
@@ -98,7 +98,7 @@ export class Waveform {
     // Only snap when close (within 6 px).
     return Math.abs(this.x(best) - this.x(t)) < 6 ? best : t;
   }
-  private clampSlice(s: Slice) {
+  private clampClip(s: SavedClip) {
     const dur = this.state.duration;
     s.start = Math.max(0, Math.min(s.start, dur - 0.05));
     s.end = Math.max(s.start + 0.05, Math.min(s.end, dur));
@@ -108,14 +108,14 @@ export class Waveform {
     const px = e.clientX - r.left, py = e.clientY - r.top;
     const laneY = H.keys + H.wave;
     const row = py >= laneY && py < laneY + H.lane ? Math.floor((py - laneY - 2) / ROW) : -1;
-    for (let i = this.state.slices.length - 1; i >= 0; i--) {
-      const s = this.state.slices[i];
+    for (let i = this.state.clips.length - 1; i >= 0; i--) {
+      const s = this.state.clips[i];
       const a = this.x(s.start), b = this.x(s.end);
-      const inRow = row === sliceRow(s);
-      // Edges are grabbable in the slice's own row, or anywhere for the selected slice.
-      if ((inRow || i === this.state.selected) && Math.abs(px - a) < 5) return { kind: "edge", slice: i, edge: "start" };
-      if ((inRow || i === this.state.selected) && Math.abs(px - b) < 5) return { kind: "edge", slice: i, edge: "end" };
-      if (inRow && px > a && px < b) return { kind: "move", slice: i, offset: this.timeAt(e) - s.start, len: s.end - s.start };
+      const inRow = row === clipRow(s);
+      // Edges are grabbable in the clip's own row, or anywhere for the selected clip.
+      if ((inRow || i === this.state.selected) && Math.abs(px - a) < 5) return { kind: "edge", clip: i, edge: "start" };
+      if ((inRow || i === this.state.selected) && Math.abs(px - b) < 5) return { kind: "edge", clip: i, edge: "end" };
+      if (inRow && px > a && px < b) return { kind: "move", clip: i, offset: this.timeAt(e) - s.start, len: s.end - s.start };
     }
     return null;
   }
@@ -128,7 +128,7 @@ export class Waveform {
     const h = this.hit(e);
     if (h) {
       this.drag = h;
-      this.state.selected = h.slice;
+      this.state.selected = h.clip;
       this.state.selection = null;
       this.onChange(this.state, "select");
     } else {
@@ -151,12 +151,12 @@ export class Waveform {
     if (d.kind === "select") {
       this.state.selection = [Math.min(d.anchor, t), Math.max(d.anchor, t)];
     } else if (d.kind === "edge") {
-      const s = this.state.slices[d.slice];
+      const s = this.state.clips[d.clip];
       if (d.edge === "start") s.start = Math.min(t, s.end - 0.05);
       else s.end = Math.max(t, s.start + 0.05);
-      this.clampSlice(s);
+      this.clampClip(s);
     } else {
-      const s = this.state.slices[d.slice];
+      const s = this.state.clips[d.clip];
       const start = Math.max(0, Math.min(this.snap(this.timeAt(e) - d.offset, e), this.state.duration - d.len));
       s.start = start;
       s.end = start + d.len;
@@ -176,9 +176,9 @@ export class Waveform {
       if (sel && sel[1] - sel[0] < 0.05) this.state.selection = null;
       this.onChange(this.state, "selection");
     } else {
-      const sl = this.state.slices[d.slice];
+      const sl = this.state.clips[d.clip];
       if (sl.source === "ml") sl.source = "user"; // you changed it, so it's yours now
-      this.onChange(this.state, "slices");
+      this.onChange(this.state, "clips");
     }
     this.draw();
   }
@@ -194,7 +194,7 @@ export class Waveform {
     g.scale(dpr, dpr);
     const css = getComputedStyle(document.documentElement);
     const col = (v: string) => css.getPropertyValue(v).trim();
-    const fg = col("--fg"), accent = col("--accent"), sliceCol = col("--slice"), line = col("--line"), muted = col("--muted");
+    const fg = col("--fg"), accent = col("--accent"), clipCol = col("--slice"), line = col("--line"), muted = col("--muted");
     const { manifest: m, peaks, duration } = this.state;
 
     // key bands
@@ -235,28 +235,28 @@ export class Waveform {
     }
     g.globalAlpha = 1;
 
-    // slices: three lane rows (yours / sections / loops+hits); auto markup drawn outlined
+    // clips: three lane rows (yours / sections / loops+hits); auto markup drawn outlined
     const laneY = H.keys + H.wave;
     g.fillStyle = line;
     g.fillRect(0, laneY, w, 1);
-    this.state.slices.forEach((s, i) => {
+    this.state.clips.forEach((s, i) => {
       const a = this.x(s.start), b = Math.max(this.x(s.end), this.x(s.start) + 2), sel = i === this.state.selected;
       const ml = s.source === "ml";
-      const y = laneY + 2 + sliceRow(s) * ROW;
+      const y = laneY + 2 + clipRow(s) * ROW;
       if (sel || !ml) {
-        g.fillStyle = sliceCol;
+        g.fillStyle = clipCol;
         g.globalAlpha = sel ? 0.16 : 0.06;
         g.fillRect(a, y0, b - a, H.wave);
       }
       g.globalAlpha = sel ? 0.95 : ml ? 0.85 : 0.6;
       if (ml) {
-        g.strokeStyle = s.tags?.includes("section") ? accent : sliceCol;
+        g.strokeStyle = s.tags?.includes("section") ? accent : clipCol;
         g.lineWidth = sel ? 2 : 1;
-        g.setLineDash(s.tags?.includes("hit") ? [] : [3, 2]);
+        g.setLineDash(s.tags?.includes("shot") ? [] : [3, 2]);
         g.strokeRect(a + 0.5, y + 1.5, b - a - 1, ROW - 4);
         g.setLineDash([]);
       } else {
-        g.fillStyle = sliceCol;
+        g.fillStyle = clipCol;
         g.fillRect(a, y + 1, b - a, ROW - 3);
       }
       g.globalAlpha = 1;
@@ -266,18 +266,18 @@ export class Waveform {
       g.rect(a, y, b - a, ROW);
       g.clip();
       g.font = "10.5px system-ui, sans-serif";
-      if (!s.tags?.includes("hit")) g.fillText(s.name, a + 4, y + ROW / 2);
+      if (!s.tags?.includes("shot")) g.fillText(s.name, a + 4, y + ROW / 2);
       g.restore();
       if (sel) {
-        g.fillStyle = sliceCol;
+        g.fillStyle = clipCol;
         g.fillRect(a - 1, y0, 2, H.wave + H.lane);
         g.fillRect(b - 1, y0, 2, H.wave + H.lane);
       }
     });
 
-    // markers: section starts as faint lines through the waveform (hits already show as slices)
+    // markers: section starts as faint lines through the waveform (transients already show as one-shot clips)
     for (const mk of m.annotations?.markers ?? []) {
-      if (mk.name === "hit") continue;
+      if (mk.name === "transient") continue;
       g.fillStyle = mk.source === "ml" ? accent : col("--warn");
       g.globalAlpha = mk.source === "ml" ? 0.35 : 0.9;
       g.fillRect(this.x(mk.seconds), y0, 1, H.wave);

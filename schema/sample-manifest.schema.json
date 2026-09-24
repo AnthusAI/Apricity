@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://apricity.local/schema/clip-manifest.schema.json",
-  "title": "Apricity clip manifest",
-  "description": "Everything Apricity knows about one audio clip. Written by apricity-analyze next to the audio as <file>.apricity.json. Analysis sections are regenerated on re-analysis; `annotations` is user data and is always preserved.",
+  "title": "Apricity sample manifest",
+  "description": "Everything Apricity knows about one audio sample. Written by apricity-analyze next to the audio as <file>.apricity.json. Analysis sections are regenerated on re-analysis; `annotations` is user data and is always preserved.",
   "type": "object",
   "required": [
     "apricity_manifest",
@@ -13,8 +13,8 @@
   "additionalProperties": false,
   "properties": {
     "apricity_manifest": {
-      "const": 1,
-      "description": "Manifest format version."
+      "const": 2,
+      "description": "Manifest format version (1 called saved clips `slices`; readers still accept it)."
     },
     "source": {
       "type": "object",
@@ -278,9 +278,15 @@
             }
           }
         },
-        "slices": {
+        "tags": {
           "type": "array",
-          "description": "Named regions usable as sub-clips. Kept inside the clip by construction: start < end <= source.duration.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clips": {
+          "type": "array",
+          "description": "Clips saved with the sample: named regions usable in any score (yours, or automatic markup's sec-A1, loop-1, shot-3). Kept inside the sample by construction: start < end <= source.duration.",
           "items": {
             "type": "object",
             "required": [
@@ -334,12 +340,6 @@
                 "description": "The feed candidate this slice was kept from (library/candidates.json)."
               }
             }
-          }
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
           }
         }
       }

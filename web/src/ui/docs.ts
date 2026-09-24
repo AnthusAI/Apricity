@@ -38,16 +38,16 @@ const pages: Page[] = Object.entries(raw)
   .sort((a, b) => (ORDER.indexOf(a.file) + 1 || 99) - (ORDER.indexOf(b.file) + 1 || 99));
 
 // ---- `apricity` code blocks: the same colors as the score editor.
-const STATEMENTS = new Set(["apricity", "tempo", "meter", "key", "samples", "bars", "clip", "kit", "chords", "track", "bus", "master"]);
+const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "clip", "kit", "chords", "track", "group", "return", "master"]);
 const OPTIONS = new Set([
-  "beats", "seconds", "slice", "pick", "root", "ratio", "warp", "chop", "by", "into", "hits", "bar",
-  "as", "role", "follow", "transpose", "every", "at", "bars", "gain", "loop", "steps", "grid", "swing",
+  "beats", "seconds", "pick", "root", "ratio", "warp", "slice", "by", "into", "transients", "phrases", "bar", "repitch", "complex", "texture",
+  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing",
   "reverse", "filter", "lp", "hp", "lowpass", "highpass", "gate", "stutter", "half", "double", "speed",
   // mix lines and bus options
-  "out", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",
+  "group", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",
   "predelay", "damp", "mix", "feedback", "pingpong",
 ]);
-const BLOCK_LINES = new Set(["eq", "comp", "limit", "reverb", "delay", "pan", "send", "loudness"]);
+const BLOCK_LINES = new Set(["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send", "loudness"]);
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function highlightApr(code: string) {

@@ -1,16 +1,16 @@
 # Built only from what automatic markup found in "The Thunderer" (no hand-picked regions):
-# its best drum loop and horn loop, and a band hit, through a 12-bar blues in F.
+# its best drum loop and horn loop, and a band one-shot, through a 12-bar blues in F.
 
 tempo 100
 key F mixolydian
 samples ../samples
 
-clip groove = marine-band/stems/Thunderer/drums.wav   slice loop-1   warp beats
-clip riff   = marine-band/stems/Thunderer/other.wav   slice loop-1
-clip hit    = marine-band/Thunderer.mp3               slice hit-3
+clip groove = marine-band/stems/Thunderer/drums.wav  loop-1   warp beats
+clip riff   = marine-band/stems/Thunderer/other.wav  loop-1
+clip hit    = marine-band/Thunderer.mp3  shot-3
 
 chords I7 IV7 I7 . | IV7 . I7 . | V7 IV7 I7 V7
 
 track groove  transpose 0
-track riff    follow  gain -2
-track hit     follow  at 1 5 9 11  gain -4
+track riff    follow  volume -2
+track hit     follow  at 1 5 9 11  volume -4

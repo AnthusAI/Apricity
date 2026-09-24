@@ -1,6 +1,6 @@
 # Vocabulary: aligned with Ableton Live (design, 2026-09-24)
 
-Status: **decided by the user 2026-09-24; not built yet.** Every user-facing word means one thing,
+Status: **decided by the user 2026-09-24; built the same day** (language, compiler, manifests, analysis, web, docs). The storage contract (task 3) is the storage session's to do. Every user-facing word means one thing,
 and the same thing it means in Live, so Live users can read Apricity at a glance. Internal names
 follow in the same change wherever it's cheap. Where it isn't, they're renamed when the code is next
 touched.
@@ -10,11 +10,11 @@ touched.
 | Term | Live's word | Replaces | Meaning |
 |---|---|---|---|
 | **Sample** | Sample | the Library's "clip", a stem's "clip" | An audio file in the library (a recording, an excerpt, or a stem), analyzed once. |
-| **Recording** | — | (unchanged) | A performance that one or more samples come from (a mix and its stems). Used in the catalog and credits. |
+| **Recording** | — | (unchanged) | A performance that one or more samples come from (a mix and its stems, or an imported drum library). Carries the credits and the license. |
 | **Clip** | Clip | a sample's saved "slice"; the score's `clip` | A named region of a sample, with its warp settings. Clips are **saved with the sample** (`loop-1`, `sec-A1`, `shot-3`, your `riff`: reusable in any score, like Live's saved `.alc` clips) or **defined in a score**. |
 | **Marker** | Marker / locator | (unchanged) | A named point in a sample. |
 | **Transient** | Transient (marker) | "hit" (an accent in a recording), the `hit` marker | An onset worth cutting at. Automatic markup marks them. |
-| **Kit** | Kit (Drum Rack presets) | kit | A set of **pads**, played with `steps`. |
+| **Kit** | Kit (Drum Rack presets) | kit; "drum pack" (never used) | A set of **pads**, played with `steps`. Like clips, kits are **saved in the library** (a **saved kit**) or **defined in a score**. An imported drum library (e.g. Salamander) is just samples plus a saved kit whose pads point at them; to make your own, copy a saved kit and swap pads. |
 | **Slice** | Slice (Simpler's Slice mode; Slice to New MIDI Track) | "chop" | One of the pieces a kit cuts a clip into (by beats, bars, count, transients or phrases), each on a numbered pad. |
 | **Pad** | Pad | pad, and a chop's number | A kit's slot. It holds a slice (`b.3`) or a clip (`drums.kick`). |
 | **Track** | Track | track | Plays a clip, a whole kit (with `steps`), or one pad. |
@@ -34,6 +34,8 @@ Kept on purpose:
   (`.apr` or YAML).
 - **Swing**, **reverse**, **half/double**, **stems** and **tempo** already match Live.
 - **Chords**, **key**, **follow**, **automatic markup** and **Flow** are Apricity's own.
+
+Not used: **pack** (a downloaded kit is a saved kit, as in Live).
 
 Gone: **chop**, **piece**, **region** (as a noun), **trigger**, **bus**, **hit**, **meter**,
 `warp off`, and **gain** for faders.
@@ -81,17 +83,14 @@ track b     steps "1 _ 2 _"  group beat  volume -2
   - Groups can nest, but not in a circle.
 - **Return tracks:**
   - `return <name>` with indented effects defines one; `volume` goes on its line.
-  - Tracks and groups reach returns only by `send`.
+  - Tracks reach returns only by `send` (sends from group tracks: later).
   - Returns go to the master.
-- **Old words** are errors that name the new one, with no silent aliases:
-  - "`chop` is now `slice` (as in Live): kit b = slice brk by beats 0.5";
-  - "`bus` is now `return` (shared effects) or `group` (tracks summed together)";
-  - "`slice` names a saved clip now: write the name right after the path: clip brk = drums.wav loop-1";
-  - "`meter 4` is now `time 4/4`", "`gain` is now `volume`", "`warp off` is now `warp repitch`".
+- **No backward compatibility.** The old words are simply gone: they're unknown words like any
+  other, with the usual "did you mean" suggestions. The examples and manifests were moved over once.
 
 YAML follows the same words:
 - `time: 4/4`
-- `clips: { brk: { source: …, clip: loop-1 } }`
+- `clips: { brk: { source: …, saved: loop-1 } }`
 - `kits: { b: { clip: brk, slice: { beats: 0.5 } } }`, or `slice: transients`
 - pads: `{ clip: tdrums, saved: shot-1 }`
 - `groups:` and `returns:` at the top level
@@ -105,8 +104,8 @@ YAML follows the same words:
   - automatic `hit-N` clips become `shot-N` (one-shots);
   - `apricity_manifest` goes to 2.
 
-  Readers accept version 1 for one release. A migration script rewrites the 45 manifests in place,
-  keeping every name the scores use.
+  All 45 manifests were rewritten once, keeping every name the scores use; readers take version 2
+  only.
 - **Server API:**
   - `GET /api/clips` becomes `GET /api/samples` (entries are samples, each with a count of saved clips);
   - `PUT /api/annotations` stays, and writes `clips`.
@@ -115,6 +114,15 @@ YAML follows the same words:
   `nameCounters` keys `hit` → `shot`, and `ScoreRef.sliceId` → `clipId`. **This is the storage
   session's in-flight work:** its owner decides when the contract changes. Doing it before the
   first cloud deploy avoids a data migration later.
+
+## Saved kits *(planned)*
+
+- A kit can be saved in the library, next to the samples it uses, and used from any score by name,
+  just like a saved clip. A score can still define its own kits.
+- Importing a drum library makes one sample per sound (credited to one recording, with its
+  license) and one saved kit with a pad per drum (`kick`, `snare`, `hat.closed`, …).
+- Each pad holds one sample for now; velocity layers and round-robin can come later as several
+  samples on one pad, with no new words.
 
 ## The app and docs
 

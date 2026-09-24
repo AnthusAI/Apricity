@@ -1,5 +1,7 @@
 # Language changes: chopping, looping and drum kits (2026-09-23)
 
+> **Vocabulary update (2026-09-24):** the words below predate the move to Ableton Live's vocabulary. `chop` is now `slice`, a manifest "slice" is now a saved **clip**, `bus` is now `group`/`return`, `gain` is now `volume`, `meter` is now `time`, and hits are now transients and one-shots. See `design/vocabulary.md` and `docs/`.
+
 A roadmap for documenting what's new in the Apricity language. Each item names where the truth
 lives; the tests show every rule in action. Both notations (`.apr` text and YAML) support everything.
 

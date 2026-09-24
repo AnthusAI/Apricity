@@ -133,7 +133,7 @@ def main():
 
         # The slice the score chops, and its chops (equal steps in clip beats).
         first = min(e["src_start"] for e in evs)
-        slice_ = next(s for s in m["annotations"]["slices"] if s["start"] <= first + 1e-6 < s["end"] and s["name"].startswith("loop"))
+        slice_ = next(s for s in m["annotations"]["clips"] if s["start"] <= first + 1e-6 < s["end"] and s["name"].startswith("loop"))
         b0, b1 = sec_to_beat(beats, slice_["start"]), sec_to_beat(beats, slice_["end"])
         count = track["chops"]
         step = (b1 - b0) / count
@@ -218,7 +218,7 @@ def main():
     kb = sum(f.stat().st_size for f in AUDIO.glob("*.mp3")) / 1024
     print(f"wrote {AUDIO.relative_to(ROOT)}/ ({kb:.0f} KB of audio)")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.1f} KB): "
-          + ", ".join(f"{s['id']}: {len(s['chops'])} chops, {sum(t['source'] == i for t in tiles)} tiles" for i, s in enumerate(sources)))
+          + ", ".join(f"{s['id']}: {len(s["chops"])} slices, {sum(t['source'] == i for t in tiles)} tiles" for i, s in enumerate(sources)))
 
 
 if __name__ == "__main__":

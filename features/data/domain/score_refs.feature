@@ -29,7 +29,7 @@ Feature: Score references
       tempo 90
       key C
       bars 1
-      clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+      clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
       track beat
       """
     Then the call succeeds
@@ -46,7 +46,7 @@ Feature: Score references
       bars 1
       clip band = marine-band/Thunderer.mp3
       kit drums
-        crash = band  slice hit-3
+        crash = band  hit-3
       track drums  steps "crash . . ."
       """
     Then exactly 1 ScoreRef records match:
@@ -60,7 +60,7 @@ Feature: Score references
       tempo 90
       key C
       bars 1
-      clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+      clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
       track beat
       """
     When I save score "score-1" with text:
