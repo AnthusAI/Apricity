@@ -34,3 +34,6 @@ project/.overlay/
 /project/events/
 /project/.overlay/
 /project/**/.overlay/
+
+# conformance run output
+/web/test/conformance/cucumber-report.json
