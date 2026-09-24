@@ -3,7 +3,7 @@
   "title": "auth and storage resources (Google sign-in, groups, triggers)",
   "description": "Implement `design/storage.md` §1.1. **Don't deploy.** Reference: `/Users/home/Projects/Papyrus/amplify/auth/resource.ts` and `storage/resource.ts`.\n\n## Files\n- **`auth/resource.ts`:** email plus Google (`secret('GOOGLE_CLIENT_ID')`, `secret('GOOGLE_CLIENT_SECRET')`, scopes `email profile openid`). Callback and logout URLs come from `APRICITUS_OAUTH_REDIRECT_URLS`, defaulting to `http://localhost:5173/` and `http://127.0.0.1:5181/`. Groups `members`, `curators`, `admins`. `allow.resource(postConfirmation).to(['addUserToGroup'])`.\n- **`auth/pre-sign-up/{resource.ts,handler.ts}`:** reject sign-ups whose email isn't in `ALLOWED_EMAILS` (`secret('ALLOWED_EMAILS')`, comma-separated, case-insensitive), including Google sign-ups (`PreSignUp_ExternalProvider`). Put the check in a pure function, `isAllowed(email, list)`, in `auth/allow-list.ts`.\n- **`auth/post-confirmation/{resource.ts,handler.ts}`:** add the user to `members` with `AdminAddUserToGroupCommand` (`@aws-sdk/client-cognito-identity-provider`).\n- **`storage/resource.ts`:** `defineStorage({ name: 'apricitusFiles', isDefault: true, access })`. `audio/*`, `analysis/*` and `documents/*` are readable by `members` and read/write/delete for `curators`; `uploads/{entity_id}/*` belongs to its owner.\n- Wire the triggers in `backend.ts` if needed.\n\n## Verify\n```\ncd web && npx tsc --noEmit -p amplify/tsconfig.json\nnode --test amplify/auth/allow-list.test.ts   # or via tsx: npx tsx --test amplify/auth/allow-list.test.ts\nnpx tsx scripts/print-sdl.ts > /dev/null\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -39,11 +39,35 @@
         "model": "Claude Opus 5.5",
         "name": "storage-lead"
       }
+    },
+    {
+      "id": "36f625cf-4177-460f-b48c-c45cec30bd2c",
+      "author": "home",
+      "text": "\nFixes applied addressing all four review points:\n\n1. ✓ Triggers wired: Imported preSignUp and postConfirmation functions, added triggers and access rule in auth/resource.ts\n2. ✓ Security: Created pure function decidePreSignUp(triggerSource, email, allowedList) that only auto-confirms external provider (Google) sign-ups. Email/password sign-ups are allowed but require normal email verification. Fully tested with 13 test cases.\n3. ✓ Owner-based uploads: Changed to allow.entity(\"identity\") for uploads/{entity_id}/* to enforce owner-only access\n4. ✓ Google email mapping: Added attributeMapping: { email: \"email\" } to Google provider. Added support for optional APRICITUS_COGNITO_DOMAIN_PREFIX env var via resolveCognitoDomainPrefix().\n\nVerification results:\n✓ TypeScript: npx tsc --noEmit -p amplify/tsconfig.json\n✓ Tests: 22/22 passing (9 isAllowed + 13 decidePreSignUp)\n✓ Schema: npx tsx scripts/print-sdl.ts\n✓ Build: npm run build (Vite production build successful)\n\nAll files updated:\n- web/amplify/auth/resource.ts (triggers + access + Google config)\n- web/amplify/auth/pre-sign-up-decision.ts (pure decision function)\n- web/amplify/auth/pre-sign-up-decision.test.ts (13 comprehensive tests)\n- web/amplify/auth/pre-sign-up/handler.ts (uses decidePreSignUp)\n- web/amplify/storage/resource.ts (owner-based uploads)\n",
+      "created_at": "2026-09-24T04:56:56.739008Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T03"
+      }
+    },
+    {
+      "id": "63ef23c8-4824-4db1-9a96-47470a57d838",
+      "author": "home",
+      "text": "Review (round 2): accepted. Triggers wired with the addUserToGroup IAM grant; auto-confirm/verify only for PreSignUp_ExternalProvider (decidePreSignUp, tested); uploads owner-only via allow.entity('identity'); Google attributeMapping email; optional domainPrefix. Re-ran: amplify tsc OK, 22/22 auth tests, print-sdl OK. Deploy-time checks (the trigger actually firing, group add) belong to T31/T32 on the sandbox.",
+      "created_at": "2026-09-24T04:57:50.463370Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
     }
   ],
   "created_at": "2026-09-24T04:45:38.553019Z",
-  "updated_at": "2026-09-24T04:55:16.668965Z",
-  "closed_at": null,
+  "updated_at": "2026-09-24T04:57:50.512282Z",
+  "closed_at": "2026-09-24T04:57:50.512248Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",
