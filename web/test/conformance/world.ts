@@ -1,7 +1,7 @@
 import { IWorldOptions, World } from "@cucumber/cucumber";
 import { generateClient } from "aws-amplify/api";
 import type { Schema } from "../../amplify/data/resource.js";
-import { DomainContext, createPendingDomainContext } from "./domain.js";
+import { DomainContext, createRealDomainContext } from "./domain.js";
 import { getAtPath } from "./match.js";
 
 export interface Identity {
@@ -41,8 +41,8 @@ export class ConformanceWorld extends World {
   // Clients per user (for local testing with API key + identity header)
   clients: Map<string, any> = new Map();
 
-  // Domain context (pending implementation)
-  domain: DomainContext = createPendingDomainContext();
+  // Domain context (uses real domain.ts functions)
+  domain: DomainContext = createRealDomainContext();
 
   // Target mode: "local" (API key + header) or "sandbox" (userPool auth)
   targetMode: "local" | "sandbox" = "local";

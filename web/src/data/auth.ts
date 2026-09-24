@@ -99,6 +99,20 @@ export async function signOut(): Promise<void> {
 }
 
 /**
+ * Get the owner value for Crate queries and Verdict upserts.
+ * Returns `${sub}::${username}` in both local and cloud modes.
+ * The username comes from the identity endpoint or aws-amplify/auth.
+ */
+export async function ownerValue(): Promise<string> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    throw new Error("No authenticated user");
+  }
+  const username = currentUser.username || "unknown";
+  return `${currentUser.sub}::${username}`;
+}
+
+/**
  * Fetch the current auth session.
  * Local mode: returns a minimal session
  * Cloud mode: delegates to aws-amplify/auth

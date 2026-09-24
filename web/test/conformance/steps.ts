@@ -557,40 +557,28 @@ When(
       name?: string;
       crates?: string[];
     };
-    try {
-      const domainResult = await this.domain.keepCandidate(candidateId, substituted);
-      this.result = {
-        data: domainResult.data,
-        errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
-      };
-    } catch (error) {
-      throw new Error(`Domain step not implemented: ${(error as Error).message}`);
-    }
+    const domainResult = await this.domain.keepCandidate(candidateId, substituted);
+    this.result = {
+      data: domainResult.data,
+      errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
+    };
   }
 );
 
 When("I skip candidate {string}", async function (this: ConformanceWorld, candidateId: string) {
-  try {
-    const domainResult = await this.domain.skipCandidate(candidateId);
-    this.result = {
-      data: domainResult.data,
-      errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
-    };
-  } catch (error) {
-    throw new Error(`Domain step not implemented: ${(error as Error).message}`);
-  }
+  const domainResult = await this.domain.skipCandidate(candidateId);
+  this.result = {
+    data: domainResult.data,
+    errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
+  };
 });
 
 When("I put off candidate {string}", async function (this: ConformanceWorld, candidateId: string) {
-  try {
-    const domainResult = await this.domain.putOffCandidate(candidateId);
-    this.result = {
-      data: domainResult.data,
-      errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
-    };
-  } catch (error) {
-    throw new Error(`Domain step not implemented: ${(error as Error).message}`);
-  }
+  const domainResult = await this.domain.putOffCandidate(candidateId);
+  this.result = {
+    data: domainResult.data,
+    errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
+  };
 });
 
 When(
@@ -604,39 +592,91 @@ When(
       rank?: number;
       evidence?: unknown;
     }>;
-    try {
-      const domainResult = await this.domain.mergeMarkup(clipId, substituted);
-      this.result = {
-        data: domainResult.data,
-        errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
-      };
-    } catch (error) {
-      throw new Error(`Domain step not implemented: ${(error as Error).message}`);
-    }
+    const domainResult = await this.domain.mergeMarkup(clipId, substituted);
+    this.result = {
+      data: domainResult.data,
+      errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
+    };
   }
 );
 
 When(
   "I save score {string} with text:",
   async function (this: ConformanceWorld, scoreId: string, aprText: string) {
-    try {
-      const domainResult = await this.domain.saveScore(scoreId, aprText);
-      this.result = {
-        data: domainResult.data,
-        errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
-      };
-    } catch (error) {
-      throw new Error(`Domain step not implemented: ${(error as Error).message}`);
-    }
+    const domainResult = await this.domain.saveScore(scoreId, aprText);
+    this.result = {
+      data: domainResult.data,
+      errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
+    };
   }
 );
 
 Then("clip {string} has these active slices:", async function (this: ConformanceWorld, clipId: string, expectedJson: string) {
-  throw new Error("Domain step not implemented");
+  const expected = JSON.parse(expectedJson) as unknown[];
+  const substituted = this.substituteInJson(expected) as unknown[];
+
+  const client = await this.getClient();
+
+  // Collect all active slices for this clip
+  const allSlices: any[] = [];
+  let nextToken: string | null = null;
+
+  do {
+    const result: any = await client.models.Slice.slicesByClip(
+      { clipId },
+      { nextToken: nextToken ?? undefined }
+    );
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error(`Failed to fetch slices: ${result.errors[0].message}`);
+    }
+
+    allSlices.push(...(result.data || []));
+    nextToken = result.nextToken ?? null;
+  } while (nextToken);
+
+  // Filter to active slices only
+  const activeSlices = allSlices.filter((s: any) => !s.retired);
+
+  if (!arrayMatchesExact(substituted, activeSlices)) {
+    throw new Error(
+      `Active slices do not match in order.\nExpected: ${JSON.stringify(substituted)}\nGot: ${JSON.stringify(activeSlices)}`
+    );
+  }
 });
 
 Then("clip {string} has these retired slices:", async function (this: ConformanceWorld, clipId: string, expectedJson: string) {
-  throw new Error("Domain step not implemented");
+  const expected = JSON.parse(expectedJson) as unknown[];
+  const substituted = this.substituteInJson(expected) as unknown[];
+
+  const client = await this.getClient();
+
+  // Collect all retired slices for this clip
+  const allSlices: any[] = [];
+  let nextToken: string | null = null;
+
+  do {
+    const result: any = await client.models.Slice.slicesByClip(
+      { clipId },
+      { nextToken: nextToken ?? undefined }
+    );
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error(`Failed to fetch slices: ${result.errors[0].message}`);
+    }
+
+    allSlices.push(...(result.data || []));
+    nextToken = result.nextToken ?? null;
+  } while (nextToken);
+
+  // Filter to retired slices only
+  const retiredSlices = allSlices.filter((s: any) => s.retired);
+
+  if (!arrayMatchesExact(substituted, retiredSlices)) {
+    throw new Error(
+      `Retired slices do not match in order.\nExpected: ${JSON.stringify(substituted)}\nGot: ${JSON.stringify(retiredSlices)}`
+    );
+  }
 });
 
 // ============================================================================

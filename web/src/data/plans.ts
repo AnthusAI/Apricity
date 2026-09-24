@@ -202,3 +202,317 @@ function hasScoreRefChanged(oldRef: ScoreRef, newRef: ScoreRef): boolean {
   if ((oldRef.end ?? null) !== (newRef.end ?? null)) return true;
   return false;
 }
+
+// ============================================================================
+// Curation domain plan functions
+// ============================================================================
+
+export interface KeepPlan {
+  verdicts: { create: any; update?: any };
+  slices: { create?: any; update?: any };
+  crates: { create: any[] };
+  crateItems: { create: any[] };
+}
+
+export interface SkipPlan {
+  verdicts: { update: any };
+  slices: { delete: string[] };
+  crateItems: { delete: string[] };
+}
+
+export interface PutOffPlan {
+  verdicts: { create: any; update?: any };
+}
+
+export interface MergePlan {
+  slices: {
+    update: any[];
+    create: any[];
+    retire: any[];
+    delete: string[];
+  };
+  clip: { update?: any };
+}
+
+/**
+ * Plan keeping a candidate: upsert Verdict, create/update curated Slice, create CrateItems and Crates.
+ * Returns an error if candidate is null.
+ *
+ * @param candidateId - The candidate's id
+ * @param judge - The current user's sub
+ * @param candidate - The candidate record (or null)
+ * @param myVerdict - Existing verdict from the judge, or null
+ * @param curatedSlice - Existing curated slice, or null
+ * @param cratesByName - Map of crate name to Crate record
+ * @param existingCrateItems - Existing CrateItems for this candidate
+ * @param sliceId - The curated slice id (from rw_ids)
+ * @param options - Keep options (stars, tags, name, crates)
+ * @returns A plan with create/update for Verdict, Slice, Crates, CrateItems, or error if candidate is null
+ */
+export function planKeep(
+  candidateId: string,
+  judge: string,
+  candidate: any,
+  myVerdict: any | null,
+  curatedSlice: any | null,
+  cratesByName: Map<string, any>,
+  existingCrateItems: any[],
+  sliceId: string,
+  now: string,
+  newId: () => string,
+  lastPositionByCrate: Map<string, string | null>,
+  options?: { stars?: number; tags?: string[]; name?: string; crates?: string[] }
+): KeepPlan | { errors: Array<{ errorType: string }> } {
+  // Handle null candidate
+  if (!candidate) {
+    return { errors: [{ errorType: "NotFound" }] };
+  }
+
+  const timestamp = now;
+
+  // Verdict: create or update
+  const verdictRecord = {
+    candidateId,
+    judge,
+    verdict: "keep",
+    stars: options?.stars,
+    tags: options?.tags,
+    name: options?.name,
+    judgedAt: timestamp,
+    by: "person",
+  };
+
+  // Slice: create if missing, update if exists
+  let sliceToCreate: any | undefined;
+  let sliceToUpdate: any | undefined;
+
+  if (!curatedSlice) {
+    sliceToCreate = {
+      id: sliceId,
+      clipId: candidate.clipId,
+      name: options?.name || candidate.name || "curated",
+      start: candidate.start,
+      end: candidate.end,
+      source: "curated",
+      candidateId,
+      kind: candidate.kind,
+    };
+  } else {
+    // Slice exists; update its name if provided
+    if (options?.name && options.name !== curatedSlice.name) {
+      sliceToUpdate = {
+        id: sliceId,
+        name: options.name,
+      };
+    }
+  }
+
+  // Crates and CrateItems
+  const cratesToCreate: any[] = [];
+  const crateItemsToCreate: any[] = [];
+
+  if (options?.crates && options.crates.length > 0) {
+    for (const crateName of options.crates) {
+      const crateRecord = cratesByName.get(crateName);
+      let crateId: string;
+
+      if (crateRecord) {
+        crateId = crateRecord.id;
+      } else {
+        // Create new crate with deterministic ID
+        crateId = newId();
+        cratesToCreate.push({
+          id: crateId,
+          name: crateName,
+        });
+      }
+
+      // Check if CrateItem already exists
+      const existingItem = existingCrateItems.find((item: any) => item.crateId === crateId);
+      if (!existingItem) {
+        // Calculate position: "a0" if no last item, otherwise increment from "aN"
+        const lastPosition = lastPositionByCrate.get(crateId);
+        let position = "a0";
+        if (lastPosition) {
+          const match = lastPosition.match(/^a(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10) + 1;
+            position = `a${num}`;
+          }
+        }
+
+        crateItemsToCreate.push({
+          crateId,
+          candidateId,
+          position,
+        });
+      }
+    }
+  }
+
+  return {
+    verdicts: {
+      create: !myVerdict ? verdictRecord : undefined,
+      update: myVerdict ? verdictRecord : undefined,
+    },
+    slices: {
+      create: sliceToCreate,
+      update: sliceToUpdate,
+    },
+    crates: {
+      create: cratesToCreate,
+    },
+    crateItems: {
+      create: crateItemsToCreate,
+    },
+  };
+}
+
+/**
+ * Plan skipping a candidate: update Verdict, delete Slice if no other keeper, delete CrateItems.
+ *
+ * @param candidateId - The candidate's id
+ * @param judge - The current user's sub
+ * @param existingCrateItems - Existing CrateItems for this candidate
+ * @param existingVerdicts - All existing verdicts for this candidate (to check for other keepers)
+ * @param sliceId - The curated slice id
+ * @returns A plan with Verdict update, Slice delete, CrateItem deletes
+ */
+export function planSkip(
+  candidateId: string,
+  judge: string,
+  existingCrateItems: any[],
+  existingVerdicts: any[],
+  sliceId: string,
+  now: string
+): SkipPlan {
+  const timestamp = now;
+
+  // Verdict: update to skip
+  const verdictRecord = {
+    candidateId,
+    judge,
+    verdict: "skip",
+    judgedAt: timestamp,
+    by: "person",
+  };
+
+  // Check if any other judge has a keep verdict
+  const hasOtherKeeper = existingVerdicts.some(
+    (v: any) => v.judge !== judge && v.verdict === "keep"
+  );
+
+  // Slice: delete if no other keeper
+  const slicesToDelete = hasOtherKeeper ? [] : [sliceId];
+
+  // CrateItems: delete all for this candidate
+  const crateItemIdsToDelete = existingCrateItems.map((item: any) => item.id);
+
+  return {
+    verdicts: {
+      update: verdictRecord,
+    },
+    slices: {
+      delete: slicesToDelete,
+    },
+    crateItems: {
+      delete: crateItemIdsToDelete,
+    },
+  };
+}
+
+/**
+ * Plan putting off a candidate: create/update Verdict with verdict="later".
+ *
+ * @param candidateId - The candidate's id
+ * @param judge - The current user's sub
+ * @param myVerdict - Existing verdict from the judge, or null
+ * @returns A plan with Verdict create or update
+ */
+export function planPutOff(
+  candidateId: string,
+  judge: string,
+  myVerdict: any | null,
+  now: string
+): PutOffPlan {
+  const timestamp = now;
+
+  const verdictRecord = {
+    candidateId,
+    judge,
+    verdict: "later",
+    judgedAt: timestamp,
+    by: "person",
+  };
+
+  return {
+    verdicts: {
+      create: !myVerdict ? verdictRecord : undefined,
+      update: myVerdict ? verdictRecord : undefined,
+    },
+  };
+}
+
+/**
+ * Plan merging markup: match proposed ML slices to existing, handle retirement.
+ * Wraps rw_markup_merge output into Slice writes and Clip nameCounters update.
+ *
+ * @param clipId - The clip's id
+ * @param mergeResult - Output from rw_markup_merge with {keep, create, retire, delete, name_counters}
+ * @returns A plan with Slice create/update/retire/delete and Clip update
+ */
+export function planMerge(
+  clipId: string,
+  mergeResult: any
+): MergePlan {
+  // Extract the plan from wasm output
+  const keep = mergeResult.keep || [];
+  const create = mergeResult.create || [];
+  const retire = mergeResult.retire || [];
+  const deleteIds = mergeResult.delete || [];
+  const nameCounters = mergeResult.name_counters || {};
+
+  // Build Slice updates for kept slices
+  const sliceUpdates = keep.map(([id, [start, end], rank]: [string, [number, number], number | null]) => ({
+    id,
+    start,
+    end,
+    ...(rank !== null && rank !== undefined && { rank }),
+  }));
+
+  // Build Slice creates for new slices
+  const sliceCreates = create.map(([name, start, end, rank]: [string, number, number, number | null]) => ({
+    clipId,
+    name,
+    start,
+    end,
+    source: "ml",
+    ...(rank !== null && rank !== undefined && { rank }),
+  }));
+
+  // Build Slice retires (set retired: true)
+  const sliceRetires = retire.map((id: string) => ({
+    id,
+    retired: true,
+  }));
+
+  // Build Clip update for nameCounters
+  const clipUpdate = Object.keys(nameCounters).length > 0
+    ? {
+        id: clipId,
+        nameCounters: JSON.stringify(nameCounters),
+      }
+    : undefined;
+
+  return {
+    slices: {
+      update: sliceUpdates,
+      create: sliceCreates,
+      retire: sliceRetires,
+      delete: deleteIds,
+    },
+    clip: {
+      update: clipUpdate,
+    },
+  };
+}

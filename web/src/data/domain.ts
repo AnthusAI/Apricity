@@ -3,7 +3,8 @@
 
 import { client } from "./client.js";
 import { callWasm, extractReferences } from "../apricitus.js";
-import { planScoreRefs, type CatalogRef, type Lookups, type ScoreRef } from "./plans.js";
+import { planScoreRefs, planKeep, planSkip, planPutOff, planMerge, type CatalogRef, type Lookups, type ScoreRef } from "./plans.js";
+import { getCurrentUser, ownerValue } from "./auth.js";
 
 interface OpResult<T = unknown> {
   data?: T;
@@ -11,7 +12,7 @@ interface OpResult<T = unknown> {
 }
 
 /**
- * Keep a candidate: upsert Verdict → find/create Crate → create CrateItem → create curated Slice.
+ * Keep a candidate: upsert Verdict → create/update curated Slice → create CrateItems and Crates.
  * Idempotent: calling it again with the same candidateId changes nothing.
  */
 export async function keepCandidate(
@@ -30,7 +31,7 @@ export async function keepCandidate(
   }
 
   const judge = currentUser.sub;
-  const now = new Date().toISOString();
+  const owner = await ownerValue();
 
   try {
     // Validate candidate exists
@@ -40,41 +41,150 @@ export async function keepCandidate(
     }
     const candidate = candidateResult.data as any;
 
-    // Upsert Verdict (real upsert: get, then update or create)
-    let verdictResult = await dataClient.models.Verdict.get({ candidateId, judge });
-    let verdict: any;
-    if (verdictResult.data) {
-      // Update existing
-      const updateRes = await dataClient.models.Verdict.update({
-        candidateId,
-        judge,
-        verdict: "keep",
-        stars: options?.stars,
-        tags: options?.tags,
-        name: options?.name,
-        judgedAt: now,
-        by: "person",
-      });
-      if (updateRes.errors?.length) {
-        return { errors: updateRes.errors as any };
+    // Generate curated slice ID via wasm
+    const sliceIdResult = await callWasm("rw_ids", { kind: "curated_slice_id", candidate_id: candidateId });
+    if (!sliceIdResult.data || sliceIdResult.errors?.length) {
+      return {
+        errors: [{ message: "Failed to generate curated slice ID", errorType: "Internal" }],
+      };
+    }
+    const sliceId = sliceIdResult.data as string;
+
+    // Fetch lookups
+    const myVerdict = await dataClient.models.Verdict.get({ candidateId, judge });
+    const curatedSliceResult = await dataClient.models.Slice.get({ id: sliceId });
+    const curatedSlice = curatedSliceResult.data;
+
+    const cratesResult = await collectAll(
+      async (token) =>
+        await dataClient.models.Crate.cratesByOwner({ owner }, { nextToken: token })
+    );
+    const cratesByName = new Map(
+      (cratesResult || []).map((c: any) => [c.name, c])
+    );
+
+    const crateItemsResult = await collectAll(
+      async (token) =>
+        await dataClient.models.CrateItem.crateItemsByCandidate({ candidateId }, { nextToken: token })
+    );
+    const existingCrateItems = crateItemsResult || [];
+
+    // Build lastPositionByCrate map: fetch the last item for each existing target crate
+    const lastPositionByCrate = new Map<string, string | null>();
+    if (options?.crates && options.crates.length > 0) {
+      for (const crateName of options.crates) {
+        const crateRecord = cratesByName.get(crateName);
+        if (crateRecord) {
+          // Fetch last item for existing crate
+          const lastItemResult = await collectAll(
+            async (token) =>
+              await dataClient.models.CrateItem.crateItemsByCrate(
+                { crateId: crateRecord.id },
+                { sortDirection: "DESC", limit: 1, nextToken: token }
+              )
+          );
+          if (lastItemResult && lastItemResult.length > 0) {
+            const lastItem = lastItemResult[0] as any;
+            lastPositionByCrate.set(crateRecord.id, lastItem.position || null);
+          } else {
+            lastPositionByCrate.set(crateRecord.id, null);
+          }
+        }
+        // For new crates, we don't know the ID yet, so they won't be in the map
+        // planKeep will use "a0" as default for missing IDs
       }
-      verdict = updateRes.data;
-    } else {
-      // Create new
-      const createRes = await dataClient.models.Verdict.create({
-        candidateId,
-        judge,
-        verdict: "keep",
-        stars: options?.stars,
-        tags: options?.tags,
-        name: options?.name,
-        judgedAt: now,
-        by: "person",
-      });
+    }
+
+    // Plan the operations
+    const plan = planKeep(
+      candidateId,
+      judge,
+      candidate,
+      myVerdict.data || null,
+      curatedSlice || null,
+      cratesByName,
+      existingCrateItems,
+      sliceId,
+      new Date().toISOString(),
+      () => crypto.randomUUID(),
+      lastPositionByCrate,
+      options
+    );
+
+    // Check for plan errors (e.g., null candidate)
+    if ("errors" in plan && plan.errors) {
+      return { errors: plan.errors as any };
+    }
+
+    // Now we know plan is KeepPlan, not error result
+    const keepPlan = plan as any;
+
+    // Apply the plan: create Crates first, then Verdicts, then Slices, then CrateItems
+    for (const crate of keepPlan.crates.create) {
+      const createRes = await dataClient.models.Crate.create(crate);
+      if (createRes.errors?.length) {
+        return { errors: createRes.errors as any };
+      }
+    }
+
+    let verdict: any;
+    if (keepPlan.verdicts.create) {
+      const createRes = await dataClient.models.Verdict.create(keepPlan.verdicts.create);
       if (createRes.errors?.length) {
         return { errors: createRes.errors as any };
       }
       verdict = createRes.data;
+    } else if (keepPlan.verdicts.update) {
+      const updateRes = await dataClient.models.Verdict.update(keepPlan.verdicts.update);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
+      verdict = updateRes.data;
+    }
+
+    if (keepPlan.slices.create) {
+      const createRes = await dataClient.models.Slice.create(keepPlan.slices.create);
+      if (createRes.errors?.length) {
+        return { errors: createRes.errors as any };
+      }
+    } else if (keepPlan.slices.update) {
+      const updateRes = await dataClient.models.Slice.update(keepPlan.slices.update);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
+    }
+
+    for (const item of keepPlan.crateItems.create) {
+      const createRes = await dataClient.models.CrateItem.create(item);
+      if (createRes.errors?.length) {
+        return { errors: createRes.errors as any };
+      }
+    }
+
+    return { data: { verdict } };
+  } catch (e) {
+    return { errors: [{ message: String(e), errorType: "Internal" }] };
+  }
+}
+
+/**
+ * Skip a candidate: upsert Verdict (verdict="skip") → delete curated Slice if no other keeper → delete CrateItems.
+ */
+export async function skipCandidate(candidateId: string): Promise<OpResult> {
+  const dataClient = client();
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { errors: [{ message: "No authenticated user", errorType: "Unauthorized" }] };
+  }
+
+  const judge = currentUser.sub;
+  const owner = await ownerValue();
+
+  try {
+    // Validate candidate exists
+    const candidateResult = await dataClient.models.Candidate.get({ id: candidateId });
+    if (!candidateResult.data) {
+      return { errors: [{ message: `Candidate ${candidateId} not found`, errorType: "NotFound" }] };
     }
 
     // Generate curated slice ID via wasm
@@ -86,149 +196,51 @@ export async function keepCandidate(
     }
     const sliceId = sliceIdResult.data as string;
 
-    // Get or create curated slice
-    let sliceResult = await dataClient.models.Slice.get({ id: sliceId });
-    let slice: any;
-    if (!sliceResult.data) {
-      // Create new slice
-      const createSliceRes = await dataClient.models.Slice.create({
-        id: sliceId,
-        clipId: candidate.clipId,
-        name: options?.name || candidate.name || "curated",
-        start: candidate.start,
-        end: candidate.end,
-        source: "curated" as const,
-        candidateId,
-        kind: candidate.kind as any,
-      });
-      if (createSliceRes.errors?.length) {
-        return { errors: createSliceRes.errors as any };
-      }
-      slice = createSliceRes.data;
-    } else {
-      slice = sliceResult.data;
-    }
+    // Fetch my crates
+    const mycratesResult = await collectAll(
+      async (token) =>
+        await dataClient.models.Crate.cratesByOwner({ owner }, { nextToken: token })
+    );
+    const myCrateIds = new Set((mycratesResult || []).map((c: any) => c.id));
 
-    // Process crates (only if specified)
-    if (options?.crates && options.crates.length > 0) {
-      for (const crateName of options.crates) {
-        // Collect all crates by owner, then find by name
-        const cratesResult = await collectAll(
-          async (token) =>
-            await dataClient.models.Crate.cratesByOwner({ owner: judge }, { nextToken: token })
-        );
-        const crateWithName = (cratesResult || []).find((c: any) => c.name === crateName);
-        let crateId: string;
+    // Fetch all crate items for this candidate, then filter to my crates
+    const crateItemsResult = await collectAll(
+      async (token) =>
+        await dataClient.models.CrateItem.crateItemsByCandidate({ candidateId }, { nextToken: token })
+    );
+    const existingCrateItems = (crateItemsResult || []).filter((item: any) => myCrateIds.has(item.crateId));
 
-        if (crateWithName) {
-          crateId = (crateWithName as any).id;
-        } else {
-          // Create new crate (don't set owner; Amplify will fill it)
-          const createCrateRes = await dataClient.models.Crate.create({
-            name: crateName,
-          });
-          if (createCrateRes.errors?.length) {
-            return { errors: createCrateRes.errors as any };
-          }
-          crateId = (createCrateRes.data as any).id;
-        }
-
-        // Find crate item for this candidate
-        const itemsResult = await dataClient.models.CrateItem.crateItemsByCandidate({ candidateId });
-        const existingItem = (itemsResult.data as any[]).find((item: any) => item.crateId === crateId);
-
-        if (!existingItem) {
-          // Create new item (don't set owner; Amplify will fill it)
-          const createItemRes = await dataClient.models.CrateItem.create({
-            crateId,
-            candidateId,
-            position: "a0",
-          });
-          if (createItemRes.errors?.length) {
-            return { errors: createItemRes.errors as any };
-          }
-        }
-      }
-    }
-
-    return { data: { verdict } };
-  } catch (e) {
-    return { errors: [{ message: String(e), errorType: "Internal" }] };
-  }
-}
-
-/**
- * Skip a candidate: upsert Verdict (verdict="skip") → remove this user's CrateItems → delete curated Slice if no other keeper.
- */
-export async function skipCandidate(candidateId: string): Promise<OpResult> {
-  const dataClient = client();
-  const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    return { errors: [{ message: "No authenticated user", errorType: "Unauthorized" }] };
-  }
-
-  const judge = currentUser.sub;
-  const now = new Date().toISOString();
-
-  try {
-    // Validate candidate exists
-    const candidateResult = await dataClient.models.Candidate.get({ id: candidateId });
-    if (!candidateResult.data) {
-      return { errors: [{ message: `Candidate ${candidateId} not found`, errorType: "NotFound" }] };
-    }
-
-    // Upsert Verdict
-    let verdictResult = await dataClient.models.Verdict.get({ candidateId, judge });
-    let verdict: any;
-    if (verdictResult.data) {
-      const updateRes = await dataClient.models.Verdict.update({
-        candidateId,
-        judge,
-        verdict: "skip",
-        judgedAt: now,
-        by: "person",
-      });
-      if (updateRes.errors?.length) {
-        return { errors: updateRes.errors as any };
-      }
-      verdict = updateRes.data;
-    } else {
-      const createRes = await dataClient.models.Verdict.create({
-        candidateId,
-        judge,
-        verdict: "skip",
-        judgedAt: now,
-        by: "person",
-      });
-      if (createRes.errors?.length) {
-        return { errors: createRes.errors as any };
-      }
-      verdict = createRes.data;
-    }
-
-    // Remove this user's CrateItems
-    const itemsResult = await dataClient.models.CrateItem.crateItemsByCandidate({ candidateId });
-    for (const item of itemsResult.data || []) {
-      await dataClient.models.CrateItem.delete({ id: (item as any).id });
-    }
-
-    // Check if any other user has a keep verdict
-    const keepVerdicts = await collectAll(
+    const allVerdicts = await collectAll(
       async (token) =>
         await dataClient.models.Verdict.list({
-          filter: { candidateId: { eq: candidateId }, verdict: { eq: "keep" } },
+          filter: { candidateId: { eq: candidateId } },
           nextToken: token,
         })
     );
 
-    // If no other keepers, delete the curated slice
-    if (!keepVerdicts || keepVerdicts.length === 0) {
-      const sliceIdResult = await callWasm("rw_ids", { kind: "curated_slice_id", candidate_id: candidateId });
-      if (sliceIdResult.data) {
-        const sliceId = sliceIdResult.data as string;
-        await dataClient.models.Slice.delete({ id: sliceId });
+    // Plan the operations
+    const plan = planSkip(candidateId, judge, existingCrateItems, allVerdicts || [], sliceId, new Date().toISOString());
+
+    // Apply the plan: delete first, then update
+    for (const id of plan.slices.delete) {
+      const deleteRes = await dataClient.models.Slice.delete({ id });
+      if (deleteRes.errors?.length) {
+        return { errors: deleteRes.errors as any };
       }
     }
+
+    for (const id of plan.crateItems.delete) {
+      const deleteRes = await dataClient.models.CrateItem.delete({ id });
+      if (deleteRes.errors?.length) {
+        return { errors: deleteRes.errors as any };
+      }
+    }
+
+    const updateRes = await dataClient.models.Verdict.update(plan.verdicts.update);
+    if (updateRes.errors?.length) {
+      return { errors: updateRes.errors as any };
+    }
+    const verdict = updateRes.data;
 
     return { data: { verdict } };
   } catch (e) {
@@ -237,7 +249,7 @@ export async function skipCandidate(candidateId: string): Promise<OpResult> {
 }
 
 /**
- * Put off a candidate: create Verdict (verdict="later").
+ * Put off a candidate: create/update Verdict (verdict="later").
  */
 export async function putOffCandidate(candidateId: string): Promise<OpResult> {
   const dataClient = client();
@@ -247,7 +259,6 @@ export async function putOffCandidate(candidateId: string): Promise<OpResult> {
   }
 
   const judge = currentUser.sub;
-  const now = new Date().toISOString();
 
   try {
     // Validate candidate exists
@@ -256,33 +267,27 @@ export async function putOffCandidate(candidateId: string): Promise<OpResult> {
       return { errors: [{ message: `Candidate ${candidateId} not found`, errorType: "NotFound" }] };
     }
 
-    // Upsert Verdict
-    let verdictResult = await dataClient.models.Verdict.get({ candidateId, judge });
+    // Fetch existing verdict
+    const myVerdictResult = await dataClient.models.Verdict.get({ candidateId, judge });
+    const myVerdict = myVerdictResult.data;
+
+    // Plan the operations
+    const plan = planPutOff(candidateId, judge, myVerdict || null, new Date().toISOString());
+
+    // Apply the plan
     let verdict: any;
-    if (verdictResult.data) {
-      const updateRes = await dataClient.models.Verdict.update({
-        candidateId,
-        judge,
-        verdict: "later",
-        judgedAt: now,
-        by: "person",
-      });
-      if (updateRes.errors?.length) {
-        return { errors: updateRes.errors as any };
-      }
-      verdict = updateRes.data;
-    } else {
-      const createRes = await dataClient.models.Verdict.create({
-        candidateId,
-        judge,
-        verdict: "later",
-        judgedAt: now,
-        by: "person",
-      });
+    if (plan.verdicts.create) {
+      const createRes = await dataClient.models.Verdict.create(plan.verdicts.create);
       if (createRes.errors?.length) {
         return { errors: createRes.errors as any };
       }
       verdict = createRes.data;
+    } else if (plan.verdicts.update) {
+      const updateRes = await dataClient.models.Verdict.update(plan.verdicts.update);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
+      verdict = updateRes.data;
     }
 
     return { data: { verdict } };
@@ -349,44 +354,47 @@ export async function mergeMarkup(
       };
     }
 
-    const plan = mergeResult.data;
+    // Plan the merge
+    const plan = planMerge(clipId, mergeResult.data);
 
-    // Apply the plan
-    for (const [id, [start, end], rank] of plan.keep || []) {
-      await dataClient.models.Slice.update({
-        id,
-        start,
-        end,
-        rank: rank as number | undefined,
-      });
+    // Apply the plan: delete, then retire, then update, then create, then update clip
+    for (const id of plan.slices.delete) {
+      const deleteRes = await dataClient.models.Slice.delete({ id });
+      if (deleteRes.errors?.length) {
+        return { errors: deleteRes.errors as any };
+      }
     }
 
-    for (const [name, start, end, rank] of plan.create || []) {
-      const newSliceId = await generateMlSliceId(clipId, name);
-      await dataClient.models.Slice.create({
+    for (const slice of plan.slices.retire) {
+      const updateRes = await dataClient.models.Slice.update(slice);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
+    }
+
+    for (const slice of plan.slices.update) {
+      const updateRes = await dataClient.models.Slice.update(slice);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
+    }
+
+    for (const slice of plan.slices.create) {
+      const newSliceId = await generateMlSliceId(clipId, slice.name);
+      const createRes = await dataClient.models.Slice.create({
+        ...slice,
         id: newSliceId,
-        clipId,
-        name,
-        start,
-        end,
-        source: "ml" as const,
-        rank: rank as number | undefined,
       });
+      if (createRes.errors?.length) {
+        return { errors: createRes.errors as any };
+      }
     }
 
-    for (const id of plan.retire || []) {
-      await dataClient.models.Slice.update({ id, retired: true });
-    }
-
-    for (const id of plan.delete || []) {
-      await dataClient.models.Slice.delete({ id });
-    }
-
-    if (plan.name_counters && Object.keys(plan.name_counters).length > 0) {
-      await dataClient.models.Clip.update({
-        id: clipId,
-        nameCounters: JSON.stringify(plan.name_counters),
-      });
+    if (plan.clip.update) {
+      const updateRes = await dataClient.models.Clip.update(plan.clip.update);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
     }
 
     return { data: {} };
@@ -598,11 +606,6 @@ async function fetchLookups(
 }
 
 // ---- helpers
-
-async function getCurrentUser(): Promise<{ sub: string; username?: string } | null> {
-  const { getCurrentUser } = await import("./auth.js");
-  return (await getCurrentUser()) as { sub: string; username?: string } | null;
-}
 
 /**
  * Collect all pages from a paginated query. Stops and returns errors if any operation fails.

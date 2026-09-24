@@ -1,9 +1,9 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { planScoreRefs, type CatalogRef, type Lookups, type ScoreRef } from "../../src/data/plans.js";
+import { planScoreRefs, planKeep, planSkip, planPutOff, planMerge, type CatalogRef, type Lookups, type ScoreRef } from "../../src/data/plans.js";
 
-// Load wasm and get rw_references function
+// Load wasm and get functions
 const root = new URL("../../../", import.meta.url).pathname;
 const wasm = readFileSync(root + "target/wasm32-wasip1/release/apricitus_web.wasm");
 const { instantiate } = await import(root + "web/src/wasm/shim.js");
@@ -15,6 +15,30 @@ const rw = await instantiate(new WebAssembly.Module(wasm));
 function getCatalogRefs(text: string, folder: string, file: string): CatalogRef[] {
   const result = rw.call("rw_references", JSON.stringify({ text, folder, file }));
   return result.data || [];
+}
+
+/**
+ * Call rw_ids to get curated_slice_id for a candidate
+ */
+function getCuratedSliceId(candidateId: string): string {
+  const result = rw.call("rw_ids", JSON.stringify({ kind: "curated_slice_id", candidate_id: candidateId }));
+  return result.data as string;
+}
+
+/**
+ * Call rw_markup_merge to merge ML slices. Throws on wasm errors.
+ */
+function callMarkupMerge(existing: any[], proposals: any[], usedByScore: string[], nameCounters: any): any {
+  const result = rw.call("rw_markup_merge", JSON.stringify({
+    existing,
+    proposed: proposals,
+    used_by_score: usedByScore,
+    name_counters: nameCounters,
+  }));
+  if (result.errors?.length) {
+    throw new Error(`rw_markup_merge error: ${result.errors[0]}`);
+  }
+  return result.data || {};
 }
 
 describe("planScoreRefs", () => {
@@ -338,6 +362,614 @@ track beat`;
           },
         ],
         delete: [],
+      });
+    });
+  });
+});
+
+// ============================================================================
+// planKeep tests (from keep.feature)
+// ============================================================================
+
+describe("planKeep (keep.feature)", () => {
+  describe("Scenario 1: Keeping creates a verdict, a curated slice and a crate item", () => {
+    it("should plan verdict create, slice create, and crate item create", () => {
+      const candidateId = "cand-1";
+      const candidate = {
+        id: candidateId,
+        clipId: "clp-1",
+        recordingId: "rec-1",
+        start: 10,
+        end: 14,
+        kind: "loop",
+        name: "loop-cand",
+      };
+
+      const judge = "alice";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      let newIdCounter = 0;
+      const newId = () => `crate-new-${++newIdCounter}`;
+
+      const plan = planKeep(
+        candidateId,
+        judge,
+        candidate,
+        null,
+        null,
+        new Map(),
+        [],
+        sliceId,
+        now,
+        newId,
+        new Map(),
+        { stars: 4, tags: ["brass"], name: "horn-loop", crates: ["digs"] }
+      ) as any;
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          create: {
+            candidateId,
+            judge,
+            verdict: "keep",
+            stars: 4,
+            tags: ["brass"],
+            name: "horn-loop",
+            judgedAt: now,
+            by: "person",
+          },
+          update: undefined,
+        },
+        slices: {
+          create: {
+            id: sliceId,
+            clipId: "clp-1",
+            name: "horn-loop",
+            start: 10,
+            end: 14,
+            source: "curated",
+            candidateId,
+            kind: "loop",
+          },
+          update: undefined,
+        },
+        crates: {
+          create: [
+            {
+              id: "crate-new-1",
+              name: "digs",
+            },
+          ],
+        },
+        crateItems: {
+          create: [
+            {
+              crateId: "crate-new-1",
+              candidateId,
+              position: "a0",
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  describe("Scenario 2: Keeping twice changes nothing", () => {
+    it("should plan no changes if verdict and crates unchanged", () => {
+      const candidateId = "cand-1";
+      const candidate = {
+        id: candidateId,
+        clipId: "clp-1",
+        recordingId: "rec-1",
+        start: 10,
+        end: 14,
+        kind: "loop",
+        name: "loop-cand",
+      };
+
+      const judge = "alice";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const myVerdict = {
+        candidateId,
+        judge,
+        verdict: "keep",
+        stars: 4,
+        tags: ["brass"],
+        name: "horn-loop",
+      };
+
+      const curatedSlice = {
+        id: sliceId,
+        clipId: "clp-1",
+        name: "horn-loop",
+      };
+
+      const crateId = "crate-1";
+      const crateItem = {
+        id: "item-1",
+        crateId,
+        candidateId,
+      };
+
+      let newIdCounter = 0;
+      const newId = () => `crate-new-${++newIdCounter}`;
+
+      const plan = planKeep(
+        candidateId,
+        judge,
+        candidate,
+        myVerdict,
+        curatedSlice,
+        new Map([["digs", { id: crateId, name: "digs" }]]),
+        [crateItem],
+        sliceId,
+        now,
+        newId,
+        new Map([[crateId, null]]),
+        { stars: 4, tags: ["brass"], name: "horn-loop", crates: ["digs"] }
+      ) as any;
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          create: undefined,
+          update: {
+            candidateId,
+            judge,
+            verdict: "keep",
+            stars: 4,
+            tags: ["brass"],
+            name: "horn-loop",
+            judgedAt: now,
+            by: "person",
+          },
+        },
+        slices: {
+          create: undefined,
+          update: undefined,
+        },
+        crates: {
+          create: [],
+        },
+        crateItems: {
+          create: [],
+        },
+      });
+    });
+  });
+
+  describe("Scenario 3: Crate with existing item at a3 gets next position a4", () => {
+    it("should create crate item at position a4 when last item is at a3", () => {
+      const candidateId = "cand-2";
+      const candidate = {
+        id: candidateId,
+        clipId: "clp-1",
+        recordingId: "rec-1",
+        start: 20,
+        end: 24,
+        kind: "loop",
+        name: "loop-cand-2",
+      };
+
+      const judge = "alice";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const crateId = "crate-digs";
+      let newIdCounter = 0;
+      const newId = () => `crate-new-${++newIdCounter}`;
+
+      const plan = planKeep(
+        candidateId,
+        judge,
+        candidate,
+        null,
+        null,
+        new Map([["digs", { id: crateId, name: "digs" }]]),
+        [],
+        sliceId,
+        now,
+        newId,
+        new Map([[crateId, "a3"]]),
+        { crates: ["digs"] }
+      ) as any;
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          create: {
+            candidateId,
+            judge,
+            verdict: "keep",
+            stars: undefined,
+            tags: undefined,
+            name: undefined,
+            judgedAt: now,
+            by: "person",
+          },
+          update: undefined,
+        },
+        slices: {
+          create: {
+            id: sliceId,
+            clipId: "clp-1",
+            name: "loop-cand-2",
+            start: 20,
+            end: 24,
+            source: "curated",
+            candidateId,
+            kind: "loop",
+          },
+          update: undefined,
+        },
+        crates: {
+          create: [],
+        },
+        crateItems: {
+          create: [
+            {
+              crateId: "crate-digs",
+              candidateId,
+              position: "a4",
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  describe("Scenario 4: Keeping an unknown candidate fails", () => {
+    it("should return error when candidate is null", () => {
+      const candidateId = "no-such-candidate";
+      const judge = "alice";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const newId = () => "crate-new-1";
+
+      const result = planKeep(
+        candidateId,
+        judge,
+        null,
+        null,
+        null,
+        new Map(),
+        [],
+        sliceId,
+        now,
+        newId,
+        new Map()
+      );
+
+      assert.deepEqual(result, { errors: [{ errorType: "NotFound" }] });
+    });
+  });
+});
+
+// ============================================================================
+// planSkip tests (from keep.feature)
+// ============================================================================
+
+describe("planSkip (keep.feature)", () => {
+  describe("Scenario 1: Skipping after keeping removes the curated slice", () => {
+    it("should plan verdict update to skip and slice delete when no other keeper", () => {
+      const candidateId = "cand-1";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const existingCrateItems = [
+        { id: "item-1", crateId: "crate-1", candidateId },
+      ];
+
+      const allVerdicts = [
+        { candidateId, judge: "alice", verdict: "keep" },
+      ];
+
+      const plan = planSkip(candidateId, "alice", existingCrateItems, allVerdicts, sliceId, now);
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          update: {
+            candidateId,
+            judge: "alice",
+            verdict: "skip",
+            judgedAt: now,
+            by: "person",
+          },
+        },
+        slices: {
+          delete: [sliceId],
+        },
+        crateItems: {
+          delete: ["item-1"],
+        },
+      });
+    });
+  });
+
+  describe("Scenario 2: A skip keeps the slice while someone else still keeps it", () => {
+    it("should plan verdict update to skip and NOT delete slice if other keeper exists", () => {
+      const candidateId = "cand-1";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const existingCrateItems = [
+        { id: "item-1", crateId: "crate-1", candidateId },
+      ];
+
+      const allVerdicts = [
+        { candidateId, judge: "alice", verdict: "keep" },
+        { candidateId, judge: "bob", verdict: "keep" },
+      ];
+
+      const plan = planSkip(candidateId, "alice", existingCrateItems, allVerdicts, sliceId, now);
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          update: {
+            candidateId,
+            judge: "alice",
+            verdict: "skip",
+            judgedAt: now,
+            by: "person",
+          },
+        },
+        slices: {
+          delete: [],
+        },
+        crateItems: {
+          delete: ["item-1"],
+        },
+      });
+    });
+  });
+});
+
+// ============================================================================
+// planPutOff tests (from keep.feature)
+// ============================================================================
+
+describe("planPutOff (keep.feature)", () => {
+  describe("Scenario: Putting off records a verdict and no slice", () => {
+    it("should plan verdict create with verdict=later", () => {
+      const candidateId = "cand-1";
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const plan = planPutOff(candidateId, "alice", null, now);
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          create: {
+            candidateId,
+            judge: "alice",
+            verdict: "later",
+            judgedAt: now,
+            by: "person",
+          },
+          update: undefined,
+        },
+      });
+    });
+  });
+});
+
+// ============================================================================
+// planMerge tests (from markup_merge.feature)
+// ============================================================================
+
+describe("planMerge (markup_merge.feature)", () => {
+  describe("Scenario 1: An overlapping proposal keeps the slice's id and name", () => {
+    it("should plan slice update with new span", () => {
+      const clipId = "clp-1";
+
+      const existing = [
+        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+      ];
+
+      const proposals = [
+        { kind: "loop", start: 10.1, end: 14, rank: 1 },
+      ];
+
+      const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
+      const plan = planMerge(clipId, mergeResult);
+
+      assert.deepEqual(plan, {
+        slices: {
+          update: [
+            { id: "slc-a", start: 10.1, end: 14, rank: 1 },
+          ],
+          create: [],
+          retire: [],
+          delete: [],
+        },
+        clip: {
+          update: {
+            id: clipId,
+            nameCounters: '{"loop":1}',
+          },
+        },
+      });
+    });
+  });
+
+  describe("Scenario 2: A new proposal gets a new name", () => {
+    it("should plan slice create with new name and clip update with counters", () => {
+      const clipId = "clp-1";
+
+      const existing = [
+        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+      ];
+
+      const proposals = [
+        { kind: "loop", start: 10, end: 14, rank: 2 },
+        { kind: "loop", start: 30, end: 34, rank: 1 },
+      ];
+
+      const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
+      const plan = planMerge(clipId, mergeResult);
+
+      assert.deepEqual(plan, {
+        slices: {
+          update: [
+            { id: "slc-a", start: 10, end: 14, rank: 2 },
+          ],
+          create: [
+            {
+              clipId,
+              name: "loop-2",
+              start: 30,
+              end: 34,
+              source: "ml",
+              rank: 1,
+            },
+          ],
+          retire: [],
+          delete: [],
+        },
+        clip: {
+          update: {
+            id: clipId,
+            nameCounters: '{"loop":2}',
+          },
+        },
+      });
+    });
+  });
+
+  describe("Scenario 3: Names are never reused", () => {
+    it("should assign loop-3 after creating loop-2", () => {
+      const clipId = "clp-1";
+
+      // After first merge that created loop-2, we have two slices
+      const existing = [
+        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "slc-b", name: "loop-2", kind: "loop", start: 30, end: 34, source: "ml", retired: false },
+      ];
+
+      // Second merge proposes only 50-54, so existing ones are no longer proposed
+      const proposals = [
+        { kind: "loop", start: 50, end: 54, rank: 1 },
+      ];
+
+      const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 2 });
+      const plan = planMerge(clipId, mergeResult);
+
+      assert.deepEqual(plan, {
+        slices: {
+          update: [],
+          create: [
+            {
+              clipId,
+              name: "loop-3",
+              start: 50,
+              end: 54,
+              source: "ml",
+              rank: 1,
+            },
+          ],
+          retire: [],
+          delete: ["slc-a", "slc-b"],
+        },
+        clip: {
+          update: {
+            id: clipId,
+            nameCounters: '{"loop":3}',
+          },
+        },
+      });
+    });
+  });
+
+  describe("Scenario 4: A slice no longer proposed and not used by any score is deleted", () => {
+    it("should plan slice delete when no proposals and no scores use it", () => {
+      const clipId = "clp-1";
+
+      const existing = [
+        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+      ];
+
+      const proposals = [];
+
+      const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
+      const plan = planMerge(clipId, mergeResult);
+
+      assert.deepEqual(plan, {
+        slices: {
+          update: [],
+          create: [],
+          retire: [],
+          delete: ["slc-a"],
+        },
+        clip: {
+          update: {
+            id: clipId,
+            nameCounters: '{"loop":1}',
+          },
+        },
+      });
+    });
+  });
+
+  describe("Scenario 5: A slice a score uses is retired, not deleted", () => {
+    it("should plan slice retire when a score references it", () => {
+      const clipId = "clp-1";
+
+      const existing = [
+        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+      ];
+
+      const proposals = [];
+
+      const mergeResult = callMarkupMerge(existing, proposals, ["slc-a"], { loop: 1 });
+      const plan = planMerge(clipId, mergeResult);
+
+      assert.deepEqual(plan, {
+        slices: {
+          update: [],
+          create: [],
+          retire: [
+            { id: "slc-a", retired: true },
+          ],
+          delete: [],
+        },
+        clip: {
+          update: {
+            id: clipId,
+            nameCounters: '{"loop":1}',
+          },
+        },
+      });
+    });
+  });
+
+  describe("Scenario 6: Slices made by people are left alone", () => {
+    it("should not touch user-source slices during merge", () => {
+      const clipId = "clp-1";
+
+      const existing = [
+        { id: "slc-u", name: "mine", kind: "", start: 1, end: 2, source: "user", retired: false },
+        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+      ];
+
+      const proposals = [];
+
+      const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
+      const plan = planMerge(clipId, mergeResult);
+
+      assert.deepEqual(plan, {
+        slices: {
+          update: [],
+          create: [],
+          retire: [],
+          delete: ["slc-a"],
+        },
+        clip: {
+          update: {
+            id: clipId,
+            nameCounters: '{"loop":1}',
+          },
+        },
       });
     });
   });
