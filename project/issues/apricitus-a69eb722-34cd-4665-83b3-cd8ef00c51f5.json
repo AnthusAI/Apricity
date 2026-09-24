@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-a69eb722-34cd-4665-83b3-cd8ef00c51f5",
+  "title": "Hero story: trace lineage through folded source rows",
+  "description": "When a source is folded to its summary strip (the drums, after the horns arrive), a playing chop wasn't traced back to it. Its span wasn't lit, and the chop → composition curve faded to almost nothing over the long run.\n\n**Fix:**\n- light the playing chop's span on whichever row shows the source (waveform or summary strip);\n- draw a curve from that span to its chop, for every source;\n- keep lineage ribbons bright along their length.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "a5d531c0-f453-4c44-98ac-8b6a6b78a78c",
+      "author": "home",
+      "text": "Fixed in story.ts: the lineage block lights the span on wave or title and adds a span → chop ribbon. ribbon() gains a `far` end opacity (lineage uses 0.7–0.8; the chop → tile alpha goes 0.22 → 0.42). Verified in the browser at the finale: the folded drums strip is lit with a curve to its chop; at bar 5, both the horns chain (wave span → chop 1 → tile) and the drums chain are drawn. Tests 4/4; build OK.",
+      "created_at": "2026-09-24T14:49:04.317018Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Web/Docs Session"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T14:49:04.275189Z",
+  "updated_at": "2026-09-24T14:49:04.483705Z",
+  "closed_at": "2026-09-24T14:49:04.483668Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
