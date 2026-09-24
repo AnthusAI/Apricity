@@ -1,0 +1,280 @@
+{
+ "apricity_manifest": 1,
+ "source": {
+  "path": "St-Patricks-parade_144941_005_00-03-29.wav",
+  "sha256": "43328ac9c09b2b265fb4d47f5bfa6f0ae52d1edb898a35668116b7086a4391b6",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 4.412
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-23T23:24:14+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": 73.17,
+  "bpm_stability": 0.683,
+  "beats": [
+   0.06,
+   1.02,
+   1.84,
+   2.7,
+   2.92,
+   3.6
+  ],
+  "downbeats": [
+   0.06,
+   3.6
+  ],
+  "meter": 5,
+  "warp_markers": [
+   {
+    "seconds": 0.06,
+    "beat": 0.0
+   },
+   {
+    "seconds": 1.02,
+    "beat": 1.0
+   },
+   {
+    "seconds": 1.84,
+    "beat": 2.0
+   },
+   {
+    "seconds": 2.7,
+    "beat": 3.0
+   },
+   {
+    "seconds": 2.92,
+    "beat": 4.0
+   },
+   {
+    "seconds": 3.6,
+    "beat": 5.0
+   }
+  ],
+  "beat_loudness": [
+   -12.5,
+   -21.0,
+   -13.5,
+   -21.1,
+   -17.6
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "A",
+   "mode": "major",
+   "strength": 0.6845,
+   "camelot": "11B",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "E",
+    "mode": "major",
+    "strength": 0.5037,
+    "camelot": "12B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "E",
+    "mode": "minor",
+    "strength": 0.4991,
+    "camelot": "9A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "A",
+    "mode": "minor",
+    "strength": 0.467,
+    "camelot": "8A",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 447.17,
+  "tuning_cents": 28.0,
+  "pitch_class_profile": [
+   0.4865,
+   0.6957,
+   0.7411,
+   0.6493,
+   1.0,
+   0.4201,
+   0.4483,
+   0.694,
+   0.598,
+   0.8121,
+   0.5781,
+   0.7839
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 4.412,
+    "key": {
+     "tonic": "A",
+     "mode": "major",
+     "strength": 0.6667,
+     "camelot": "11B",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.4916,
+     0.6942,
+     0.7427,
+     0.651,
+     1.0,
+     0.4238,
+     0.4499,
+     0.6977,
+     0.5814,
+     0.7984,
+     0.585,
+     0.7774
+    ]
+   }
+  ],
+  "beat_chroma": [
+   [
+    0.3837,
+    0.3727,
+    0.2678,
+    0.4962,
+    0.8851,
+    0.5041,
+    0.3562,
+    0.3282,
+    0.4657,
+    0.6367,
+    0.8246,
+    1.0
+   ],
+   [
+    0.3007,
+    1.0,
+    0.7119,
+    0.2873,
+    0.4809,
+    0.2159,
+    0.3198,
+    0.3963,
+    0.4722,
+    0.6085,
+    0.2356,
+    0.3603
+   ],
+   [
+    0.4298,
+    0.4894,
+    0.6531,
+    0.6496,
+    1.0,
+    0.3283,
+    0.4615,
+    0.2655,
+    0.418,
+    0.5483,
+    0.4491,
+    0.9985
+   ],
+   [
+    0.2716,
+    0.2733,
+    0.3812,
+    0.4601,
+    1.0,
+    0.2154,
+    0.1361,
+    0.4397,
+    0.6998,
+    0.9257,
+    0.227,
+    0.6815
+   ],
+   [
+    0.4519,
+    0.7059,
+    0.8225,
+    0.9573,
+    1.0,
+    0.3075,
+    0.2403,
+    0.4463,
+    0.4161,
+    0.9056,
+    0.6435,
+    0.1777
+   ]
+  ]
+ },
+ "notes": [
+  {
+   "start": 0.058,
+   "end": 0.267,
+   "midi": 65,
+   "velocity": 0.4
+  },
+  {
+   "start": 0.6269,
+   "end": 0.7663,
+   "midi": 71,
+   "velocity": 0.602
+  },
+  {
+   "start": 1.3119,
+   "end": 1.5557,
+   "midi": 62,
+   "velocity": 0.34
+  },
+  {
+   "start": 2.2768,
+   "end": 2.4278,
+   "midi": 62,
+   "velocity": 0.51
+  },
+  {
+   "start": 2.4278,
+   "end": 2.6135,
+   "midi": 63,
+   "velocity": 0.58
+  },
+  {
+   "start": 3.2056,
+   "end": 3.3682,
+   "midi": 63,
+   "velocity": 0.607
+  },
+  {
+   "start": 3.8906,
+   "end": 4.1473,
+   "midi": 67,
+   "velocity": 0.584
+  }
+ ],
+ "annotations": {
+  "slices": [
+   {
+    "name": "hit-1",
+    "start": 1.84,
+    "end": 2.66,
+    "source": "ml",
+    "tags": [
+     "hit"
+    ]
+   }
+  ],
+  "markers": [
+   {
+    "name": "hit",
+    "seconds": 1.84,
+    "source": "ml"
+   }
+  ]
+ }
+}

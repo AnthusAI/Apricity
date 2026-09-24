@@ -11,7 +11,7 @@ from pathlib import Path
 # Add analysis to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "analysis"))
 
-from apricitus_analyze import curation
+from apricity_analyze import curation
 
 def main():
     root = Path(__file__).parent.parent
@@ -80,7 +80,7 @@ def main():
     }
 
     # Write fixture
-    output_path = root / "crates" / "apricitus-data" / "tests" / "fixtures" / "rank.json"
+    output_path = root / "crates" / "apricity-data" / "tests" / "fixtures" / "rank.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(output_path, "w") as f:

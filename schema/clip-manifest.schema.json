@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://apricitus.local/schema/clip-manifest.schema.json",
-  "title": "Apricitus clip manifest",
-  "description": "Everything Apricitus knows about one audio clip. Written by apricitus-analyze next to the audio as <file>.apricitus.json. Analysis sections are regenerated on re-analysis; `annotations` is user data and is always preserved.",
+  "$id": "https://apricity.local/schema/clip-manifest.schema.json",
+  "title": "Apricity clip manifest",
+  "description": "Everything Apricity knows about one audio clip. Written by apricity-analyze next to the audio as <file>.apricity.json. Analysis sections are regenerated on re-analysis; `annotations` is user data and is always preserved.",
   "type": "object",
   "required": [
-    "apricitus_manifest",
+    "apricity_manifest",
     "source",
     "rhythm",
     "tonal"
   ],
   "additionalProperties": false,
   "properties": {
-    "apricitus_manifest": {
+    "apricity_manifest": {
       "const": 1,
       "description": "Manifest format version."
     },

@@ -26,7 +26,7 @@ let cachedIdentity: CurrentUser | null = null;
 
 /**
  * Get the current user's identity.
- * Local mode: returns the identity from outputs.custom.apricitus.identity
+ * Local mode: returns the identity from outputs.custom.apricity.identity
  * Cloud mode: delegates to aws-amplify/auth
  */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -35,7 +35,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     if (cachedIdentity) return cachedIdentity;
 
     const config = Amplify.getConfig();
-    const customConfig = (config as any).custom?.apricitus;
+    const customConfig = (config as any).custom?.apricity;
     const identity = customConfig?.identity;
     if (identity) {
       cachedIdentity = {

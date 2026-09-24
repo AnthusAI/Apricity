@@ -1,6 +1,6 @@
 // Library: every analyzed clip, its analysis, and a waveform editor for slices.
 
-import { api, encodePath, manifest, type ClipSummary, type Slice } from "../apricitus";
+import { api, encodePath, manifest, type ClipSummary, type Slice } from "../apricity";
 import { player } from "../audio/player";
 import { el } from "./dom";
 import { computePeaks, Waveform } from "./waveform";

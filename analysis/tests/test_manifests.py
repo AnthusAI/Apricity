@@ -1,4 +1,4 @@
-"""Checks over the analyzed sample library (run `apricitus-analyze samples` first)."""
+"""Checks over the analyzed sample library (run `apricity-analyze samples` first)."""
 
 import copy
 import json
@@ -6,14 +6,14 @@ import pathlib
 
 import pytest
 
-from apricitus_analyze.analyze import validate
+from apricity_analyze.analyze import validate
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SAMPLES = ROOT / "samples"
-MANIFESTS = sorted(SAMPLES.rglob("*.apricitus.json"))
+MANIFESTS = sorted(SAMPLES.rglob("*.apricity.json"))
 GROUND_TRUTH = json.loads((pathlib.Path(__file__).parent / "sousa_keys.json").read_text())["marches"]
 
-needs_manifests = pytest.mark.skipif(not MANIFESTS, reason="no manifests; run apricitus-analyze samples")
+needs_manifests = pytest.mark.skipif(not MANIFESTS, reason="no manifests; run apricity-analyze samples")
 
 
 @needs_manifests
@@ -32,7 +32,7 @@ def test_manifest_is_valid(path):
 @needs_manifests
 @pytest.mark.parametrize("audio,keys", sorted(GROUND_TRUTH.items()))
 def test_sousa_key_is_main_or_trio(audio, keys):
-    path = SAMPLES / (audio + ".apricitus.json")
+    path = SAMPLES / (audio + ".apricity.json")
     if not path.exists():
         pytest.skip("not analyzed")
     t = json.loads(path.read_text())["tonal"]
@@ -46,7 +46,7 @@ def test_sousa_key_is_main_or_trio(audio, keys):
 @needs_manifests
 def test_marine_band_tempo_is_march_cadence():
     for audio in GROUND_TRUTH:
-        path = SAMPLES / (audio + ".apricitus.json")
+        path = SAMPLES / (audio + ".apricity.json")
         if path.exists():
             bpm = json.loads(path.read_text())["rhythm"]["bpm"]
             # 120 steps/minute, allowing the double/half-time ambiguity beat trackers have.

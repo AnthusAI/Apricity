@@ -3,10 +3,10 @@ import pathlib
 
 import pytest
 
-from apricitus_analyze.markup import merge
+from apricity_analyze.markup import merge
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-MARCHES = sorted((ROOT / "samples/marine-band").glob("*.mp3.apricitus.json"))
+MARCHES = sorted((ROOT / "samples/marine-band").glob("*.mp3.apricity.json"))
 
 
 def test_merge_keeps_user_work_and_replaces_old_ml():
@@ -69,15 +69,15 @@ def test_marches_show_their_form():
 
 
 def test_drum_stems_get_no_sections():
-    for path in (ROOT / "samples/marine-band/stems").glob("*/drums.wav.apricitus.json"):
+    for path in (ROOT / "samples/marine-band/stems").glob("*/drums.wav.apricity.json"):
         assert not ml(json.loads(path.read_text()), "section")
 
 
 def test_phrases_split_at_pauses_not_breaths():
     import numpy as np
 
-    from apricitus_analyze.analyze import SR
-    from apricitus_analyze.markup import phrases
+    from apricity_analyze.analyze import SR
+    from apricity_analyze.markup import phrases
 
     rng = np.random.default_rng(0)
 

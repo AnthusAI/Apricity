@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from apricitus_analyze.theory import PITCH_NAMES, PROFILES, camelot, rank_keys
+from apricity_analyze.theory import PITCH_NAMES, PROFILES, camelot, rank_keys
 
 
 @pytest.mark.parametrize("tonic,mode,code", [

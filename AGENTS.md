@@ -12,7 +12,7 @@ Git / PR policy: Rules for product-code commits, branch names, pull requests, an
 
 ## Git policy
 
-- Work happens on `master`. Commit once per reviewed Kanbus task, with the task ID in the message (e.g. `apricitus-a1b2c3: add the contract generator`).
+- Work happens on `master`. Commit once per reviewed Kanbus task, with the task ID in the message (e.g. `apricity-a1b2c3: add the contract generator`).
 - After changing cards, run `kbs commit` so the board state is committed too.
 - Sub-agents working a task never commit, push, or close issues; the reviewer (the agent that filed the task) does, after re-running the task's verification.
 - Never push or publish (git remotes, crates.io, PyPI, npm, AWS deploys) without the user's explicit go-ahead.

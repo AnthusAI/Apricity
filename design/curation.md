@@ -5,16 +5,16 @@ Machines listen and propose; people judge. This implements the curation loop in
 **feed** (best first, learning from you) → a **verdict** (keep / skip / later) with optional
 **stars**, **tags**, a **name** and **crates** → kept material becomes a named slice any score can use.
 
-Code: `analysis/apricitus_analyze/curation.py`. Tests: `analysis/tests/test_curation.py`.
+Code: `analysis/apricity_analyze/curation.py`. Tests: `analysis/tests/test_curation.py`.
 
 ## Using it
 
 ```
 # propose candidates from everything analyzed (re-running only adds or updates)
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.curation propose samples
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.curation propose samples
 
 # audition and judge in the terminal (plays each candidate; loops and breaks play twice)
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.curation feed [--kind break]
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.curation feed [--kind break]
 #   k keep · 1–5 keep with stars · s skip · l later · t tags · n name · c crate · r replay · q quit
 
 … curation list [--kind loop] [--limit 20]       # the ranked feed, with reasons

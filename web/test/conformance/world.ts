@@ -98,7 +98,7 @@ export class ConformanceWorld extends World {
     return generateClient<Schema>({
       authMode: "apiKey",
       headers: {
-        "x-apricitus-identity": identityHeader,
+        "x-apricity-identity": identityHeader,
       },
     });
   }

@@ -4,7 +4,7 @@ import shutil
 import pytest
 from fastapi.testclient import TestClient
 
-from apricitus_analyze import server
+from apricity_analyze import server
 
 client = TestClient(server.app)
 CLIP = "samples/citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav"
@@ -33,7 +33,7 @@ def test_files_are_confined_to_the_project_folders():
 
 @pytest.fixture
 def manifest_backup():
-    mpath = server.ROOT / (CLIP + ".apricitus.json")
+    mpath = server.ROOT / (CLIP + ".apricity.json")
     saved = mpath.read_text()
     yield mpath
     mpath.write_text(saved)
@@ -57,10 +57,10 @@ def test_scores_can_only_be_written_as_yaml_in_score_folders():
     assert client.put("/api/score?path=Cargo.toml", content=b"x").status_code == 403
     assert client.put("/api/score?path=scores/x.txt", content=b"x").status_code == 400
     assert any(x["path"].endswith(".apr") for x in client.get("/api/scores").json()["scores"])
-    r = client.put("/api/score?path=scores/_test.yaml", content=b"apricitus: 0.1\n")
+    r = client.put("/api/score?path=scores/_test.yaml", content=b"apricity: 0.1\n")
     try:
         assert r.status_code == 200
-        assert client.get("/files/scores/_test.yaml").text == "apricitus: 0.1\n"
+        assert client.get("/files/scores/_test.yaml").text == "apricity: 0.1\n"
     finally:
         (server.ROOT / "scores" / "_test.yaml").unlink(missing_ok=True)
         if not any((server.ROOT / "scores").iterdir()):

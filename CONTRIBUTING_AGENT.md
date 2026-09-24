@@ -85,7 +85,7 @@ Host identity snippets live in `docs/AGENT_PROVENANCE.md`. Do not put product or
 
 All work is structured.
 
-Project key prefix: apricitus.
+Project key prefix: apricity.
 
 Hierarchy: initiative -> epic -> task -> sub-task.
 

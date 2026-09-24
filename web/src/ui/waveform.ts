@@ -2,7 +2,7 @@
 // Everything the user can make here is kept inside the clip by construction (poka-yoke):
 // selections and slice edges are clamped to [0, duration] and snapped to beats unless Alt is held.
 
-import type { Manifest, Slice } from "../apricitus";
+import type { Manifest, Slice } from "../apricity";
 
 export interface WaveState {
   duration: number;

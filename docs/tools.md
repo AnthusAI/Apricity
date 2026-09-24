@@ -1,7 +1,7 @@
 # Tools
 
 Commands are run from the repository root. Python tools use the analysis environment
-(`analysis/.venv`); the `apricitus` command is built with Cargo.
+(`analysis/.venv`); the `apricity` command is built with Cargo.
 
 ## Getting set up
 
@@ -9,8 +9,8 @@ Commands are run from the repository root. Python tools use the analysis environ
 git submodule update --init                       # Rubber Band source
 scripts/fetch-tools.sh                            # wasi-sdk, for the WebAssembly build
 scripts/fetch-samples.py                          # the public-domain sample library
-cargo build --release -p apricitus-cli               # ./target/release/apricitus
-cargo build -p apricitus-web --release --target wasm32-wasip1    # the engine for the browser
+cargo build --release -p apricity-cli               # ./target/release/apricity
+cargo build -p apricity-web --release --target wasm32-wasip1    # the engine for the browser
 python3 -m venv analysis/.venv && analysis/.venv/bin/pip install --pre -e analysis[dev]
 npm --prefix web install
 ```
@@ -20,10 +20,10 @@ Use the rustup toolchain (`~/.cargo/bin`); an older Homebrew `cargo` may shadow 
 ## Analysis
 
 ```sh
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.cli <files or folders>
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.cli <files or folders>
 ```
 
-Writes `<file>.apricitus.json` next to each audio file: beats, warp markers, key and key over time,
+Writes `<file>.apricity.json` next to each audio file: beats, warp markers, key and key over time,
 tuning, chroma, loudness per beat, notes. Then it runs [automatic markup](concepts.md#automatic-markup):
 sections, loops and hits, saved as slices and markers. Files whose manifest already matches the audio
 are skipped.
@@ -38,13 +38,13 @@ are skipped.
 earlier marks):
 
 ```sh
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.markup samples/marine-band
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.markup samples/marine-band
 ```
 
 **Stems** — split recordings into drums, bass, other (and vocals, if any) with Demucs:
 
 ```sh
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.stems samples/marine-band/Thunderer.mp3
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.stems samples/marine-band/Thunderer.mp3
 ```
 
 Stems are written to `<folder>/stems/<name>/<stem>.wav`, analyzed and marked up, and share the
@@ -53,21 +53,21 @@ Silent stems are skipped. About 3–4 minutes per march on a laptop; `--threads 
 hard it works, and it runs at low priority.
 
 **Loudness backfill** — adds per-beat loudness to manifests made before it existed:
-`python -m apricitus_analyze.loudness samples`.
+`python -m apricity_analyze.loudness samples`.
 
-## The `apricitus` command
+## The `apricity` command
 
 ```sh
-apricitus compile  <score> [-o timeline.json]   # validate and print the compiled timeline as JSON
-apricitus explain  <score>                      # what each clip got and how it was transposed, and why
-apricitus render   <score> -o out.wav [--bars 1-8]      # 48 kHz stereo WAV; reports loudness and peak
-apricitus play     <score> [--volume -12] [--seconds 30] [--no-audio]
-apricitus fmt      <score> [--to apr|yaml] [-o out]  # convert between the two score formats
+apricity compile  <score> [-o timeline.json]   # validate and print the compiled timeline as JSON
+apricity explain  <score>                      # what each clip got and how it was transposed, and why
+apricity render   <score> -o out.wav [--bars 1-8]      # 48 kHz stereo WAV; reports loudness and peak
+apricity play     <score> [--volume -12] [--seconds 30] [--no-audio]
+apricity fmt      <score> [--to apr|yaml] [-o out]  # convert between the two score formats
 ```
 
 Scores can be `.apr`, `.yaml` or `.json`.
 
-**`apricitus play`** loops the score through your speakers and watches the file: save a change and it
+**`apricity play`** loops the score through your speakers and watches the file: save a change and it
 lands at the next bar. A score with mistakes is reported and the last good version keeps playing.
 `--no-audio` runs the engine on a silent clock (for testing).
 
@@ -84,7 +84,7 @@ While it plays, type mix commands and press Return. They take a track or bus nam
 Live changes survive saving the score. They aren't written into it: to keep a level, change the
 score's `gain`.
 
-**`apricitus explain`** prints, for each clip, the region chosen, the beat ratio, the key it sounds in,
+**`apricity explain`** prints, for each clip, the region chosen, the beat ratio, the key it sounds in,
 stretch, retuning and level; for each chord, every track's transposition, where its root landed,
 how much of it is on chord tones and outside the key, and the next-best options.
 
@@ -101,7 +101,7 @@ would get about 25%). Note that shuffle and 6/8 feels can confuse the tempo read
 ## The web app
 
 ```sh
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.server   # API, 127.0.0.1:5181
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.server   # API, 127.0.0.1:5181
 npm --prefix web run dev                                                 # app, http://localhost:5173
 ```
 
@@ -121,7 +121,7 @@ The server only listens on 127.0.0.1 and only writes clip annotations, scores (i
 
 ```sh
 cargo test --workspace                     # theory, compiler, language, engine (incl. real-time safety)
-cargo test -p apricitus-dsp --target wasm32-wasip1   # the DSP tests again, as WebAssembly
+cargo test -p apricity-dsp --target wasm32-wasip1   # the DSP tests again, as WebAssembly
 node web/test/wasm.test.mjs                # compile → render → mix in WebAssembly
 (cd analysis && PYTHONPATH=. .venv/bin/python -m pytest tests)   # analysis, manifests, server
 ```

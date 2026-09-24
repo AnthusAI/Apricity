@@ -1,5 +1,5 @@
 {
-  "about": "Test/sample audio for Apricitus. Audio files are gitignored; run scripts/fetch-samples.py to download.",
+  "about": "Test/sample audio for Apricity. Audio files are gitignored; run scripts/fetch-samples.py to download.",
   "files": [
     {
       "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",

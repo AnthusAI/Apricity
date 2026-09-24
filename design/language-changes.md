@@ -1,17 +1,17 @@
 # Language changes: chopping, looping and drum kits (2026-09-23)
 
-A roadmap for documenting what's new in the Apricitus language. Each item names where the truth
+A roadmap for documenting what's new in the Apricity language. Each item names where the truth
 lives; the tests show every rule in action. Both notations (`.apr` text and YAML) support everything.
 
 ## Where to look
 
 | What | File |
 |---|---|
-| Score model (YAML field names, defaults) | `crates/apricitus-score/src/score.rs` — `KitSpec`, `PadSpec`, `Chop`, `FilterSpec`, `TrackSpec`, `Pattern::Steps`, `parse_steps` |
-| Text language (`.apr`) syntax and error messages | `crates/apricitus-score/src/dsl.rs` — `parse`, `format`, tests at the bottom |
-| What it all *means* (timing, chops, levels, errors) | `crates/apricitus-score/src/compile.rs` — kits section, "tracks → hits", events |
-| Worked examples of every rule | `crates/apricitus-score/tests/compile.rs` — tests named `chop_kits_*`, `swing_*`, `chop_refs_*`, `kits_chopped_at_hits`, `drum_kits_*`, `kit_mistakes_are_explained` |
-| Filters and reverse (sound) | `crates/apricitus-engine/src/render.rs` — `biquad`, end of `render_event` |
+| Score model (YAML field names, defaults) | `crates/apricity-score/src/score.rs` — `KitSpec`, `PadSpec`, `Chop`, `FilterSpec`, `TrackSpec`, `Pattern::Steps`, `parse_steps` |
+| Text language (`.apr`) syntax and error messages | `crates/apricity-score/src/dsl.rs` — `parse`, `format`, tests at the bottom |
+| What it all *means* (timing, chops, levels, errors) | `crates/apricity-score/src/compile.rs` — kits section, "tracks → hits", events |
+| Worked examples of every rule | `crates/apricity-score/tests/compile.rs` — tests named `chop_kits_*`, `swing_*`, `chop_refs_*`, `kits_chopped_at_hits`, `drum_kits_*`, `kit_mistakes_are_explained` |
+| Filters and reverse (sound) | `crates/apricity-engine/src/render.rs` — `biquad`, end of `render_event` |
 | Concepts and vocabulary (chop, kit, pad, flip, …) | `design/framework.md` |
 
 ## 1. Kits (new statement)
@@ -76,7 +76,7 @@ track drums.kick    steps "x . . . x . . . x . . . x . x ."
 ## 5. Text-language details
 
 - Quoted strings: `steps "…"` (a `#` inside quotes is not a comment).
-- `apricitus fmt` converts all of the above between `.apr` and YAML both ways; round-trips are tested.
+- `apricity fmt` converts all of the above between `.apr` and YAML both ways; round-trips are tested.
 - New keywords: `kit chop by into hits steps grid swing reverse filter lp hp gate stutter half double speed`
   (the editor's syntax highlighting will want these).
 
@@ -128,10 +128,10 @@ What it does (for the concepts page):
 - The **master** always ends in a limiter (−1 dB if you don't write one) and is turned up or down
   to hit the loudness target. This replaces the old "loudest sample at −1 dB" normalization, so
   quiet and busy scores now come out equally loud.
-- **Live mixing** in `apricitus play`: type `mute horns`, `unmute horns`, `solo 2`, `unsolo 2`,
+- **Live mixing** in `apricity play`: type `mute horns`, `unmute horns`, `solo 2`, `unsolo 2`,
   `gain bass -6`, `reset`, `tracks` (a name or a number). Heard within one audio block; it
   survives re-renders when you save the score. Not in the browser yet.
-- `apricitus render` now reports the mix's loudness, peak and the master's make-up gain.
+- `apricity render` now reports the mix's loudness, peak and the master's make-up gain.
 
 Errors: `` `-18`: write the threshold in dB, e.g. -18dB``, `` `12x` isn't a frequency (e.g. 120, 120Hz, 6k)``,
 `` `pan` doesn't belong here`` (in `master`), `` `loudness` doesn't belong here`` (under a track),
@@ -139,7 +139,7 @@ Errors: `` `-18`: write the threshold in dB, e.g. -18dB``, `` `12x` isn't a freq
 peak comp attack release knee makeup limit pan loudness` and the units `dB Hz k ms s LUFS`.
 
 Example: `examples/chop-shop-mixed.apr` (the same beat as `chop-shop.apr`, mixed; render both to compare).
-Engine truth: `crates/apricitus-engine/src/master.rs`; syntax: `dsl.rs` (`effect_line`, test
+Engine truth: `crates/apricity-engine/src/master.rs`; syntax: `dsl.rs` (`effect_line`, test
 `mix_blocks`); validation: `compile.rs` (`check_effects`).
 
 ## 8. Buses, sends, reverb and delay (Stage 2 of `design/mixer.md`)
@@ -170,7 +170,7 @@ bus echo  gain -4
 - Sends are post-fader and post-pan. `out` sends the whole track into a bus instead of the master.
 - Buses can go out to other buses; loops are an error. Reverb/delay aren't allowed in `master`.
 - **Loops are seamless**: reverb and echo tails from the end of the loop ring into its start.
-- **Live mixing** (`apricitus play`): buses can be muted, soloed and faded like tracks (`mute plate`).
+- **Live mixing** (`apricity play`): buses can be muted, soloed and faded like tracks (`mute plate`).
   Changing a track that feeds a bus re-mixes the buses and lands in a fraction of a second; tracks
   and buses going straight to the master change instantly. Soloing a track keeps its reverb.
 - YAML: on a track, `out: beat`, `sends: {plate: 0.3, echo: 0.2}`; at the top level,
@@ -208,7 +208,7 @@ track words    steps "4 . 5 . | 6 _ _ _"  grid 4
   means higher, like a turntable. On a warped clip `speed` is an error pointing to the track's
   `half` / `double` / `speed`, which change how a warped clip sits on the grid.
 - **Cues** (`at`) take bars (`5`), bar:beat with fractions (`3:2.5`), or seconds (`12.5s`), mixed freely.
-- **Phrases**: automatic markup (`apricitus-analyze`) finds the pauses in speech and marks
+- **Phrases**: automatic markup (`apricity-analyze`) finds the pauses in speech and marks
   `phrase-1`, `phrase-2`, … slices. `chop CLIP by phrases` (YAML `chop: phrases`) makes a kit of
   them, played with `steps`, `at`, or one phrase (`words.3`). Works on free-time music too.
 - **The piece grows to hold a long voice**: when an unwarped clip cued with `at` runs past the
@@ -225,7 +225,7 @@ track words    steps "4 . 5 . | 6 _ _ _"  grid 4
   `s` suffix on `at` positions.
 - Truth: `compile.rs` (tests `unwarped_speech_*`, `varispeed_seconds_cues_and_phrases`,
   `voice_layer_mistakes_are_explained`), `manifest.rs` `unwarp`, `dsl.rs` test `voice_layer_syntax`,
-  `engine/src/render.rs` (the `WarpModeSpec::Off` branch), `analysis/apricitus_analyze/markup.py` `phrases`.
+  `engine/src/render.rs` (the `WarpModeSpec::Off` branch), `analysis/apricity_analyze/markup.py` `phrases`.
 
 ## 10. Character effects and ducking (Stage 3 of `design/mixer.md`)
 
@@ -260,8 +260,8 @@ master
   bus. A track can also be ducked directly (`track bass` + `comp … sidechain drums.kick`).
 - The key is the named track's own sound (after its effects, before its fader); live mute of the
   key doesn't un-duck until the next render.
-- `apricitus explain` now ends with a **Mix** section: each track and bus, where it goes, pan and
-  sends, and its chain written as in the score. `apricitus render` prints each stem's loudness and
+- `apricity explain` now ends with a **Mix** section: each track and bus, where it goes, pan and
+  sends, and its chain written as in the score. `apricity render` prints each stem's loudness and
   peak and how many dB each compressor took off.
 - New warning: ``drums.kick: its region is nearly silent (level matching needs +30 dB); check the
   region or slice, it may have missed the sound``.

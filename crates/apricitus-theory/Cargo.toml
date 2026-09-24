@@ -1,9 +1,0 @@
-[package]
-name = "apricitus-theory"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-description = "Pitch classes, keys, roman numerals, chords, key finding and the harmonic-fit solver."
-
-[dependencies]
-serde = { version = "1", features = ["derive"] }

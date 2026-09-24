@@ -1,6 +1,6 @@
 // Docs tab: the Markdown pages in /docs, bundled at build time (so they always match this build),
 // with in-app links between pages, a table of contents, heading search, and highlighted
-// `apricitus` code blocks.
+// `apricity` code blocks.
 
 import { marked } from "marked";
 import { el } from "./dom";
@@ -37,8 +37,8 @@ const pages: Page[] = Object.entries(raw)
   })
   .sort((a, b) => (ORDER.indexOf(a.file) + 1 || 99) - (ORDER.indexOf(b.file) + 1 || 99));
 
-// ---- `apricitus` code blocks: the same colors as the score editor.
-const STATEMENTS = new Set(["apricitus", "tempo", "meter", "key", "samples", "bars", "clip", "kit", "chords", "track", "bus", "master"]);
+// ---- `apricity` code blocks: the same colors as the score editor.
+const STATEMENTS = new Set(["apricity", "tempo", "meter", "key", "samples", "bars", "clip", "kit", "chords", "track", "bus", "master"]);
 const OPTIONS = new Set([
   "beats", "seconds", "slice", "pick", "root", "ratio", "warp", "chop", "by", "into", "hits", "bar",
   "as", "role", "follow", "transpose", "every", "at", "bars", "gain", "loop", "steps", "grid", "swing",
@@ -105,7 +105,7 @@ export class DocsView {
     root.append(el("aside", { className: "sidebar docs-side" }, el("div", { className: "search" }, this.search), this.results, this.nav), el("div", { className: "docs-scroll" }, this.article));
     let start = this.current;
     try {
-      start = localStorage.getItem("apricitus.docs") ?? start;
+      start = localStorage.getItem("apricity.docs") ?? start;
     } catch {}
     this.open(pages.some((p) => p.file === start) ? start : this.current);
   }
@@ -116,7 +116,7 @@ export class DocsView {
     if (!page) return;
     this.current = file;
     try {
-      localStorage.setItem("apricitus.docs", file);
+      localStorage.setItem("apricity.docs", file);
     } catch {}
     this.article.innerHTML = marked.parse(page.md, { async: false }) as string;
     for (const h of this.article.querySelectorAll("h1, h2, h3, h4")) h.id = slug(h.textContent ?? "");

@@ -75,12 +75,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "apricitus-cli"
+name = "apricity-cli"
 version = "0.1.0"
 dependencies = [
- "apricitus-dsp",
- "apricitus-engine",
- "apricitus-score",
+ "apricity-dsp",
+ "apricity-engine",
+ "apricity-score",
  "clap",
  "cpal",
  "hound",
@@ -89,10 +89,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "apricitus-data"
+name = "apricity-data"
 version = "0.1.0"
 dependencies = [
- "apricitus-score",
+ "apricity-score",
  "serde",
  "serde_json",
  "sha1",
@@ -101,46 +101,46 @@ dependencies = [
 ]
 
 [[package]]
-name = "apricitus-dsp"
+name = "apricity-dsp"
 version = "0.1.0"
 dependencies = [
  "cc",
 ]
 
 [[package]]
-name = "apricitus-engine"
+name = "apricity-engine"
 version = "0.1.0"
 dependencies = [
- "apricitus-dsp",
- "apricitus-score",
+ "apricity-dsp",
+ "apricity-score",
  "rtrb",
  "symphonia",
 ]
 
 [[package]]
-name = "apricitus-score"
+name = "apricity-score"
 version = "0.1.0"
 dependencies = [
- "apricitus-theory",
+ "apricity-theory",
  "serde",
  "serde_json",
  "serde_yaml",
 ]
 
 [[package]]
-name = "apricitus-theory"
+name = "apricity-theory"
 version = "0.1.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
-name = "apricitus-web"
+name = "apricity-web"
 version = "0.1.0"
 dependencies = [
- "apricitus-data",
- "apricitus-engine",
- "apricitus-score",
+ "apricity-data",
+ "apricity-engine",
+ "apricity-score",
  "serde",
  "serde_json",
  "serde_yaml",

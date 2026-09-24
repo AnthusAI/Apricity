@@ -1,12 +1,12 @@
-# The Apricitus language
+# The Apricity language
 
-`.apr` files are Apricitus's compact way to write a score. Everything here has a YAML equivalent
-([YAML scores](yaml.md)); both compile to the same thing, and `apricitus fmt` converts between them.
+`.apr` files are Apricity's compact way to write a score. Everything here has a YAML equivalent
+([YAML scores](yaml.md)); both compile to the same thing, and `apricity fmt` converts between them.
 For what the words mean musically, see [Concepts](concepts.md).
 
 - [A complete example](#a-complete-example)
 - [How a file is read](#how-a-file-is-read)
-- [Statements](#statements) — `tempo` `meter` `key` `samples` `bars` `apricitus` `clip` `kit` `chords` `track` `bus` `master`
+- [Statements](#statements) — `tempo` `meter` `key` `samples` `bars` `apricity` `clip` `kit` `chords` `track` `bus` `master`
 - [Clip options](#clip-options)
 - [Kits](#kits)
 - [Chord lines](#chord-lines)
@@ -68,7 +68,7 @@ track bugle   at 15 19 23  gain -5        # call and response
 | `meter <n>` | | Beats per bar (1–16). | `4` |
 | `samples <folder>` | | Folder that clip paths are relative to, itself relative to the score file. | the score's folder |
 | `bars <n>` | | Length in bars, for a piece **without** chords. With chords, the chords set the length (and a `bars` that disagrees is an error). | |
-| `apricitus <version>` | | Format version. Only `0.1` exists. | `0.1` |
+| `apricity <version>` | | Format version. Only `0.1` exists. | `0.1` |
 | `clip <name> = <path> [options]` | | Defines a clip. See [clip options](#clip-options). | |
 | `kit <name> = chop <clip> …` / `kit <name>` + pads | | Defines a kit. See [kits](#kits). | |
 | `chords <chords…>` | one of `chords`/`bars` | Adds chords to the progression. See [chord lines](#chord-lines). | |
@@ -331,7 +331,7 @@ So a quiet score and a busy one come out about equally loud.
 
 ## Mistakes and messages
 
-Apricitus reports **every** mistake it can find at once, each with a line and column, and the web editor
+Apricity reports **every** mistake it can find at once, each with a line and column, and the web editor
 underlines them. Some examples:
 
 ```
@@ -362,7 +362,7 @@ buses: `echo`, `loop2` feed each other in a loop; one of them must go out to mas
 
 Beyond mistakes, the compiler gives **warnings** that don't stop anything, such as a clip whose
 material keeps clashing with the key, uneven beats, or stretching by more than 2×. They appear in
-`apricitus explain` and in the web app.
+`apricity explain` and in the web app.
 
 ## Grammar
 
@@ -377,7 +377,7 @@ statement   = "tempo" NUMBER
             | "key" key-text
             | "samples" WORD
             | "bars" NUMBER
-            | "apricitus" NUMBER
+            | "apricity" NUMBER
             | "clip" NAME "=" WORD { clip-option }
             | "kit" NAME "=" "chop" NAME chop
             | "kit" NAME EOL { INDENT pad EOL }

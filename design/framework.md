@@ -1,6 +1,6 @@
-# Apricitus: the working model
+# Apricity: the working model
 
-Apricitus is a sampling instrument for people and AI agents working together. Machines listen,
+Apricity is a sampling instrument for people and AI agents working together. Machines listen,
 dig, and propose; people judge, curate, and decide; both write music in one declarative language.
 This file is the shared mental model, written down so we can argue about it. Terms here are the ones
 the code, the language, and the docs should use.
@@ -35,7 +35,7 @@ Words come from sampling culture (hip-hop producers, turntablists, crate diggers
 - **Rating** — optional 1–5 stars on kept material, plus **tags** and a name.
 
 ### Making
-- **Score** — a piece, written in the Apricitus language (`.apr`) or YAML.
+- **Score** — a piece, written in the Apricity language (`.apr`) or YAML.
 - **Track** — one line of a score: a clip, a chop, or a kit, with how it's placed and transformed.
 - **Pattern** — when a track sounds: `loop`, `every`, `at`, or `steps` (a step sequence over a kit).
 - **Flip** — any transformation of a sample into something new: re-pitched, re-sequenced, chopped,

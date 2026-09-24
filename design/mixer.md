@@ -2,18 +2,18 @@
 
 Status: decided 2026-09-23 (see Decisions); building in stages. **Stage 1 built** (2026-09-23):
 per-track stems, `eq`/`comp`/`pan` inserts, master `eq`/`comp`/`limit`/`loudness` running live, and
-live fader/mute/solo (engine + `apricitus play`). Demo: `examples/chop-shop-mixed.apr`.
+live fader/mute/solo (engine + `apricity play`). Demo: `examples/chop-shop-mixed.apr`.
 
 Stage 1 as built:
-- `crates/apricitus-dsp/src/fx.rs`: biquads/EQ, compressor, look-ahead limiter, balance pan law,
+- `crates/apricity-dsp/src/fx.rs`: biquads/EQ, compressor, look-ahead limiter, balance pan law,
   BS.1770 loudness.
-- `crates/apricitus-engine/src/master.rs`: effect chains (fixed 8 slots, retuned in place, no
+- `crates/apricity-engine/src/master.rs`: effect chains (fixed 8 slots, retuned in place, no
   allocation), `apply_inserts` (offline, two loop cycles so the loop start is settled),
   `loudness_gain` (measured with the limiter bypassed, refined once through the full chain; ±24 dB).
-- `crates/apricitus-engine/src/arrangement.rs`: an arrangement is now stems (one per track, after
+- `crates/apricity-engine/src/arrangement.rs`: an arrangement is now stems (one per track, after
   its inserts, before fader and pan) plus master settings; `bounce()` is the finished mix,
   `bounce_raw()` the stems summed without the master.
-- `crates/apricitus-engine/src/mixer.rs`: `Controller::set_track(name, TrackControl{gain, mute,
+- `crates/apricity-engine/src/mixer.rs`: `Controller::set_track(name, TrackControl{gain, mute,
   solo})`; controls follow track names across re-renders; the master chain runs on the audio thread.
 - Browser: render workers get whole tracks when a track has effects; the worklet sums raw parts,
   one worker measures the master make-up (`rw_master_gain`, too slow for the audio thread), and the
@@ -25,13 +25,13 @@ Stage 1 as built:
 **Stage 2 built** (2026-09-24): buses (`bus NAME`, `gain`, `out`), groups (`out BUS` on a track),
 post-fader sends (`send room 25%`), `reverb` (room/hall/plate), tempo-synced `delay` (note values,
 ping-pong, filtered feedback), and seamless loop tails. Demo: `examples/chop-shop-mixed.apr`.
-- `crates/apricitus-dsp/src/space.rs`: FDN reverb (8 lines, Householder feedback, damping,
+- `crates/apricity-dsp/src/space.rs`: FDN reverb (8 lines, Householder feedback, damping,
   predelay, input diffusion; RT60 within 2% of the setting, unity wet energy, decorrelated L/R)
   and the delay.
-- `crates/apricitus-engine/src/master.rs` `process_chain`: offline chains render as many loop
+- `crates/apricity-engine/src/master.rs` `process_chain`: offline chains render as many loop
   cycles as the tails need (≥ 2, ≤ 90 s of audio) and keep the last, so a tail from the loop's end
   rings into its start exactly as in steady looping (tested against a 40-cycle reference).
-- `crates/apricitus-engine/src/mix.rs`: the mix graph. Tracks to the master stay live stems; buses
+- `crates/apricity-engine/src/mix.rs`: the mix graph. Tracks to the master stay live stems; buses
   to the master become live stems too (with `solo_safe`, since what reaches them already follows
   solo); grouped tracks, sends and bus→bus routes are baked. A live change to anything baked makes
   the control thread re-mix the buses (`Renderer::remix`, 130–230 ms for a 22 s loop) and swap it in.
@@ -46,15 +46,15 @@ cues in seconds, speech phrases, and a piece that grows to hold a long voice. De
 - An unwarped clip gets an even beat grid at tempo ÷ speed (`Clip::unwarp`), so every existing
   primitive (regions, slices, chops, steps, `at`, hit lengths) works unchanged, and "warping" it
   onto the score's grid is exactly varispeed. The renderer plays it by band-limited resampling
-  (`apricitus-dsp/src/resample.rs`), not Rubber Band; a render correlates 0.98 with the original.
+  (`apricity-dsp/src/resample.rs`), not Rubber Band; a render correlates 0.98 with the original.
 - Unwarped tracks sit out of the harmony solver (never transposed, no retune), and their hits are
   single events (no seams at chord changes).
 - Analysis: `rhythm.loudness` (RMS per half second, no beat grid needed) level-matches unwarped
   clips; markup finds `phrase-N` slices between pauses (≥ 0.25 s), for speech and free-time audio.
 
 **Stage 3 built** (2026-09-24): `sidechain` on `comp` (ducking), `drive`, `lofi`, `noisegate`,
-`width`, the `explain` Mix section, and a per-stem report from `apricitus render`.
-- `apricitus-dsp/src/color.rs`: drive = 2× oversampled (half-band, loop-wrapping) asymmetric tanh,
+`width`, the `explain` Mix section, and a per-stem report from `apricity render`.
+- `apricity-dsp/src/color.rs`: drive = 2× oversampled (half-band, loop-wrapping) asymmetric tanh,
   level-matched afterwards; lofi = loop-synced wow (whole wobbles per loop), sample-and-hold, bit
   reduction; noise gate with hold and a dB-linear attack/release; mid/side width.
 - Sidechain keys are other *tracks* (their stem after their own effects, before fader). Tracks are
@@ -186,7 +186,7 @@ public-domain impulse responses, chorus, and tape stop or turntable effects.
   apply fader, mute and solo live and without allocation (a UI or MIDI controller can drive them).
   Bus effects stay offline, so a live mute changes a track's dry sound instantly and its reverb
   send at the next re-render.
-- DSP written in Rust in `apricitus-dsp` (small, deterministic, compiles to WebAssembly), tested
+- DSP written in Rust in `apricity-dsp` (small, deterministic, compiles to WebAssembly), tested
   against known responses: EQ curves, compressor gain curves, reverb decay times.
 
 ## Explain and checks

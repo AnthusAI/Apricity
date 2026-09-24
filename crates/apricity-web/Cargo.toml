@@ -1,0 +1,17 @@
+[package]
+name = "apricity-web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "C-ABI WebAssembly surface of Apricity for the browser: compiler (page), renderer (worker), mixer (AudioWorklet)."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+apricity-data.workspace = true
+apricity-engine.workspace = true
+apricity-score.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml = "0.9"

@@ -6,7 +6,7 @@
       "runtimeExecutable": "analysis/.venv/bin/python",
       "runtimeArgs": [
         "-m",
-        "apricitus_analyze.server"
+        "apricity_analyze.server"
       ],
       "env": {
         "PYTHONPATH": "analysis"

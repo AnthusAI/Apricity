@@ -2,7 +2,7 @@
 // All operations follow Amplify semantics: limit before filter, pagination, proper error propagation.
 
 import { client } from "./client.js";
-import { callWasm, extractReferences } from "../apricitus.js";
+import { callWasm, extractReferences } from "../apricity.js";
 import { planScoreRefs, planKeep, planSkip, planPutOff, planMerge, type CatalogRef, type Lookups, type ScoreRef } from "./plans.js";
 import { getCurrentUser, ownerValue } from "./auth.js";
 

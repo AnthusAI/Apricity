@@ -66,7 +66,7 @@ async function generate(outDir: string) {
     const cognito = await import("aws-cdk-lib/aws-cognito");
     const { AmplifyGraphqlApi, AmplifyGraphqlDefinition } = await import("@aws-amplify/graphql-api-construct");
 
-    const tempOutDir = fs.mkdtempSync(path.join(os.tmpdir(), "apricitus-contract-"));
+    const tempOutDir = fs.mkdtempSync(path.join(os.tmpdir(), "apricity-contract-"));
     try {
       const oldWarn = console.warn;
       console.warn = () => {};
@@ -230,7 +230,7 @@ async function generate(outDir: string) {
   }
 
   const writeJson = (p: string, o: any) => writeFileSync(p, JSON.stringify(o, null, 2) + "\n");
-  writeJson(join(outDir, "apricitus.contract.json"), contract);
+  writeJson(join(outDir, "apricity.contract.json"), contract);
   writeJson(join(outDir, "model-introspection.json"), introspectionJson);
   writeFileSync(join(outDir, "appsync.graphql"), appSyncSdl.trim() + "\n");
   writeFileSync(join(outDir, "model-schema.graphql"), directiveSdl.trim() + "\n");
@@ -250,7 +250,7 @@ async function generate(outDir: string) {
 function compareGenerated(t: string, o: string): string[] {
   const diffs = [];
   for (const f of [
-    "apricitus.contract.json",
+    "apricity.contract.json",
     "model-introspection.json",
     "appsync.graphql",
     "model-schema.graphql",

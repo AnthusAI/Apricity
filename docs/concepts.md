@@ -1,11 +1,11 @@
 # Concepts
 
-Apricitus has two halves. **Analysis** listens to each recording once and writes down what it hears.
+Apricity has two halves. **Analysis** listens to each recording once and writes down what it hears.
 **Scores** say what you want; the compiler uses the analysis to work out how to get it, and the
 engine plays the result.
 
 ```
- recording.mp3 ──analyze──▶ recording.mp3.apricitus.json   (beats, key, tuning, chroma, notes…)
+ recording.mp3 ──analyze──▶ recording.mp3.apricity.json   (beats, key, tuning, chroma, notes…)
                                    │
  score.apr ──────────compile───────┴──▶ timeline             (every event: what, when,
                                            │                    how warped, how transposed)
@@ -19,13 +19,13 @@ A **clip** is one audio file: a whole march, a 30-second archive excerpt, or a *
 drums, bass or horns of a recording, separated by the Demucs model).
 
 Before a clip can be used it is **analyzed** once. The analysis is saved next to the audio as a
-**manifest** (`<file>.apricitus.json`) and records:
+**manifest** (`<file>.apricity.json`) and records:
 
 - **Beats and downbeats** — where the pulse falls, found by the Beat This! neural beat tracker.
   From them come the **tempo** (BPM), **steadiness** (how even the beats are), and the **meter**
   (beats per bar).
 - **Warp markers** — each beat, pinned to a beat number. Beat 0 is the first downbeat; pickup beats
-  before it are negative. These let Apricitus stretch the clip so its beats land on the score's beats.
+  before it are negative. These let Apricity stretch the clip so its beats land on the score's beats.
 - **Key**, with runner-up keys, and **key over time** (marches modulate — to the trio, for example).
 - **Tuning** — where the recording's A sits relative to 440 Hz. Old 78s are often well off.
 - **Chroma** — how much of each of the 12 pitch classes sounds, for the whole clip and for every
@@ -40,7 +40,7 @@ locked together.
 
 ## Automatic markup
 
-After analysis, Apricitus marks up each clip the way a producer would on a first listen, so there
+After analysis, Apricity marks up each clip the way a producer would on a first listen, so there
 are ready-made regions to use by name. Everything it marks is saved as a **slice** or **marker** in
 the manifest, tagged as machine-made:
 
@@ -65,7 +65,7 @@ Two kinds of beats matter, and it helps to keep them apart:
   them into bars.
 
 Usually one clip beat becomes one score beat. But beat trackers often lock onto double or half time,
-so each clip has a **beat ratio**: how many clip beats make one score beat. By default Apricitus picks
+so each clip has a **beat ratio**: how many clip beats make one score beat. By default Apricity picks
 ½, 1 or 2 — whichever needs the least stretching. You can set it (`ratio 2`).
 
 ## Regions
@@ -92,7 +92,7 @@ window that:
 4. is actually playing — judged against the clip's *playing* level, so a stem that's silent most of
    the time still finds the stretch where it plays.
 
-`apricitus explain` (and the web app's "How it was solved") shows which window each clip got.
+`apricity explain` (and the web app's "How it was solved") shows which window each clip got.
 
 ## Kits: chops and pads
 
@@ -139,7 +139,7 @@ A **score** describes a piece:
 - **Tracks** — which clip plays, when, and how it's transposed.
 - **The mix** — each track's effects, pan and sends, the buses they feed, and the master.
 
-A score is written either in the **Apricitus language** (`.apr`) or as **YAML** (`.yaml`). They are
+A score is written either in the **Apricity language** (`.apr`) or as **YAML** (`.yaml`). They are
 two spellings of the same structure.
 
 ## Tracks and patterns
@@ -256,19 +256,19 @@ master: effects ──▶ limiter ──▶ loudness target ──▶ speakers
   mix up or down to meet a **loudness target** in LUFS. So a sparse score and a dense one come out
   equally loud, the way streaming services even things out.
 
-Two things are special because Apricitus plays loops:
+Two things are special because Apricity plays loops:
 
 - **Seamless tails.** Effects are run twice around the loop and the second pass is kept. A reverb
   or echo at the end of the loop rings on into its start, and a compressor at bar 1 already knows
   what came before it.
-- **Live mixing.** In `apricitus play` you can mute, solo and fade tracks and buses while it plays
-  (see [tools](tools.md#the-apricitus-command)). Tracks going straight to the master change within
+- **Live mixing.** In `apricity play` you can mute, solo and fade tracks and buses while it plays
+  (see [tools](tools.md#the-apricity-command)). Tracks going straight to the master change within
   an audio block. A track that feeds a bus re-mixes the buses and lands a fraction of a second later.
   Soloing a track keeps its reverb.
 
 ## Warping
 
-Warping is Apricitus's version of Ableton's warp: the clip's own beats are pinned to score beats and the
+Warping is Apricity's version of Ableton's warp: the clip's own beats are pinned to score beats and the
 audio in between is stretched with the Rubber Band library — changing duration without changing
 pitch, and pitch (transposition, retuning) without changing duration, in one pass.
 
@@ -298,7 +298,7 @@ Playing it is **render ahead, mix live**:
    edited the score), it **swaps in at the next bar line** with a 5 ms crossfade, keeping your place.
    If the edit has mistakes, the last good version keeps playing.
 
-The same engine runs in the `apricitus` command and in the browser (as WebAssembly, with the rendering
+The same engine runs in the `apricity` command and in the browser (as WebAssembly, with the rendering
 spread across several workers).
 
 ## Where it's going

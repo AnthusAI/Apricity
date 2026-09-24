@@ -8,10 +8,10 @@ edition = "2024"
 license = "GPL-2.0-or-later"
 
 [workspace.dependencies]
-apricitus-data = { path = "crates/apricitus-data" }
-apricitus-dsp = { path = "crates/apricitus-dsp" }
-apricitus-theory = { path = "crates/apricitus-theory" }
-apricitus-score = { path = "crates/apricitus-score" }
-apricitus-engine = { path = "crates/apricitus-engine", default-features = false }
+apricity-data = { path = "crates/apricity-data" }
+apricity-dsp = { path = "crates/apricity-dsp" }
+apricity-theory = { path = "crates/apricity-theory" }
+apricity-score = { path = "crates/apricity-score" }
+apricity-engine = { path = "crates/apricity-engine", default-features = false }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

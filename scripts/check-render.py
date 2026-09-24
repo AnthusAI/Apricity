@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Round-trip check for a Apricitus render: re-analyze the WAV and compare it with the score.
+"""Round-trip check for a Apricity render: re-analyze the WAV and compare it with the score.
 
     scripts/check-render.py examples/iv-of-ab-minor.yaml renders/iv-of-ab-minor.wav
 
@@ -20,8 +20,8 @@ NAMES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
 
 
 def main(score: str, wav: str) -> None:
-    tl = json.loads(subprocess.run([str(ROOT / "target/release/apricitus"), "compile", score], check=True, capture_output=True, text=True).stdout)
-    from apricitus_analyze.analyze import SR, analyze, write  # noqa: F401  (heavy imports after arg parsing)
+    tl = json.loads(subprocess.run([str(ROOT / "target/release/apricity"), "compile", score], check=True, capture_output=True, text=True).stdout)
+    from apricity_analyze.analyze import SR, analyze, write  # noqa: F401  (heavy imports after arg parsing)
 
     m = analyze(pathlib.Path(wav), with_notes=False)
     write(m, pathlib.Path(wav))
@@ -34,7 +34,7 @@ def main(score: str, wav: str) -> None:
 
     # Chroma per chord span, straight from frames (independent of the detected beats).
     import essentia.standard as es
-    from apricitus_analyze.analyze import FRAME, HOP
+    from apricity_analyze.analyze import FRAME, HOP
 
     audio = es.MonoLoader(filename=wav, sampleRate=SR)()
     w, spec = es.Windowing(type="blackmanharris62"), es.Spectrum()

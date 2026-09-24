@@ -2,7 +2,7 @@
 
 Kanbus initiative **Storage**. Every storage task cites a section of this file (§0–§7).
 
-Apricitus collects structured data it must query (clips and analysis, slices, markers, curation
+Apricity collects structured data it must query (clips and analysis, slices, markers, curation
 candidates, per-person verdicts, crates, scores, provenance). One data model, defined in
 `web/amplify/data/resource.ts`, is served by three backends:
 
@@ -10,7 +10,7 @@ candidates, per-person verdicts, crates, scores, provenance). One data model, de
 |---|---|---|---|
 | **A** | AWS Amplify Gen2: AppSync + DynamoDB + S3 + Cognito (Google sign-in) | the hosted web app | GraphQL |
 | **B** | Embedded Rust engine on a local library folder | the Swift app (UniFFI), Python analysis (PyO3), the CLI | Amplify-*shaped* operations; no GraphQL |
-| **C** | `apricitus serve`: Rust GraphQL server with AppSync's schema, over the same engine and folder as B | the web app, running locally without AWS | GraphQL (same schema as A) |
+| **C** | `apricity serve`: Rust GraphQL server with AppSync's schema, over the same engine and folder as B | the web app, running locally without AWS | GraphQL (same schema as A) |
 
 Decisions (user, 2026-09-24): general engine work goes **upstream into Virtuus**
 (`~/Projects/Virtuus`); `resource.ts` is the **source of truth**; local and cloud are **separate
@@ -22,7 +22,7 @@ modes** (export/import, no sync); the local web mode is the **Rust** server. Pre
 1. **One schema, three backends.** The web app uses the real `aws-amplify` `generateClient()` in
    both A and C; only the endpoint and `amplify_outputs.json` differ, so there's no stand-in data client.
 2. **Generic engine work lives upstream in Virtuus** (it can later replace Plexus's Python proxy).
-   Ripple keeps only `apricitus-data`: models, domain operations, the compile loader, migration.
+   Ripple keeps only `apricity-data`: models, domain operations, the compile loader, migration.
 3. **Records hold what's queried; attachments hold arrays and audio.** A clip's analysis arrays
    (notes, beats, beat_chroma, warp_markers, loudness) are one content-addressed JSON file.
    Annotations become records (a slice or marker per record), which ends the whole-manifest save race.
@@ -165,7 +165,7 @@ Copy Papyrus's `amplify/auth/resource.ts` (`/Users/home/Projects/Papyrus/amplify
 `secret('GOOGLE_CLIENT_ID')`/`secret('GOOGLE_CLIENT_SECRET')`, callback URLs including
 `http://localhost:5173/`, a domain prefix. A `preSignUp` trigger checks an email allow-list; a
 `postConfirmation` trigger adds the user to `members`. Storage (`defineStorage`, name
-`apricitusFiles`): `audio/*`, `analysis/*`, `documents/*` readable by `members`, writable by
+`apricityFiles`): `audio/*`, `analysis/*`, `documents/*` readable by `members`, writable by
 `curators`; `uploads/{entity_id}/*` belongs to its owner.
 
 ### §1.2 Stable ids
@@ -175,7 +175,7 @@ Copy Papyrus's `amplify/auth/resource.ts` (`/Users/home/Projects/Papyrus/amplify
 - **Candidates:** hash the clip id instead of a path; the old id is kept in `legacyId`.
 - **Slices:** uuidv7; a curated slice's id derives from its candidate's id.
 
-### §1.3 Fixing ML slice renames (`apricitus-data::markup::merge`, pure; Python calls it via PyO3)
+### §1.3 Fixing ML slice renames (`apricity-data::markup::merge`, pure; Python calls it via PyO3)
 
 1. Each new ML slice is matched to an existing active ML slice of the same kind whose span
    overlaps by ≥ 0.8 IoU. A match keeps its **id and name**; only span, rank and evidence change.
@@ -197,7 +197,7 @@ each person's `Verdict`. A skip removes the Slice only if nobody else keeps it. 
 
 The ranked feed is computed, not indexed: `candidatesByKind` / `candidatesByRecording` return
 candidates by `baseScore` DESC; the client fetches `verdictsByJudge(me)` and calls `rank()` (a
-Rust port of `analysis/apricitus_analyze/curation.py` `rank`, via wasm on the web). Cheap at 602
+Rust port of `analysis/apricity_analyze/curation.py` `rank`, via wasm on the web). Cheap at 602
 candidates; needs a server-side feed near 50k (§7).
 
 ## §2 Contract, operations and code generation
@@ -210,7 +210,7 @@ Adapts Plexus's generator but runs Amplify first; the static parser is only a fa
    SDL, run `@aws-amplify/graphql-generator` `generateModels({ target: 'introspection' })` to get
    **model_introspection** (the structure the Amplify client uses at runtime, including index
    `queryField` names and associations).
-2. Post-process into `contract/apricitus.contract.json`: Plexus's shape (models, fields,
+2. Post-process into `contract/apricity.contract.json`: Plexus's shape (models, fields,
    primaryKey, indexes with `queryField`, `partitionField`, `sortFields`, `sortArgument`,
    relationships, authRules, customOperations, storage) plus `identifier` (composite keys), owner
    fields and `identityClaim`, implicit hasMany indexes, enum values, customType field types,
@@ -222,9 +222,9 @@ Adapts Plexus's generator but runs Amplify first; the static parser is only a fa
    schema matches AppSync by construction.
 5. `--check` mode (CI). The contract version is the sha256 of the three resource files.
 
-Consumers: Rust `include_str!` of the contract in `apricitus-data` plus `cargo xtask gen-models`
-(serde structs in `crates/apricitus-data/src/models.rs`); TypeScript `import type { Schema }`;
-Swift `swift/ApricitusData/Sources/Models.swift`.
+Consumers: Rust `include_str!` of the contract in `apricity-data` plus `cargo xtask gen-models`
+(serde structs in `crates/apricity-data/src/models.rs`); TypeScript `import type { Schema }`;
+Swift `swift/ApricityData/Sources/Models.swift`.
 
 ### §2.2 Operation semantics (identical in all three backends)
 
@@ -293,7 +293,7 @@ Specified to match **Amplify/AppSync behaviour**, not GraphQL syntax.
   entries; no log → fall back to mtime `refresh()`. Compacted after N entries; gitignored; safe to delete.
 - **`subscribe()`** fed by the log (GraphQL subscriptions, UniFFI callbacks).
 - `rayon` optional (not on wasm); `clap` out of the library build.
-- Persisted index snapshots deferred until a benchmark needs them; Apricitus tables use
+- Persisted index snapshots deferred until a benchmark needs them; Apricity tables use
   `StorageMode::Memory` (records are small).
 
 **`virtuus-amplify`**: `Contract::from_json`; `Engine::open(storage, contract, opts)` creates
@@ -326,25 +326,25 @@ specs `@rust-only` (parity policy for Virtuus core changes: both languages).
 
 ### §3.2 Ripple crates
 
-- **`crates/apricitus-data`** (depends on `virtuus-amplify`, `apricitus-score`):
+- **`crates/apricity-data`** (depends on `virtuus-amplify`, `apricity-score`):
   `Library::open(dir, identity)`, `Library::create(dir)`; typed facades generated from the contract
   (`lib.models().clip().get(id)`, `.slices_by_clip(clip_id, opts)`); `ids` (`clip_id`,
   `stem_clip_id`, `candidate_id`, `curated_slice_id`); `domain`: `propose(Vec<Proposal>)`
   (validate, merge by id and proposer), `judge(JudgeInput)` (verdict → crate items → curated
   slice; idempotent), `rank(&[Candidate], &[Verdict]) -> Vec<Ranked>`, `markup::merge`,
-  `save_score(id, text)` (parse, write `ScoreRef`s via `apricitus_score::references()`),
+  `save_score(id, text)` (parse, write `ScoreRef`s via `apricity_score::references()`),
   `crate_to_apr`; `loader::make(&Library) -> impl FnMut(&Path) -> Result<Clip, String>` — look up
   the alias with `clipsByPath` (fallback `aliases`), load the analysis attachment, active and
   retired slices and markers, rebuild the old manifest JSON with `annotations`, call
   `Clip::from_json(audio_local_path, json)`. The existing `compile_with` seam and
   `Renderer::new(sr, loader)` don't change. Also `migrate` and `transfer` (§5).
-- **`apricitus-score`** gains `pub fn references(score, base_dir) -> Vec<Ref{alias, source, slice:
+- **`apricity-score`** gains `pub fn references(score, base_dir) -> Vec<Ref{alias, source, slice:
   Option<String>, kit_pad: Option<String>}>` (extends `source_paths` to slices referenced from kits)
   and an optional id form: `clip x = @clp_… slice @slc_…`.
-- **`crates/apricitus-ffi`** (UniFFI, Swift):
+- **`crates/apricity-ffi`** (UniFFI, Swift):
   ```rust
-  #[derive(uniffi::Object)] pub struct ApricitusLibrary { .. }
-  #[uniffi::export] impl ApricitusLibrary {
+  #[derive(uniffi::Object)] pub struct ApricityLibrary { .. }
+  #[uniffi::export] impl ApricityLibrary {
     #[uniffi::constructor] fn open(path: String, identity_sub: Option<String>) -> Result<Arc<Self>, DataError>;
     fn call(&self, model: String, op: String, args_json: String, options_json: Option<String>) -> String; // {data, errors, nextToken}
     fn keep_candidate(&self, input_json: String) -> String;   fn feed(&self, args_json: String) -> String;
@@ -358,21 +358,21 @@ specs `@rust-only` (parity policy for Virtuus core changes: both languages).
   `client.models.slice.slicesByClip(clipId:, options:)`) returning `Result<T>` with `data`,
   `errors`, `nextToken`. `scripts/build-xcframework.sh`: build `aarch64-apple-darwin`,
   `aarch64-apple-ios`, `aarch64-apple-ios-sim` → `uniffi-bindgen generate --library` →
-  `xcodebuild -create-xcframework` → SwiftPM `binaryTarget` in `swift/ApricitusData/Package.swift`.
-- **Python:** one PyO3 module `apricitus_data` (maturin, `apricitus-data` with a `python` feature):
+  `xcodebuild -create-xcframework` → SwiftPM `binaryTarget` in `swift/ApricityData/Package.swift`.
+- **Python:** one PyO3 module `apricity_data` (maturin, `apricity-data` with a `python` feature):
   `Library(path).models.Candidate.create(...)`, `.propose()`, `.judge()`, `.feed()`,
   `.apply_markup()`, `.files.put()`, `.call()`. `analyze.write`, `markup.run`, `stems`,
   `curation.Store` call it; the terminal feed UX stays. Works without the server; the server sees
   its changes through the change log.
-- **wasm:** `apricitus-web` gains `rw_rank`, `rw_ids`, `rw_markup_merge` (pure). A full engine on
+- **wasm:** `apricity-web` gains `rw_rank`, `rw_ids`, `rw_markup_merge` (pure). A full engine on
   `MemoryStorage` compiles once `rayon` is optional; an offline OPFS browser library is a deferred
   fourth mode.
 
 ### §3.3 Library folder layout
 
 ```
-MyLibrary.apricitus/
-  apricitus-library.json      # {format:1, contractVersion, libraryId, identity:{sub:"local", groups:[...]}, apiKey}
+MyLibrary.apricity/
+  apricity-library.json      # {format:1, contractVersion, libraryId, identity:{sub:"local", groups:[...]}, apiKey}
   tables/<Model>/<key>.json   # one JSON file per record; composite key: <pk>__<sort>.json (Virtuus convention)
   files/                      # exactly the S3 keys
     audio/<clipId>/<original-filename>
@@ -381,24 +381,24 @@ MyLibrary.apricitus/
   .virtuus/                   # derived, deletable: lock, changes.jsonl, index snapshots (gitignored)
 ```
 
-## §4 `apricitus serve` and the web app
+## §4 `apricity serve` and the web app
 
-**`apricitus serve --library <dir> [--port 5181]`** (a subcommand of `apricitus-cli`, axum, bound
+**`apricity serve --library <dir> [--port 5181]`** (a subcommand of `apricity-cli`, axum, bound
 to 127.0.0.1):
-- `POST /graphql` + `GET /graphql/realtime` (WebSocket): `virtuus-appsync` on `apricitus-data`'s engine.
+- `POST /graphql` + `GET /graphql/realtime` (WebSocket): `virtuus-appsync` on `apricity-data`'s engine.
 - `/amplify_outputs.json` generated per library: `data: { url: "http://127.0.0.1:5181/graphql",
   aws_region: "local", api_key, default_authorization_type: "API_KEY", authorization_types: [],
-  model_introspection }`, `custom: { apricitus: { mode: "local", identity } }`, no `auth` or
+  model_introspection }`, `custom: { apricity: { mode: "local", identity } }`, no `auth` or
   `storage` sections.
 - `GET/PUT/HEAD/DELETE /files/*key` with **Range** support (30 MB WAVs seek).
-- `POST /jobs/analyze`: creates a `Job` record, runs `python -m apricitus_analyze.job --library …
+- `POST /jobs/analyze`: creates a `Job` record, runs `python -m apricity_analyze.job --library …
   --clip …`; status via normal GraphQL queries/subscriptions.
 - Static `web/dist` + wasm with the COOP/COEP headers `server.py` sets today, embedded in the
   binary (as Kanbus's `kbsc` does).
 - `server.py` retired once parity is reached.
 
 **Mode switching: runtime bootstrap (Kanbus style), not build-time aliases.** `main.ts` fetches
-`/amplify_outputs.json` and calls `Amplify.configure(outputs)`; `custom.apricitus.mode` picks the
+`/amplify_outputs.json` and calls `Amplify.configure(outputs)`; `custom.apricity.mode` picks the
 auth and storage facades. One build works in both modes. The data client is the real
 `generateClient<Schema>()` either way.
 
@@ -418,13 +418,13 @@ auth and storage facades. One build works in both modes. The data client is the 
 
 ## §5 Migration and score references
 
-`apricitus migrate --from <repo root> --to <library>` (in `apricitus-data`; deterministic and
+`apricity migrate --from <repo root> --to <library>` (in `apricity-data`; deterministic and
 idempotent, a second run changes nothing):
 
 1. **Recordings** from `samples/sources.json`: one per Marine Band piece, one per Library of
    Congress item id for Citizen DJ (e.g. `00694038`, with its excerpt clips). `kind:"score"` PDFs
    become `Recording.documents` under `files/documents/`.
-2. **Clips** from every `*.apricitus.json`: id from `source.sha256`; stems use `derived_from` for
+2. **Clips** from every `*.apricity.json`: id from `source.sha256`; stems use `derived_from` for
    `parentClipId` and the stem-style id; `path` = samples-relative; `aliases` = the repo-relative
    and `derived_from.source` forms. Audio is copied with APFS `clonefile` or hard-linked (`--link`),
    so the 430 MB isn't duplicated. Analysis = the manifest minus `annotations`, canonical JSON at
@@ -442,7 +442,7 @@ idempotent, a second run changes nothing):
 The `.apr` text doesn't change: `clip brk = marine-band/stems/Thunderer/drums.wav slice loop-1`
 resolves by alias, and `loop-1` is now fixed to the slice it named at migration time.
 
-**Transfer between modes** (`apricitus-data::transfer`): copies all models and files between two
+**Transfer between modes** (`apricity-data::transfer`): copies all models and files between two
 backends. Local↔local through the engine; either direction with the cloud through GraphQL (the same
 generated statements) plus S3 via `web/scripts/transfer.ts` and the real Amplify client.
 `--as <sub>` rewrites `owner`/`judge` from "local" to the target user. A round trip local → cloud →
@@ -455,12 +455,12 @@ local must give identical tables and file hashes.
 | P0 | `web/amplify/{data,auth,storage}`, the generator, `contract/*` (sandbox later, user-gated) | Typecheck; generator `--check`; deterministic output. |
 | P1 | Virtuus core: Storage, `Result`, O(n²) fix, ordered indexes, key tokens, lock + change log, blobs | Existing suite in both languages; new `storage/`, `pagination/`, `concurrency/multiprocess`; a 50k load scales linearly. |
 | P2 | `virtuus-amplify` | Conformance corpus v1 in-process; every §2.2 row has a scenario. |
-| P3 | `apricitus-data`, `references()`, `migrate` | Idempotent migration; identical renders; Rust `rank` = Python `rank`; markup merge keeps ids/names and retires used slices. |
-| P4a | `virtuus-appsync`, `apricitus serve`, web on `generateClient`, `server.py` data endpoints retired | Introspection = SDL; corpus through the real Amplify client against `serve`; Playwright end-to-end. |
+| P3 | `apricity-data`, `references()`, `migrate` | Idempotent migration; identical renders; Rust `rank` = Python `rank`; markup merge keeps ids/names and retires used slices. |
+| P4a | `virtuus-appsync`, `apricity serve`, web on `generateClient`, `server.py` data endpoints retired | Introspection = SDL; corpus through the real Amplify client against `serve`; Playwright end-to-end. |
 | P4b | Realtime | Subscription scenarios against `serve` (and the sandbox later). |
 | P5 | Python through PyO3 | `analysis/tests` ported and green; concurrent writers lose nothing. |
 | P6 | Cloud: sandbox, Google sign-in, transfer | Round trip identical; corpus green on the sandbox, incl. unauthorized cases. |
-| P7 | `apricitus-ffi`, XCFramework, Swift wrappers | `swift test` corpus smoke subset; a sample app opens a library. |
+| P7 | `apricity-ffi`, XCFramework, Swift wrappers | `swift test` corpus smoke subset; a sample app opens a library. |
 
 **Conformance corpus:** Gherkin in `features/data/` (crud, filters, key conditions, pagination,
 relationships, owner, subscriptions, `domain/keep`, `markup_merge`, `score_refs`). Three runners

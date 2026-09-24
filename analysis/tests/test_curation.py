@@ -7,14 +7,14 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from apricitus_analyze import curation as cu
+from apricity_analyze import curation as cu
 
 SR = 22050
 
 
 def _manifest(path, dur, beats, loud=None, stem=None, slices=()):
     m = {
-        "apricitus_manifest": 1,
+        "apricity_manifest": 1,
         "source": {"path": path.name, "sha256": "0" * 64, "sample_rate": SR, "channels": 1, "duration": dur},
         "rhythm": {"bpm": 120.0, "beats": beats, "downbeats": beats[::4], "meter": 4,
                    "warp_markers": [{"seconds": t, "beat": i} for i, t in enumerate(beats)], "beat_loudness": loud or [-20.0] * (len(beats) - 1)},
@@ -23,7 +23,7 @@ def _manifest(path, dur, beats, loud=None, stem=None, slices=()):
     }
     if stem:
         m["derived_from"] = {"stem": stem, "source": "x"}
-    path.with_name(path.name + ".apricitus.json").write_text(json.dumps(m))
+    path.with_name(path.name + ".apricity.json").write_text(json.dumps(m))
 
 
 @pytest.fixture

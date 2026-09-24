@@ -1,17 +1,17 @@
-// End-to-end check of the apricitus_web.wasm surface in Node: compile → render → mix.
-// Run: node web/test/wasm.test.mjs   (from the repo root, after building apricitus-web for wasm32-wasip1)
+// End-to-end check of the apricity_web.wasm surface in Node: compile → render → mix.
+// Run: node web/test/wasm.test.mjs   (from the repo root, after building apricity-web for wasm32-wasip1)
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 
 const root = new URL("../../", import.meta.url).pathname;
-const wasm = readFileSync(root + "target/wasm32-wasip1/release/apricitus_web.wasm");
+const wasm = readFileSync(root + "target/wasm32-wasip1/release/apricity_web.wasm");
 const { instantiate } = await import(root + "web/src/wasm/shim.js");
 const rw = await instantiate(new WebAssembly.Module(wasm));
 
 // --- page: compile
 const scorePath = "examples/test-wav-only.yaml";
 const yaml = `
-apricitus: 0.1
+apricity: 0.1
 tempo: 120
 key: Abm
 samples: ../samples
@@ -25,7 +25,7 @@ tracks:
 `;
 const { sources } = rw.call("rw_sources", yaml, scorePath);
 assert.deepEqual(sources.map((s) => s.split("/")[0]), ["samples", "samples"]);
-const manifests = Object.fromEntries(sources.map((s) => [s, JSON.parse(readFileSync(root + s + ".apricitus.json", "utf8"))]));
+const manifests = Object.fromEntries(sources.map((s) => [s, JSON.parse(readFileSync(root + s + ".apricity.json", "utf8"))]));
 const compiled = rw.call("rw_compile", yaml, scorePath, JSON.stringify(manifests));
 assert.ok(compiled.timeline, JSON.stringify(compiled.errors));
 assert.match(compiled.explain, /iv \(Dbm\)/);

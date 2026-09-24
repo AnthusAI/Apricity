@@ -1,0 +1,16 @@
+[package]
+name = "apricity-score"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Apricity scores: parse + validate, read clip manifests, solve harmony, compile to a timeline."
+
+[dependencies]
+apricity-theory.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml = "0.9"
+
+[dev-dependencies]
+serde_json.workspace = true
+serde_yaml = "0.9"

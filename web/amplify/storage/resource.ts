@@ -1,7 +1,7 @@
 import { defineStorage } from "@aws-amplify/backend";
 
 export const storage = defineStorage({
-  name: "apricitusFiles",
+  name: "apricityFiles",
   isDefault: true,
   access: (allow) => ({
     // Catalog files: readable by members, writable by curators

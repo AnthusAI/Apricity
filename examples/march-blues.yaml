@@ -11,7 +11,7 @@
 # - Call and response: blues phrases answer each other every two bars, so the bugle answers
 #   in bars 3–4, 7–8 and 11–12 of the second chorus.
 # - `F mixolydian` lets the dominant sevenths (E♭ over F, A♭ over B♭) count as in-key.
-apricitus: 0.1
+apricity: 0.1
 tempo: 100
 meter: 4
 key: F mixolydian

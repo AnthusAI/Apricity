@@ -7,8 +7,8 @@ Everything you can write for a `key` or a chord, in either score format.
 A note is a letter `A`–`G` (either case) followed by any number of flats (`b` or `♭`) or sharps
 (`#` or `♯`): `C`, `F#`, `Bb`, `E♭`, `Cb` (= B), `Abb` (= G).
 
-Apricitus works with **pitch classes** — the 12 notes regardless of octave — so enharmonic spellings are
-the same note (`F#` = `Gb`). When Apricitus prints notes it spells them with flats (`Db`, `Eb`, `Gb`,
+Apricity works with **pitch classes** — the 12 notes regardless of octave — so enharmonic spellings are
+the same note (`F#` = `Gb`). When Apricity prints notes it spells them with flats (`Db`, `Eb`, `Gb`,
 `Ab`, `Bb`), which is what brass-band keys usually want.
 
 ## Keys
@@ -29,7 +29,7 @@ A key is a note, then a mode:
 
 The key does two jobs:
 
-1. **Roman numerals are built on its scale.** In `A♭ minor`, `VI` is F♭ major (Apricitus prints it as E).
+1. **Roman numerals are built on its scale.** In `A♭ minor`, `VI` is F♭ major (Apricity prints it as E).
 2. **It defines "in key" for the harmony solver.** Notes outside the scale count as clashes. For a
    blues, `mixolydian` is usually the right choice: its flat seventh (E♭ in F) is in-key.
 

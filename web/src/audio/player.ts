@@ -9,7 +9,7 @@
 
 import workletUrl from "./engine-worklet.ts?worker&url";
 import RenderWorker from "./render-worker.ts?worker";
-import { encodePath, apricitusModule, type Timeline } from "../apricitus";
+import { encodePath, apricityModule, type Timeline } from "../apricity";
 
 export interface Transport {
   playing: boolean;
@@ -59,11 +59,11 @@ export class Player {
   /** Start audio (must follow a user gesture the first time). */
   init(): Promise<void> {
     this.ready ??= (async () => {
-      const module = await apricitusModule();
+      const module = await apricityModule();
       const ctx = new AudioContext({ latencyHint: "interactive" });
       this.ctx = ctx;
       await ctx.audioWorklet.addModule(workletUrl);
-      this.node = new AudioWorkletNode(ctx, "apricitus-engine", { outputChannelCount: [2], processorOptions: { module } });
+      this.node = new AudioWorkletNode(ctx, "apricity-engine", { outputChannelCount: [2], processorOptions: { module } });
       const engineReady = new Promise<void>((resolve) => {
         this.node.port.onmessage = ({ data }) => {
           if (data.type === "ready") resolve();

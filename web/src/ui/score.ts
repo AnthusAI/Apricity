@@ -9,7 +9,7 @@ import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { Compartment } from "@codemirror/state";
 import { aprLanguage } from "./apr-lang";
 import { tags as t } from "@lezer/highlight";
-import { api, compile, type Timeline } from "../apricitus";
+import { api, compile, type Timeline } from "../apricity";
 import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
 
@@ -27,7 +27,7 @@ const highlight = HighlightStyle.define([
   { tag: t.invalid, color: "var(--bad)", textDecoration: "underline wavy" },
 ]);
 
-const NEW_SCORE = `# A new Apricitus score. Every edit recompiles; press play (or Space) to hear it.
+const NEW_SCORE = `# A new Apricity score. Every edit recompiles; press play (or Space) to hear it.
 tempo 100
 key F mixolydian
 samples ../samples
@@ -94,7 +94,7 @@ export class ScoreView {
     const b = el("button", { className: "btn", type: "button", title: "Open the language reference in the Docs tab" }, "Reference");
     b.addEventListener("click", () => {
       const file = this.path?.endsWith(".yaml") ? "yaml.md" : "language.md";
-      document.dispatchEvent(new CustomEvent("apricitus:docs", { detail: { file } }));
+      document.dispatchEvent(new CustomEvent("apricity:docs", { detail: { file } }));
     });
     return b;
   }
@@ -218,7 +218,7 @@ export class ScoreView {
       );
       kids.push(this.chordsEl);
     }
-    if (errors.length) kids.push(el("h2", {}, `Problems (${errors.length})`), el("ul", { className: "problems" }, ...errors.map((e) => el("li", {}, e.replace(/^[^:]*\.(yaml|apricitus): /, "")))));
+    if (errors.length) kids.push(el("h2", {}, `Problems (${errors.length})`), el("ul", { className: "problems" }, ...errors.map((e) => el("li", {}, e.replace(/^[^:]*\.(yaml|apricity): /, "")))));
     if (tl?.warnings.length) kids.push(el("h2", {}, "Warnings"), el("ul", { className: "warnings" }, ...tl.warnings.map((w) => el("li", {}, w))));
     // Warnings are listed above; don't repeat them at the end of the explanation.
     if (explain) kids.push(el("h2", {}, "How it was solved"), el("pre", { className: "explain" }, explain.split("\nWarnings:")[0].trimEnd()));

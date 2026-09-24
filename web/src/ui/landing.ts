@@ -1,7 +1,7 @@
-// The landing page: Apricitus, the mashup machine — what it does, how, what's in the library, a piece to hear.
+// The landing page: Apricity, the mashup machine — what it does, how, what's in the library, a piece to hear.
 
 import "./landing.css";
-import { api } from "../apricitus";
+import { api } from "../apricity";
 import { el } from "./dom";
 
 const DEMO = `tempo 100
@@ -73,7 +73,7 @@ export class Landing {
             "div",
             { className: "hero-inner" },
             el("div", { className: "eyebrow" }, "The mashup machine"),
-            el("h1", { className: "wordmark" }, "Apricitus"),
+            el("h1", { className: "wordmark" }, "Apricity"),
             el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every clip, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
             el("div", { className: "actions" }, hear, cta("Open the library", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Read the docs", "ghost", go.docs)),
           ),
@@ -82,7 +82,7 @@ export class Landing {
           "section",
           { className: "band" },
           el("h2", {}, "How it works"),
-          el("p", { className: "lede" }, "Apricitus listens to every recording once, then does the fiddly part of a mashup for you: finding the beat, the key and the tuning, and bending each clip to fit the music you describe."),
+          el("p", { className: "lede" }, "Apricity listens to every recording once, then does the fiddly part of a mashup for you: finding the beat, the key and the tuning, and bending each clip to fit the music you describe."),
           el(
             "div",
             { className: "steps" },
@@ -92,13 +92,13 @@ export class Landing {
           ),
           el("div", { className: "score" }, el("div", { className: "head" }, el("span", {}, "a 12-bar blues, from an 1889 march"), el("span", {}, ".apr")), el("pre", { innerHTML: highlight(DEMO) })),
         ),
-        el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every clip analyzed and ready to sample: the public-domain collection Apricitus ships with, plus anything you drop in."), stats),
+        el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every clip analyzed and ready to sample: the public-domain collection Apricity ships with, plus anything you drop in."), stats),
         el(
           "section",
           { className: "band credits" },
           el("p", {
             innerHTML:
-              'Recordings from the <a href="https://citizen-dj.labs.loc.gov/" target="_blank" rel="noopener">Library of Congress Citizen DJ</a> project and “The President’s Own” <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/" target="_blank" rel="noopener">United States Marine Band</a>, all in the public domain. Time-stretching by Rubber Band; analysis by Essentia, Beat This! and Basic Pitch; stems by Demucs. Apricitus is free software under the GPL.',
+              'Recordings from the <a href="https://citizen-dj.labs.loc.gov/" target="_blank" rel="noopener">Library of Congress Citizen DJ</a> project and “The President’s Own” <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/" target="_blank" rel="noopener">United States Marine Band</a>, all in the public domain. Time-stretching by Rubber Band; analysis by Essentia, Beat This! and Basic Pitch; stems by Demucs. Apricity is free software under the GPL.',
           }),
         ),
       ),

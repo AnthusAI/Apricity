@@ -4,9 +4,9 @@
 // The worklet sends the summed mix back to one worker to measure the master's loudness make-up
 // (too slow for the audio thread), then plays it through the master chain.
 
-import { instantiate, type Apricitus } from "../wasm/shim.js";
+import { instantiate, type Apricity } from "../wasm/shim.js";
 
-let rw: Apricitus;
+let rw: Apricity;
 let engine: MessagePort;
 let latest = 0; // newest arrange request id; older ones still queued are skipped
 let sampleRate = 48000;

@@ -9,7 +9,7 @@ import pathlib
 import sys
 import urllib.request
 
-UA = "ApricitusSampleFetcher/0.1 (personal music research tool)"
+UA = "ApricitySampleFetcher/0.1 (personal music research tool)"
 
 root = pathlib.Path(__file__).resolve().parent.parent / "samples"
 sources = json.loads((root / "sources.json").read_text())["files"]

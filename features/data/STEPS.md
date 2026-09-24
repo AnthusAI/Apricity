@@ -2,9 +2,9 @@
 
 Every scenario in `features/data/` uses **only** the steps below. Three runners implement them
 identically:
-- Rust: cucumber-rs over `Engine::call` (`crates/apricitus-data/tests/conformance.rs`);
+- Rust: cucumber-rs over `Engine::call` (`crates/apricity-data/tests/conformance.rs`);
 - TypeScript: cucumber-js over the real `aws-amplify` client (`web/test/conformance/`);
-- Python: behave over the `apricitus_data` PyO3 module (domain steps).
+- Python: behave over the `apricity_data` PyO3 module (domain steps).
 
 Patterns are [Cucumber Expressions](https://github.com/cucumber/cucumber-expressions):
 `{string}` is a double-quoted string, `{int}` an integer, and `{word}` a single word, used here for
@@ -85,7 +85,7 @@ Semantics follow `design/storage.md` §2.2.
 
 ## Domain operations
 
-These go through the domain layer (`apricitus-data::domain` in Rust and Python, `web/src/data/domain.ts` in TypeScript), not raw model calls. Each sets `result` to `{ data, errors }`.
+These go through the domain layer (`apricity-data::domain` in Rust and Python, `web/src/data/domain.ts` in TypeScript), not raw model calls. Each sets `result` to `{ data, errors }`.
 
 | Step | Meaning |
 |---|---|

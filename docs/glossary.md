@@ -1,6 +1,6 @@
 # Glossary
 
-Words that mean something specific in Apricitus. Musical terms are explained as Apricitus uses them.
+Words that mean something specific in Apricity. Musical terms are explained as Apricity uses them.
 
 Terms marked *(planned)* belong to the curation loop, which is designed but not built yet.
 
@@ -152,12 +152,12 @@ changes.
 
 ### Explain
 
-`apricitus explain`, or "How it was solved" in the web app: the compiler's account of every
+`apricity explain`, or "How it was solved" in the web app: the compiler's account of every
 choice.
 
 ### Fader
 
-A track's or bus's level control: its [gain](#gain). It comes after the track's [effects](#effect) and before its [pan](#pan) and [sends](#send). In `apricitus play` it can be moved live (`gain horns -6`).
+A track's or bus's level control: its [gain](#gain). It comes after the track's [effects](#effect) and before its [pan](#pan) and [sends](#send). In `apricity play` it can be moved live (`gain horns -6`).
 
 ### Feed
 
@@ -229,7 +229,7 @@ How loud a mix sounds over time, measured in LUFS. The [master](#master) turns t
 
 ### Manifest
 
-The `<file>.apricitus.json` next to each audio file: everything [analysis](#analysis)
+The `<file>.apricity.json` next to each audio file: everything [analysis](#analysis)
 found, plus your [annotations](#slice).
 
 ### Marker
@@ -238,7 +238,7 @@ A named point in a clip, saved in its manifest.
 
 ### Markup
 
-Automatic markup: after analysis, Apricitus marks each clip's [sections](#section), [loops](#loop) and [hits](#hit) as slices and markers, tagged as machine-made. It never touches your own annotations. See [Concepts](concepts.md#automatic-markup).
+Automatic markup: after analysis, Apricity marks each clip's [sections](#section), [loops](#loop) and [hits](#hit) as slices and markers, tagged as machine-made. It never touches your own annotations. See [Concepts](concepts.md#automatic-markup).
 
 ### Master
 
@@ -292,7 +292,7 @@ The part of a clip a score plays, chosen by `beats`, `seconds`, `slice` or `pick
 
 ### Render
 
-Warping and transposing events into audio. Apricitus renders ahead, caches the results and
+Warping and transposing events into audio. Apricity renders ahead, caches the results and
 mixes them live.
 
 ### Retune
@@ -325,7 +325,7 @@ or set with `root`).
 ### Score
 
 A description of a piece: tempo, key, clips, progression and tracks, written in the
-[Apricitus language](language.md) or [YAML](yaml.md).
+[Apricity language](language.md) or [YAML](yaml.md).
 
 ### Score beat
 

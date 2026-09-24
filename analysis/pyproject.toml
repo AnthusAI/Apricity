@@ -1,7 +1,7 @@
 [project]
-name = "apricitus-analyze"
+name = "apricity-analyze"
 version = "0.1.0"
-description = "Offline clip analysis for Apricitus: beats, warp markers, key, tuning, chroma, notes -> <clip>.apricitus.json"
+description = "Offline clip analysis for Apricity: beats, warp markers, key, tuning, chroma, notes -> <clip>.apricity.json"
 license = "GPL-2.0-or-later"
 requires-python = ">=3.11"
 dependencies = [
@@ -28,11 +28,11 @@ dependencies = [
 dev = ["pytest"]
 
 [project.scripts]
-apricitus-analyze = "apricitus_analyze.cli:main"
+apricity-analyze = "apricity_analyze.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["apricitus_analyze"]
+packages = ["apricity_analyze"]

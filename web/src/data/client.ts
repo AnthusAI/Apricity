@@ -14,7 +14,7 @@ interface AmplifyOutputs {
     model_introspection?: object;
   };
   custom?: {
-    apricitus?: {
+    apricity?: {
       mode?: "local" | "cloud";
       identity?: { sub: string; username?: string; groups?: string[] };
     };
@@ -40,7 +40,7 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     Amplify.configure(outputs as any);
 
     // Determine mode
-    cachedMode = outputs.custom?.apricitus?.mode ?? "cloud";
+    cachedMode = outputs.custom?.apricity?.mode ?? "cloud";
     return cachedMode;
   } catch (error) {
     console.error("Failed to bootstrap data layer:", error);

@@ -1,32 +1,32 @@
-# Apricitus
+# Apricity
 
 A mashup machine: a declarative, harmony-aware engine for making music out of samples. Analyze clips (beats, warp
-maps, key, notes), then describe a piece as a score, and Apricitus warps every clip to one tempo and
+maps, key, notes), then describe a piece as a score, and Apricity warps every clip to one tempo and
 transposes each so that together they sound the chords you ask for.
 
-Status: **Phase 5 in progress**: the Apricitus text language, automatic markup (sections, loops, hits), and sampler-style kits, chops, step patterns and flips are in. So are the first two stages of the mixer: effects, pan, sends, buses, reverb, delay and a loudness-targeted master ([design/mixer.md](design/mixer.md)); sidechain, drive and lo-fi come next. Planned: the curation loop ([design/framework.md](design/framework.md)), then the Swift app.
+Status: **Phase 5 in progress**: the Apricity text language, automatic markup (sections, loops, hits), and sampler-style kits, chops, step patterns and flips are in. So are the first two stages of the mixer: effects, pan, sends, buses, reverb, delay and a loudness-targeted master ([design/mixer.md](design/mixer.md)); sidechain, drive and lo-fi come next. Planned: the curation loop ([design/framework.md](design/framework.md)), then the Swift app.
 
 ## Documentation
 
 Start with **[docs/](docs/README.md)** (also in the web app's **Docs** tab):
-[Concepts](docs/concepts.md) · [The Apricitus language](docs/language.md) · [YAML scores](docs/yaml.md) ·
+[Concepts](docs/concepts.md) · [The Apricity language](docs/language.md) · [YAML scores](docs/yaml.md) ·
 [Chords and keys](docs/chords.md) · [Tools](docs/tools.md) · [Glossary](docs/glossary.md).
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `analysis/` | `apricitus-analyze`: beats and downbeats (Beat This!), warp markers, tuning, key and key-over-time, chroma (Essentia), notes (Basic Pitch) → `<clip>.apricitus.json` |
+| `analysis/` | `apricity-analyze`: beats and downbeats (Beat This!), warp markers, tuning, key and key-over-time, chroma (Essentia), notes (Basic Pitch) → `<clip>.apricity.json` |
 | `schema/` | JSON Schemas; `clip-manifest.schema.json` is the contract between analysis and engine |
-| `crates/apricitus-theory` | Pitch classes, keys and modes, roman numerals (`iv` ≠ `IV`), chord symbols, Camelot, key finding, the harmony solver |
-| `crates/apricitus-score` | Score format (strict; every mistake reported with its location), clip regions by beats/seconds/slice/`pick`, compile → timeline |
-| `crates/apricitus-engine` | Render ahead, mix live: the `Renderer` pre-warps events into an `Arrangement` (cached, so edits re-render only what changed); the real-time `Mixer` loops it and swaps new arrangements in at the bar line with a crossfade. Never allocates on the audio thread. Builds for wasm. |
-| `crates/apricitus-cli` | `apricitus compile`, `explain`, `render`, `play` |
+| `crates/apricity-theory` | Pitch classes, keys and modes, roman numerals (`iv` ≠ `IV`), chord symbols, Camelot, key finding, the harmony solver |
+| `crates/apricity-score` | Score format (strict; every mistake reported with its location), clip regions by beats/seconds/slice/`pick`, compile → timeline |
+| `crates/apricity-engine` | Render ahead, mix live: the `Renderer` pre-warps events into an `Arrangement` (cached, so edits re-render only what changed); the real-time `Mixer` loops it and swaps new arrangements in at the bar line with a crossfade. Never allocates on the audio thread. Builds for wasm. |
+| `crates/apricity-cli` | `apricity compile`, `explain`, `render`, `play` |
 | `examples/` | Scores. `iv-of-ab-minor.yaml` is the first milestone |
-| `crates/apricitus-dsp` | Rubber Band (vendored, single-file build) behind a safe Rust API: offline stretch, pitch shift, warp markers via key-frame maps |
-| `crates/apricitus-web` | C-ABI WebAssembly surface for the browser: compiler (page), renderer (workers), mixer (AudioWorklet) |
+| `crates/apricity-dsp` | Rubber Band (vendored, single-file build) behind a safe Rust API: offline stretch, pitch shift, warp markers via key-frame maps |
+| `crates/apricity-web` | C-ABI WebAssembly surface for the browser: compiler (page), renderer (workers), mixer (AudioWorklet) |
 | `web/` | The web app (Vite + TypeScript, CodeMirror) |
-| `analysis/apricitus_analyze/server.py` | Local API server: clips, files, saving annotations and scores, upload + analysis |
+| `analysis/apricity_analyze/server.py` | Local API server: clips, files, saving annotations and scores, upload + analysis |
 | `vendor/rubberband` | Rubber Band Library v4.0.0 (git submodule, GPL) |
 
 ## Building
@@ -35,10 +35,10 @@ Use the rustup toolchain (`~/.cargo/bin`). An older Homebrew `cargo` in `/usr/lo
 
 ```sh
 git submodule update --init
-cargo test -p apricitus-dsp                              # native
+cargo test -p apricity-dsp                              # native
 scripts/fetch-tools.sh                                # wasi-sdk into .tools/
-cargo test -p apricitus-dsp --target wasm32-wasip1       # same tests as wasm, run by Node's WASI
-cargo build -p apricitus-web --release --target wasm32-wasip1
+cargo test -p apricity-dsp --target wasm32-wasip1       # same tests as wasm, run by Node's WASI
+cargo build -p apricity-web --release --target wasm32-wasip1
 node spikes/web-audio/serve.mjs                       # http://localhost:5180
 ```
 
@@ -48,16 +48,16 @@ Analysis (Python 3.12):
 python3 -m venv analysis/.venv
 analysis/.venv/bin/pip install --pre -e analysis[dev]    # may stall on basic-pitch's pins; if so:
 analysis/.venv/bin/pip install --no-deps basic-pitch==0.4.0
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.cli samples
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.cli samples
 PYTHONPATH=analysis analysis/.venv/bin/python -m pytest analysis/tests
 ```
 
-iOS: `cargo build -p apricitus-dsp --target aarch64-apple-ios[-sim]` builds as-is.
+iOS: `cargo build -p apricity-dsp --target aarch64-apple-ios[-sim]` builds as-is.
 
-## The Apricitus language
+## The Apricity language
 
 Scores can be written as `.apr` text instead of YAML; both compile to the same score (a test keeps
-every paired example identical). `apricitus fmt score.yaml` converts either way.
+every paired example identical). `apricity fmt score.yaml` converts either way.
 
 ```
 tempo 100
@@ -81,7 +81,7 @@ Mistakes are reported with line and column (and "did you mean"); the web editor 
 
 ## Automatic markup
 
-`PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.markup samples` (also run automatically after
+`PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.markup samples` (also run automatically after
 analysis, stem separation and uploads) finds, in each clip:
 
 - **sections** — boundaries from a self-similarity novelty curve, snapped to bar lines, lettered by
@@ -95,7 +95,7 @@ See `examples/markup-demo.apr`.
 
 ## Score features worth knowing
 
-- **Stems**: `PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.stems samples/marine-band/X.mp3`
+- **Stems**: `PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.stems samples/marine-band/X.mp3`
   splits a recording with Demucs into `stems/X/{drums,bass,other}.wav`, each analyzed and sharing the
   parent's beat grid. Layer *parts* (a bass line from here, horns from there) instead of whole bands.
 - **`transpose: follow`** moves a clip with the chord root — the way blues riffs and bass patterns are played
@@ -108,8 +108,8 @@ See `examples/markup-demo.apr`.
 ## The web app
 
 ```sh
-cargo build -p apricitus-web --release --target wasm32-wasip1       # the engine, as wasm
-PYTHONPATH=analysis analysis/.venv/bin/python -m apricitus_analyze.server   # API on 127.0.0.1:5181
+cargo build -p apricity-web --release --target wasm32-wasip1       # the engine, as wasm
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.server   # API on 127.0.0.1:5181
 npm --prefix web install && npm --prefix web run dev                     # app on http://localhost:5173
 ```
 
@@ -123,17 +123,17 @@ Or build once (`npm --prefix web run build`) and open http://localhost:5181, ser
 
 How the browser runs it: the page compiles (wasm); a pool of render workers warps events with Rubber Band
 (wasm), each keeping its own cache; their partial mixes go straight to the AudioWorklet, which sums them
-and swaps the new loop in at the bar line using the same Rust mixer as `apricitus play`.
+and swaps the new loop in at the bar line using the same Rust mixer as `apricity play`.
 
 Tests: `node web/test/wasm.test.mjs` (compile → render → mix in wasm), `pytest analysis/tests` (includes the server).
 
 ## Making music
 
 ```sh
-cargo build --release -p apricitus-cli
-./target/release/apricitus explain examples/iv-of-ab-minor.yaml     # what got picked, transposed, and why
-./target/release/apricitus play    examples/iv-of-ab-minor.yaml                   # live: edit + save, hear it at the next bar
-./target/release/apricitus render  examples/iv-of-ab-minor.yaml -o renders/iv.wav
+cargo build --release -p apricity-cli
+./target/release/apricity explain examples/iv-of-ab-minor.yaml     # what got picked, transposed, and why
+./target/release/apricity play    examples/iv-of-ab-minor.yaml                   # live: edit + save, hear it at the next bar
+./target/release/apricity render  examples/iv-of-ab-minor.yaml -o renders/iv.wav
 analysis/.venv/bin/python scripts/check-render.py examples/iv-of-ab-minor.yaml renders/iv.wav
 ```
 
@@ -154,4 +154,4 @@ scripts/fetch-samples.py
 
 ## License
 
-GPL-2.0-or-later (Apricitus links Rubber Band, which is GPL).
+GPL-2.0-or-later (Apricity links Rubber Band, which is GPL).

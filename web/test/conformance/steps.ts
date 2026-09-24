@@ -694,7 +694,7 @@ Then(
     const checkerClient = generateClient<Schema>({
       authMode: "apiKey",
       headers: {
-        "x-apricitus-identity": JSON.stringify(checkerIdentity),
+        "x-apricity-identity": JSON.stringify(checkerIdentity),
       },
     });
 

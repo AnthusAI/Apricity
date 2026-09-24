@@ -8,7 +8,7 @@ import { Landing } from "./ui/landing";
 const library = new Library(document.querySelector("#library")!);
 const score = new ScoreView(document.querySelector("#score")!);
 const docs = new DocsView(document.querySelector("#docs")!);
-(window as any).apricitus = { player, library, score, docs }; // handy from the console
+(window as any).apricity = { player, library, score, docs }; // handy from the console
 
 // ---- tabs (remembered per browser)
 const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tabs button")];
@@ -19,7 +19,7 @@ function showTab(name: string) {
   // The transport plays the score; it has no business on the landing or Docs pages.
   document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home";
   try {
-    localStorage.setItem("apricitus.tab", name);
+    localStorage.setItem("apricity.tab", name);
   } catch {}
 }
 tabs.forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab!)));
@@ -27,7 +27,7 @@ brand.addEventListener("click", () => showTab("home"));
 // First visit: the landing page. After that, wherever you were.
 let initial = "home";
 try {
-  initial = localStorage.getItem("apricitus.tab") ?? initial;
+  initial = localStorage.getItem("apricity.tab") ?? initial;
 } catch {}
 new Landing(document.querySelector("#home")!, {
   library: () => showTab("library"),
@@ -43,7 +43,7 @@ new Landing(document.querySelector("#home")!, {
 showTab(initial);
 
 // The score editor's "Reference" button opens the language docs.
-document.addEventListener("apricitus:docs", (e) => {
+document.addEventListener("apricity:docs", (e) => {
   const { file, anchor } = (e as CustomEvent<{ file: string; anchor?: string }>).detail;
   showTab("docs");
   docs.open(file, anchor);

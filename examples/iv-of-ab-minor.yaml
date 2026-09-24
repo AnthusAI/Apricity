@@ -1,14 +1,14 @@
-# The first Apricitus milestone: four march recordings that share nothing (different bands,
+# The first Apricity milestone: four march recordings that share nothing (different bands,
 # decades, keys and tempos; the Marine Band in 2017 and an Edison disc from the 1910s) warped to one grid and transposed so that together they sound
 # iv of A♭ minor (D♭ F♭ A♭), then carried through a progression.
-apricitus: 0.1
+apricity: 0.1
 tempo: 116
 meter: 4
 key: Abm
 samples: ../samples
 
 # `pick:` lets the compiler scan each recording bar by bar for the stretch that best fits the
-# progression (and has a steady beat); `apricitus explain` shows what it chose.
+# progression (and has a steady beat); `apricity explain` shows what it chose.
 clips:
   stripes: { source: marine-band/StarsAndStripesForever.mp3, pick: 4bars }
   cotton:  { source: marine-band/KingCotton.mp3, pick: 4bars }

@@ -1,9 +1,9 @@
-// Syntax highlighting for the Apricitus text language (.apr) in CodeMirror.
+// Syntax highlighting for the Apricity text language (.apr) in CodeMirror.
 
 import { StreamLanguage, type StringStream } from "@codemirror/language";
 
-// Keep in step with crates/apricitus-score/src/dsl.rs (STATEMENTS, CLIP/TRACK options, TRACK/BUS/MASTER_LINES).
-const STATEMENTS = new Set(["apricitus", "tempo", "meter", "key", "samples", "bars", "clip", "kit", "chords", "track", "bus", "master"]);
+// Keep in step with crates/apricity-score/src/dsl.rs (STATEMENTS, CLIP/TRACK options, TRACK/BUS/MASTER_LINES).
+const STATEMENTS = new Set(["apricity", "tempo", "meter", "key", "samples", "bars", "clip", "kit", "chords", "track", "bus", "master"]);
 const OPTIONS = new Set([
   // clips and kits
   "beats", "seconds", "slice", "pick", "root", "ratio", "warp", "chop", "by", "into", "hits", "bar",

@@ -2,7 +2,7 @@
 
 A score can also be written as YAML (`.yaml`) — handy when a program generates scores, or when you
 want every field spelled out. YAML scores and [`.apr` scores](language.md) are two spellings of
-the same structure: they compile identically, and `apricitus fmt` converts either way. JSON works too
+the same structure: they compile identically, and `apricity fmt` converts either way. JSON works too
 (it's valid YAML) from the command line.
 
 Unknown fields are errors — a typo like `gian: 3` is reported, never silently ignored.
@@ -25,7 +25,7 @@ track horns  as stabs  at 3 7:3  gain -5
 ```
 
 ```yaml
-apricitus: 0.1
+apricity: 0.1
 tempo: 100
 key: F mixolydian
 samples: ../samples
@@ -53,7 +53,7 @@ tracks:
 
 | Field | Type | Required | Meaning | `.apr` |
 |---|---|---|---|---|
-| `apricitus` | number | **yes** | Format version; must be `0.1`. | `apricitus 0.1` (optional there) |
+| `apricity` | number | **yes** | Format version; must be `0.1`. | `apricity 0.1` (optional there) |
 | `tempo` | number | **yes** | Beats per minute, 20–400. | `tempo` |
 | `key` | text | **yes** | Home key, e.g. `Abm`, `F mixolydian`. See [keys](chords.md#keys). | `key` |
 | `meter` | whole number | | Beats per bar, 1–16. Default `4`. | `meter` |
@@ -202,11 +202,11 @@ the master, and `pan` is a track field, not an effect.
 ## Converting
 
 ```sh
-apricitus fmt examples/march-blues.yaml           # prints it as .apr
-apricitus fmt examples/march-blues.apr            # prints it as YAML
-apricitus fmt score.yaml --to apr -o score.apr    # write to a file
+apricity fmt examples/march-blues.yaml           # prints it as .apr
+apricity fmt examples/march-blues.apr            # prints it as YAML
+apricity fmt score.yaml --to apr -o score.apr    # write to a file
 ```
 
-`apricitus fmt` keeps the meaning exactly but not your comments or layout: the YAML output lists every
+`apricity fmt` keeps the meaning exactly but not your comments or layout: the YAML output lists every
 chord separately, and the `.apr` output writes one line per four bars of chords. The
 `examples/` folder keeps both spellings of each example side by side, and a test checks they agree.

@@ -26,7 +26,7 @@ __pycache__/
 /web/amplify_outputs.json
 project/.overlay/
 
-# curation store lock (analysis/apricitus_analyze/curation.py)
+# curation store lock (analysis/apricity_analyze/curation.py)
 /library/.lock
 
 # Kanbus derived state (as in the Kanbus repo)

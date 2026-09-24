@@ -2,7 +2,7 @@
 // over a MessagePort and swap in at the next bar. The message handler (same thread, between
 // render quanta) does the allocating; process() only mixes.
 
-import { instantiate, type Apricitus } from "../wasm/shim.js";
+import { instantiate, type Apricity } from "../wasm/shim.js";
 
 declare const sampleRate: number;
 declare function registerProcessor(name: string, ctor: unknown): void;
@@ -13,8 +13,8 @@ declare class AudioWorkletProcessor {
 
 const QUANTUM = 128;
 
-class ApricitusEngine extends AudioWorkletProcessor {
-  rw: Apricitus | null = null;
+class ApricityEngine extends AudioWorkletProcessor {
+  rw: Apricity | null = null;
   out = 0;
   blocks = 0;
   peak = 0;
@@ -116,4 +116,4 @@ class ApricitusEngine extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("apricitus-engine", ApricitusEngine);
+registerProcessor("apricity-engine", ApricityEngine);

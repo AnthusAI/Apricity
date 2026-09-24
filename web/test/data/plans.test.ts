@@ -5,7 +5,7 @@ import { planScoreRefs, planKeep, planSkip, planPutOff, planMerge, type CatalogR
 
 // Load wasm and get functions
 const root = new URL("../../../", import.meta.url).pathname;
-const wasm = readFileSync(root + "target/wasm32-wasip1/release/apricitus_web.wasm");
+const wasm = readFileSync(root + "target/wasm32-wasip1/release/apricity_web.wasm");
 const { instantiate } = await import(root + "web/src/wasm/shim.js");
 const rw = await instantiate(new WebAssembly.Module(wasm));
 

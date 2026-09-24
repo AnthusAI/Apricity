@@ -2,8 +2,8 @@ import { defineAuth, secret } from "@aws-amplify/backend";
 import { preSignUp } from "./pre-sign-up/resource";
 import { postConfirmation } from "./post-confirmation/resource";
 
-// Default OAuth redirect URLs for the Apricitus web app
-// Overridable via APRICITUS_OAUTH_REDIRECT_URLS env var (comma-separated)
+// Default OAuth redirect URLs for the Apricity web app
+// Overridable via APRICITY_OAUTH_REDIRECT_URLS env var (comma-separated)
 const DEFAULT_AUTH_REDIRECT_URLS = [
   "http://localhost:5173/",
   "http://127.0.0.1:5181/",
@@ -11,8 +11,8 @@ const DEFAULT_AUTH_REDIRECT_URLS = [
 
 function resolveAuthRedirectUrls(): string[] {
   let raw = "";
-  if (typeof process !== "undefined" && process.env.APRICITUS_OAUTH_REDIRECT_URLS) {
-    raw = process.env.APRICITUS_OAUTH_REDIRECT_URLS;
+  if (typeof process !== "undefined" && process.env.APRICITY_OAUTH_REDIRECT_URLS) {
+    raw = process.env.APRICITY_OAUTH_REDIRECT_URLS;
   }
   const trimmed = raw.trim();
   if (!trimmed) return DEFAULT_AUTH_REDIRECT_URLS;
@@ -23,8 +23,8 @@ function resolveAuthRedirectUrls(): string[] {
 }
 
 function resolveCognitoDomainPrefix(): string | undefined {
-  if (typeof process !== "undefined" && process.env.APRICITUS_COGNITO_DOMAIN_PREFIX) {
-    const prefix = process.env.APRICITUS_COGNITO_DOMAIN_PREFIX.trim();
+  if (typeof process !== "undefined" && process.env.APRICITY_COGNITO_DOMAIN_PREFIX) {
+    const prefix = process.env.APRICITY_COGNITO_DOMAIN_PREFIX.trim();
     if (prefix.length > 0) {
       return prefix;
     }

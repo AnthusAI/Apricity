@@ -1,0 +1,17 @@
+[package]
+name = "apricity-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Apricity's playback engine: render timelines ahead into arrangements, mix them live, swap edits in at the bar."
+
+[features]
+default = ["decode"]
+# Decode audio files with symphonia (native). The browser decodes with Web Audio instead.
+decode = ["dep:symphonia"]
+
+[dependencies]
+apricity-dsp.workspace = true
+apricity-score.workspace = true
+rtrb = "0.4"
+symphonia = { version = "0.5", default-features = false, features = ["mp3", "wav", "pcm", "flac"], optional = true }

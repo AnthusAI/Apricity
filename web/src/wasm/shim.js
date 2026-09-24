@@ -1,4 +1,4 @@
-// Load apricitus_web.wasm anywhere (page, Worker, AudioWorklet, Node) with just enough WASI
+// Load apricity_web.wasm anywhere (page, Worker, AudioWorklet, Node) with just enough WASI
 // preview1 to run: no files, no environment; stdout/stderr go to the console.
 
 const EBADF = 8, ENOSYS = 52;
@@ -34,13 +34,13 @@ function wasiImports(getMemory) {
         }
         const parts = line.split("\n");
         line = parts.pop();
-        for (const p of parts) (fd === 2 ? console.error : console.log)("[apricitus]", p);
+        for (const p of parts) (fd === 2 ? console.error : console.log)("[apricity]", p);
         v.setUint32(nwrittenPtr, n, true);
         return 0;
       },
       fd_close: () => EBADF, fd_fdstat_get: () => EBADF, fd_prestat_get: () => EBADF,
       fd_prestat_dir_name: () => EBADF, fd_read: () => EBADF, fd_seek: () => ENOSYS,
-      proc_exit(code) { throw new Error(`apricitus wasm exited (${code})`); },
+      proc_exit(code) { throw new Error(`apricity wasm exited (${code})`); },
     },
   };
 }

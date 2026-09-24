@@ -1,6 +1,6 @@
 # March Blues — a 12-bar blues in F from the U.S. Marine Band's "The Washington Post"
 # (a 6/8 march) split into stems, with Army bugle calls answering in the second chorus.
-# The same piece as march-blues.yaml, in Apricitus's text language.
+# The same piece as march-blues.yaml, in Apricity's text language.
 
 tempo 100                 # one beat = the march's dotted-quarter pulse: 12/8 shuffle bars
 key F mixolydian          # lets the dominant sevenths count as in-key
