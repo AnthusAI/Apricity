@@ -10,11 +10,11 @@ touched.
 | Term | Live's word | Replaces | Meaning |
 |---|---|---|---|
 | **Sample** | Sample | the Library's "clip", a stem's "clip" | An audio file in the library (a recording, an excerpt, or a stem), analyzed once. |
-| **Recording** | — | (unchanged) | A performance that one or more samples come from (a mix and its stems). Used in the catalog and credits. |
+| **Recording** | — | (unchanged) | A performance that one or more samples come from (a mix and its stems, or an imported drum library). Carries the credits and the license. |
 | **Clip** | Clip | a sample's saved "slice"; the score's `clip` | A named region of a sample, with its warp settings. Clips are **saved with the sample** (`loop-1`, `sec-A1`, `shot-3`, your `riff`: reusable in any score, like Live's saved `.alc` clips) or **defined in a score**. |
 | **Marker** | Marker / locator | (unchanged) | A named point in a sample. |
 | **Transient** | Transient (marker) | "hit" (an accent in a recording), the `hit` marker | An onset worth cutting at. Automatic markup marks them. |
-| **Kit** | Kit (Drum Rack presets) | kit | A set of **pads**, played with `steps`. |
+| **Kit** | Kit (Drum Rack presets) | kit; "drum pack" (never used) | A set of **pads**, played with `steps`. Like clips, kits are **saved in the library** (a **saved kit**) or **defined in a score**. An imported drum library (e.g. Salamander) is just samples plus a saved kit whose pads point at them; to make your own, copy a saved kit and swap pads. |
 | **Slice** | Slice (Simpler's Slice mode; Slice to New MIDI Track) | "chop" | One of the pieces a kit cuts a clip into (by beats, bars, count, transients or phrases), each on a numbered pad. |
 | **Pad** | Pad | pad, and a chop's number | A kit's slot. It holds a slice (`b.3`) or a clip (`drums.kick`). |
 | **Track** | Track | track | Plays a clip, a whole kit (with `steps`), or one pad. |
@@ -34,6 +34,8 @@ Kept on purpose:
   (`.apr` or YAML).
 - **Swing**, **reverse**, **half/double**, **stems** and **tempo** already match Live.
 - **Chords**, **key**, **follow**, **automatic markup** and **Flow** are Apricity's own.
+
+Not used: **pack** (a downloaded kit is a saved kit, as in Live).
 
 Gone: **chop**, **piece**, **region** (as a noun), **trigger**, **bus**, **hit**, **meter**,
 `warp off`, and **gain** for faders.
@@ -112,6 +114,15 @@ YAML follows the same words:
   `nameCounters` keys `hit` → `shot`, and `ScoreRef.sliceId` → `clipId`. **This is the storage
   session's in-flight work:** its owner decides when the contract changes. Doing it before the
   first cloud deploy avoids a data migration later.
+
+## Saved kits *(planned)*
+
+- A kit can be saved in the library, next to the samples it uses, and used from any score by name,
+  just like a saved clip. A score can still define its own kits.
+- Importing a drum library makes one sample per sound (credited to one recording, with its
+  license) and one saved kit with a pad per drum (`kick`, `snare`, `hat.closed`, …).
+- Each pad holds one sample for now; velocity layers and round-robin can come later as several
+  samples on one pad, with no new words.
 
 ## The app and docs
 
