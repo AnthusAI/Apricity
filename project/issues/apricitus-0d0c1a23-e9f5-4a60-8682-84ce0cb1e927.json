@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-0d0c1a23-e9f5-4a60-8682-84ce0cb1e927",
+  "title": "Source: Salamander Drumkit (CC BY-SA 3.0) — archive extract support + first drum kit",
+  "description": "Add salamander-drumkit source to apricity-sources: single 387,611,727-byte tar.bz2 from archive.org/details/SalamanderDrumkit (CC BY-SA 3.0, Alexander Holm). Needs a File extract step (tar.bz2) in the SDK, sha256 of the archive, attribution in credit/rights. Then import as samples + a kit (one layer per drum for v1), used to test/refine drum-kit features. Note SFZ paths use backslashes.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "0d175288-6dba-49dd-8784-8f00a7ddccef",
+      "author": "home",
+      "text": "SDK part done: 28 scenarios pass (12 new, run red first); local e2e vs real tarball: 545 files fetched/skipped/removed. Not done: real archive.org download via HttpFetcher, kit import (samples+kit). HTTP global timeout raised to 1h.",
+      "created_at": "2026-09-24T19:58:16.100570Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T19:46:02.300181Z",
+  "updated_at": "2026-09-24T19:58:16.100592Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-sonnet-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
