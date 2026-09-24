@@ -3,17 +3,54 @@
   "title": "Scaffold the Amplify Gen2 backend in web/amplify",
   "description": "Create the Amplify Gen2 backend skeleton. **Don't deploy and don't run any AWS command** (no `ampx sandbox`).\n\n## Steps\n1. `web/package.json`:\n   - devDependencies: `@aws-amplify/backend`, `@aws-amplify/backend-cli`, `aws-cdk-lib`, `constructs`, `tsx` (and `typescript` if missing);\n   - dependencies: `aws-amplify`.\n2. `web/amplify/package.json` → `{\"type\": \"module\"}`. `web/amplify/tsconfig.json` uses Amplify's defaults (ES2022, `moduleResolution: bundler`, `resolveJsonModule`, `esModuleInterop`, `strict`, paths `\"$amplify/*\": [\"../.amplify/generated/*\"]`).\n3. `web/amplify/backend.ts` → `defineBackend({ auth, data, storage })`.\n4. Minimal placeholder resources, replaced by apricitus-06d285 and apricitus-9400f0:\n   - `auth/resource.ts` (email login);\n   - `data/resource.ts` (a model `Ping { note: a.string() }`, `allow.authenticated()`);\n   - `storage/resource.ts` (name `apricitusFiles`, one path).\n5. Keep the web app's own `tsc` and `vite build` away from `web/amplify/`.\n6. `.gitignore`: `web/.amplify/` and `web/amplify_outputs.json`.\n\nReference: `/Users/home/Projects/Papyrus/amplify/` (backend.ts, tsconfig, package.json).\n\n## Verify\n```\ncd web && npm install\nnpx tsc --noEmit -p amplify/tsconfig.json\nnpx ampx --version\nnpm run build\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "67fc91c2-8024-4068-a7a8-14e977eafad2",
+      "author": "home",
+      "text": "Plan: Create Amplify Gen2 scaffold with auth, data, storage resources. Will create web/amplify/ directory structure and update web/package.json with Amplify dependencies. Using Papyrus reference as guide.",
+      "created_at": "2026-09-24T04:47:01.073225Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T01"
+      }
+    },
+    {
+      "id": "dd3d1982-11c0-471a-bab5-e845d4b37381",
+      "author": "home",
+      "text": "## Scaffold Complete ✓\n\nCreated Amplify Gen2 backend structure:\n- `web/amplify/package.json` → ES module\n- `web/amplify/tsconfig.json` → Amplify defaults\n- `web/amplify/backend.ts` → defineBackend({auth, data, storage})\n- `web/amplify/auth/resource.ts` → email login\n- `web/amplify/data/resource.ts` → Ping model with authenticated access\n- `web/amplify/storage/resource.ts` → apricitusFiles bucket\n- Updated `web/package.json` → Added @aws-amplify/*, aws-cdk-lib, constructs, tsx\n- Updated `.gitignore` → Added web/.amplify/ and web/amplify_outputs.json\n\n## Verification Results\n✓ npm install: 887 packages added\n✓ npx tsc --noEmit -p amplify/tsconfig.json: passed\n✓ npx ampx --version: 1.10.0\n✓ npm run build: vite build succeeded",
+      "created_at": "2026-09-24T04:49:05.642864Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T01"
+      }
+    },
+    {
+      "id": "28f5e9c8-66f1-4f59-beb8-c691c4088fc4",
+      "author": "home",
+      "text": "Review: accepted. Re-ran verify: amplify tsc OK, ampx 1.10.0, npm run build OK, wasm test OK. Resolved versions: @aws-amplify/backend 1.25.1, aws-amplify 6.22.0, data-schema 1.26.2, graphql-generator 0.5.4 (transitive, available for T04). App tsconfig includes only src/, so amplify/ stays out of the app build. Placeholder resources to be replaced by T02/T03.",
+      "created_at": "2026-09-24T04:50:02.994287Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
+    }
+  ],
   "created_at": "2026-09-24T04:45:38.492941Z",
-  "updated_at": "2026-09-24T04:45:50.278958Z",
-  "closed_at": null,
+  "updated_at": "2026-09-24T04:50:03.051131Z",
+  "closed_at": "2026-09-24T04:50:03.051068Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",
