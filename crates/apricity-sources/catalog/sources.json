@@ -1,326 +1,380 @@
 [
- {
-  "id": "loc-edison",
-  "title": "Library of Congress Citizen DJ: Edison recordings",
-  "credit": "Citizen DJ Project, Library of Congress, Motion Picture, Broadcasting, and Recorded Sound Division.",
-  "rights": "Public domain (Edison recordings 1890-1929; assets transferred to the National Park Service).",
-  "source_page": "https://citizen-dj.labs.loc.gov/loc-edison/use/",
-  "files": [
-   {
-    "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
-    "fetch": "http",
-    "title": "The stars and stripes forever march",
-    "excerpt_start": "00:01:15"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
-    "fetch": "http",
-    "title": "The stars and stripes forever march",
-    "excerpt_start": "00:01:55"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_003_00-02-25.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_003_00-02-25.wav",
-    "fetch": "http",
-    "title": "The stars and stripes forever march",
-    "excerpt_start": "00:02:25"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
-    "fetch": "http",
-    "title": "The stars and stripes forever march",
-    "excerpt_start": "00:02:56"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_001_00-00-31.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_001_00-00-31.wav",
-    "fetch": "http",
-    "title": "The US Field Artillery march",
-    "excerpt_start": "00:00:31"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
-    "fetch": "http",
-    "title": "The US Field Artillery march",
-    "excerpt_start": "00:01:02"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
-    "fetch": "http",
-    "title": "The US Field Artillery march",
-    "excerpt_start": "00:02:40"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_004_00-03-11.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_004_00-03-11.wav",
-    "fetch": "http",
-    "title": "The US Field Artillery march",
-    "excerpt_start": "00:03:11"
-   },
-   {
-    "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_001_00-01-05.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_001_00-01-05.wav",
-    "fetch": "http",
-    "title": "True to the flag march",
-    "excerpt_start": "00:01:05"
-   },
-   {
-    "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_002_00-02-43.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_002_00-02-43.wav",
-    "fetch": "http",
-    "title": "True to the flag march",
-    "excerpt_start": "00:02:43"
-   },
-   {
-    "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_003_00-02-51.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_003_00-02-51.wav",
-    "fetch": "http",
-    "title": "True to the flag march",
-    "excerpt_start": "00:02:51"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
-    "fetch": "http",
-    "title": "The band festival at Plum Center",
-    "excerpt_start": "00:01:10"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_002_00-02-43.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_002_00-02-43.wav",
-    "fetch": "http",
-    "title": "The band festival at Plum Center",
-    "excerpt_start": "00:02:43"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_003_00-03-28.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_003_00-03-28.wav",
-    "fetch": "http",
-    "title": "The band festival at Plum Center",
-    "excerpt_start": "00:03:28"
-   },
-   {
-    "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
-    "fetch": "http",
-    "title": "The band festival at Plum Center",
-    "excerpt_start": "00:03:55"
-   }
-  ]
- },
- {
-  "id": "loc-jukebox-classical",
-  "title": "Library of Congress Citizen DJ: Jukebox (classical)",
-  "credit": "Citizen DJ Project, Library of Congress, National Jukebox.",
-  "rights": "Public domain (published before 1923; Music Modernization Act).",
-  "source_page": "https://citizen-dj.labs.loc.gov/loc-jukebox-classical/use/",
-  "files": [
-   {
-    "path": "citizen-dj/loc-jukebox-classical/Washington-Post-march_jukebox-118166_001_00-00-00.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-classical/Washington-Post-march_jukebox-118166_001_00-00-00.wav",
-    "fetch": "http",
-    "title": "Washington Post march",
-    "excerpt_start": "00:00:00"
-   }
-  ]
- },
- {
-  "id": "loc-jukebox-popular",
-  "title": "Library of Congress Citizen DJ: Jukebox (popular)",
-  "credit": "Citizen DJ Project, Library of Congress, National Jukebox.",
-  "rights": "Public domain (published before 1923; Music Modernization Act).",
-  "source_page": "https://citizen-dj.labs.loc.gov/loc-jukebox-popular/use/",
-  "files": [
-   {
-    "path": "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
-    "fetch": "http",
-    "title": "Army bugle calls",
-    "excerpt_start": "00:00:56"
-   },
-   {
-    "path": "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-422387_001_00-01-23.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Army-bugle-calls_jukebox-422387_001_00-01-23.wav",
-    "fetch": "http",
-    "title": "Army bugle calls",
-    "excerpt_start": "00:01:23"
-   },
-   {
-    "path": "citizen-dj/loc-jukebox-popular/Blue-white-march_jukebox-17457_001_00-00-00.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Blue-white-march_jukebox-17457_001_00-00-00.wav",
-    "fetch": "http",
-    "title": "Blue white march",
-    "excerpt_start": "00:00:00"
-   },
-   {
-    "path": "citizen-dj/loc-jukebox-popular/Minor-march_jukebox-126102_001_00-01-02.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Minor-march_jukebox-126102_001_00-01-02.wav",
-    "fetch": "http",
-    "title": "Minor march",
-    "excerpt_start": "00:01:02"
-   },
-   {
-    "path": "citizen-dj/loc-jukebox-popular/Virginia-two-step_jukebox-126684_001_00-01-20.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Virginia-two-step_jukebox-126684_001_00-01-20.wav",
-    "fetch": "http",
-    "title": "Virginia two step",
-    "excerpt_start": "00:01:20"
-   }
-  ]
- },
- {
-  "id": "loc-tony-schwartz",
-  "title": "Library of Congress Citizen DJ: Tony Schwartz",
-  "credit": "Citizen DJ Project, Tony Schwartz Collection at the Library of Congress, Motion Picture, Broadcasting and Recorded Sound Division.",
-  "rights": "Free to use and reuse per the Library of Congress (Citizen DJ selection).",
-  "source_page": "https://citizen-dj.labs.loc.gov/loc-tony-schwartz/use/",
-  "files": [
-   {
-    "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.wav",
-    "fetch": "http",
-    "title": "St Patricks parade",
-    "excerpt_start": "00:01:11"
-   },
-   {
-    "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_002_00-01-50.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_002_00-01-50.wav",
-    "fetch": "http",
-    "title": "St Patricks parade",
-    "excerpt_start": "00:01:50"
-   },
-   {
-    "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_003_00-02-57.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_003_00-02-57.wav",
-    "fetch": "http",
-    "title": "St Patricks parade",
-    "excerpt_start": "00:02:57"
-   },
-   {
-    "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_004_00-03-10.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_004_00-03-10.wav",
-    "fetch": "http",
-    "title": "St Patricks parade",
-    "excerpt_start": "00:03:10"
-   },
-   {
-    "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_005_00-03-29.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_005_00-03-29.wav",
-    "fetch": "http",
-    "title": "St Patricks parade",
-    "excerpt_start": "00:03:29"
-   },
-   {
-    "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_006_00-03-34.wav",
-    "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_006_00-03-34.wav",
-    "fetch": "http",
-    "title": "St Patricks parade",
-    "excerpt_start": "00:03:34"
-   }
-  ]
- },
- {
-  "id": "marine-band",
-  "title": "Marine Band: Complete Marches of John Philip Sousa (manual download)",
-  "credit": "\"The President's Own\" United States Marine Band, The Complete Marches of John Philip Sousa, Vol. 3.",
-  "rights": "Public domain (composition pre-1923; recording is a work of the U.S. Government).",
-  "source_page": "https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/The-Stars-and-Stripes-Forever-March/",
-  "files": [
-   {
-    "path": "marine-band/StarsAndStripesForever.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Sousa%27s_%22The_Stars_and_Stripes_Forever%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "The Stars and Stripes Forever"
-   },
-   {
-    "path": "marine-band/scores/StarsAndStripesForever.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/53_StarsAndStripesForever.pdf",
-    "fetch": "manual",
-    "title": "The Stars and Stripes Forever"
-   },
-   {
-    "path": "marine-band/WashingtonPost.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Sousa%27s_%22The_Washington_Post%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "The Washington Post"
-   },
-   {
-    "path": "marine-band/scores/WashingtonPost.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/38_WashingtonPost.pdf",
-    "fetch": "manual",
-    "title": "The Washington Post"
-   },
-   {
-    "path": "marine-band/LibertyBell.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/1/12/Sousa%27s_%22The_Liberty_Bell%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "The Liberty Bell"
-   },
-   {
-    "path": "marine-band/scores/LibertyBell.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/48_LibertyBell.pdf",
-    "fetch": "manual",
-    "title": "The Liberty Bell"
-   },
-   {
-    "path": "marine-band/Thunderer.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Sousa%27s_%22The_Thunderer%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "The Thunderer"
-   },
-   {
-    "path": "marine-band/scores/Thunderer.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/37_Thunderer.pdf",
-    "fetch": "manual",
-    "title": "The Thunderer"
-   },
-   {
-    "path": "marine-band/ElCapitan.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/9/94/Sousa%27s_%22El_Capitan%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "El Capitan"
-   },
-   {
-    "path": "marine-band/scores/ElCapitan.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/52_ElCapitan.pdf",
-    "fetch": "manual",
-    "title": "El Capitan"
-   },
-   {
-    "path": "marine-band/KingCotton.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Sousa%27s_%22King_Cotton%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "King Cotton"
-   },
-   {
-    "path": "marine-band/scores/KingCotton.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/51_KingCotton.pdf",
-    "fetch": "manual",
-    "title": "King Cotton"
-   },
-   {
-    "path": "marine-band/HighSchoolCadets.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/9/90/Sousa%27s_%22The_High_School_Cadets%22_-_United_States_Marine_Band_%282017%29.mp3",
-    "fetch": "manual",
-    "title": "The High School Cadets"
-   },
-   {
-    "path": "marine-band/scores/HighSchoolCadets.pdf",
-    "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/40_HighSchoolCadets.pdf",
-    "fetch": "manual",
-    "title": "The High School Cadets"
-   },
-   {
-    "path": "marine-band/SemperFidelis.mp3",
-    "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Sousa%27s_%22Semper_Fidelis%22_-_United_States_Marine_Band_%282016%29.mp3",
-    "fetch": "manual",
-    "title": "Semper Fidelis"
-   }
-  ]
- }
+  {
+    "id": "loc-edison",
+    "title": "Library of Congress Citizen DJ: Edison recordings",
+    "credit": "Citizen DJ Project, Library of Congress, Motion Picture, Broadcasting, and Recorded Sound Division.",
+    "rights": "Public domain (Edison recordings 1890-1929; assets transferred to the National Park Service).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-edison/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:01:15",
+        "sha256": "e4bf34fc99dd97ea56d19bca0a94541392f53c4c7689029cae100d02dc7146c1",
+        "size": 5795756
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:01:55",
+        "sha256": "cc37de96d3e9ab47b41489bdc9b3394a239b0b4849a21c50bd73495204a7bb11",
+        "size": 5795756
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_003_00-02-25.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_003_00-02-25.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:02:25",
+        "sha256": "46a40dd91375f8bb6ae8b339146cc741fa5611424508def0caac6abea3a51607",
+        "size": 5809196
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:02:56",
+        "sha256": "9ee27b22cbdceda794589bebcbdc696ae26145b8e4d0d525ba166eadf1992bbd",
+        "size": 5095724
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_001_00-00-31.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_001_00-00-31.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:00:31",
+        "sha256": "84e9fca2d49797cc0e80e947dde065b1ff2ef86ccaf38a5722e4006c61d2a094",
+        "size": 5818028
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:01:02",
+        "sha256": "0489a6588ef499d8a7a54f22188b15b4b339b56dc4b154315ee3015f40af1ba9",
+        "size": 5791340
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:02:40",
+        "sha256": "0d39d3960932334dcb88ba2846045b33ddee2f700773568c653ef6884cbec937",
+        "size": 5871404
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_004_00-03-11.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_004_00-03-11.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:03:11",
+        "sha256": "a6d30de4096ae915c50af05f5a4e9b8ea15391e3b31512076ccc74c2e75190ba",
+        "size": 5782508
+      },
+      {
+        "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_001_00-01-05.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_001_00-01-05.wav",
+        "fetch": "http",
+        "title": "True to the flag march",
+        "excerpt_start": "00:01:05",
+        "sha256": "ecc23694027be2706f3df70ace57ccf15e1de8e626514f58042839239e87628a",
+        "size": 2795372
+      },
+      {
+        "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_002_00-02-43.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_002_00-02-43.wav",
+        "fetch": "http",
+        "title": "True to the flag march",
+        "excerpt_start": "00:02:43",
+        "sha256": "49491538623f2bce46b88c73182b46f794b07d53880dfdb434bdda71fd81a318",
+        "size": 1422188
+      },
+      {
+        "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_003_00-02-51.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_003_00-02-51.wav",
+        "fetch": "http",
+        "title": "True to the flag march",
+        "excerpt_start": "00:02:51",
+        "sha256": "f04af9411d74d210303a5397c855d7a460e4554e5bf710e608a1e4ba3dde550a",
+        "size": 3316844
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:01:10",
+        "sha256": "bda7f9bde46baaff2e5e64d8d9e70926e25e65d1ea7671a8cecfad582de3483f",
+        "size": 927404
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_002_00-02-43.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_002_00-02-43.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:02:43",
+        "sha256": "626a824ba721e44a3e2d1f8dcd1a2dee3c60bcee554dc996c4d8f6b40f95d087",
+        "size": 2764268
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_003_00-03-28.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_003_00-03-28.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:03:28",
+        "sha256": "d71dd217cd460274a57c192d374bf2a56ccae5826bd37677f418bad74603f646",
+        "size": 4993196
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:03:55",
+        "sha256": "69c9486190a555362969929b1f6c683c6d48da4d7610e1e797aa18541b7aab38",
+        "size": 815852
+      }
+    ]
+  },
+  {
+    "id": "loc-jukebox-classical",
+    "title": "Library of Congress Citizen DJ: Jukebox (classical)",
+    "credit": "Citizen DJ Project, Library of Congress, National Jukebox.",
+    "rights": "Public domain (published before 1923; Music Modernization Act).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-jukebox-classical/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-jukebox-classical/Washington-Post-march_jukebox-118166_001_00-00-00.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-classical/Washington-Post-march_jukebox-118166_001_00-00-00.wav",
+        "fetch": "http",
+        "title": "Washington Post march",
+        "excerpt_start": "00:00:00",
+        "sha256": "602f8e5962bb9faa106ba9f40757f647678e2c55418e874cf7d0a9cc68a4266b",
+        "size": 1183724
+      }
+    ]
+  },
+  {
+    "id": "loc-jukebox-popular",
+    "title": "Library of Congress Citizen DJ: Jukebox (popular)",
+    "credit": "Citizen DJ Project, Library of Congress, National Jukebox.",
+    "rights": "Public domain (published before 1923; Music Modernization Act).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-jukebox-popular/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
+        "fetch": "http",
+        "title": "Army bugle calls",
+        "excerpt_start": "00:00:56",
+        "sha256": "03ca871769ca4644bb11a4c81374f55c47cf38c585b397c83ecabadcc043c3d0",
+        "size": 1210604
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-422387_001_00-01-23.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Army-bugle-calls_jukebox-422387_001_00-01-23.wav",
+        "fetch": "http",
+        "title": "Army bugle calls",
+        "excerpt_start": "00:01:23",
+        "sha256": "b194c4aab32ca700201c00f2b07bf2216a6aff37005d759f5438bfb9828fb26b",
+        "size": 996332
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Blue-white-march_jukebox-17457_001_00-00-00.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Blue-white-march_jukebox-17457_001_00-00-00.wav",
+        "fetch": "http",
+        "title": "Blue white march",
+        "excerpt_start": "00:00:00",
+        "sha256": "68a6ae4ac88bc56fed8c62d8a89184a0137382abe9ee07e4f1c563aa8b51f6d6",
+        "size": 5777900
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Minor-march_jukebox-126102_001_00-01-02.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Minor-march_jukebox-126102_001_00-01-02.wav",
+        "fetch": "http",
+        "title": "Minor march",
+        "excerpt_start": "00:01:02",
+        "sha256": "2752a7604099110b2e7f7df48d72066f03e45b0cac83cf2765a9730cf8d1801b",
+        "size": 5902700
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Virginia-two-step_jukebox-126684_001_00-01-20.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Virginia-two-step_jukebox-126684_001_00-01-20.wav",
+        "fetch": "http",
+        "title": "Virginia two step",
+        "excerpt_start": "00:01:20",
+        "sha256": "fa43ee1c666bd552fe28f1cdc3d559465d9e4a06f208859801fcf7ffabd4f38a",
+        "size": 5780012
+      }
+    ]
+  },
+  {
+    "id": "loc-tony-schwartz",
+    "title": "Library of Congress Citizen DJ: Tony Schwartz",
+    "credit": "Citizen DJ Project, Tony Schwartz Collection at the Library of Congress, Motion Picture, Broadcasting and Recorded Sound Division.",
+    "rights": "Free to use and reuse per the Library of Congress (Citizen DJ selection).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-tony-schwartz/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:01:11",
+        "sha256": "feede98db3c204af9dc9b5bf64020ebd0d14b177dfa4380fda0e517591e5d693",
+        "size": 5780204
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_002_00-01-50.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_002_00-01-50.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:01:50",
+        "sha256": "53c0c722066c174bb6a1f499dfd40f639dbb6efbaa117c5316752ad6a4c2cba8",
+        "size": 4763564
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_003_00-02-57.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_003_00-02-57.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:02:57",
+        "sha256": "6e35e1ae85f78061b4a2e5dd8b57ce0046433482f2984586d7648ed839ddcb24",
+        "size": 1275116
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_004_00-03-10.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_004_00-03-10.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:03:10",
+        "sha256": "f21752a4eeab4213cafebe2c8b508fa420df0e7286b92e8a4891cc0dd85a7422",
+        "size": 3666860
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_005_00-03-29.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_005_00-03-29.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:03:29",
+        "sha256": "43328ac9c09b2b265fb4d47f5bfa6f0ae52d1edb898a35668116b7086a4391b6",
+        "size": 847148
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_006_00-03-34.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_006_00-03-34.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:03:34",
+        "sha256": "0078de15cebef6d148e3c18adcc4d2a039ee8486bf3df6f9841f865977787573",
+        "size": 2802092
+      }
+    ]
+  },
+  {
+    "id": "marine-band",
+    "title": "Marine Band: Complete Marches of John Philip Sousa (manual download)",
+    "credit": "\"The President's Own\" United States Marine Band, The Complete Marches of John Philip Sousa, Vol. 3.",
+    "rights": "Public domain (composition pre-1923; recording is a work of the U.S. Government).",
+    "source_page": "https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/The-Stars-and-Stripes-Forever-March/",
+    "files": [
+      {
+        "path": "marine-band/StarsAndStripesForever.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Sousa%27s_%22The_Stars_and_Stripes_Forever%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Stars and Stripes Forever"
+      },
+      {
+        "path": "marine-band/scores/StarsAndStripesForever.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/53_StarsAndStripesForever.pdf",
+        "fetch": "manual",
+        "title": "The Stars and Stripes Forever"
+      },
+      {
+        "path": "marine-band/WashingtonPost.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Sousa%27s_%22The_Washington_Post%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Washington Post"
+      },
+      {
+        "path": "marine-band/scores/WashingtonPost.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/38_WashingtonPost.pdf",
+        "fetch": "manual",
+        "title": "The Washington Post"
+      },
+      {
+        "path": "marine-band/LibertyBell.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/1/12/Sousa%27s_%22The_Liberty_Bell%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Liberty Bell"
+      },
+      {
+        "path": "marine-band/scores/LibertyBell.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/48_LibertyBell.pdf",
+        "fetch": "manual",
+        "title": "The Liberty Bell"
+      },
+      {
+        "path": "marine-band/Thunderer.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Sousa%27s_%22The_Thunderer%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Thunderer"
+      },
+      {
+        "path": "marine-band/scores/Thunderer.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/37_Thunderer.pdf",
+        "fetch": "manual",
+        "title": "The Thunderer"
+      },
+      {
+        "path": "marine-band/ElCapitan.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/94/Sousa%27s_%22El_Capitan%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "El Capitan"
+      },
+      {
+        "path": "marine-band/scores/ElCapitan.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/52_ElCapitan.pdf",
+        "fetch": "manual",
+        "title": "El Capitan"
+      },
+      {
+        "path": "marine-band/KingCotton.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Sousa%27s_%22King_Cotton%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "King Cotton"
+      },
+      {
+        "path": "marine-band/scores/KingCotton.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/51_KingCotton.pdf",
+        "fetch": "manual",
+        "title": "King Cotton"
+      },
+      {
+        "path": "marine-band/HighSchoolCadets.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/90/Sousa%27s_%22The_High_School_Cadets%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The High School Cadets"
+      },
+      {
+        "path": "marine-band/scores/HighSchoolCadets.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/40_HighSchoolCadets.pdf",
+        "fetch": "manual",
+        "title": "The High School Cadets"
+      },
+      {
+        "path": "marine-band/SemperFidelis.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Sousa%27s_%22Semper_Fidelis%22_-_United_States_Marine_Band_%282016%29.mp3",
+        "fetch": "manual",
+        "title": "Semper Fidelis"
+      }
+    ]
+  }
 ]
