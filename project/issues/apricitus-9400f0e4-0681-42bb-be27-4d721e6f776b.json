@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-9400f0e4-0681-42bb-be27-4d721e6f776b",
+  "title": "auth and storage resources (Google sign-in, groups, triggers)",
+  "description": "Implement `design/storage.md` §1.1. **Don't deploy.** Reference: `/Users/home/Projects/Papyrus/amplify/auth/resource.ts` and `storage/resource.ts`.\n\n## Files\n- **`auth/resource.ts`:** email plus Google (`secret('GOOGLE_CLIENT_ID')`, `secret('GOOGLE_CLIENT_SECRET')`, scopes `email profile openid`). Callback and logout URLs come from `APRICITUS_OAUTH_REDIRECT_URLS`, defaulting to `http://localhost:5173/` and `http://127.0.0.1:5181/`. Groups `members`, `curators`, `admins`. `allow.resource(postConfirmation).to(['addUserToGroup'])`.\n- **`auth/pre-sign-up/{resource.ts,handler.ts}`:** reject sign-ups whose email isn't in `ALLOWED_EMAILS` (`secret('ALLOWED_EMAILS')`, comma-separated, case-insensitive), including Google sign-ups (`PreSignUp_ExternalProvider`). Put the check in a pure function, `isAllowed(email, list)`, in `auth/allow-list.ts`.\n- **`auth/post-confirmation/{resource.ts,handler.ts}`:** add the user to `members` with `AdminAddUserToGroupCommand` (`@aws-sdk/client-cognito-identity-provider`).\n- **`storage/resource.ts`:** `defineStorage({ name: 'apricitusFiles', isDefault: true, access })`. `audio/*`, `analysis/*` and `documents/*` are readable by `members` and read/write/delete for `curators`; `uploads/{entity_id}/*` belongs to its owner.\n- Wire the triggers in `backend.ts` if needed.\n\n## Verify\n```\ncd web && npx tsc --noEmit -p amplify/tsconfig.json\nnode --test amplify/auth/allow-list.test.ts   # or via tsx: npx tsx --test amplify/auth/allow-list.test.ts\nnpx tsx scripts/print-sdl.ts > /dev/null\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-1f792d2d-09d0-4d48-bc29-a15a77307b60",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.553019Z",
+  "updated_at": "2026-09-24T04:45:50.380838Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f27e5a47-9b1e-4f81-b21c-faf14153f273",
+  "title": "The data model is defined once",
+  "description": "As a developer, I want one definition of the data model, so that the cloud, the Swift engine and the local server never disagree.\n\n```gherkin\nFeature: One data model\n  Scenario: The contract is generated from the Amplify schema\n    Given the Amplify schema in web/amplify/data/resource.ts\n    When I run the contract generator\n    Then contract/apricitus.contract.json lists every model, index queryField and relationship\n    And contract/appsync.graphql defines the matching GraphQL operations\n\n  Scenario: Generation is deterministic\n    When I run the contract generator twice\n    Then the second run changes no files\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.434049Z",
+  "updated_at": "2026-09-24T04:45:50.088358Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

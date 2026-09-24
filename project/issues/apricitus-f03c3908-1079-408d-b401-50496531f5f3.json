@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f03c3908-1079-408d-b401-50496531f5f3",
+  "title": "Swift SDK: apricitus-ffi, XCFramework, ApricitusData package",
+  "description": "`design/storage.md` §3.2 (`apricitus-ffi`).\n\n## Steps\n1. `crates/apricitus-ffi` (UniFFI proc-macros) with the `ApricitusLibrary` surface in §3.2: `open`, `call`, `keep_candidate`, `feed`, `file_put`, `file_path`, `subscribe`, `contract_json`.\n2. `scripts/build-xcframework.sh`: build `aarch64-apple-darwin`, `aarch64-apple-ios` and `aarch64-apple-ios-sim`; run `uniffi-bindgen generate --library`; `xcodebuild -create-xcframework`.\n3. `swift/ApricitusData/Package.swift` with a `binaryTarget`, plus Swift wrappers generated from the contract (`Models.swift`, and a `Client` mirroring `client.models.<model>.<op>`, returning `Result<T>` with `data`, `errors`, `nextToken`).\n4. `swift test` smoke: open a migrated library, list clips by collection `marine-band` (story apricitus-f4359a), create/get/delete a Crate, keep a candidate.\n\n## Verify\n```\nxcodebuild -version\nscripts/build-xcframework.sh\ncd swift/ApricitusData && swift test\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-c01da81d-c9de-4bd5-94d9-9bed705973be",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.070273Z",
+  "updated_at": "2026-09-24T04:45:51.324025Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f9e62027-aacd-49ff-a924-851a1084c3e4",
+  "title": "[virtuus] Engine core upgrades",
+  "description": "Tracking task for the Virtuus core work, done upstream on the Virtuus board (`~/Projects/Virtuus`, key `virt`): virt-cdf828, virt-2ee9d5, virt-afe10c, virt-0f3184, virt-0b87e4, virt-3cfeb3 (virt-9900a3, virt-4f5306, virt-7498a3), virt-8c7fd5. Closes when those close.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.815210Z",
+  "updated_at": "2026-09-24T04:45:50.789693Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

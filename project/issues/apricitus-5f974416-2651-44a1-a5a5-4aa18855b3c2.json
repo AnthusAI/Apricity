@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-5f974416-2651-44a1-a5a5-4aa18855b3c2",
+  "title": "Amplify Hosting deploy (optional, user decides)",
+  "description": "Hosting the web app on Amplify Hosting (`amplify.yml`, the branch's backend). Only with the user's approval.\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-df37ae83-bc03-4390-ae0d-797368bd847f",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.689323Z",
+  "updated_at": "2026-09-24T04:45:52.195762Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

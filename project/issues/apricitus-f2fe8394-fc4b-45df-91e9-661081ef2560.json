@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "title": "Cloud backend: AWS Amplify Gen2",
+  "description": "Deploy the same data model to AWS: AppSync GraphQL, DynamoDB, S3 (`apricitusFiles`), and Cognito with Google sign-in, restricted to allowed emails (members, curators, admins). The web app runs against it, and libraries move between local and cloud with `transfer`.\n\n**Gated on the user** (apricitus-e28a12): AWS account and profile, the Google OAuth client, allowed emails, and approval to deploy (it costs money).\n\nDesign: `design/storage.md` §1.1, §2.1 (the SDL snapshot), §4 and §5 (transfer).\n\n## Definition of done\n- The corpus is green on the sandbox, including unauthorized cases.\n- Google sign-in works end to end.\n- Round trip local → cloud → local is identical.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.424824Z",
+  "updated_at": "2026-09-24T04:45:51.826342Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

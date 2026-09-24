@@ -1,0 +1,34 @@
+{
+  "id": "apricitus-dc4989ca-a68d-4061-86cd-2083559ffc35",
+  "title": "Deploy the sandbox; snapshot the real SDL; settle §7.1 against AWS",
+  "description": "Only after apricitus-e28a12 is answered.\n\n## Steps\n1. `npx ampx sandbox --once` with the user's profile; set the secrets first.\n2. Snapshot the deployed schema into `contract/appsync.graphql` and diff it against the offline one.\n3. Settle `design/storage.md` §7.1 by experiment against the sandbox (a script under `web/scripts/sandbox-probe.ts`):\n   - limit before filter;\n   - how `a.json` round-trips;\n   - enum index keys;\n   - composite identifier encoding;\n   - `ownerDefinedIn` with `identityClaim('sub')`.\n4. Record the findings as `@sandbox` scenarios and fix the engine specs (Virtuus) where they differ.\n\n## Verify\n`npm run contract:check` passes against the snapshot. The probe script's report is pasted in a comment.\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-e28a121f-df83-44fd-bb1c-23d4967eef48",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-f8425fa0-0cfd-414e-907c-8059303af93e",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.544809Z",
+  "updated_at": "2026-09-24T04:45:52.005074Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

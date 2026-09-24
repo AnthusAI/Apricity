@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-fca6d899-1f7e-47c8-9328-bdd370b30595",
+  "title": "Local GraphQL backend: apricitus serve",
+  "description": "`apricitus serve --library <dir>`: a Rust server answering the same GraphQL schema as AppSync (Virtuus's `virtuus-appsync`), over the same engine and folder the Swift app uses. It serves files with Range requests, `amplify_outputs.json`, and the web app itself. The web app uses the real `aws-amplify` client against it, so it runs locally without AWS. `server.py`'s data endpoints retire.\n\nDesign: `design/storage.md` §4.\n\n## Definition of done\n- The corpus is green through the real Amplify client against `serve`.\n- Playwright end-to-end tests pass.\n- The UI no longer calls `/api/*`.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.103523Z",
+  "updated_at": "2026-09-24T04:45:51.387346Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

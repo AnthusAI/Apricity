@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-1f792d2d-09d0-4d48-bc29-a15a77307b60",
+  "title": "Scaffold the Amplify Gen2 backend in web/amplify",
+  "description": "Create the Amplify Gen2 backend skeleton. **Don't deploy and don't run any AWS command** (no `ampx sandbox`).\n\n## Steps\n1. `web/package.json`:\n   - devDependencies: `@aws-amplify/backend`, `@aws-amplify/backend-cli`, `aws-cdk-lib`, `constructs`, `tsx` (and `typescript` if missing);\n   - dependencies: `aws-amplify`.\n2. `web/amplify/package.json` → `{\"type\": \"module\"}`. `web/amplify/tsconfig.json` uses Amplify's defaults (ES2022, `moduleResolution: bundler`, `resolveJsonModule`, `esModuleInterop`, `strict`, paths `\"$amplify/*\": [\"../.amplify/generated/*\"]`).\n3. `web/amplify/backend.ts` → `defineBackend({ auth, data, storage })`.\n4. Minimal placeholder resources, replaced by apricitus-06d285 and apricitus-9400f0:\n   - `auth/resource.ts` (email login);\n   - `data/resource.ts` (a model `Ping { note: a.string() }`, `allow.authenticated()`);\n   - `storage/resource.ts` (name `apricitusFiles`, one path).\n5. Keep the web app's own `tsc` and `vite build` away from `web/amplify/`.\n6. `.gitignore`: `web/.amplify/` and `web/amplify_outputs.json`.\n\nReference: `/Users/home/Projects/Papyrus/amplify/` (backend.ts, tsconfig, package.json).\n\n## Verify\n```\ncd web && npm install\nnpx tsc --noEmit -p amplify/tsconfig.json\nnpx ampx --version\nnpm run build\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.492941Z",
+  "updated_at": "2026-09-24T04:45:50.278958Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

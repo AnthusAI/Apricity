@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f5687e49-708b-4326-ac3d-abc0486487b1",
+  "title": "A library round-trips between local and cloud",
+  "description": "```gherkin\nFeature: Moving libraries between modes\n  Scenario: Round trip\n    Given a library migrated from the repository\n    When I transfer it to the cloud as user \"u-123\" and back into a new local library\n    Then every table and every file hash matches the original\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.480525Z",
+  "updated_at": "2026-09-24T04:45:51.904783Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

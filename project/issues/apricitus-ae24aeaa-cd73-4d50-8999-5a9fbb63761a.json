@@ -1,0 +1,34 @@
+{
+  "id": "apricitus-ae24aeaa-cd73-4d50-8999-5a9fbb63761a",
+  "title": "apricitus serve: GraphQL, files with Range, amplify_outputs, static app",
+  "description": "`design/storage.md` §4. A `serve` subcommand in `apricitus-cli` (axum, 127.0.0.1, default port 5181) with these routes:\n- `POST /graphql`: `virtuus_appsync::router` over the library's engine, using `contract/appsync.graphql` and the library's API key.\n- `GET /amplify_outputs.json`: generated per library, exactly as §4 says (API_KEY mode, `model_introspection` from `contract/model-introspection.json`, `custom.apricitus`).\n- `GET/HEAD/PUT/DELETE /files/*key` over `virtuus-blobs`, with **Range** support (`tower-http` `ServeFile` handles Range).\n- Static `web/dist` and the wasm, embedded with `rust-embed`, with COOP/COEP/CORP headers as `analysis/apricitus_analyze/server.py` sets them.\n\n## Test\n`scripts/serve-smoke.sh` starts `serve` on a migrated library, then:\n- POSTs a `listClips` query;\n- checks `amplify_outputs.json`;\n- requests a byte range of a stem (expects 206 and compares the bytes);\n- loads `/` and checks the COOP header.\n\n## Verify\n`cargo test -p apricitus-cli`, then `scripts/serve-smoke.sh`.\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fca6d899-1f7e-47c8-9328-bdd370b30595",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-7ca619c6-5e3d-4b8d-ab72-5d86aac92098",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-c01da81d-c9de-4bd5-94d9-9bed705973be",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.265120Z",
+  "updated_at": "2026-09-24T04:45:51.608327Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

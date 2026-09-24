@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-090b52e2-603e-4c1c-b786-b9d8aac83c35",
+  "title": "apricitus-score: references() and the @id form",
+  "description": "`design/storage.md` §3.2 (`apricitus-score`).\n\n## Steps\n1. `pub struct Ref { alias: String, source: String, slice: Option<String>, kit_pad: Option<String> }` and `pub fn references(score: &Score, base_dir: &Path) -> Vec<Ref>`:\n   - every clip with its source path and optional slice;\n   - every drum-kit pad that names a clip and slice, e.g. `crash = band slice hit-3` → `kit_pad: Some(\"drums.crash\")`;\n   - chopped kits reference their clip.\n2. The optional id form: a clip source may be `@clp_…` and a slice `@slc_…`. The DSL and YAML accept and round-trip them; resolution happens later in the loader (apricitus-115d2e).\n3. Tests in `crates/apricitus-score/tests/references.rs`: for each file in `examples/`, the expected references (hand-checked), plus id-form round trips through `apricitus fmt`.\n\n## Verify\n`cargo test -p apricitus-score`\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.879318Z",
+  "updated_at": "2026-09-24T04:45:50.895462Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

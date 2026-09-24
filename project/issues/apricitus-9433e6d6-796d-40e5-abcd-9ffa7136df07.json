@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "title": "Local direct storage: the engine and the Swift SDK",
+  "description": "The local-files backend: a library folder (`design/storage.md` §3.3) read and written through the Virtuus engine, with Apricitus's models and domain operations in `crates/apricitus-data`. It's embedded in Swift through UniFFI (`crates/apricitus-ffi`) and used by Python through PyO3. Today's files migrate into it without changing a note of any score.\n\nDesign: `design/storage.md` §1.2–§1.5, §3 and §5.\n\n## Definition of done\n- The conformance corpus is green through the Rust engine.\n- Migration is idempotent and renders are sample-identical.\n- The Python analysis pipeline writes through the engine.\n- `swift test` opens a migrated library through the XCFramework.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.649570Z",
+  "updated_at": "2026-09-24T04:45:50.565267Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

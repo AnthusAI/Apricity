@@ -1,0 +1,34 @@
+{
+  "id": "apricitus-115d2efb-8fe8-4709-90e9-d7c1008107fb",
+  "title": "crates/apricitus-data: Library, ids, typed models, compile loader",
+  "description": "`design/storage.md` §3.2, §3.3 and §1.2.\n\n## Steps\n1. New crate `crates/apricitus-data`. It depends on `virtuus-amplify` and `virtuus-blobs` by path (`../../../Virtuus/rust/crates/...`; a git dependency later) and on `apricitus-score`.\n2. `Library::create(dir)` and `Library::open(dir, Identity)` with the §3.3 layout and `apricitus-library.json`. The contract comes from `include_str!(\"../../../contract/apricitus.contract.json\")`.\n3. `cargo xtask gen-models` (a new `xtask` crate) generates `src/models.rs`: serde structs and typed facades such as `lib.models().clip().get(id)` and `.slices_by_clip(clip_id, opts)`, all over `Engine::call`.\n4. `ids`: `clip_id(sha256)`, `stem_clip_id(parent, stem, model)`, `candidate_id(clip_id, start, end, kind)` and `curated_slice_id(candidate_id)`, exactly as §1.2 says.\n5. `loader::make(&Library)`, following §3.2: look the alias up with `clipsByPath` (falling back to `aliases`), load the analysis attachment, load active and retired slices plus markers, rebuild the manifest JSON, then `Clip::from_json`. It plugs into the existing `compile_with`.\n6. Test: build a library in a temp folder from one real manifest (a test helper inserts the Clip, the analysis file and slices), compile an example score through the loader, and assert the timeline equals the file-based compile.\n\n## Verify\n`cargo test -p apricitus-data`\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-d8aeeaa6-c3d5-4952-ae42-9eb9219574ae",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-090b52e2-603e-4c1c-b786-b9d8aac83c35",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.911536Z",
+  "updated_at": "2026-09-24T04:45:50.954439Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

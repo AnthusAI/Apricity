@@ -1,0 +1,34 @@
+{
+  "id": "apricitus-92b5b506-e95c-4c9b-9753-9078dffd6f5b",
+  "title": "Realtime in the app: ws:// spike, subscriptions, observeQuery",
+  "description": "Needs virt-2eb828.\n\n## Steps\n1. **Spike:** does the Amplify client subscribe over plain `ws://` to a non-AppSync host? Record the answer on this issue. If it doesn't, add `--tls` to `serve` with an mkcert certificate.\n2. The `@realtime` scenarios pass in the TypeScript runner (`TARGET=local`).\n3. The curation feed uses `observeQuery` (story apricitus-142b54). Coordinate the UI change with the web session.\n\n## Verify\n`cd web && TARGET=local npm run conformance -- --tags @realtime`\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fca6d899-1f7e-47c8-9328-bdd370b30595",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-8be8917b-bbf5-4f15-82d4-43ac3d07dbfd",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-7ca619c6-5e3d-4b8d-ab72-5d86aac92098",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.363932Z",
+  "updated_at": "2026-09-24T04:45:51.744635Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

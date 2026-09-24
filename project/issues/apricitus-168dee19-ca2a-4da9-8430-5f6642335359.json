@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-168dee19-ca2a-4da9-8430-5f6642335359",
+  "title": "Migration keeps every score sounding the same",
+  "description": "As a user with an existing library, I want to move to the new storage without losing or changing anything.\n\n```gherkin\nFeature: Migrating today's files\n  Scenario: Every example sounds the same after migration\n    Given the repository's samples, manifests, curation library and example scores\n    When I migrate them into a new library\n    Then every example score renders sample-identical from the library and from the files\n\n  Scenario: Migration is idempotent\n    Given a library migrated from the repository\n    When I migrate into the same library again\n    Then nothing changes\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.712662Z",
+  "updated_at": "2026-09-24T04:45:50.649260Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

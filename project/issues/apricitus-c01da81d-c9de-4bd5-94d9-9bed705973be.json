@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-c01da81d-c9de-4bd5-94d9-9bed705973be",
+  "title": "apricitus migrate: today's files into a library",
+  "description": "Implement `design/storage.md` §5 as `apricitus migrate --from <repo root> --to <library> [--link]` (in `apricitus-data`, exposed by `apricitus-cli`).\n\n## Behaviour\n- Recordings, Clips (+ analysis attachments; audio cloned or hard-linked), Slices, Markers, Candidates (with `legacyId`), Verdicts (`judge: \"local\"`), Crates, and Scores with ScoreRefs.\n- A report of counts.\n- Exits non-zero on any unresolved score reference.\n- Idempotent: a second run reports 0 changes.\n\n## Check\n`scripts/check-migration.sh` migrates to a temp library, then for each `examples/*.apr|yaml` renders it from the files (`apricitus render`) and from the library (`apricitus render --library <lib>`), and `cmp`s the WAVs.\n\n## Verify\n```\napricitus migrate --from . --to /tmp/apr-lib --link     # report\napricitus migrate --from . --to /tmp/apr-lib --link     # \"0 changes\"\nscripts/check-migration.sh                              # all identical\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-9987a307-a8b0-44f3-a7ba-ab35c55b5477",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.004984Z",
+  "updated_at": "2026-09-24T04:45:51.179754Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

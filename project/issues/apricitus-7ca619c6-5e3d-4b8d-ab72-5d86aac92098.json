@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-7ca619c6-5e3d-4b8d-ab72-5d86aac92098",
+  "title": "[virtuus] virtuus-appsync crate and realtime",
+  "description": "Tracking task for virt-8f8638 (virt-ff0144–virt-5cda18) and virt-2eb828 on the Virtuus board. Closes when they close.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fca6d899-1f7e-47c8-9328-bdd370b30595",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-d8aeeaa6-c3d5-4952-ae42-9eb9219574ae",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.230660Z",
+  "updated_at": "2026-09-24T04:45:51.564743Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

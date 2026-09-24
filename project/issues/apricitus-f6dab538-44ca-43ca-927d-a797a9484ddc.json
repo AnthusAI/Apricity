@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f6dab538-44ca-43ca-927d-a797a9484ddc",
+  "title": "Python on the engine: apricitus_data (PyO3) and the analysis pipeline",
+  "description": "`design/storage.md` §3.2 (Python).\n\n## Steps\n1. Build a PyO3 module `apricitus_data` from `apricitus-data` (a `python` feature, with maturin), installed into `analysis/.venv`. It exposes `Library(path).models.<Model>.<op>(...)`, `.call()`, `.propose()`, `.judge()`, `.feed()`, `.apply_markup()` and `.files.put()`.\n2. Rewire `analysis/apricitus_analyze/`:\n   - `curation.Store` → Library (keep the CLI and terminal feed UX);\n   - `analyze.write` and `markup.run` (through `apply_markup`/`merge`) and `stems`, all with a `--library` option.\n3. Port `analysis/tests` to temp libraries.\n4. Test: the terminal feed's `judge`, `propose` and a second process writing at the same time lose nothing.\n\n## Verify\n`PYTHONPATH=analysis analysis/.venv/bin/python -m pytest -q analysis/tests`\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-9987a307-a8b0-44f3-a7ba-ab35c55b5477",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.036526Z",
+  "updated_at": "2026-09-24T04:45:51.227996Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

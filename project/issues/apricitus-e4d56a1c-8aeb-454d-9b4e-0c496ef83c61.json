@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e4d56a1c-8aeb-454d-9b4e-0c496ef83c61",
+  "title": "Members sign in with Google; outsiders are refused",
+  "description": "```gherkin\nFeature: Signing in\n  Scenario: A member signs in with Google and sees the catalog\n    Given \"rap@endymion.com\" is on the allowed list\n    When they sign in with Google\n    Then they are in the \"members\" group and can list clips\n\n  Scenario: An outsider is refused\n    Given \"stranger@example.com\" is not on the allowed list\n    When they try to sign up with Google\n    Then the sign-up is rejected\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.450015Z",
+  "updated_at": "2026-09-24T04:45:51.862525Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

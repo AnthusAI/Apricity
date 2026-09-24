@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f4359afc-8cd6-4870-9f6e-3d40d9397684",
+  "title": "A Swift app opens a library and queries it",
+  "description": "As a Swift app developer, I want to open a library folder and query it with the same operations as the web client.\n\n```gherkin\nFeature: The Swift SDK\n  Scenario: List clips of a collection\n    Given a library migrated from the repository\n    When a Swift client opens it and lists clips by collection \"marine-band\"\n    Then it receives the Marine Band clips with their bpm and key\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.777429Z",
+  "updated_at": "2026-09-24T04:45:50.742996Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

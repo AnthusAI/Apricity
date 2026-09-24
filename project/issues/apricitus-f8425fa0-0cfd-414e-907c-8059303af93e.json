@@ -1,0 +1,34 @@
+{
+  "id": "apricitus-f8425fa0-0cfd-414e-907c-8059303af93e",
+  "title": "Contract generator: contract JSON, model introspection, AppSync SDL",
+  "description": "Implement `design/storage.md` §2.1 as `web/scripts/generate-contract.ts`. Reference for the contract shape: `/Users/home/Projects/Plexus/dashboard/scripts/generate-control-plane-contract.ts` (models, indexes, relationships, authRules, storage).\n\n## Outputs (repo root `contract/`)\n- **`apricitus.contract.json`:** per model, `name`; `fields` (name, type, isRequired, isArray, enum or customType); `primaryKey` (identifier fields); `indexes` `[{name, queryField, partitionField, sortFields, sortArgument}]`, including the **implicit hasMany indexes** Amplify creates; `relationships` `[{field, kind: hasMany|belongsTo|hasOne, target, references}]`; `authRules`; `ownerFields`. Top level: `enums`, `customTypes`, `storage.paths`, `version`.\n- **`contract.schema.json`:** the JSON Schema for that format. It's **normative**: Virtuus's `virtuus-amplify` vendors it (Virtuus task virt-2e1ef8), so document every field.\n- **`model-introspection.json`:** from `@aws-amplify/graphql-generator` `generateModels({ target: 'introspection' })` on the transformed schema.\n- **`appsync.graphql`:** the SDL of the generated API (queries, mutations, subscriptions, inputs, connections), from the transform, offline.\n- **`schema-version.json`:** the sha256 of each `amplify/{data,auth,storage}/resource.ts` plus the Amplify package versions.\n\nOutput must be deterministic: sorted keys, stable order, no timestamps. Validate the contract against the schema with `ajv`. Add npm scripts `contract` (generate) and `contract:check` (exits 1 if regenerating would change any file).\n\n## Verify\n```\ncd web && npm run contract && npm run contract:check\ncd .. && git add -N contract && git diff --stat contract   # inspect\ncd web && npm run contract && cd .. && git diff --exit-code contract   # second run: no changes (after staging the first)\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-06d285a7-9b59-4d3c-8eb8-30949a20c465",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-9400f0e4-0681-42bb-be27-4d721e6f776b",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.586226Z",
+  "updated_at": "2026-09-24T04:45:50.466978Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

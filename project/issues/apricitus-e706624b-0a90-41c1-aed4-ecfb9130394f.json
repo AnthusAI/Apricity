@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+  "title": "Storage: one data model, three backends",
+  "description": "One data model (`web/amplify/data/resource.ts`) served by three backends, so Apricitus can query the structured data it now collects (clips + analysis, slices, markers, candidates, verdicts, crates, scores, provenance).\n\n| Backend | For | Protocol |\n|---|---|---|\n| **Cloud**: AWS Amplify Gen2 (AppSync, DynamoDB, S3, Cognito + Google) | hosted web app | GraphQL |\n| **Local direct**: embedded Rust engine on a library folder | Swift app (UniFFI), Python analysis (PyO3), CLI | Amplify-shaped operations, no GraphQL |\n| **Local GraphQL**: `apricitus serve` over the same engine and folder | web app without AWS | GraphQL, same schema as AppSync |\n\nDesign (the spec every task cites): `design/storage.md` (§0–§7). General engine work goes upstream into Virtuus (`~/Projects/Virtuus`, board `virt`).\n\n## Definition of done\n- The conformance corpus (`features/data/`) is green through the Rust engine (and Swift via UniFFI), through `apricitus serve` with the real `aws-amplify` client, and through an Amplify sandbox.\n- The current library migrates idempotently; every example score renders sample-identical before and after.\n- The web app runs from `apricitus serve` (local) and from Amplify (cloud, Google sign-in); a library round-trips local → cloud → local unchanged.\n\n## Sub-agent protocol (every task)\n1. `kbs show <id>`; read the repo's `AGENTS.md`, `CONTRIBUTING_AGENT.md`, and the cited `design/storage.md` sections.\n2. `kbs update <id> --status in_progress`.\n3. Specs first: write the Gherkin/tests, watch them fail, write the smallest code to pass.\n4. Log plan, decisions and problems with `kbs comment <id> \"…\" --agent-platform \"Claude Code\" --agent-model \"Claude Haiku 4.5\" --agent-name \"storage-<task>\"`.\n5. Run the task's **Verify** commands; paste the tail of the output in a comment.\n6. `kbs update <id> --add-label ready-for-review` and stop. Never close issues, commit, push, publish, deploy, or touch `project/` except through `kbs`.\n7. Blocked or unsure: comment the question, `kbs update <id> --add-label needs-decision`, stop.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:36:26.201138Z",
+  "updated_at": "2026-09-24T04:36:41.724170Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-e28a121f-df83-44fd-bb1c-23d4967eef48",
+  "title": "USER: AWS account, Google OAuth client, allowed emails, deploy approval",
+  "description": "**For the user** (rap@endymion.com). Needed before anything in this epic can run:\n1. An AWS profile and region for the Amplify sandbox (`npx ampx sandbox --profile … `).\n2. A Google OAuth client (id and secret), stored as Amplify secrets `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. Authorized redirect URI: the Cognito domain's `/oauth2/idpresponse`. Papyrus has a setup guide: `/Users/home/Projects/Papyrus/docs/google-oauth-setup.md`.\n3. The allowed emails (`ALLOWED_EMAILS`).\n4. Explicit approval to deploy a sandbox (it creates billable AWS resources).\n\nReply in a comment; the storage lead picks it up.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [
+    "needs-user"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:39.514073Z",
+  "updated_at": "2026-09-24T04:45:51.948560Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

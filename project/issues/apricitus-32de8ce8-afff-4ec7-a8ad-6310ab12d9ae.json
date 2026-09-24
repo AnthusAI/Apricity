@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
+  "title": "Data contract and conformance",
+  "description": "The foundation: the data model is written once in `web/amplify/data/resource.ts`. A generator turns it into a contract (models, keys, indexes, relationships, auth, storage) and the AppSync SDL, which every backend consumes. One Gherkin corpus defines how operations must behave on every backend.\n\nDesign: `design/storage.md` §1 and §2.\n\n## Definition of done\n- `resource.ts` holds the full §1 model and passes the typecheck.\n- `npm run contract` is deterministic and `npm run contract:check` passes.\n- The conformance corpus in `features/data/` parses, and every step is in `features/data/STEPS.md`.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.346631Z",
+  "updated_at": "2026-09-24T04:45:49.907716Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-5e968843-c402-4a2b-8791-0d9755d1cae1",
+  "title": "Markup re-runs keep slice names stable",
+  "description": "As a composer, I want re-running analysis to never change what my scores play.\n\n```gherkin\nFeature: Stable slice names\n  Scenario: Re-running markup keeps a slice's name and id\n    Given a clip with ML slice \"loop-1\" spanning 10.0 to 14.0 seconds\n    When markup proposes a loop spanning 10.1 to 14.0 seconds and a new loop spanning 30.0 to 34.0 seconds\n    Then \"loop-1\" keeps its id and spans 10.1 to 14.0 seconds\n    And the new loop gets a name that was never used on this clip\n\n  Scenario: A slice a score uses is retired, not deleted\n    Given score \"chop-shop\" uses slice \"loop-2\"\n    When markup no longer proposes \"loop-2\"\n    Then \"loop-2\" is marked retired and \"chop-shop\" still compiles\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9433e6d6-796d-40e5-abcd-9ffa7136df07",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.679467Z",
+  "updated_at": "2026-09-24T04:45:50.600687Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-06d285a7-9b59-4d3c-8eb8-30949a20c465",
+  "title": "data/resource.ts: the full data model (design §1)",
+  "description": "Implement `design/storage.md` §1 exactly: 11 models, custom types, enums, indexes with their `queryField` names, and the authorization helpers `catalog`/`personal` (groups `members`, `curators`, `admins`).\n\n## Steps\n1. Copy the schema from §1 into `web/amplify/data/resource.ts`. `defineData({ schema, authorizationModes: { defaultAuthorizationMode: 'userPool', apiKeyAuthorizationMode: { expiresInDays: 365 } } })`. Export `type Schema = ClientSchema<typeof schema>`.\n2. Fix any API differences in the installed `@aws-amplify/backend` version. Record every deviation from §1 in a comment on this issue.\n3. `web/scripts/print-sdl.ts` (run with tsx) prints `schema.transform().schema`. Check the exact API; Plexus's `dashboard/scripts/generate-control-plane-contract.ts` is a reference.\n4. Risk (§7.1): if the transform rejects the enum `kind` as an index partition key, make it `a.string()` and say so in a comment.\n\n## Verify\n```\ncd web && npx tsc --noEmit -p amplify/tsconfig.json\nnpx tsx scripts/print-sdl.ts > /tmp/apricitus.sdl.graphql\nfor q in recordingsByCollection clipsByRecording clipsByCollection clipsByPath clipsByParent slicesByClip slicesByClipAndName slicesByCandidate markersByClip candidatesByKind candidatesByRecording candidatesByClip verdictsByJudge cratesByOwner crateItemsByCrate crateItemsByCandidate scoresByFolder refsByScore refsByClip refsBySlice jobsByState; do grep -q \"$q\" /tmp/apricitus.sdl.graphql || echo MISSING $q; done\n```\nThe loop must print nothing.\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-32de8ce8-afff-4ec7-a8ad-6310ab12d9ae",
+  "labels": [],
+  "dependencies": [
+    {
+      "target": "apricitus-1f792d2d-09d0-4d48-bc29-a15a77307b60",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-24T04:45:38.523290Z",
+  "updated_at": "2026-09-24T04:45:50.334671Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
