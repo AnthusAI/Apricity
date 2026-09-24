@@ -43,7 +43,7 @@ export function fade(color: string, a: number) {
 }
 
 /** A row's name at the right, as Live puts track headers: a color chip, a name, a mono detail. */
-export function header(g: CanvasRenderingContext2D, x: number, y: number, name: string, detail: string, color: string | null, t: Theme, compact = false) {
+export function header(g: CanvasRenderingContext2D, x: number, y: number, name: string, detail: string, color: string | null, t: Theme, compact = false, maxWidth = 0) {
   let tx = x;
   if (color) {
     g.fillStyle = color;
@@ -57,7 +57,8 @@ export function header(g: CanvasRenderingContext2D, x: number, y: number, name: 
     g.fillStyle = t.inkSoft;
     g.font = `10px ${t.mono}`;
     const short = detail.split(" ").at(-1)!;
-    if (g.measureText(short).width <= 24) g.fillText(short, tx, y);
+    if (g.measureText(detail).width <= maxWidth) g.fillText(detail, tx, y);
+    else if (g.measureText(short).width <= Math.max(24, maxWidth)) g.fillText(short, tx, y);
     return;
   }
   g.fillStyle = t.ink;

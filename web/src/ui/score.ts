@@ -12,6 +12,7 @@ import { tags as t } from "@lezer/highlight";
 import { api, compile, type Timeline } from "../apricity";
 import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
+import { FlowView } from "./flow/view";
 
 
 // Colors from the page's CSS variables, so the editor follows light/dark mode.
@@ -54,6 +55,8 @@ export class ScoreView {
   private sideEl = el("div", { className: "side" });
   private chordsEl = el("div", { className: "chords", title: "Click to jump" });
   private head = el("i", { className: "head" });
+  private flow = new FlowView();
+  private flowBtn = el("button", { className: "btn", type: "button", title: "Show where every sound comes from" }, "Flow");
   private saved = "";
   private compileTimer = 0;
   private generation = 0;
@@ -82,11 +85,44 @@ export class ScoreView {
     });
     root.append(
       el("aside", { className: "sidebar" }, this.listEl, el("div", { className: "search" }, newBtn)),
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, el("span", { style: "flex:1" }), this.statusEl, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, el("span", { style: "flex:1" }), this.statusEl, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
       this.sideEl,
+      this.flowPanel(),
     );
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     this.loadList();
+  }
+
+  /** The Flow panel under the editor: open or closed, and how tall, remembered. */
+  private flowPanel() {
+    let saved = { open: true, height: 440 };
+    try {
+      saved = { ...saved, ...JSON.parse(localStorage.getItem("apricity.flow") ?? "{}") };
+    } catch {}
+    const panel = this.flow.root;
+    const grip = el("div", { className: "flow-grip", title: "Drag to resize", role: "separator", ariaOrientation: "horizontal" });
+    panel.prepend(grip);
+    const apply = () => {
+      panel.hidden = !saved.open;
+      panel.style.height = `${saved.height}px`;
+      this.flowBtn.setAttribute("aria-pressed", String(saved.open));
+      this.flowBtn.classList.toggle("on", saved.open);
+      try {
+        localStorage.setItem("apricity.flow", JSON.stringify(saved));
+      } catch {}
+      if (saved.open) this.flow.redraw();
+    };
+    this.flowBtn.addEventListener("click", () => ((saved.open = !saved.open), apply()));
+    grip.addEventListener("pointerdown", (e) => {
+      const y0 = e.clientY, h0 = saved.height;
+      grip.setPointerCapture(e.pointerId);
+      const move = (m: PointerEvent) => ((saved.height = Math.max(140, Math.min(innerHeight * 0.8, h0 - (m.clientY - y0)))), (panel.style.height = `${saved.height}px`));
+      const up = () => (grip.removeEventListener("pointermove", move), apply());
+      grip.addEventListener("pointermove", move);
+      grip.addEventListener("pointerup", up, { once: true });
+    });
+    apply();
+    return panel;
   }
 
   /** Opens the reference for whichever format is being edited. */
@@ -187,6 +223,7 @@ export class ScoreView {
     }
     this.timeline = r.timeline;
     this.renderSide(r.timeline, [], r.explain);
+    this.flow.update(r.timeline);
     if (player.transport.playing) this.send(r.timeline);
   }
 

@@ -53,3 +53,39 @@ test("hero story cues: each step is heard, in order", async () => {
   assert.equal(loops.length, 3, "the drums alone, then both tracks together");
   for (const c of cues.filter((c) => c.kind === "track" && !c.loop)) assert.ok(c.offset + c.dur <= (d.beats * 60) / d.tempo + 1e-6, "landings stay inside the render");
 });
+
+test("lineage: recordings, kit rows and lanes from a compiled timeline", async () => {
+  const { lineage, islands } = await import("../src/ui/flow/lineage.ts");
+  const piece = (source: number, a: number, b: number, name?: string) => ({ source, src_start: a, src_end: b, ...(name ? { name } : {}) });
+  const tl = {
+    tempo: 90, meter: 4, key: "C", length_beats: 4, warnings: [], harmony: [],
+    sources: [
+      { clip: "brk", path: "samples/x/stems/March/drums.wav", region: [10, 12] as [number, number] },
+      { clip: "hit", path: "samples/x/stems/March/drums.wav", region: [0, 60] as [number, number] },
+      { clip: "horn", path: "samples/x/March.mp3" },
+    ],
+    tracks: [
+      { name: "b", clip: "b", region_key: "C", kit: "b", pieces: [piece(0, 10, 11), piece(0, 11, 12)] },
+      { name: "d", clip: "d", region_key: "C", kit: "d", pieces: [piece(1, 40, 40.3, "kick"), piece(2, 5, 5.5, "stab")] },
+      { name: "d.kick", clip: "d.kick", region_key: "C", pieces: [piece(1, 40, 40.3, "kick")] },
+      { name: "horn", clip: "horn", region_key: "C", pieces: [piece(2, 20, 22)] },
+    ],
+    events: [
+      { track: "b", source: 0, start_beat: 0, dur_beats: 0.5, src_start: 10, src_end: 11, semitones: 0, piece: 0 },
+      { track: "b", source: 0, start_beat: 1, dur_beats: 0.5, src_start: 11, src_end: 12, semitones: 0, piece: 1 },
+      { track: "d", source: 1, start_beat: 0, dur_beats: 0.25, src_start: 40, src_end: 40.3, semitones: 0, piece: 0 },
+      { track: "d.kick", source: 1, start_beat: 2, dur_beats: 0.25, src_start: 40, src_end: 40.3, semitones: 0, piece: 0 },
+      { track: "horn", source: 2, start_beat: 0, dur_beats: 4, src_start: 20, src_end: 22, semitones: 5, piece: 0 },
+    ],
+  };
+  const l = lineage(tl);
+  assert.deepEqual(l.recordings.map((r) => r.title), ["March/drums", "March"], "one row per recording; stems named with their piece");
+  assert.deepEqual(l.recordings[0].clips, ["brk", "hit"]);
+  assert.deepEqual(l.rows.map((r) => r.label), ["kit b", "kit d", "clip horn"], "a pad played on its own joins its kit's row");
+  assert.equal(l.eventPiece[2], l.eventPiece[3], "the same pad, whichever track plays it");
+  assert.equal(l.pieces[l.eventPiece[2]].events.length, 2);
+  assert.equal(l.pieces[l.eventPiece[2]].label, "kick");
+  assert.equal(l.lanes[2].detail, "pad of kit d");
+  assert.equal(l.recordings[0].islands.length, 2, "10–12 s and 40 s are far apart: two islands");
+  assert.deepEqual(islands([[1, 2], [2.5, 3]], 2, 0.5), [{ from: 0.5, to: 3.5 }], "near spans merge");
+});

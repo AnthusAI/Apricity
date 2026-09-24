@@ -50,15 +50,35 @@ export interface Manifest {
   annotations?: { slices?: Slice[]; markers?: Marker[]; tags?: string[] };
 }
 
+/** One sound a track can play (its clip's region, a chop, or a pad), and where it's recorded. */
+export interface TimelinePiece {
+  source: number; // index into sources
+  src_start: number; // seconds
+  src_end: number;
+  name?: string; // a drum-kit pad
+}
+
+export interface TimelineEvent {
+  track: string;
+  source: number;
+  start_beat: number;
+  dur_beats: number;
+  src_start: number;
+  src_end: number;
+  semitones: number;
+  piece?: number; // index into its track's pieces
+  reverse?: boolean;
+}
+
 export interface Timeline {
   tempo: number;
   meter: number;
   key: string;
   length_beats: number;
-  sources: { clip: string; path: string }[];
-  events: unknown[];
+  sources: { clip: string; path: string; bpm?: number | null; key?: string; region?: [number, number] }[];
+  events: TimelineEvent[];
   harmony: { start_beat: number; end_beat: number; label: string; fit: { chord: string; coverage: number } | null }[];
-  tracks: { name: string; clip: string; region_key: string }[];
+  tracks: { name: string; clip: string; region_key: string; kit?: string; chops?: number; pieces?: TimelinePiece[] }[];
   warnings: string[];
 }
 

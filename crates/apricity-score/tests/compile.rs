@@ -604,3 +604,41 @@ master: { effects: [ {comp: {ratio: 2, threshold: -10, sidechain: a}}, {lofi: {b
     }
     assert!(!errors.contains("master.effects[2]"), "width is fine on the master:\n{errors}");
 }
+
+#[test]
+fn events_trace_back_to_the_piece_and_source_they_play() {
+    // A chopped kit and a drum kit whose pads come from two clips: every event names its piece,
+    // and the piece says which source it's from and where.
+    let tl = run(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips:
+  horn: { source: horn.wav, beats: [0, 16] }
+  fast: { source: fast.wav, beats: [0, 16], beat_ratio: 1 }
+kits:
+  k: { clip: horn, chop: { beats: 2 } }
+  d: { pads: { hi: { clip: horn, beats: [4, 5] }, lo: { clip: fast, beats: [2, 3] } } }
+tracks:
+  - { clip: k, pattern: { steps: "1 . 3 _" }, grid: 4 }
+  - { clip: d, pattern: { steps: "hi lo hi lo" }, grid: 4 }
+"#)
+    .unwrap();
+    let k = &tl.tracks[0];
+    assert_eq!((k.kit.as_deref(), k.pieces.len()), (Some("k"), 8));
+    // The chops tile their clip's region (its slice), end to end.
+    let region = tl.sources[k.pieces[0].source].region.expect("sources carry their region");
+    assert!((k.pieces[0].src_start - region.0).abs() < 1e-6 && (k.pieces[7].src_end - region.1).abs() < 1e-6, "{region:?}");
+    let d = &tl.tracks[1];
+    assert_eq!(d.pieces.iter().map(|p| p.name.as_deref().unwrap()).collect::<Vec<_>>(), ["hi", "lo"]);
+    assert_ne!(d.pieces[0].source, d.pieces[1].source, "pads from two clips point at two sources");
+    for e in &tl.events {
+        let tr = tl.tracks.iter().find(|t| t.name == e.track).unwrap();
+        let p = &tr.pieces[e.piece];
+        assert_eq!(p.source, e.source);
+        assert!(e.src_start >= p.src_start - 1e-6 && e.src_end <= p.src_end + 1e-6, "{e:?} inside {p:?}");
+    }
+    let played: Vec<usize> = tl.events.iter().filter(|e| e.track == "k").map(|e| e.piece).collect();
+    assert_eq!(played, [0, 2], "steps 1 and 3");
+}
