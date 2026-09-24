@@ -390,21 +390,6 @@ line 13 column 6: only x/4 time signatures for now (3/4, 4/4, 7/4…), not `6/8`
 groups: `a`, `c` sit inside each other in a loop; one of them must play into the master
 ```
 
-Apricity's words follow Ableton Live's. Words it used before are errors that name the new one, so an
-older score says exactly what to change:
-
-```
-line 3 column 1: `meter` is now `time`, written as a time signature: time 4/4
-line 4 column 51: a sample's saved clip goes right after the path now: clip brk = drums.wav loop-1
-line 5 column 45: `warp off` is now `warp repitch` (Live's Re-Pitch)
-line 6 column 9: `chop` is now `slice` (as in Live): kit b = slice brk by beats 0.5
-line 7 column 23: `by hits` is now `by transients` (as in Live)
-line 9 column 18: a sample's saved clip goes right after the path now: kick = tdrums shot-1
-line 10 column 1: `bus` is now `return` (shared effects that tracks send to) or `group` (tracks summed together), as in Live
-line 12 column 27: `gain` is now `volume` (the fader, as in Live): volume -3
-line 4 column 10: `out` is now `group`: put the track in a group track with group <name>
-```
-
 Beyond mistakes, the compiler gives **warnings** that don't stop anything, such as a clip whose
 material keeps clashing with the key, uneven beats, or stretching by more than 2×. They appear in
 `apricity explain` and in the web app.

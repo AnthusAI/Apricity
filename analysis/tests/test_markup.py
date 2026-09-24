@@ -10,14 +10,13 @@ MARCHES = sorted((ROOT / "samples/marine-band").glob("*.mp3.apricity.json"))
 
 
 def test_merge_keeps_user_work_and_replaces_old_ml():
-    # A version-1 manifest ("slices", "hit"): merge upgrades it on the way.
     existing = {
-        "slices": [
+        "clips": [
             {"name": "hook", "start": 1, "end": 2, "source": "user"},
             {"name": "mine", "start": 3, "end": 4},  # no source = a person made it
             {"name": "loop-1", "start": 5, "end": 6, "source": "ml"},
         ],
-        "markers": [{"name": "old", "seconds": 1, "source": "ml"}, {"name": "cue", "seconds": 2, "source": "user"}, {"name": "hit", "seconds": 4, "source": "user"}],
+        "markers": [{"name": "old", "seconds": 1, "source": "ml"}, {"name": "cue", "seconds": 2, "source": "user"}],
         "tags": ["keep me"],
     }
     ml = {
@@ -25,11 +24,10 @@ def test_merge_keeps_user_work_and_replaces_old_ml():
         "markers": [{"name": "transient", "seconds": 3, "source": "ml"}],
     }
     out = merge(existing, ml)
-    assert "slices" not in out
     names = [(s["name"], s.get("source")) for s in out["clips"]]
     assert names == [("hook", "user"), ("mine", None), ("loop-1", "ml")], "your clips kept; ML 'hook' skipped (name taken)"
     assert [s for s in out["clips"] if s["name"] == "loop-1"][0]["start"] == 7, "old ML markup replaced"
-    assert [m["name"] for m in out["markers"]] == ["cue", "transient", "transient"], "your hit marker is a transient now"
+    assert [m["name"] for m in out["markers"]] == ["cue", "transient"]
     assert out["tags"] == ["keep me"]
 
 

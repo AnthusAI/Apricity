@@ -168,21 +168,6 @@ enum Block {
     Master,
 }
 
-/// Words renamed to Live's vocabulary (2026-09-24): an old word gets an error naming the new one.
-fn renamed(word: &str) -> Option<&'static str> {
-    Some(match word {
-        "meter" => "`meter` is now `time`, written as a time signature: time 4/4",
-        "bus" => "`bus` is now `return` (shared effects that tracks send to) or `group` (tracks summed together), as in Live",
-        "chop" => "`chop` is now `slice` (as in Live): kit b = slice brk by beats 0.5",
-        "gain" => "`gain` is now `volume` (the fader, as in Live): volume -3",
-        "out" => "`out` is now `group`: put the track in a group track with group <name>",
-        "slice" => "a sample's saved clip goes right after the path now: clip brk = drums.wav loop-1",
-        "hits" => "`by hits` is now `by transients` (as in Live)",
-        "off" => "`warp off` is now `warp repitch` (Live's Re-Pitch)",
-        _ => return None,
-    })
-}
-
 /// Shares: `25%`, or a level in dB (`-12dB`) for sends. Returns 0–1 (linear).
 fn share(t: &str, db_ok: bool) -> Option<f64> {
     if let Some(p) = t.strip_suffix('%') {
@@ -643,7 +628,7 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                 let mut ps = PadSpec { clip, saved: None, beats: None, seconds: None };
                 // A saved clip of the sample, named right after the clip: `kick = tdrums shot-1`.
                 if let Some(first) = l.peek() {
-                    if !["beats", "seconds", "slice"].contains(&first.text) {
+                    if !["beats", "seconds"].contains(&first.text) {
                         l.pos += 1;
                         ps.saved = Some(first.text.to_string());
                     }
@@ -651,7 +636,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                 while let Some(opt) = l.peek() {
                     l.pos += 1;
                     match opt.text {
-                        "slice" => return Err(l.err(opt.col, "a saved clip goes right after the clip's name now: kick = tdrums shot-1")),
                         "beats" => {
                             let t = l.next("a beat range")?;
                             ps.beats = Some(range(&l, t, "beats")?);
@@ -712,7 +696,7 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                     let mut c = ClipSpec { source, beats: None, seconds: None, saved: None, pick: None, warp: WarpModeSpec::Complex, speed: None, root: None, beat_ratio: None };
                     // A clip saved with the sample, named right after the path: `clip brk = drums.wav loop-1`.
                     if let Some(first) = l.peek() {
-                        if !CLIP_OPTIONS.contains(&first.text) && first.text != "slice" {
+                        if !CLIP_OPTIONS.contains(&first.text) {
                             l.pos += 1;
                             c.saved = Some(first.text.to_string());
                         }
@@ -728,7 +712,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                                 let t = l.next("a seconds range")?;
                                 c.seconds = Some(range(&l, t, "seconds")?);
                             }
-                            "slice" => return Err(l.err(opt.col, renamed("slice").unwrap())),
                             "pick" => c.pick = Some(l.next("a length like 2bars")?.text.to_string()),
                             "root" => c.root = Some(l.next("a note like C or Bb")?.text.to_string()),
                             "ratio" => c.beat_ratio = Some(l.num("clip beats per score beat")?),
@@ -739,7 +722,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                                     "complex" => WarpModeSpec::Complex,
                                     "texture" => WarpModeSpec::Texture,
                                     "repitch" => WarpModeSpec::Repitch,
-                                    "off" => return Err(l.err(t.col, renamed("off").unwrap())),
                                     other => return Err(l.err(t.col, format!("warp is beats, complex, texture or repitch, not `{other}`"))),
                                 };
                             }
@@ -776,9 +758,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                         return Err(l.err(eq.col, format!("expected `=` after the kit name (or nothing, for a drum kit with pads below), got `{}`", eq.text)));
                     }
                     let kw = l.next("`slice`")?;
-                    if kw.text == "chop" {
-                        return Err(l.err(kw.col, renamed("chop").unwrap()));
-                    }
                     if kw.text != "slice" {
                         return Err(l.err(kw.col, format!("expected `slice <clip> by beats 1` (or by bars 2, into 8, by transients), got `{}`", kw.text)));
                     }
@@ -793,7 +772,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                             let unit = l.next("beats, bars, transients or phrases")?;
                             match unit.text {
                                 "transients" | "transient" => SliceBy::Transients,
-                                "hits" => return Err(l.err(unit.col, renamed("hits").unwrap())),
                                 "phrases" => SliceBy::Phrases,
                                 "beats" | "beat" => SliceBy::Beats(l.num("a number of beats")?),
                                 "bars" | "bar" => SliceBy::Bars(l.num("a number of bars")?),
@@ -831,7 +809,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                         match (opt.text, kind) {
                             ("volume", _) => volume = l.num("a volume in dB")?,
                             ("group", "group") => parent = Some(l.next("a group track's name")?.text.to_string()),
-                            ("gain" | "out", _) => return Err(l.err(opt.col, renamed(opt.text).unwrap())),
                             (other, "group") => return Err(l.err(opt.col, format!("unknown group option `{other}` (volume, group); effects go on indented lines below"))),
                             (other, _) => return Err(l.err(opt.col, format!("unknown return option `{other}` (volume); effects go on indented lines below"))),
                         }
@@ -921,7 +898,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                             }
                             "bars" => t.bars = Some(l.next("bars like 5-12")?.text.to_string()),
                             "volume" => t.volume = l.num("a volume in dB")?,
-                            "gain" | "out" => return Err(l.err(opt.col, renamed(opt.text).unwrap())),
                             "steps" => {
                                 let p = l.next("a quoted step pattern, e.g. \"1 . 3 .\"")?;
                                 t.pattern = Pattern::Steps(p.text.to_string());
@@ -964,7 +940,6 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                     score.tracks.push(t);
                     mix_block = Some(Block::Track(score.tracks.len() - 1));
                 }
-                other if renamed(other).is_some() => return Err(l.err(head.col, renamed(other).unwrap())),
                 other => return Err(l.err(head.col, format!("unknown statement `{other}`{}", suggest(other, STATEMENTS)))),
             }
             l.done()
@@ -1518,25 +1493,6 @@ mod tests {
         assert_eq!(parse(&text).unwrap().0, s);
         let e = parse("tempo 90\ntime 6/8\nkey C\n").unwrap_err();
         assert!(e[0].message.contains("only x/4"), "{e:?}");
-    }
-
-    #[test]
-    fn old_words_name_their_new_ones() {
-        let src = "tempo 90\nmeter 4\nkey C\nclip a = x.wav slice loop-1\nclip b = x.wav warp off\nkit k = chop a by beats 1\nkit t = slice a by hits\nkit d\n  kick = a slice hit-1\nchords I\ntrack a gain -3\ntrack b out beat\nbus beat\n";
-        let t: Vec<String> = parse(src).unwrap_err().iter().map(|e| e.to_string()).collect();
-        for (line, want) in [
-            (2, "`meter` is now `time`"),
-            (4, "saved clip goes right after the path"),
-            (5, "`warp off` is now `warp repitch`"),
-            (6, "`chop` is now `slice`"),
-            (7, "`by hits` is now `by transients`"),
-            (9, "kick = tdrums shot-1"),
-            (11, "`gain` is now `volume`"),
-            (12, "`out` is now `group`"),
-            (13, "`bus` is now `return`"),
-        ] {
-            assert!(t.iter().any(|e| e.starts_with(&format!("line {line} ")) && e.contains(want)), "line {line}: {want}\n{t:#?}");
-        }
     }
 
     #[test]

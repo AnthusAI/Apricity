@@ -5,7 +5,6 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
-import re
 import pathlib
 from importlib.metadata import version
 
@@ -239,7 +238,7 @@ def analyze(path: pathlib.Path, with_notes: bool = True, rhythm_from: dict | Non
     elif "notes" in previous and previous.get("source", {}).get("sha256") == src["sha256"]:
         m["notes"] = previous["notes"]
     if "annotations" in previous:  # user data: always carried over
-        m["annotations"] = upgrade_annotations(previous["annotations"])
+        m["annotations"] = previous["annotations"]
     if "derived_from" in previous:
         m["derived_from"] = previous["derived_from"]
     validate(m)
@@ -255,15 +254,6 @@ def validate(m: dict) -> None:
         if not (0 <= s["start"] < s["end"] <= dur + 1e-6):
             raise ValueError(f"saved clip {s['name']!r} [{s['start']}, {s['end']}] is outside the sample (0..{dur})")
 
-
-def upgrade_annotations(ann: dict) -> dict:
-    """Manifest version 1 → 2: `slices` became `clips`, `hit` markers became `transient`, and the
-    automatic `hit-N` clips became `shot-N` (one-shots)."""
-    ann = dict(ann)
-    if "slices" in ann:
-        ann["clips"] = [{**c, "name": re.sub(r"^hit-(\d+)$", r"shot-\1", c["name"])} for c in ann.pop("slices")]
-    ann["markers"] = [{**k, "name": "transient"} if k.get("name") == "hit" else k for k in ann.get("markers", [])]
-    return ann
 
 
 def write(m: dict, audio: pathlib.Path) -> pathlib.Path:

@@ -60,8 +60,7 @@ pub struct KeyEstimate {
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct Annotations {
     /// Clips saved with the sample: yours, and automatic markup's (`sec-A1`, `loop-1`, `shot-3`).
-    /// Manifest version 1 called them `slices`.
-    #[serde(default, alias = "slices")]
+    #[serde(default)]
     pub clips: Vec<SavedClip>,
     #[serde(default)]
     pub markers: Vec<Marker>,

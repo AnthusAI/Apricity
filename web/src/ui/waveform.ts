@@ -252,7 +252,7 @@ export class Waveform {
       if (ml) {
         g.strokeStyle = s.tags?.includes("section") ? accent : clipCol;
         g.lineWidth = sel ? 2 : 1;
-        g.setLineDash(s.tags?.includes("shot") || s.tags?.includes("hit") ? [] : [3, 2]);
+        g.setLineDash(s.tags?.includes("shot") ? [] : [3, 2]);
         g.strokeRect(a + 0.5, y + 1.5, b - a - 1, ROW - 4);
         g.setLineDash([]);
       } else {
@@ -266,7 +266,7 @@ export class Waveform {
       g.rect(a, y, b - a, ROW);
       g.clip();
       g.font = "10.5px system-ui, sans-serif";
-      if (!s.tags?.includes("shot") && !s.tags?.includes("hit")) g.fillText(s.name, a + 4, y + ROW / 2);
+      if (!s.tags?.includes("shot")) g.fillText(s.name, a + 4, y + ROW / 2);
       g.restore();
       if (sel) {
         g.fillStyle = clipCol;
@@ -277,7 +277,7 @@ export class Waveform {
 
     // markers: section starts as faint lines through the waveform (transients already show as one-shot clips)
     for (const mk of m.annotations?.markers ?? []) {
-      if (mk.name === "transient" || mk.name === "hit") continue;
+      if (mk.name === "transient") continue;
       g.fillStyle = mk.source === "ml" ? accent : col("--warn");
       g.globalAlpha = mk.source === "ml" ? 0.35 : 0.9;
       g.fillRect(this.x(mk.seconds), y0, 1, H.wave);
