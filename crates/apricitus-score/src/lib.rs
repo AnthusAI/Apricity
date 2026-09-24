@@ -6,6 +6,6 @@ pub mod dsl;
 pub mod manifest;
 pub mod score;
 
-pub use compile::{compile, compile_file, compile_text, compile_with, parse_score, normalize, source_paths, ChordSpan, Event, Timeline, TrackInfo};
+pub use compile::{compile, compile_file, compile_text, compile_with, parse_score, normalize, source_paths, references, ChordSpan, Event, Timeline, TrackInfo};
 pub use manifest::Clip;
-pub use score::Score;
+pub use score::{Score, Ref};

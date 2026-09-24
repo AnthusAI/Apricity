@@ -830,6 +830,24 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
     Ok((out, step as f64))
 }
 
+/// A reference from a score to a clip or slice. Used to answer "which clips and slices does
+/// this score use?" for dependency tracking and to pre-fetch manifests.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Ref {
+    /// The clip name declared under `clips:` (e.g. "drums", "bass", "horns").
+    pub alias: String,
+    /// Source path exactly as written in the score: "marine-band/stems/Thunderer/drums.wav" or "@clp_abc123".
+    pub source: String,
+    /// Normalized path relative to `samples:` folder and base directory. None for "@clp_…" id forms.
+    pub path: Option<std::path::PathBuf>,
+    /// Slice name within the clip (optional).
+    pub slice: Option<String>,
+    /// When this reference is from a kit (chopped kit or pad kit), this is set:
+    /// - For chopped kits: kit name (e.g. "b" for `kit b = chop brk by beats 0.5`)
+    /// - For pad kits: qualified name (e.g. "drums.kick" for `kick = tdrums beats 62..62.5` in `kit drums`)
+    pub kit_pad: Option<String>,
+}
+
 /// Parse a duration like "1bar", "2 bars", "3beats", "0.5bar" into beats.
 pub fn parse_duration(s: &str, meter: u32) -> Result<f64, String> {
     let t = s.trim().to_ascii_lowercase();

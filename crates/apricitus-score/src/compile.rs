@@ -455,6 +455,105 @@ pub fn source_paths(score: &Score, base_dir: &Path) -> Vec<PathBuf> {
     score.clips.values().map(|c| normalize(&samples.join(&c.source))).collect()
 }
 
+/// Every clip and kit pad reference in the score: source paths and optional slices.
+/// Used to track which clips a score depends on and detect when slices have drifted.
+pub fn references(score: &Score, base_dir: &Path) -> Vec<crate::score::Ref> {
+    let samples = normalize(&base_dir.join(score.samples.as_deref().unwrap_or(".")));
+    let mut refs = Vec::new();
+
+    // Helper to resolve a clip name to its source and path, or None if not found.
+    let resolve_clip = |clip_name: &str| -> Option<(String, Option<PathBuf>, Option<String>)> {
+        score.clips.get(clip_name).map(|clip_spec| {
+            let path = if clip_spec.source.starts_with("@") {
+                None // ID form - don't resolve
+            } else {
+                Some(normalize(&samples.join(&clip_spec.source)))
+            };
+            (clip_spec.source.clone(), path, clip_spec.slice.clone())
+        })
+    };
+
+    // 1. References from clips (direct uses).
+    for (alias, clip) in &score.clips {
+        let path = if clip.source.starts_with("@") {
+            None // ID form - don't resolve
+        } else {
+            Some(normalize(&samples.join(&clip.source)))
+        };
+        refs.push(crate::score::Ref {
+            alias: alias.clone(),
+            source: clip.source.clone(),
+            path,
+            slice: clip.slice.clone(),
+            kit_pad: None,
+        });
+    }
+
+    // 2. References from chopped kits.
+    for (kit_name, kit) in &score.kits {
+        if let Some(clip_name) = &kit.clip {
+            if let Some((source, path, slice)) = resolve_clip(clip_name) {
+                refs.push(crate::score::Ref {
+                    alias: clip_name.clone(),
+                    source,
+                    path,
+                    slice,
+                    kit_pad: Some(kit_name.clone()),
+                });
+            }
+        }
+    }
+
+    // 3. References from kit pads (named pieces of clips).
+    for (kit_name, kit) in &score.kits {
+        for (pad_name, pad) in &kit.pads {
+            // Resolve the clip reference: either a clip name or a chop reference like "k.3".
+            let (clip_alias, source_str, path, slice_from_clip) = if let Some((kit_name_ref, _chop_idx)) = pad.clip.rsplit_once('.') {
+                // Possible chop reference: check if kit_name_ref is a chopped kit.
+                if let Some(chop_kit) = score.kits.get(kit_name_ref) {
+                    if let Some(original_clip_name) = &chop_kit.clip {
+                        // It's a valid chop reference - resolve to the original clip.
+                        if let Some((source, path, slice)) = resolve_clip(original_clip_name) {
+                            (original_clip_name.clone(), source, path, slice)
+                        } else {
+                            continue; // Clip not found, skip
+                        }
+                    } else {
+                        // It's a pad kit, not a chopped kit - this reference is invalid, skip.
+                        continue;
+                    }
+                } else {
+                    // It's not a kit reference, treat as a regular clip name (e.g., "foo.bar" as a clip).
+                    if let Some((source, path, slice)) = resolve_clip(&pad.clip) {
+                        (pad.clip.clone(), source, path, slice)
+                    } else {
+                        continue; // Clip not found, skip
+                    }
+                }
+            } else {
+                // Regular clip reference.
+                if let Some((source, path, slice)) = resolve_clip(&pad.clip) {
+                    (pad.clip.clone(), source, path, slice)
+                } else {
+                    continue; // Clip not found, skip
+                }
+            };
+
+            let kit_pad = format!("{kit_name}.{pad_name}");
+            refs.push(crate::score::Ref {
+                alias: clip_alias,
+                source: source_str,
+                path,
+                // Use pad's slice if defined, otherwise use the clip's slice.
+                slice: pad.slice.clone().or(slice_from_clip),
+                kit_pad: Some(kit_pad),
+            });
+        }
+    }
+
+    refs
+}
+
 /// Lexically resolve `.` and `..` (no filesystem access), so paths work as keys in a browser.
 pub fn normalize(p: &Path) -> PathBuf {
     let mut out = PathBuf::new();
