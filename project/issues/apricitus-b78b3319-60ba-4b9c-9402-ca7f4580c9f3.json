@@ -19,9 +19,22 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6221701e-fa33-435b-b45d-4c6c161df6a8",
+      "author": "home",
+      "text": "Carried from apricitus-bb2b6c: implement sandbox sign-in in web/test/conformance/world.ts. Per user switch: signOut, signIn({username, password}) from SANDBOX_USERS, read the sub from fetchAuthSession (tokens.idToken.payload.sub), cache it for ${sub:user}, create the client with authMode userPool. The test accounts need their groups assigned (members/curators/admins) in the sandbox's user pool.",
+      "created_at": "2026-09-24T05:52:52.524780Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
+    }
+  ],
   "created_at": "2026-09-24T04:45:39.658410Z",
-  "updated_at": "2026-09-24T04:45:52.150479Z",
+  "updated_at": "2026-09-24T05:52:52.524823Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

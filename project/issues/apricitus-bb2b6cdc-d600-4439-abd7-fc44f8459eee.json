@@ -3,7 +3,7 @@
   "title": "TypeScript conformance runner: step definitions for STEPS.md (dry-run now)",
   "description": "The TypeScript conformance runner, written now and run against `apricitus serve` once it exists (`TARGET=local`, task apricitus-ae24ae) and against the sandbox later (`TARGET=sandbox`).\n\n## What\n- `web/test/conformance/`: `@cucumber/cucumber` step definitions implementing **every** pattern in `features/data/STEPS.md` (normative; read it fully), over the real `aws-amplify` data client (`generateClient<Schema>()` with `import type { Schema } from \"../../amplify/data/resource\"`).\n  - Model operations are dynamic: `client.models[Model].create/get/update/delete/list`, and `client.models[Model][queryField](key, options)`.\n  - Implement the matching rules exactly: subset match, markers `<any>`/`<absent>`/`<uuid>`/`<datetime>`, numeric equality, arrays element-wise; `${name}`, `${me}` and `${sub:user}` substitution; pagination collection and page counting; `exactly N … records match` as a checker identity.\n- **Identity:**\n  - **local:** the runner creates one data client per user, using API key auth plus a header `x-apricitus-identity: {\"sub\":\"alice\",\"groups\":[\"members\"]}`. `serve` will honour this header only when started with `--test-identities`; note that on the `apricitus serve` task. Use `generateClient({ authMode: \"apiKey\", headers: … })`.\n  - **sandbox:** a `SANDBOX_USERS` JSON env var maps user names to `{username, password, groups}`. Sign in with `aws-amplify/auth` `signIn` per user and use `authMode: \"userPool\"`. The code path is written now; it can't be exercised yet.\n- **Domain steps** call `web/src/data/domain.ts` (not written yet). Implement those steps against an interface `Domain { keepCandidate, skipCandidate, putOffCandidate, mergeMarkup, saveScore }` in `web/test/conformance/domain.ts`, which later delegates to `web/src/data/domain.ts`. Until that exists, mark these scenarios pending with a clear message.\n- **Configuration:** `web/test/conformance/config.ts` loads `amplify_outputs.json` from `TARGET_OUTPUTS` (a path or URL; for local, `http://127.0.0.1:5181/amplify_outputs.json`) and calls `Amplify.configure`.\n- `npm run conformance`: runs `features/data` with these steps, excluding `@realtime` and (locally) `@sandbox`.\n\n## Verify (now, without a server)\n```\ncd web && npx tsc --noEmit -p test/conformance/tsconfig.json\nnpx cucumber-js --config test/conformance/cucumber.mjs --dry-run   # every step has a definition: 0 undefined, 0 ambiguous\n```\n\n---\n**Repo:** ~/Projects/Ripple (master). **Protocol:** initiative apricitus-e70662: specs/tests first; log with kbs comment; run Verify and paste the output; label ready-for-review. Never git add/commit/push/close/deploy. Toolchain: export PATH=$HOME/.cargo/bin:$PATH; Python analysis/.venv/bin/python.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,11 +34,35 @@
         "model": "Claude Opus 5.5",
         "name": "storage-lead"
       }
+    },
+    {
+      "id": "4cae3edd-45e0-4954-90c8-89c342f3f5de",
+      "author": "home",
+      "text": "Coordinator review feedback implemented.\n\nThree fixes applied:\n\n1. Checker identity now has ALL groups (members, curators, admins) and collects every page via nextToken loop to avoid undercounting\n\n2. Amplify client error handling corrected:\n   - No try/catch (client doesn't throw, returns {data, errors})\n   - errors: [] on success (not null)\n   - Pagination loops stop on errors\n   - All operation steps properly record result.errors\n\n3. Target mode from process.env.TARGET (local|sandbox), not @sandbox tag:\n   - SANDBOX_USERS JSON env var for sandbox mode\n   - ${sub:user} resolves to real Cognito sub for sandbox via getUserSub()\n   - cucumber.mjs excludes @sandbox locally, @realtime always\n\nVerification results:\n✓ npx tsc --noEmit -p test/conformance/tsconfig.json\n✓ npx tsx --test test/conformance/match.test.ts (42/42 tests pass)\n✓ npx cucumber-js --config test/conformance/cucumber.mjs --dry-run\n  - 83 scenarios found\n  - 436 steps found\n  - 0 undefined steps\n  - 0 ambiguous steps",
+      "created_at": "2026-09-24T05:51:55.290882Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T24a"
+      }
+    },
+    {
+      "id": "a55d0215-7ed5-4f60-96b4-fcfe685fb916",
+      "author": "home",
+      "text": "Review (round 2): accepted for the local target. tsc clean, 42 matcher tests, dry run 83 scenarios / 436 steps with no undefined or ambiguous steps; the checker has all groups and collects every page; errors recorded ([] on success); TARGET env var; cucumber.mjs excludes @realtime (and @sandbox locally). Carried to T34 (apricitus-b78b33): the sandbox path doesn't sign in yet. It expects cognitoSub in SANDBOX_USERS, and Amplify JS keeps one signed-in user at a time, so switching users needs signOut, then signIn, then reading the sub from fetchAuthSession. That can only be written and tested against a live sandbox.",
+      "created_at": "2026-09-24T05:52:52.377558Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
     }
   ],
   "created_at": "2026-09-24T05:41:29.547779Z",
-  "updated_at": "2026-09-24T05:49:34.955552Z",
-  "closed_at": null,
+  "updated_at": "2026-09-24T05:52:52.637602Z",
+  "closed_at": "2026-09-24T05:52:52.637545Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",
