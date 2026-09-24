@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-924ce09a-376b-4d95-9d3d-85113a753b5f",
+  "title": "Score-tab Flow view: sources → slices → composition with lineage highlight",
+  "description": "An interactive view in the Score tab. It uses the web/src/ui/flow/ renderer (built for the hero story, apricitus-4e056d) and drives it from the live compiled timeline.\n\n- Each source clip is shown with the regions, slices and chops the score uses. Overlapping slices stack in packed sub-rows.\n- Ribbons project each chop to every place it lands in the composition.\n- Hovering a tile lights its whole lineage; clicking a source slice shows everywhere it lands.\n- Focus + context: the focused source is detailed and the others collapse to summaries.\n\n**Needs:**\n1. An engine/compiler change (coordinate with the engine session): `Event` (crates/apricity-score/src/compile.rs:281, set near :1325) should record its origin (piece/chop index, pad name, slice name). Events carry only source seconds today, and they are split at chord boundaries.\n2. Widen the TS `Timeline` type (web/src/apricity.ts:53-63; events are unknown[] today).\n3. Peaks from decoded audio, as the Library does.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T13:21:25.173349Z",
+  "updated_at": "2026-09-24T13:21:25.173381Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

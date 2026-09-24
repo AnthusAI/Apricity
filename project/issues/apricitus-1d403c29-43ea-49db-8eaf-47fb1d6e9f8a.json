@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-1d403c29-43ea-49db-8eaf-47fb1d6e9f8a",
+  "title": "Rust conformance runner: features/data in-process over the local engine (local-direct backend)",
+  "description": "**Goal:** the conformance corpus `features/data/**/*.feature` runs **in-process** against the local engine, the same engine the Swift app will embed. This is the local-direct backend's test, and its green count rises as virtuus-amplify gains V8c–V8f.\n\n- The runner lives at `crates/apricity-data/tests/conformance.rs` (cucumber-rs, `harness = false`) and implements the step vocabulary in `features/data/STEPS.md` exactly, the same steps as the TypeScript runner in `web/test/conformance/steps.ts` (read it: it's the reference implementation of the matching rules, the markers `<any>`, `<absent>`, `<uuid>`, `<datetime>`, `${me}`, and \"exactly N records match\").\n- Each scenario gets a fresh temp library (`Library::create`). The identity comes from `Given I am user \"alice\" in groups \"…\"`.\n- Domain steps (`I keep candidate`, `I merge markup`, `I save score`) call the Rust domain functions when they exist (T13). Until then they are **pending**, not failing.\n- Tags: skip `@realtime` and `@sandbox`, as the TypeScript runner does.\n- **Report the per-feature pass/fail/pending counts** in the issue. Failures that come from unimplemented V8 sub-tasks are expected. List them grouped by the V8 sub-task that will fix them (c: filters and key conditions, d: pagination, e: selectionSet/relationships, f: auth/owner).\n\n**Verify:** `cargo test -p apricity-data --test conformance`. Paste the summary.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-115d2efb-8fe8-4709-90e9-d7c1008107fb",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T11:18:15.914127Z",
+  "updated_at": "2026-09-24T11:18:15.914168Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
