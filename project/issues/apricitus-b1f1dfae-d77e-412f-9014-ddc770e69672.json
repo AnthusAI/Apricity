@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-b1f1dfae-d77e-412f-9014-ddc770e69672",
+  "title": "Vocabulary: web (Library samples/clips, Score + Flow wording, highlighting, hero data + captions)",
+  "description": "See design/vocabulary.md §The app. Owner: web/docs session. Lands with tasks 1+2.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9c905694-cf46-4c85-9f39-af8caa18386e",
+  "labels": [
+    "vocabulary"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-24T16:41:48.185093Z",
+  "updated_at": "2026-09-24T16:41:48.185129Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
