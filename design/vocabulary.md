@@ -1,6 +1,6 @@
 # Vocabulary: aligned with Ableton Live (design, 2026-09-24)
 
-Status: **decided by the user 2026-09-24; not built yet.** Every user-facing word means one thing,
+Status: **decided by the user 2026-09-24; built the same day** (language, compiler, manifests, analysis, web, docs). The storage contract (task 3) is the storage session's to do. Every user-facing word means one thing,
 and the same thing it means in Live, so Live users can read Apricity at a glance. Internal names
 follow in the same change wherever it's cheap. Where it isn't, they're renamed when the code is next
 touched.
@@ -81,17 +81,17 @@ track b     steps "1 _ 2 _"  group beat  volume -2
   - Groups can nest, but not in a circle.
 - **Return tracks:**
   - `return <name>` with indented effects defines one; `volume` goes on its line.
-  - Tracks and groups reach returns only by `send`.
+  - Tracks reach returns only by `send` (sends from group tracks: later).
   - Returns go to the master.
 - **Old words** are errors that name the new one, with no silent aliases:
   - "`chop` is now `slice` (as in Live): kit b = slice brk by beats 0.5";
   - "`bus` is now `return` (shared effects) or `group` (tracks summed together)";
-  - "`slice` names a saved clip now: write the name right after the path: clip brk = drums.wav loop-1";
-  - "`meter 4` is now `time 4/4`", "`gain` is now `volume`", "`warp off` is now `warp repitch`".
+  - "a sample's saved clip goes right after the path now: clip brk = drums.wav loop-1" (on a pad: "…right after the clip's name now: kick = tdrums shot-1");
+  - "`meter` is now `time`, written as a time signature: time 4/4", "`gain` is now `volume`", "`warp off` is now `warp repitch`".
 
 YAML follows the same words:
 - `time: 4/4`
-- `clips: { brk: { source: …, clip: loop-1 } }`
+- `clips: { brk: { source: …, saved: loop-1 } }`
 - `kits: { b: { clip: brk, slice: { beats: 0.5 } } }`, or `slice: transients`
 - pads: `{ clip: tdrums, saved: shot-1 }`
 - `groups:` and `returns:` at the top level

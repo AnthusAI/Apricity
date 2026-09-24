@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "Blue-white-march_jukebox-17457_001_00-00-00.wav",
   "sha256": "68a6ae4ac88bc56fed8c62d8a89184a0137382abe9ee07e4f1c563aa8b51f6d6",
@@ -2430,7 +2430,31 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.06,
+    "source": "ml",
+    "note": "16beats, Eb"
+   },
+   {
+    "name": "section B",
+    "seconds": 7.96,
+    "source": "ml",
+    "note": "45beats, Eb"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.06,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 4.04,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.06,
@@ -2498,7 +2522,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.06,
     "end": 0.56,
     "source": "ml",
@@ -2507,37 +2531,13 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 4.04,
     "end": 4.54,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.06,
-    "source": "ml",
-    "note": "16beats, Eb"
-   },
-   {
-    "name": "section B",
-    "seconds": 7.96,
-    "source": "ml",
-    "note": "45beats, Eb"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.06,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 4.04,
-    "source": "ml"
    }
   ]
  }

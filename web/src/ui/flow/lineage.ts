@@ -1,6 +1,6 @@
-// Lineage for the Score tab's Flow view: from a compiled timeline, which recordings are used,
-// which pieces (chops, pads, clip regions) are cut from them, and where each piece plays. Pure, so
-// it's tested without a browser.
+// Lineage for the Score tab's Flow view: from a compiled timeline, which samples are used, which
+// sounds (a kit's slices and pads, or clips played whole) are cut from them, and where each plays.
+// Pure, so it's tested without a browser. (Internally a sample is a `Recording` and a sound a `Piece`.)
 
 import type { Timeline } from "../../apricity";
 
@@ -14,7 +14,7 @@ export interface Recording {
   path: string;
   title: string; // "Thunderer/drums", "Thunderer"
   clips: string[]; // score clips cut from it
-  regions: { clip: string; from: number; to: number }[]; // those clips' regions (their slices)
+  regions: { clip: string; from: number; to: number }[]; // those clips' regions
   islands: Island[];
 }
 
@@ -22,13 +22,13 @@ export interface Piece {
   recording: number;
   from: number; // seconds
   to: number;
-  label: string; // "3", "kick", or the clip name
+  label: string; // a slice's number "3", a pad's name "kick", or the clip name
   clip: string; // the score clip it's cut from
   row: number;
   events: number[]; // indices into timeline.events
 }
 
-/** A row of pieces: one kit (its chops or pads), or one clip played whole. */
+/** A row of sounds: one kit (its pads: slices or clips), or one clip played whole. */
 export interface Row {
   id: string;
   label: string; // "kit b", "clip horns"
@@ -95,7 +95,7 @@ export function lineage(tl: Timeline): Lineage {
   const trackPieces = new Map<string, number[]>();
   for (const t of tl.tracks) {
     const own = t.pieces ?? [];
-    // Whole kits, then single chops or pads of a kit ("drums.crash" joins kit drums), then clips.
+    // Whole kits, then single pads of a kit ("drums.crash" joins kit drums), then clips.
     const prefix = t.clip.includes(".") ? t.clip.slice(0, t.clip.lastIndexOf(".")) : null;
     const rowId = t.kit ?? (prefix && (kits.has(prefix) || own[0]?.name !== undefined || /\.\d+$/.test(t.clip)) ? prefix : t.clip);
     let row = rowOf.get(rowId);
@@ -141,7 +141,7 @@ export function lineage(tl: Timeline): Lineage {
     detail: t.kit
       ? `kit ${t.kit}`
       : t.clip.includes(".")
-        ? `${t.pieces?.[0]?.name ? "pad" : "chop"} of kit ${t.clip.slice(0, t.clip.lastIndexOf("."))}`
+        ? `${t.pieces?.[0]?.name ? "pad" : "slice"} of kit ${t.clip.slice(0, t.clip.lastIndexOf("."))}`
         : `clip ${t.clip}`,
     events: [],
   }));

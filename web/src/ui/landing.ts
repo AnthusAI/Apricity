@@ -94,7 +94,7 @@ export class Landing {
             { className: "hero-inner" },
             el("div", { className: "eyebrow" }, "The mashup machine"),
             el("h1", { className: "wordmark" }, "Apricity"),
-            el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every clip, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
+            el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every sample, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
             el("div", { className: "actions" }, hear, cta("Open the library", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Read the docs", "ghost", go.docs)),
           ),
           this.stageFigure(),
@@ -103,17 +103,17 @@ export class Landing {
           "section",
           { className: "band" },
           el("h2", {}, "How it works"),
-          el("p", { className: "lede" }, "Apricity listens to every recording once, then does the fiddly part of a mashup for you: finding the beat, the key and the tuning, and bending each clip to fit the music you describe."),
+          el("p", { className: "lede" }, "Apricity listens to every recording once, then does the fiddly part of a mashup for you: finding the beat, the key and the tuning, and bending each sample to fit the music you describe."),
           el(
             "div",
             { className: "steps" },
-            this.step("1", "Listen", "Each clip is analyzed for its beats, key, tuning and notes. Split a recording into drums, bass and horns, and mark the passages you like."),
+            this.step("1", "Listen", "Each sample is analyzed for its beats, key, tuning and notes. Split a recording into drums, bass and horns, and save the passages you like as clips."),
             this.step("2", "Describe", "Write a score: a tempo, a key, a chord progression, and which clips play when. Say “follow” and a riff moves with every chord, like a blues."),
             this.step("3", "Play", "Every clip is warped onto one grid and transposed to fit each chord. Edit while it loops; your change comes in at the next bar."),
           ),
           el("div", { className: "score" }, el("div", { className: "head" }, el("span", {}, "a 12-bar blues, from an 1889 march"), el("span", {}, ".apr")), el("pre", { innerHTML: highlight(DEMO) })),
         ),
-        el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every clip analyzed and ready to sample: the public-domain collection Apricity ships with, plus anything you drop in."), stats),
+        el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every sample analyzed and ready to use: the public-domain collection Apricity ships with, plus anything you drop in."), stats),
         el(
           "section",
           { className: "band credits" },
@@ -136,7 +136,7 @@ export class Landing {
     this.stage.setAttribute("role", "img");
     this.stage.setAttribute(
       "aria-label",
-      "Animation: two stems of Sousa's The Thunderer are analyzed, sliced, chopped, and placed into a new composition, warped to one tempo and transposed to follow its chords.",
+      "Animation: two stems of Sousa's The Thunderer are analyzed, cut into clips, sliced onto pads, and placed into a new composition, warped to one tempo and transposed to follow its chords.",
     );
     const nav = el("nav", { className: "chapters", ariaLabel: "Story chapters" });
     this.chapters = CHAPTERS.map((c, i) => {
@@ -156,11 +156,11 @@ export class Landing {
       { className: "sr-only" },
       ...[
         "Listen: a recording is analyzed for its beats, tempo, key and tuning.",
-        "Slice: you mark the part you want; the selection snaps to the beat.",
-        "Chop: the slice is cut into equal chops, ready to play like pads.",
-        "Warp: a step pattern places the chops in the composition, stretched to its tempo.",
+        "Clip: you mark the part you want as a clip; the selection snaps to the beat.",
+        "Slice: the clip is sliced into equal pieces, one on each pad of a kit.",
+        "Warp: a step pattern plays the pads in the composition, stretched to its tempo.",
         "Again: a second recording goes through the same steps.",
-        "Tune: its chops are transposed to follow the chords.",
+        "Tune: its slices are transposed to follow the chords.",
         "Play: the finished piece plays, each sound lit back to where it came from.",
       ].map((t) => el("li", {}, t)),
     );
@@ -213,15 +213,15 @@ export class Landing {
 
   private async loadStats(box: HTMLElement) {
     try {
-      const { clips } = await api.clips();
-      const stems = clips.filter((c: any) => c.stem).length;
-      const minutes = clips.reduce((a, c) => a + c.duration, 0) / 60;
+      const { samples } = await api.samples();
+      const stems = samples.filter((c) => c.stem).length;
+      const minutes = samples.reduce((a, c) => a + c.duration, 0) / 60;
       const big = (value: string, label: string) => el("div", { className: "stat-big" }, el("b", {}, value), el("span", {}, label));
       box.replaceChildren(
-        big(String(clips.length - stems), "recordings and excerpts"),
+        big(String(samples.length - stems), "recordings and excerpts"),
         big(String(stems), "stems separated"),
         big(`${Math.round(minutes)}`, "minutes of music"),
-        big(String(new Set(clips.map((c) => c.key)).size), "different keys detected"),
+        big(String(new Set(samples.map((c) => c.key)).size), "different keys detected"),
       );
     } catch {
       box.replaceChildren(el("p", { className: "lede" }, "Start the server to see your library."));

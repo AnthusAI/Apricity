@@ -1,5 +1,5 @@
 // The landing page's hero story: a mashup being made, slowly enough to follow. Two real stems of
-// Sousa's "The Thunderer" are analyzed, sliced, chopped, and placed into the composition of
+// Sousa's "The Thunderer" are analyzed, clipped, sliced, and placed into the composition of
 // examples/chop-shop.apr, warped to its tempo and transposed to its chords. Everything drawn
 // comes from hero-data.json (see scripts/hero-data.py): real peaks, beats and placements.
 
@@ -13,12 +13,12 @@ interface Phases {
   appear: Span; // title bar and waveform arrive
   listen: Span; // the analysis sweep
   suggest: Span; // automatic markup offers a loop
-  point: Span; // the pointer drags a slice
-  name: Span; // the slice gets its name
-  lift: Span; // the slice lifts into the chop row
-  cut: Span; // …and is cut into chops
+  point: Span; // the pointer drags out a clip
+  name: Span; // the clip gets its name
+  lift: Span; // the clip lifts into the kit's row
+  cut: Span; // …and is sliced onto pads
   code: Span; // the line of score that did it
-  land: Span; // the first bar of chops flies into the composition
+  land: Span; // the first bar of notes flies into the composition
   fill: Span; // the rest of the pattern fills in
 }
 
@@ -43,8 +43,8 @@ export const STILL = 70;
 
 export const CHAPTERS = [
   { label: "Listen", t: 0 },
-  { label: "Slice", t: 9 },
-  { label: "Chop", t: 14.5 },
+  { label: "Clip", t: 9 },
+  { label: "Slice", t: 14.5 },
   { label: "Warp", t: 21 },
   { label: "Again", t: 34 },
   { label: "Tune", t: 51 },
@@ -71,7 +71,7 @@ export interface Cue {
 
 interface Timed extends FlowTile {
   t0: number; // when it starts to arrive
-  fly: boolean; // flies in from its chop (the first bar), or simply appears (the rest)
+  fly: boolean; // flies in from its pad (the first bar), or simply appears (the rest)
   landed: number; // when it's in place
 }
 
@@ -112,18 +112,18 @@ export class Story {
       .map((c) => `${signed(this.tiles.find((x) => x.source === 1 && x.start >= c.start)!.semitones)} under ${c.numeral}`);
     const uniq = [...new Set(follow)];
     const [p, q] = this.ph;
-    if (t < p.appear[1]) return { title: "A recording.", text: `${a.title}: ${a.credit}.` };
+    if (t < p.appear[1]) return { title: "A sample.", text: `${a.title}: ${a.credit}.` };
     if (t < p.point[0] - 1) return { title: "Listen.", text: `Apricity finds the beats (${a.bpm} BPM) and the tuning (${tuning(a.tuning_cents)}), and suggests loops worth using.` };
-    if (t < p.lift[0]) return { title: "Slice.", text: "Mark the part you want. The selection snaps to the beat." };
-    if (t < COMPOSE[0]) return { title: "Chop.", text: `One slice, cut every ${a.chop_beats === 0.5 ? "half beat" : `${a.chop_beats} beats`}: ${a.chops.length} chops, ready to play like pads.` };
-    if (t < COLLAPSE[0]) return { title: "Warp.", text: `A step pattern places the chops, warped from ${a.bpm} to ${this.data.tempo} BPM so everything sits on one grid.` };
+    if (t < p.lift[0]) return { title: "Clip.", text: "Mark the part you want as a clip. The selection snaps to the beat." };
+    if (t < COMPOSE[0]) return { title: "Slice.", text: `The clip, sliced every ${a.chop_beats === 0.5 ? "half beat" : `${a.chop_beats} beats`}: ${a.chops.length} slices on ${a.chops.length} pads, ready to play.` };
+    if (t < COLLAPSE[0]) return { title: "Warp.", text: `A step pattern plays the pads, warped from ${a.bpm} to ${this.data.tempo} BPM so everything sits on one grid.` };
     if (t < q.appear[0]) return { title: "Focus.", text: "The drums fold down to a summary, to make room for the next sound." };
-    if (t < q.listen[0]) return { title: "Another recording.", text: `${b.title}: ${b.credit}.` };
+    if (t < q.listen[0]) return { title: "Another sample.", text: `${b.title}: ${b.credit}.` };
     if (t < q.point[0] - 0.4) return { title: "Listen.", text: `This one is in ${prettyKey(b.key ?? "?")} and ${tuning(b.tuning_cents)}.` };
-    if (t < q.lift[0]) return { title: "Slice.", text: `Mark the riff: ${b.chops.length} beats.` };
-    if (t < q.land[0] - 0.5) return { title: "Chop.", text: `Cut every beat: ${b.chops.length} chops.` };
+    if (t < q.lift[0]) return { title: "Clip.", text: `Mark the riff: ${b.chops.length} beats.` };
+    if (t < q.land[0] - 0.5) return { title: "Slice.", text: `Sliced every beat: ${b.chops.length} pads.` };
     if (t < SESSIONS[1].from) return { title: "Tune.", text: `The horns follow the chords, like a blues riff: ${uniq.join(", ")} semitones.` };
-    return { title: "The mashup.", text: "Two slices of an 1889 march, chopped, warped and tuned into a new groove. Press Hear to listen." };
+    return { title: "The mashup.", text: "Two clips of an 1889 march, sliced, warped and tuned into a new groove. Press Hear to listen." };
   }
 
   draw(g: CanvasRenderingContext2D, w: number, h: number, t: number, th: Theme, still = false) {
@@ -465,7 +465,7 @@ export class Story {
         g.fillStyle = th.inkSoft;
         g.font = `10px ${th.mono}`;
         g.textBaseline = "bottom";
-        const text = `kit ${src.lane} = chop ${src.id} by beats ${src.chop_beats}`;
+        const text = `kit ${src.lane} = slice ${src.id} by beats ${src.chop_beats}`;
         g.fillText(text, chops.x + chops.w - g.measureText(text).width, chops.y - 3);
         g.restore();
       }

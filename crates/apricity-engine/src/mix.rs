@@ -30,6 +30,9 @@ pub struct BusDef {
     /// Linear fader.
     pub gain: f32,
     pub out: String,
+    /// How wet its reverb and delay are unless they say (`mix`): all wet on a return track, which
+    /// is only effect; an insert's share on a group track, which carries the tracks themselves.
+    pub wet: f64,
 }
 
 pub struct Mix {
@@ -126,7 +129,7 @@ impl Mix {
             if input[0].iter().chain(&input[1]).all(|x| *x == 0.0) {
                 continue; // nothing reached it (muted, or another render worker has its tracks)
             }
-            let (mut out, red) = master::process_chain(&input, &b.effects, sr, self.frames_per_beat, 1.0, &keys);
+            let (mut out, red) = master::process_chain(&input, &b.effects, sr, self.frames_per_beat, b.wet, &keys);
             report.push((b.name.clone(), red));
             for c in out.iter_mut() {
                 c.iter_mut().for_each(|x| *x *= b.gain);
@@ -156,7 +159,7 @@ mod tests {
     }
 
     fn bus(name: &str, effects: Vec<Effect>, gain: f32, out: &str) -> BusDef {
-        BusDef { name: name.into(), effects, gain, out: out.into() }
+        BusDef { name: name.into(), effects, gain, out: out.into(), wet: 1.0 }
     }
 
     fn mix(tracks: Vec<TrackStem>, buses: Vec<BusDef>) -> Mix {

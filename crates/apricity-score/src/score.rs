@@ -10,8 +10,8 @@ pub struct Score {
     /// Format version; must be 0.1.
     pub apricity: f64,
     pub tempo: f64,
-    /// Beats per bar.
-    #[serde(default = "four")]
+    /// Beats per bar, written as a time signature: `time: 4/4` (only x/4 for now).
+    #[serde(default = "four", rename = "time", with = "time_signature")]
     pub meter: u32,
     /// Home key, e.g. "Abm". Roman numerals in the progression are relative to it.
     pub key: String,
@@ -19,7 +19,8 @@ pub struct Score {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub samples: Option<String>,
     pub clips: BTreeMap<String, ClipSpec>,
-    /// Kits: a clip chopped into numbered pieces (`k.1`, `k.2`, …), like a sampler's pads.
+    /// Kits: pads to play with steps. A clip sliced onto numbered pads (`k.1`, `k.2`, …), as
+    /// Live's Slice to New MIDI Track does, or named pads gathered from anywhere (a drum kit).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub kits: BTreeMap<String, KitSpec>,
     #[serde(default)]
@@ -28,10 +29,13 @@ pub struct Score {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bars: Option<u32>,
     pub tracks: Vec<TrackSpec>,
-    /// Buses: shared effect returns (a reverb tracks send to) and groups (tracks routed with `out`).
+    /// Group tracks: tracks (and other groups) summed and processed together.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub buses: BTreeMap<String, BusSpec>,
-    /// The master bus: its effects (in order) and the loudness target.
+    pub groups: BTreeMap<String, GroupSpec>,
+    /// Return tracks: shared effects (a reverb) that tracks and groups reach by `sends`.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub returns: BTreeMap<String, ReturnSpec>,
+    /// The master: its effects (in order) and the loudness target.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub master: Option<MasterSpec>,
 }
@@ -46,19 +50,57 @@ pub struct MasterSpec {
     pub loudness: Option<f64>,
 }
 
-/// A bus: sends and grouped tracks sum into it, run through its effects, and go to `out`.
+/// A group track: its tracks (and groups) sum into it, run through its effects, and go on to its
+/// own `group` or the master.
 #[derive(Debug, Clone, Default, PartialEq, Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct BusSpec {
+pub struct GroupSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub effects: Vec<Effect>,
-    /// The bus's fader, dB.
+    /// The group's fader, dB.
     #[serde(default, skip_serializing_if = "is_zero")]
-    pub gain: f64,
-    /// Where it goes: another bus, or the master (the default).
+    pub volume: f64,
+    /// The group it sits in, if any (otherwise it plays into the master).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub out: Option<String>,
+    pub group: Option<String>,
 }
+
+/// A return track: what tracks and groups send to it runs through its effects into the master.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReturnSpec {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub effects: Vec<Effect>,
+    /// The return's fader, dB.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub volume: f64,
+}
+
+/// `time: 4/4` ⇄ beats per bar.
+mod time_signature {
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S: Serializer>(beats: &u32, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(&format!("{beats}/4"))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<u32, D::Error> {
+        let t = String::deserialize(d)?;
+        parse(&t).map_err(serde::de::Error::custom)
+    }
+
+    /// "3/4" → 3. Only quarter-note beats for now.
+    pub fn parse(t: &str) -> Result<u32, String> {
+        let (n, d) = t.split_once('/').ok_or_else(|| format!("write the time signature like 4/4, not `{t}`"))?;
+        let n: u32 = n.trim().parse().map_err(|_| format!("write the time signature like 4/4, not `{t}`"))?;
+        match d.trim() {
+            "4" => Ok(n),
+            _ => Err(format!("only x/4 time signatures for now (3/4, 4/4, 7/4…), not `{t}`")),
+        }
+    }
+}
+
+pub use time_signature::parse as parse_time_signature;
 
 fn is_zero(x: &f64) -> bool {
     *x == 0.0
@@ -158,7 +200,7 @@ pub struct ReverbSpec {
     /// High-frequency damping, 0–1.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub damp: Option<f64>,
-    /// Wet share, 0–1 (default: 1 on a bus, 0.25 as a track insert).
+    /// Wet share, 0–1 (default: 1 on a return track, 0.25 as a track insert).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mix: Option<f64>,
 }
@@ -181,7 +223,7 @@ pub struct DelaySpec {
     pub lowpass: Option<f64>,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub pingpong: bool,
-    /// Wet share, 0–1 (default: 1 on a bus, 0.25 as a track insert).
+    /// Wet share, 0–1 (default: 1 on a return track, 0.25 as a track insert).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mix: Option<f64>,
 }
@@ -312,16 +354,16 @@ pub struct ClipSpec {
     /// Region in source seconds: [from, to).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seconds: Option<[f64; 2]>,
-    /// A named slice from the clip's manifest annotations.
+    /// A clip saved with the sample (in its manifest): `loop-1`, `sec-A1`, `shot-3`, or your own.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub slice: Option<String>,
+    pub saved: Option<String>,
     /// Let the compiler choose the region: the stretch of this length (e.g. "2bars"), starting on
     /// a bar line, that best fits the progression's chords.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pick: Option<String>,
     #[serde(default)]
     pub warp: WarpModeSpec,
-    /// Varispeed for an unwarped clip (`warp: off`): 1.5 plays it 1.5× as fast and a fifth higher,
+    /// Speed for a re-pitched clip (`warp: repitch`): 1.5 plays it 1.5× as fast and a fifth higher,
     /// like a turntable.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub speed: Option<f64>,
@@ -335,75 +377,76 @@ pub struct ClipSpec {
     pub beat_ratio: Option<f64>,
 }
 
-/// A kit is either one clip chopped into numbered pieces (`clip` + `chop`), or named pads
+/// A kit is either one clip sliced onto numbered pads (`clip` + `slice`), or named pads
 /// gathered from anywhere (`pads`), like a drum machine's kick, snare and hats.
 #[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct KitSpec {
-    /// The clip to chop (its region: beats / seconds / slice / pick).
+    /// The clip to slice (its region: beats / seconds / a saved clip / pick).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub clip: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub chop: Option<Chop>,
+    pub slice: Option<SliceBy>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub pads: BTreeMap<String, PadSpec>,
 }
 
 impl KitSpec {
-    pub fn chopped(clip: impl Into<String>, chop: Chop) -> Self {
-        Self { clip: Some(clip.into()), chop: Some(chop), pads: BTreeMap::new() }
+    pub fn sliced(clip: impl Into<String>, by: SliceBy) -> Self {
+        Self { clip: Some(clip.into()), slice: Some(by), pads: BTreeMap::new() }
     }
 }
 
-/// One pad of a drum kit: a clip (or a chop like `k.3`) and optionally a region of it.
+/// One pad of a drum kit: a clip (or another kit's slice, like `k.3`), optionally narrowed to one
+/// of the sample's saved clips or a region.
 #[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct PadSpec {
     pub clip: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub slice: Option<String>,
+    pub saved: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub beats: Option<[f64; 2]>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seconds: Option<[f64; 2]>,
 }
 
-/// How a kit's clip is cut into chops.
+/// How a kit's clip is sliced (Live's Slice modes: beat, region, transient).
 #[derive(Debug, Clone, PartialEq)]
-pub enum Chop {
+pub enum SliceBy {
     /// Every n score beats.
     Beats(f64),
     /// Every n bars.
     Bars(f64),
     /// Into n equal pieces.
     Into(u32),
-    /// At the clip's marked hits (automatic markup or your own markers named "hit").
-    Hits,
-    /// At the clip's spoken phrases (slices named phrase-1, phrase-2, … from automatic markup).
+    /// At the sample's transients (automatic markup, or your own markers named "transient").
+    Transients,
+    /// At the clip's spoken phrases (saved clips named phrase-1, phrase-2, … from automatic markup).
     Phrases,
 }
 
-impl serde::Serialize for Chop {
+impl serde::Serialize for SliceBy {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         match self {
-            Chop::Hits => return s.serialize_str("hits"),
-            Chop::Phrases => return s.serialize_str("phrases"),
+            SliceBy::Transients => return s.serialize_str("transients"),
+            SliceBy::Phrases => return s.serialize_str("phrases"),
             _ => {}
         }
         let mut m = s.serialize_map(Some(1))?;
         match self {
-            Chop::Hits | Chop::Phrases => unreachable!(),
-            Chop::Beats(n) => m.serialize_entry("beats", n)?,
-            Chop::Bars(n) => m.serialize_entry("bars", n)?,
+            SliceBy::Transients | SliceBy::Phrases => unreachable!(),
+            SliceBy::Beats(n) => m.serialize_entry("beats", n)?,
+            SliceBy::Bars(n) => m.serialize_entry("bars", n)?,
             // A whole number, so it reads back as one (`into: 8`, not `8.0`).
-            Chop::Into(n) => m.serialize_entry("into", n)?,
+            SliceBy::Into(n) => m.serialize_entry("into", n)?,
         }
         m.end()
     }
 }
 
-impl<'de> Deserialize<'de> for Chop {
+impl<'de> Deserialize<'de> for SliceBy {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]
@@ -421,14 +464,14 @@ impl<'de> Deserialize<'de> for Chop {
             Text(String),
             Map(Raw),
         }
-        let bad = || serde::de::Error::custom("chop must be {beats: 1}, {bars: 2}, {into: 8}, \"hits\" or \"phrases\"");
+        let bad = || serde::de::Error::custom("slice must be {beats: 1}, {bars: 2}, {into: 8}, \"transients\" or \"phrases\"");
         match Any::deserialize(d).map_err(|_| bad())? {
-            Any::Text(t) if t == "hits" => Ok(Chop::Hits),
-            Any::Text(t) if t == "phrases" => Ok(Chop::Phrases),
+            Any::Text(t) if t == "transients" => Ok(SliceBy::Transients),
+            Any::Text(t) if t == "phrases" => Ok(SliceBy::Phrases),
             Any::Text(_) => Err(bad()),
-            Any::Map(Raw { beats: Some(n), bars: None, into: None }) => Ok(Chop::Beats(n)),
-            Any::Map(Raw { beats: None, bars: Some(n), into: None }) => Ok(Chop::Bars(n)),
-            Any::Map(Raw { beats: None, bars: None, into: Some(n) }) => Ok(Chop::Into(n)),
+            Any::Map(Raw { beats: Some(n), bars: None, into: None }) => Ok(SliceBy::Beats(n)),
+            Any::Map(Raw { beats: None, bars: Some(n), into: None }) => Ok(SliceBy::Bars(n)),
+            Any::Map(Raw { beats: None, bars: None, into: Some(n) }) => Ok(SliceBy::Into(n)),
             Any::Map(_) => Err(bad()),
         }
     }
@@ -441,8 +484,8 @@ pub enum WarpModeSpec {
     #[default]
     Complex,
     Texture,
-    /// Not warped: plays as recorded (at its `speed`), on the grid but not stretched to it.
-    Off,
+    /// Re-Pitch (as in Live): not stretched; plays at its `speed`, which moves its pitch too.
+    Repitch,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
@@ -470,24 +513,24 @@ pub struct TrackSpec {
     /// Bars the track plays, 1-based inclusive: "1-8", "5" (or 5), or omitted for the whole piece.
     #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "opt_text_or_number")]
     pub bars: Option<String>,
-    /// Gain in dB.
+    /// The track's fader (volume), dB.
     #[serde(default)]
-    pub gain: f64,
+    pub volume: f64,
     /// Step size for `steps` patterns as a note value: 16 = sixteenth notes (default), 8, 4…
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grid: Option<u32>,
     /// Swing in percent: 50 is straight; 56–62 is the classic sampler range; up to 75.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub swing: Option<f64>,
-    /// Play each hit backwards.
+    /// Play each note backwards.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub reverse: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub filter: Option<FilterSpec>,
-    /// Shorten each hit to this fraction of its length (0–1).
+    /// Shorten each note to this fraction of its length (0–1).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gate: Option<f64>,
-    /// Retrigger the start of each hit this many times within it.
+    /// Retrigger the start of each note this many times within it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stutter: Option<u32>,
     /// Playback speed against the beat: 0.5 = half-time, 2 = double-time.
@@ -499,10 +542,10 @@ pub struct TrackSpec {
     /// Stereo placement: −100 (left) … 100 (right).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pan: Option<f64>,
-    /// Route the track into a bus (a group) instead of the master.
+    /// The group track it plays into (otherwise the master).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub out: Option<String>,
-    /// Post-fader sends: bus → level (0–1, linear; 0.25 ≈ −12 dB).
+    pub group: Option<String>,
+    /// Post-fader sends: return track → level (0–1, linear; 0.25 ≈ −12 dB).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub sends: BTreeMap<String, f64>,
 }
@@ -684,27 +727,27 @@ impl<'de> Deserialize<'de> for Pattern {
 /// What a step triggers.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Sound {
-    /// Chop n of a chopped kit (1-based).
+    /// Pad n of a sliced kit (1-based): its nth slice.
     Index(usize),
     /// A named pad of a drum kit.
     Name(String),
-    /// `x`: the track's own sound (a clip, one chop, or one pad).
+    /// `x`: the track's own sound (a clip, or one pad).
     This,
 }
 
-/// One trigger in a step pattern: when (in steps from the pattern start), how long (in steps),
+/// One note in a step pattern: when (in steps from the pattern start), how long (in steps),
 /// and what it plays, or `None` for silence.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Step {
     pub at: f64,
     pub len: f64,
     pub sound: Option<Sound>,
-    /// Whether this trigger falls on an odd whole step (the ones swing delays).
+    /// Whether this note falls on an odd whole step (the ones swing delays).
     pub offbeat: bool,
 }
 
-/// Parse a step pattern. Returns the triggers and the pattern's length in steps.
-/// Grammar: tokens separated by spaces; `n` = chop n; a name = that pad; `x` = the track's own
+/// Parse a step pattern. Returns the notes and the pattern's length in steps.
+/// Grammar: tokens separated by spaces; `n` = pad n (slice n); a name = that pad; `x` = the track's own
 /// sound; `.` or `~` = rest; `_` = hold the previous sound one more step; `[a b c]` = one step split
 /// evenly; `|` is ignored (for reading).
 pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
@@ -934,17 +977,17 @@ mod tests {
 
     #[test]
     fn kits_and_transforms_parse() {
-        let y = "apricity: 0.1\ntempo: 90\nkey: C\nclips: {br: {source: x.wav}}\nkits: {k: {clip: br, chop: {beats: 1}}, h: {clip: br, chop: hits}}\nbars: 2\ntracks: [{clip: k, pattern: {steps: '1 . 3 .'}, swing: 58, reverse: true, filter: {lowpass: 800}, gate: 0.5, stutter: 2, speed: 0.5, grid: 8}]\n";
+        let y = "apricity: 0.1\ntempo: 90\nkey: C\nclips: {br: {source: x.wav}}\nkits: {k: {clip: br, slice: {beats: 1}}, h: {clip: br, slice: transients}}\nbars: 2\ntracks: [{clip: k, pattern: {steps: '1 . 3 .'}, swing: 58, reverse: true, filter: {lowpass: 800}, gate: 0.5, stutter: 2, speed: 0.5, grid: 8}]\n";
         let s: Score = serde_yaml::from_str(y).unwrap();
-        assert_eq!(s.kits["k"].chop, Some(Chop::Beats(1.0)));
-        assert_eq!(s.kits["h"].chop, Some(Chop::Hits));
+        assert_eq!(s.kits["k"].slice, Some(SliceBy::Beats(1.0)));
+        assert_eq!(s.kits["h"].slice, Some(SliceBy::Transients));
         let t = &s.tracks[0];
         assert_eq!(t.pattern, Pattern::Steps("1 . 3 .".into()));
         assert_eq!((t.swing, t.reverse, t.filter, t.gate, t.stutter, t.speed, t.grid), (Some(58.0), true, Some(FilterSpec::Lowpass(800.0)), Some(0.5), Some(2), Some(0.5), Some(8)));
         let back: Score = serde_yaml::from_str(&serde_yaml::to_string(&s).unwrap()).unwrap();
         assert_eq!(back, s);
         let bad = serde_yaml::from_str::<Score>(&y.replace("{beats: 1}", "{beats: 1, into: 2}")).unwrap_err().to_string();
-        assert!(bad.contains("chop must be"), "{bad}");
+        assert!(bad.contains("slice must be"), "{bad}");
     }
 
     #[test]

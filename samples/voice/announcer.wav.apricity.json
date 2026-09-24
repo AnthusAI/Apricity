@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "announcer.wav",
   "sha256": "30a881a48deb9081db1d7537540d8e9747a0738e1ffe41aa96fc58b481362075",
@@ -285,7 +285,8 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.0,
@@ -366,7 +367,6 @@
      "2.4s"
     ]
    }
-  ],
-  "markers": []
+  ]
  }
 }

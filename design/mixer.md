@@ -1,5 +1,7 @@
 # Effects and the mixer (design draft, 2026-09-23)
 
+> **Vocabulary update (2026-09-24):** the words below predate the move to Ableton Live's vocabulary. `chop` is now `slice`, a manifest "slice" is now a saved **clip**, `bus` is now `group`/`return`, `gain` is now `volume`, `meter` is now `time`, and hits are now transients and one-shots. See `design/vocabulary.md` and `docs/`.
+
 Status: decided 2026-09-23 (see Decisions); building in stages. **Stage 1 built** (2026-09-23):
 per-track stems, `eq`/`comp`/`pan` inserts, master `eq`/`comp`/`limit`/`loudness` running live, and
 live fader/mute/solo (engine + `apricity play`). Demo: `examples/chop-shop-mixed.apr`.

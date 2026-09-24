@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "Minor-march_jukebox-126102_001_00-01-02.wav",
   "sha256": "2752a7604099110b2e7f7df48d72066f03e45b0cac83cf2765a9730cf8d1801b",
@@ -2446,7 +2446,41 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.36,
+    "source": "ml",
+    "note": "33beats, D"
+   },
+   {
+    "name": "section B",
+    "seconds": 17.76,
+    "source": "ml",
+    "note": "24beats, D"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.36,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 10.4,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 15.62,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 28.24,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.36,
@@ -2514,7 +2548,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.36,
     "end": 0.88,
     "source": "ml",
@@ -2523,7 +2557,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 10.4,
     "end": 10.92,
     "source": "ml",
@@ -2532,7 +2566,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 15.62,
     "end": 16.14,
     "source": "ml",
@@ -2541,47 +2575,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 28.24,
     "end": 28.76,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.36,
-    "source": "ml",
-    "note": "33beats, D"
-   },
-   {
-    "name": "section B",
-    "seconds": 17.76,
-    "source": "ml",
-    "note": "24beats, D"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.36,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 10.4,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 15.62,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 28.24,
-    "source": "ml"
    }
   ]
  }

@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "St-Patricks-parade_144941_004_00-03-10.wav",
   "sha256": "f21752a4eeab4213cafebe2c8b508fa420df0e7286b92e8a4891cc0dd85a7422",
@@ -870,7 +870,30 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.06,
+    "source": "ml",
+    "note": "27beats, A"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.06,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 7.06,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 15.68,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.06,
@@ -927,7 +950,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.06,
     "end": 0.58,
     "source": "ml",
@@ -936,7 +959,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 7.06,
     "end": 7.58,
     "source": "ml",
@@ -945,36 +968,13 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 15.68,
     "end": 16.2,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.06,
-    "source": "ml",
-    "note": "27beats, A"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.06,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 7.06,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 15.68,
-    "source": "ml"
    }
   ]
  }

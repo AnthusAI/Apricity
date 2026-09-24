@@ -23,18 +23,18 @@ Use the rustup toolchain (`~/.cargo/bin`); an older Homebrew `cargo` may shadow 
 PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.cli <files or folders>
 ```
 
-Writes `<file>.apricity.json` next to each audio file: beats, warp markers, key and key over time,
-tuning, chroma, loudness per beat, notes. Then it runs [automatic markup](concepts.md#automatic-markup):
-sections, loops and hits, saved as slices and markers. Files whose manifest already matches the audio
+Writes `<file>.apricity.json` next to each sample: beats, warp markers, key and key over time,
+tuning, chroma, loudness per beat, a transcription. Then it runs [automatic markup](concepts.md#automatic-markup):
+sections, loops and one-shots saved as clips, and transients as markers. Files whose manifest already matches the audio
 are skipped.
 
 | Flag | |
 |---|---|
-| `--force` | Re-analyze even if up to date. Your annotations (slices, markers) are kept. |
-| `--no-notes` | Skip note transcription (much faster). |
+| `--force` | Re-analyze even if up to date. The clips and markers saved with it are kept. |
+| `--no-notes` | Skip the transcription (much faster). |
 | `--no-markup` | Skip automatic markup. |
 
-**Markup on its own** — re-run automatic markup over clips already analyzed (it replaces only its own
+**Markup on its own** — re-run automatic markup over samples already analyzed (it replaces only its own
 earlier marks):
 
 ```sh
@@ -71,21 +71,21 @@ Scores can be `.apr`, `.yaml` or `.json`.
 lands at the next bar. A score with mistakes is reported and the last good version keeps playing.
 `--no-audio` runs the engine on a silent clock (for testing).
 
-While it plays, type mix commands and press Return. They take a track or bus name, or a track number:
+While it plays, type mix commands and press Return. They take the name of a track, group or return, or a track number:
 
 | Command | Does |
 |---|---|
-| `mute NAME` · `unmute NAME` | Silence a track or bus, or bring it back. |
+| `mute NAME` · `unmute NAME` | Silence a track, group or return, or bring it back. |
 | `solo NAME` · `unsolo NAME` | Hear only the soloed tracks (a soloed track keeps its reverb). |
-| `gain NAME -6` | Move a fader, in dB. |
+| `volume NAME -6` | Move a fader, in dB. |
 | `reset` | Clear every mute, solo and fader move. |
-| `tracks` | List the tracks and buses with their state. |
+| `tracks` | List the tracks, groups and returns with their state. |
 
 Live changes survive saving the score. They aren't written into it: to keep a level, change the
-score's `gain`.
+score's `volume`.
 
-**`apricity explain`** prints, for each clip, the region chosen, the beat ratio, the key it sounds in,
-stretch, retuning and level; for each chord, every track's transposition, where its root landed,
+**`apricity explain`** prints, for each clip, the part of the sample chosen, the beat ratio, the key it sounds in,
+stretch, detune and level; for each chord, every track's transposition, where its root landed,
 how much of it is on chord tones and outside the key, and the next-best options.
 
 ## Checking a render
@@ -107,25 +107,25 @@ npm --prefix web run dev                                                 # app, 
 
 Or `npm --prefix web run build` once and use http://localhost:5181 alone.
 
-- **Library** — every analyzed clip. Drag on the waveform to select (snaps to beats; hold ⌥ for free),
-  make and name slices, save them into the manifest; double-click to audition from a point. Drop audio
+- **Library** — every analyzed sample. Drag on the waveform to select (snaps to beats; hold ⌥ for free),
+  make and name clips, and save them with the sample; double-click to audition from a point. Drop audio
   files on the sidebar to add and analyze them.
 - **Score** — edit `.apr` or YAML; it compiles as you type, underlines mistakes, shows the chord strip
   and how everything was solved. Play with the button or Space; edits land at the next bar; ⌘S saves.
 - **Flow** (under the score, toggled by the **Flow** button): where every sound comes from. Top to
   bottom:
-  - the **recordings** the score samples, showing only the stretches it uses (a ⫽ marks time left out);
-  - the **pieces** cut from them: each kit's chops or pads, and each clip played whole;
+  - the **samples** the score uses, showing only the stretches it plays (a ⫽ marks time left out);
+  - the **pads** cut from them: each kit's slices or pads, and each clip played whole;
   - the **composition**, one lane per track.
 
-  Each recording has its own color, and its pieces and hits carry that color. Hover any hit, piece
-  or row to trace it: the recording it came from opens up, and curves run from the recording to the
-  piece to every place it plays. Click to pin it (Esc to let go). While the score plays, whatever is
+  Each sample has its own color, and its pads and notes carry that color. Hover any note, pad or
+  row to trace it: the sample it came from opens up, and curves run from the sample to the pad to
+  every place it plays. Click to pin it (Esc to let go). While the score plays, whatever is
   sounding is traced as it plays. Click the ruler or chords to jump to a bar. Drag the panel's top
   edge to resize it.
 - **Docs** — these pages.
 
-The server only listens on 127.0.0.1 and only writes clip annotations, scores (in `examples/` and
+The server only listens on 127.0.0.1 and only writes the clips and markers saved with samples, scores (in `examples/` and
 `scores/`) and uploads (in `samples/uploads/`).
 
 ## Tests

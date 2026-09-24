@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
   "sha256": "cc37de96d3e9ab47b41489bdc9b3394a239b0b4849a21c50bd73495204a7bb11",
@@ -1741,7 +1741,47 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.02,
+    "source": "ml",
+    "note": "19beats, F"
+   },
+   {
+    "name": "section B",
+    "seconds": 9.12,
+    "source": "ml",
+    "note": "20beats, Gm"
+   },
+   {
+    "name": "section C",
+    "seconds": 18.6,
+    "source": "ml",
+    "note": "25beats, F"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.02,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 5.3,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 16.7,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 22.86,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.02,
@@ -1820,7 +1860,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.02,
     "end": 0.5,
     "source": "ml",
@@ -1829,7 +1869,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 5.3,
     "end": 5.78,
     "source": "ml",
@@ -1838,7 +1878,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 16.7,
     "end": 17.18,
     "source": "ml",
@@ -1847,53 +1887,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 22.86,
     "end": 23.34,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.02,
-    "source": "ml",
-    "note": "19beats, F"
-   },
-   {
-    "name": "section B",
-    "seconds": 9.12,
-    "source": "ml",
-    "note": "20beats, Gm"
-   },
-   {
-    "name": "section C",
-    "seconds": 18.6,
-    "source": "ml",
-    "note": "25beats, F"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.02,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 5.3,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 16.7,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 22.86,
-    "source": "ml"
    }
   ]
  }

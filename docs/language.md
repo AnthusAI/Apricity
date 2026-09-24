@@ -2,17 +2,18 @@
 
 `.apr` files are Apricity's compact way to write a score. Everything here has a YAML equivalent
 ([YAML scores](yaml.md)); both compile to the same thing, and `apricity fmt` converts between them.
-For what the words mean musically, see [Concepts](concepts.md).
+For what the words mean musically, see [Concepts](concepts.md). The words are Ableton Live's
+wherever Live has one: a sample, a clip, a slice, a pad, a group track, a return track.
 
 - [A complete example](#a-complete-example)
 - [How a file is read](#how-a-file-is-read)
-- [Statements](#statements) — `tempo` `meter` `key` `samples` `bars` `apricity` `clip` `kit` `chords` `track` `bus` `master`
+- [Statements](#statements) — `tempo` `time` `key` `samples` `bars` `apricity` `clip` `kit` `chords` `track` `group` `return` `master`
 - [Clip options](#clip-options)
 - [Kits](#kits)
 - [Chord lines](#chord-lines)
 - [Track options](#track-options)
 - [Step patterns](#step-patterns)
-- [Mixing](#mixing) — effects, pan, sends, buses, the master
+- [Mixing](#mixing) — effects, pan, sends, group and return tracks, the master
 - [Mistakes and messages](#mistakes-and-messages)
 - [Grammar](#grammar)
 
@@ -22,7 +23,7 @@ For what the words mean musically, see [Concepts](concepts.md).
 # March Blues — a 12-bar blues in F from a Sousa march split into stems.
 tempo 100                 # beats per minute
 key F mixolydian          # home key; roman numerals are read in it
-samples ../samples        # clip paths are relative to this folder
+samples ../samples        # sample paths are relative to this folder
 
 clip groove = marine-band/stems/WashingtonPost/drums.wav   pick 2bars  warp beats
 clip tuba   = marine-band/stems/WashingtonPost/bass.wav    pick 1bar
@@ -34,10 +35,10 @@ chords I7 IV7 I7 .  | IV7 . I7 .  | V7 IV7 I7 V7
 # chorus 2
 chords I7 IV7 I7 .  | IV7 . I7 .  | V7 IV7 I7 .
 
-track groove  transpose 0  gain -3        # drums don't follow the chords
-track tuba    follow                      # bass moved to each chord's root
-track horns   follow  bars 13-24  gain -2 # riff, in parallel on every chord
-track bugle   at 15 19 23  gain -5        # call and response
+track groove  transpose 0  volume -3        # drums don't follow the chords
+track tuba    follow                        # bass moved to each chord's root
+track horns   follow  bars 13-24  volume -2 # riff, in parallel on every chord
+track bugle   at 15 19 23  volume -5        # call and response
 ```
 
 ## How a file is read
@@ -48,7 +49,8 @@ track bugle   at 15 19 23  gain -5        # call and response
 - **Blank lines** are ignored. Order doesn't matter, except that `chords` lines add up in order and
   `track` lines are numbered in order.
 - **Indented lines** belong to the statement above them: the pads of a drum kit (`kit drums` then
-  `  kick = …`), and the effects of a track, a bus or the master (`track horns` then `  eq lowcut 120`).
+  `  kick = …`), and the effects of a track, a group or return track, or the master (`track horns`
+  then `  eq lowcut 120`).
 - **Quoted text** (`steps "1 . 3 ."`) is one argument, spaces and all; a `#` inside quotes is not a
   comment.
 - **Paths and names are single words** — no spaces. (A path with spaces needs the YAML format.)
@@ -65,75 +67,91 @@ track bugle   at 15 19 23  gain -5        # call and response
 |---|---|---|---|
 | `tempo <bpm>` | yes | Score tempo in beats per minute (20–400). | |
 | `key <key>` | yes | Home key, e.g. `Abm`, `F mixolydian`, `C# dorian`. The rest of the line (before any `#`) is the key. See [keys](chords.md#keys). | |
-| `meter <n>` | | Beats per bar (1–16). | `4` |
-| `samples <folder>` | | Folder that clip paths are relative to, itself relative to the score file. | the score's folder |
+| `time <n>/4` | | Time signature: *n* beats to a bar (1–16), each a quarter note, e.g. `time 3/4`. Only x/4 for now. | `4/4` |
+| `samples <folder>` | | Folder that sample paths are relative to, itself relative to the score file. | the score's folder |
 | `bars <n>` | | Length in bars, for a piece **without** chords. With chords, the chords set the length (and a `bars` that disagrees is an error). | |
 | `apricity <version>` | | Format version. Only `0.1` exists. | `0.1` |
-| `clip <name> = <path> [options]` | | Defines a clip. See [clip options](#clip-options). | |
-| `kit <name> = chop <clip> …` / `kit <name>` + pads | | Defines a kit. See [kits](#kits). | |
+| `clip <name> = <sample> [saved clip] [options]` | | Defines a clip. See [clip options](#clip-options). | |
+| `kit <name> = slice <clip> …` / `kit <name>` + pads | | Defines a kit. See [kits](#kits). | |
 | `chords <chords…>` | one of `chords`/`bars` | Adds chords to the progression. See [chord lines](#chord-lines). | |
-| `track <sound> [options]` | | Plays a clip, a kit, a chop or a pad. See [track options](#track-options). | |
-| `bus <name> [gain <dB>] [out <bus>]` + indented lines | | A shared effect return or a group. See [buses](#buses-and-sends). | |
+| `track <sound> [options]` | | Plays a clip, a kit, or one pad of a kit. See [track options](#track-options). | |
+| `group <name> [volume <dB>] [group <name>]` + indented lines | | A group track: tracks summed and processed together. See [group and return tracks](#group-and-return-tracks). | |
+| `return <name> [volume <dB>]` + indented lines | | A return track: shared effects that tracks send to. See [group and return tracks](#group-and-return-tracks). | |
 | `master` + indented lines | | The master chain. See [the master](#the-master). | |
 
 **Clip and kit names** are letters, digits, `-` and `_`, and share one namespace: a kit can't have
-the same name as a clip. **Bus names** follow the same rules, can't be `master`, and can't be the
-name of a track.
+the same name as a clip. **Group and return track names** follow the same rules and share a
+namespace of their own; they can't be `master`, and can't be the name of a track.
 
 ## Clip options
 
 ```apr
 clip riff = marine-band/stems/Thunderer/other.wav  beats 32..36  root C  warp complex
+clip brk  = marine-band/stems/Thunderer/drums.wav  loop-1  warp beats
 ```
 
-Give at most one of `beats`, `seconds`, `slice` or `pick`. With none, the clip's region is the whole
-clip.
+A clip is a named region of a **sample** (the audio file after `=`), with its warp settings. Choose
+the region with at most one of: a saved clip, `beats`, `seconds` or `pick`. With none, the clip is
+the whole sample.
+
+**A saved clip** is named right after the path: `clip brk = … loop-1`. It's a clip saved with the
+sample (in its manifest): automatic markup's `loop-1`, `sec-A1`, `shot-3` or `trio` (see
+[automatic markup](concepts.md#automatic-markup)), or one you saved in the web app's Library. The
+first word after the path names a saved clip unless it's one of the options below.
 
 | Option | Example | Meaning |
 |---|---|---|
-| `beats <a>..<b>` | `beats 32..48` | Region from clip beat *a* to *b* (the clip's own beat numbers; 0 is its first downbeat). Must lie inside the clip. |
-| `seconds <a>..<b>` | `seconds 12.5..20` | Region by time in the recording. Must lie inside the clip. |
-| `slice <name>` | `slice trio` | A slice saved in the clip's manifest (make them in the web app's Library). |
-| `pick <duration>` | `pick 2bars` | Let the compiler choose the best region of that length (in score time). See [Concepts: Regions](concepts.md#regions). |
+| a saved clip's name | `loop-1` | A clip saved with the sample. Right after the path, before any other option. |
+| `beats <a>..<b>` | `beats 32..48` | Region from sample beat *a* to *b* (the sample's own beat numbers; 0 is its first downbeat). Must lie inside the sample. |
+| `seconds <a>..<b>` | `seconds 12.5..20` | Region by time in the recording. Must lie inside the sample. |
+| `pick <duration>` | `pick 2bars` | Let the compiler choose the best region of that length (in score time). See [Concepts: Clips](concepts.md#clips). |
 | `root <note>` | `root C` | What the region is built on. Used by `follow` and `role`. Default: the key detected in the region. |
-| `ratio <n>` | `ratio 2` | Clip beats per score beat. Default: ½, 1 or 2, whichever stretches least. |
-| `warp <mode>` | `warp beats` | `complex` (default), `beats` (drums: crisp attacks) or `texture` (pads). |
+| `ratio <n>` | `ratio 2` | Sample beats per score beat. Default: ½, 1 or 2, whichever stretches least. |
+| `warp <mode>` | `warp beats` | `complex` (default), `beats` (drums: crisp attacks), `texture` (pads) or `repitch` (Live's Re-Pitch: not stretched to the grid; the clip plays like a record at its `speed`, so its pitch moves with it, and it isn't transposed for the chords). |
+| `speed <x>` | `speed 1.5`, `speed 1.5x` | For `warp repitch` only: play 1.5× as fast (and a fifth higher), 0.25–4. A re-pitched clip needs its region from a saved clip, `beats` or `seconds`, not `pick`. |
 
 ## Kits
 
-A kit holds short sounds for triggering. See [Concepts: Kits](concepts.md#kits-chops-and-pads).
+A kit is a set of **pads**, short sounds to play with `steps`, like Live's Drum Rack. See
+[Concepts: Kits](concepts.md#kits-slices-and-pads).
 
-**A chopped kit** cuts one clip into numbered chops:
+**A sliced kit** cuts one clip into numbered **slices**, each on its own pad (`b.1`, `b.2`, …), the
+way Live's Slice to New MIDI Track does:
 
 ```apr
-kit b = chop brk by beats 0.5     # a chop every half beat (any positive number)
-kit p = chop brk by bars 1        # a chop every bar
-kit e = chop brk into 8           # 8 equal chops
-kit h = chop band by hits         # a chop at each marker named `hit`
+kit b = slice brk by beats 0.5     # a slice every half beat (any positive number)
+kit p = slice brk by bars 1        # a slice every bar
+kit e = slice brk into 8           # 8 equal slices
+kit h = slice band by transients   # a slice at each transient
+kit w = slice voice by phrases     # a slice per spoken phrase
 ```
 
-| Form | Chops |
+| Form | Slices |
 |---|---|
 | `by beats <n>` | every *n* score beats across the clip's region |
 | `by bars <n>` | every *n* bars |
-| `into <n>` | *n* equal pieces (a whole number) |
-| `by hits` | one per `hit` marker in the region ([automatic markup](concepts.md#automatic-markup) makes them, or add your own), each lasting until the next hit and at most a bar |
+| `into <n>` | *n* equal slices (a whole number) |
+| `by transients` | one per `transient` marker in the region ([automatic markup](concepts.md#automatic-markup) makes them, or add your own), each lasting until the next transient and at most a bar |
+| `by phrases` | one per saved `phrase-N` clip in the region (automatic markup finds the pauses in speech), in order |
 
-The chops cover the clip's region, so chop a slice of a loop with `clip brk = … slice loop-1` first.
-Chops are numbered from 1 in time order; at most 256.
+The slices cover the clip's region, so slice one loop of a longer sample by naming its saved clip
+first: `clip brk = … loop-1`. Slices are numbered from 1 in time order, and slice *n* sits on pad
+*n*; at most 256.
 
 **A drum kit** is `kit <name>` alone on a line, followed by indented pad lines:
 
 ```apr
 kit drums
-  kick  = tdrums  slice hit-1
-  snare = pdrums  beats 4..5
+  kick  = tdrums  beats 62..62.5
+  snare = pdrums  beats 70..70.5
+  crash = band    shot-3
   rim   = b.3
 ```
 
-Each pad line is `<pad> = <clip> [slice <name> | beats <a>..<b> | seconds <a>..<b>]`, or
-`<pad> = <kit>.<n>` to use a chop of a chopped kit. Pad names are words (`kick`, `snare-2`), not
-numbers. Each pad is level-matched on its own.
+Each pad line is `<pad> = <clip> [<saved clip> | beats <a>..<b> | seconds <a>..<b>]`, or
+`<pad> = <kit>.<n>` to put a sliced kit's slice on the pad. A saved clip goes right after the clip
+name, as on a `clip` line (`crash = band shot-3`: the sample's one-shot `shot-3`). Pad names are
+words (`kick`, `snare-2`), not numbers. Each pad is level-matched on its own.
 
 ## Chord lines
 
@@ -165,7 +183,7 @@ symbols (`Dbm`, `Eb7`, `Bbmaj7`). The full list is in [Chords and keys](chords.m
 ## Track options
 
 ```apr
-track horns  as riff  follow  bars 13-24  gain -2
+track horns  as riff  follow  bars 13-24  volume -2
 track b      steps "1 _ 2 _ 3 _ 3 4"  swing 58  transpose 0
 track h.3    every 1bar  reverse  filter lp 800
 ```
@@ -176,12 +194,13 @@ track h.3    every 1bar  reverse  filter lp 800
 |---|---|---|
 | `track horns` | a clip | any |
 | `track b` | a whole kit | `steps` only |
-| `track b.3` | one chop of a chopped kit | any |
+| `track b.3` | one pad of a sliced kit (the one holding slice 3) | any |
 | `track drums.kick` | one pad of a drum kit | any |
 
-A single chop or pad behaves exactly like a clip (`follow`, `role`, `at`, `every` all work).
+A single pad behaves exactly like a clip (`follow`, `role`, `at`, `every` all work).
 
-Then any options:
+Then any options. Each time a track sounds is a **note**: each repeat of a loop, each step, each
+`at` position.
 
 | Option | Example | Meaning | Default |
 |---|---|---|---|
@@ -190,19 +209,19 @@ Then any options:
 | `transpose <t>` | `transpose 0`, `transpose -3`, `transpose +5`, `transpose auto` | `auto`: the harmony solver chooses per chord. `follow`: move with the root. A number: always that many semitones. | `auto` |
 | `role <r>` | `role third` | Hint for where the clip's root should land: `root`, `third`, `fifth`, `seventh`, `chord` (any chord tone) or `any`. With `follow`, only `root` or `any` make sense. | `any` |
 | `loop` | `loop` | Repeat the sound back to back. | ✓ |
-| `every <duration>` | `every 1bar` | Restart the sound at that interval; each trigger plays at most that long. | |
-| `at <positions…>` | `at 3 7 11`, `at 3:1 3:3` | One trigger at each position: a bar number, or `bar:beat` (both start at 1). Each trigger plays the whole sound. | |
+| `every <duration>` | `every 1bar` | Restart the sound at that interval; each note plays at most that long. | |
+| `at <positions…>` | `at 3 7 11`, `at 3:1 3:3` | One note at each position: a bar number, or `bar:beat` (both start at 1). Each note plays the whole sound. | |
 | `steps "<pattern>"` | `steps "1 . 3 ."` | A step sequence. See [step patterns](#step-patterns). | |
 | `grid <n>` | `grid 8`, `grid 1/8` | Step size for `steps` as a note value, 1–64: 16 = sixteenths, 8 = eighths, 4 = beats. | `16` |
 | `swing <percent>` | `swing 58`, `swing 58%` | Delay every other step: 50 = straight, 56–62 classic, 66 ≈ triplets; 50–75. | `50` |
 | `half` / `double` / `speed <x>` | `half`, `speed 0.75` | Play at half, double or any speed against the beat (0.125–8), keeping pitch. | `1` |
-| `reverse` | `reverse` | Each trigger plays backwards. | |
+| `reverse` | `reverse` | Each note plays backwards. | |
 | `filter lp <Hz>` / `filter hp <Hz>` | `filter lp 800`, `filter hp 250` | 12 dB/octave low-pass or high-pass filter, 20–20000 Hz. (`lowpass`, `highpass` also work.) | |
-| `gate <fraction>` | `gate 50%`, `gate 0.5` | Cut each trigger to that fraction of its length (a number above 1 is read as a percentage). | |
-| `stutter <n>` | `stutter 4` | Replay the start of each trigger *n* times within it, 1–64. | |
+| `gate <fraction>` | `gate 50%`, `gate 0.5` | Cut each note to that fraction of its length (a number above 1 is read as a percentage). | |
+| `stutter <n>` | `stutter 4` | Replay the start of each note *n* times within it, 1–64. | |
 | `bars <a>-<b>` | `bars 13-24`, `bars 5` | Only play in these bars (1-based, inclusive). | the whole piece |
-| `gain <dB>` | `gain -3` | Level relative to the other tracks (every track is level-matched first). | `0` |
-| `out <bus>` | `out beat` | Play through a bus (a group) instead of straight into the master. See [buses](#buses-and-sends). | `master` |
+| `volume <dB>` | `volume -3` | The track's fader: its level relative to the other tracks (every track is level-matched first). | `0` |
+| `group <name>` | `group beat` | Play into a group track instead of straight into the master. See [group and return tracks](#group-and-return-tracks). | the master |
 
 `loop`, `every`, `at` and `steps` are alternatives; the last one on the line wins. `half`, `double`
 and `speed` likewise.
@@ -217,23 +236,23 @@ track clap   steps "x . . . x . [x x] ."
 
 | Symbol | Means |
 |---|---|
-| a number | that chop (the track plays a chopped kit) |
+| a number | that pad of a sliced kit, playing its slice (the track plays a sliced kit) |
 | a name | that pad (the track plays a drum kit) |
-| `x` | the track's own sound (the track plays a clip, one chop or one pad) |
+| `x` | the track's own sound (the track plays a clip or one pad) |
 | `.` or `~` | silence for one step |
 | `_` | hold the previous sound one more step |
 | `[a b …]` | split one step evenly among them; brackets nest |
 | `\|` | nothing — just for reading |
 
-Each step is a sixteenth note unless `grid` says otherwise. A trigger lasts its written length (its step
-plus any `_` holds) but never longer than the chop or pad itself. The pattern starts at the track's
+Each step is a sixteenth note unless `grid` says otherwise. A note lasts its written length (its step
+plus any `_` holds) but never longer than the slice or pad itself. The pattern starts at the track's
 first bar and repeats to fill its bars. With `swing`, every second step is delayed; notes inside a
 split step are not.
 
 ## Mixing
 
-The mix is written in the score, as **indented lines** under the thing they shape: a track, a bus or
-the master. Effects run **in the order written**.
+The mix is written in the score, as **indented lines** under the thing they shape: a track, a group
+or return track, or the master. Effects run **in the order written**.
 
 ```apr
 track horns  follow
@@ -242,16 +261,16 @@ track horns  follow
   pan   30
   send  plate 30%  echo 20%
 
-track drums  steps "kick . snare ."  out beat
+track drums  steps "kick . snare ."  group beat
 
-bus beat                             # a group: everything with `out beat` is summed and glued
+group beat                           # a group track: every track with `group beat` is summed and glued
   comp  4:1  -14dB  attack 20ms
 
-bus plate                            # a return: tracks send to it
+return plate                         # a return track: tracks send to it
   eq      lowcut 250
   reverb  plate  1.8s  predelay 20ms  damp 35%
 
-bus echo  gain -4
+return echo  volume -4
   delay  1/8.  feedback 35%  hp 400  lp 4k  pingpong
 
 master
@@ -266,15 +285,15 @@ difference.
 
 ### Where each line goes
 
-| Line | Under a track | Under a bus | Under `master` |
+| Line | Under a track | Under a group or return track | Under `master` |
 |---|---|---|---|
 | `eq`, `comp`, `limit` | ✓ | ✓ | ✓ |
-| `reverb`, `delay` | ✓ (25% wet) | ✓ (all wet) | ✗ put them on a bus |
+| `reverb`, `delay` | ✓ (25% wet) | ✓ (group 25% wet; return all wet) | ✗ put them on a return track |
 | `pan` | ✓ | | |
 | `send` | ✓ | | |
 | `loudness` | | | ✓ |
 
-A track's `gain` is its **fader**; its effects run before it, and `pan` and the sends after it.
+A track's `volume` is its **fader**; its effects run before it, and `pan` and the sends after it.
 
 ### Effects
 
@@ -286,29 +305,36 @@ A track's `gain` is its **fader**; its effects run before it, and `pan` and the 
 | `reverb` | `reverb plate 1.8s predelay 20ms damp 35% mix 30%` | `room`, `hall` (default) or `plate`; a decay in seconds (0.1–20; default room 0.8 s, hall 2.4 s, plate 1.6 s); `predelay` 0–500 ms; `damp` and `mix` 0–100% |
 | `delay` | `delay 1/8. feedback 35% hp 400 lp 4k pingpong mix 30%` | the time first: a [note value](#units) or `350ms`; `feedback` 0–95%; `hp` / `lp` Hz on the echoes; `pingpong` bounces them left and right; `mix` 0–100% |
 | `pan` | `pan -20` | −100 (left) to 100 (right); tracks only |
-| `send` | `send plate 30% echo -12dB` | one or more bus + level pairs; tracks only |
+| `send` | `send plate 30% echo -12dB` | one or more return track + level pairs; tracks only |
 | `loudness` | `loudness -14LUFS` | the master's target, −40 to −5 LUFS; master only |
 
-`mix` is the wet share. Under a bus it defaults to 100%, since a return is all effect; under a track
-it defaults to 25%. Delays in note values follow the tempo.
+`mix` is the wet share. Under a return track it defaults to 100%, since a return is all effect;
+under a track or a group track, which carry the music itself, it defaults to 25%. Delays in note values follow the tempo.
 
-### Buses and sends
+### Group and return tracks
 
-`bus <name>` starts a bus; its effects go on indented lines below. On the `bus` line itself:
+As in Live, there are two kinds of shared track, and each has its own statement. Their effects go
+on indented lines below them.
 
-- `gain <dB>` — the bus's fader (−60 to +12).
-- `out <bus>` — feed another bus instead of the master. Buses can feed buses, but not in a loop.
+**A group track** sums whole tracks so they're processed together, like drums compressed into one
+sampled loop. `group <name>` starts one. On the `group` line itself:
 
-A track reaches a bus in one of two ways:
+- `volume <dB>` — the group's fader (−60 to +12).
+- `group <name>` — sit inside another group instead of playing into the master. Groups can nest,
+  but not in a circle.
 
-- **`send <bus> <level>`** under the track: a copy of the track, after its fader and pan, goes to the
-  bus as well. Levels are a percentage (`25%`) or in dB (`-12dB`). This is how tracks share a reverb
-  or an echo.
-- **`out <bus>`** on the track line: the whole track goes through the bus instead of to the master.
-  This makes a **group**, like drums summed and compressed together.
+A track joins a group with **`group <name>`** on its track line: the whole track, after its fader
+and pan, goes through the group instead of to the master.
 
-A track can't send to the bus it already goes out to, and every bus must have something playing
-into it.
+**A return track** holds a shared effect, like a reverb or an echo, and is all effect. `return
+<name>` starts one, with `volume <dB>` (−60 to +12) on its line; it always plays into the master.
+A track reaches a return only by a send:
+
+- **`send <return> <level>`** under the track: a copy of the track, after its fader and pan, goes
+  to the return as well. Levels are a percentage (`25%`) or in dB (`-12dB`). This is how tracks
+  share a reverb or an echo.
+
+Every group needs something playing in it, and every return something sending to it.
 
 ### The master
 
@@ -336,28 +362,47 @@ underlines them. Some examples:
 
 ```
 line 3 column 1: unknown statement `trakc` (did you mean `track`?)
-line 5 column 9: unknown track option `gian` (did you mean `gain`?)
-line 6 column 8: `[` is never closed
-line 7 column 8: `.` holds the previous chord, but there isn't one yet
-line 12 column 1: track.clip: no clip named "hron" (did you mean "horn"?)
-line 9 column 1: clip horn.beats: [0, 99] is outside the clip's beats [0, 32]
-line 14 column 1: track.pattern: `b` is a kit; play it with steps "1 . 2 . 3 . 4 ." (or one chop: b.1)
-line 15 column 1: track.pattern.steps: uses chop 9, but kit `b` has 4 chops
+line 4 column 13: unknown track option `volme` (did you mean `volume`?)
+line 5 column 11: `[` is never closed
+line 3 column 8: `.` holds the previous chord, but there isn't one yet
+line 13 column 1: track.clip: no clip or kit named "hron" (did you mean "horn"?)
+line 5 column 1: clip horn.beats: [0, 999] is outside the clip's beats [0, 396]
+line 4 column 1: clip bugle.saved: no saved clip "shot-2" in this sample; it has ["loop-1", "shot-1"]
+line 14 column 1: track.pattern: `b` is a kit; play it with steps "1 . 2 . 3 . 4 ." (or one pad: b.1)
+line 15 column 1: track.pattern.steps: uses pad 9, but kit `b` has 4 pads
 line 16 column 1: track.pattern.steps: kit `drums` has no pad `snair` (did you mean "snare"?)
-line 17 column 1: track.pattern.steps: `1` picks a chop, but `horn` is a single sound; use x (e.g. "x . x ."), or chop it into a kit
+line 17 column 1: track.pattern.steps: `1` picks a pad, but `horn` is a single sound; use x (e.g. "x . x ."), or slice it into a kit
 line 18 column 1: track.pattern.steps: `x` plays the track's own sound, but this track is the whole kit `drums`; name the pad to play
-line 20 column 1: kit `empty` has no pads; list them on indented lines below it, e.g.  kick = drums slice hit-1
-line 22 column 14: `-18`: write the threshold in dB, e.g. -18dB
-line 23 column 14: `12x` isn't a frequency (e.g. 120, 120Hz, 6k)
-line 24 column 10: unknown reverb part `cathedral`: reverb [room|hall|plate] [decay like 2.4s] [predelay 20ms] [damp 50%] [mix 30%] (expected one of: room, hall, plate, predelay, damp, mix)
-line 25 column 1: track.sends.rooom: there's no bus `rooom` (did you mean "room"?)
-line 25 column 1: track.sends.echo: the track already goes out to `echo`; sending to it too would double it
-line 27 column 1: track: tracks 1 and 2 are both named `horn`; name one with `as` (the mixer tells tracks apart by name)
-line 30 column 1: bus room: nothing plays into this bus; send a track to it (send room 20%) or route one with out room
-line 36 column 3: `reverb` doesn't go on the master; put it on a bus (bus room / reverb hall) and send tracks to it (send room 20%)
-line 37 column 3: `pan` doesn't belong here (expected one of: eq, comp, limit, loudness)
-line 38 column 12: `-14`: write loudness in LUFS, e.g. -14LUFS
-buses: `echo`, `loop2` feed each other in a loop; one of them must go out to master
+line 8 column 1: kit `empty` has no pads; list them on indented lines below it, e.g.  kick = drums shot-1
+line 11 column 14: `-18`: write the threshold in dB, e.g. -18dB
+line 12 column 16: `12x` isn't a frequency (e.g. 120, 120Hz, 6k)
+line 13 column 10: unknown reverb part `cathedral`: reverb [room|hall|plate] [decay like 2.4s] [predelay 20ms] [damp 50%] [mix 30%] (expected one of: room, hall, plate, predelay, damp, mix)
+line 19 column 1: track.group: there's no group track `beet` (did you mean "beat"?)
+line 19 column 1: track.sends.rooom: there's no return track `rooom` (did you mean "room"?)
+line 19 column 1: track.sends.beat: there's no return track `beat`; `beat` is a group track: put the track in it with group beat
+line 22 column 1: group beat: nothing plays in this group; put a track in it (track … group beat)
+line 24 column 1: return room: nothing sends to this return track; send a track to it (send room 20%)
+line 6 column 15: unknown return option `group` (volume); effects go on indented lines below
+line 15 column 3: `reverb` doesn't go on the master (it plays live); put it on a return track and send tracks to it (or on a group track)
+line 16 column 3: `pan` doesn't belong here (expected one of: eq, comp, limit, width, loudness)
+line 17 column 12: `-14`: write loudness in LUFS, e.g. -14LUFS
+line 13 column 6: only x/4 time signatures for now (3/4, 4/4, 7/4…), not `6/8`
+groups: `a`, `c` sit inside each other in a loop; one of them must play into the master
+```
+
+Apricity's words follow Ableton Live's. Words it used before are errors that name the new one, so an
+older score says exactly what to change:
+
+```
+line 3 column 1: `meter` is now `time`, written as a time signature: time 4/4
+line 4 column 51: a sample's saved clip goes right after the path now: clip brk = drums.wav loop-1
+line 5 column 45: `warp off` is now `warp repitch` (Live's Re-Pitch)
+line 6 column 9: `chop` is now `slice` (as in Live): kit b = slice brk by beats 0.5
+line 7 column 23: `by hits` is now `by transients` (as in Live)
+line 9 column 18: a sample's saved clip goes right after the path now: kick = tdrums shot-1
+line 10 column 1: `bus` is now `return` (shared effects that tracks send to) or `group` (tracks summed together), as in Live
+line 12 column 27: `gain` is now `volume` (the fader, as in Live): volume -3
+line 4 column 10: `out` is now `group`: put the track in a group track with group <name>
 ```
 
 Beyond mistakes, the compiler gives **warnings** that don't stop anything, such as a clip whose
@@ -373,30 +418,33 @@ For reference, the syntax in EBNF. `WORD` is any run of non-space characters; `N
 file        = { line } ;
 line        = [ statement ] EOL ;
 statement   = "tempo" NUMBER
-            | "meter" NUMBER
+            | "time" INTEGER "/4"
             | "key" key-text
             | "samples" WORD
             | "bars" NUMBER
             | "apricity" NUMBER
-            | "clip" NAME "=" WORD { clip-option }
-            | "kit" NAME "=" "chop" NAME chop
+            | "clip" NAME "=" WORD [ SAVED ] { clip-option }
+            | "kit" NAME "=" "slice" NAME slice-by
             | "kit" NAME EOL { INDENT pad EOL }
             | "chords" chord-seq
             | "track" SOUND { track-option } EOL { INDENT track-line EOL }
-            | "bus" NAME [ "gain" NUMBER ] [ "out" NAME ] EOL { INDENT effect EOL }
+            | "group" NAME [ "volume" NUMBER ] [ "group" NAME ] EOL { INDENT effect EOL }
+            | "return" NAME [ "volume" NUMBER ] EOL { INDENT effect EOL }
             | "master" EOL { INDENT ( effect | "loudness" LUFS ) EOL } ;
 
-chop        = "by" ( "beats" NUMBER | "bars" NUMBER | "hits" ) | "into" INTEGER ;
-pad         = NAME "=" ( NAME [ "slice" NAME | "beats" RANGE | "seconds" RANGE ] | NAME "." INTEGER ) ;
-SOUND       = NAME | NAME "." INTEGER | NAME "." NAME ;   (* clip or kit · chop · pad *)
-clip-option = "beats" RANGE | "seconds" RANGE | "slice" NAME | "pick" DURATION
-            | "root" NOTE | "ratio" NUMBER | "warp" ( "beats" | "complex" | "texture" ) ;
+SAVED       = NAME ;                        (* a saved clip, e.g. loop-1; any word but an option *)
+slice-by    = "by" ( "beats" NUMBER | "bars" NUMBER | "transients" | "phrases" ) | "into" INTEGER ;
+pad         = NAME "=" ( NAME [ SAVED | "beats" RANGE | "seconds" RANGE ] | NAME "." INTEGER ) ;
+SOUND       = NAME | NAME "." INTEGER | NAME "." NAME ;   (* clip or kit · sliced kit's pad · drum kit's pad *)
+clip-option = "beats" RANGE | "seconds" RANGE | "pick" DURATION
+            | "root" NOTE | "ratio" NUMBER | "warp" ( "beats" | "complex" | "texture" | "repitch" )
+            | "speed" NUMBER [ "x" ] ;
 track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER )
             | "role" ( "any" | "chord" | "root" | "third" | "fifth" | "seventh" )
             | "loop" | "every" DURATION | "at" POSITION { POSITION } | "steps" QUOTED
             | "grid" INTEGER | "swing" PERCENT | "half" | "double" | "speed" NUMBER
             | "reverse" | "filter" ( "lp" | "hp" ) NUMBER | "gate" PERCENT | "stutter" INTEGER
-            | "bars" BARS | "gain" NUMBER | "out" NAME ;
+            | "bars" BARS | "volume" NUMBER | "group" NAME ;
 
 track-line  = effect | "pan" NUMBER | "send" NAME LEVEL { NAME LEVEL } ;
 effect      = "eq" { "lowcut" HZ | "highcut" HZ | "low" GAIN-AT | "high" GAIN-AT

@@ -1,6 +1,6 @@
 //! `apricity play`: live playback with hot reload. Save the score and the change lands at the next
 //! bar. A score with mistakes is reported and ignored; the last good version keeps playing.
-//! Type mix commands while it plays (`mute horns`, `solo 2`, `gain bass -6`); see `HELP`.
+//! Type mix commands while it plays (`mute horns`, `solo 2`, `volume bass -6`); see `HELP`.
 
 use apricity_engine::{engine, Command, Controller, Mixer, Renderer, SwapAt, TrackControl};
 use apricity_score::Timeline;
@@ -30,7 +30,7 @@ fn compile(score: &Path) -> Result<Timeline, Vec<String>> {
 fn arrange(renderer: &mut Renderer, tl: &Timeline, ctl: &mut Controller, at: SwapAt) -> Result<String, String> {
     let t0 = Instant::now();
     let (arr, stats) = renderer.arrange(tl, None)?;
-    // Live mutes and solos baked into buses survive the re-render.
+    // Live mutes and solos baked into groups and returns survive the re-render.
     let arr = match renderer.mix() {
         Some(m) if m.has_buses() && !ctl.controls().is_empty() => renderer.remix(ctl.controls()).unwrap_or(arr),
         _ => arr,
@@ -60,7 +60,7 @@ pub fn run(opts: Options) -> Result<(), String> {
         eprintln!("  output: {sample_rate} Hz{}", if opts.volume_db != 0.0 { format!(", volume {:+} dB", opts.volume_db) } else { String::new() });
     }
     eprintln!("  watching {} — save it to hear changes at the next bar; Ctrl-C to stop", opts.score.display());
-    eprintln!("  mix live: type `mute NAME`, `solo NAME`, `gain NAME -6`, `reset`, `tracks` (NAME or number)");
+    eprintln!("  mix live: type `mute NAME`, `solo NAME`, `volume NAME -6`, `reset`, `tracks` (NAME or number)");
     let lines = stdin_lines();
     let started = Instant::now();
     let mut last = mtime(&opts.score);
@@ -138,10 +138,10 @@ fn stdin_lines() -> std::sync::mpsc::Receiver<String> {
     rx
 }
 
-const HELP: &str = "mute NAME · unmute NAME · solo NAME · unsolo NAME · gain NAME dB · reset · tracks";
+const HELP: &str = "mute NAME · unmute NAME · solo NAME · unsolo NAME · volume NAME dB · reset · tracks";
 
-/// Apply one typed mix command. Tracks and buses are named as in the score, or numbered from 1.
-/// A change to anything baked into a bus (a grouped track, a send, any solo) re-mixes the buses
+/// Apply one typed mix command. Tracks, groups and returns are named as in the score, or numbered from 1.
+/// A change to anything baked into a group or return (a grouped track, a send, any solo) re-mixes them
 /// and swaps the result in right away; tracks that go straight to the master change instantly.
 fn mix_command(ctl: &mut Controller, renderer: &Renderer, line: &str) -> Result<String, String> {
     let words: Vec<&str> = line.split_whitespace().collect();
@@ -186,11 +186,12 @@ fn apply_mix_command(ctl: &mut Controller, tracks: &[String], verb: &str, args: 
         "unmute" | "um" => set(name(args.first())?, &|c| c.mute = false),
         "solo" | "s" => set(name(args.first())?, &|c| c.solo = true),
         "unsolo" | "us" => set(name(args.first())?, &|c| c.solo = false),
-        "gain" | "g" => {
+        "gain" => Err("`gain` is now `volume` (as in Live): volume NAME dB, e.g. `volume bass -6`".into()),
+        "volume" | "v" => {
             let n = name(args.first())?;
-            let db: f32 = args.get(1).map(|d| d.trim_end_matches("dB").trim_end_matches("db")).and_then(|d| d.parse().ok()).ok_or("gain NAME dB, e.g. `gain bass -6`")?;
+            let db: f32 = args.get(1).map(|d| d.trim_end_matches("dB").trim_end_matches("db")).and_then(|d| d.parse().ok()).ok_or("volume NAME dB, e.g. `volume bass -6`")?;
             if !(-60.0..=12.0).contains(&db) {
-                return Err("gain must be between -60 and +12 dB".into());
+                return Err("volume must be between -60 and +12 dB".into());
             }
             set(n, &|c| c.gain = 10f32.powf(db / 20.0))
         }

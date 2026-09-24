@@ -10,9 +10,9 @@ client = TestClient(server.app)
 CLIP = "samples/citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav"
 
 
-def test_lists_analyzed_clips_with_credits():
-    r = client.get("/api/clips").json()
-    paths = {c["path"]: c for c in r["clips"]}
+def test_lists_analyzed_samples_with_credits():
+    r = client.get("/api/samples").json()
+    paths = {c["path"]: c for c in r["samples"]}
     assert CLIP in paths
     c = paths[CLIP]
     assert c["credit"].startswith("Citizen DJ") and c["bpm"] and c["key"]
@@ -41,16 +41,16 @@ def manifest_backup():
 
 def test_annotations_are_validated_and_saved(manifest_backup):
     dur = json.loads(manifest_backup.read_text())["source"]["duration"]
-    good = {"slices": [{"name": "call-1", "start": 0.5, "end": 2.0, "source": "user"}], "markers": [{"name": "hit", "seconds": 1.0}]}
+    good = {"clips": [{"name": "call-1", "start": 0.5, "end": 2.0, "source": "user"}], "markers": [{"name": "transient", "seconds": 1.0}]}
     assert client.put(f"/api/annotations?path={CLIP}", json=good).json() == {"ok": True}
-    assert json.loads(manifest_backup.read_text())["annotations"]["slices"][0]["name"] == "call-1"
+    assert json.loads(manifest_backup.read_text())["annotations"]["clips"][0]["name"] == "call-1"
 
-    bad = {"slices": [{"name": "past end", "start": 1.0, "end": dur + 5}, {"name": "x", "start": 3, "end": 2}], "markers": [{"name": "m", "seconds": -1}]}
+    bad = {"clips": [{"name": "past end", "start": 1.0, "end": dur + 5}, {"name": "x", "start": 3, "end": 2}], "markers": [{"name": "m", "seconds": -1}]}
     r = client.put(f"/api/annotations?path={CLIP}", json=bad)
     assert r.status_code == 422
     errors = "\n".join(r.json()["errors"])
-    assert "must be letters" in errors and "0 ≤ start < end" in errors and "outside the clip" in errors
-    assert json.loads(manifest_backup.read_text())["annotations"]["slices"][0]["name"] == "call-1", "a bad save changes nothing"
+    assert "must be letters" in errors and "0 ≤ start < end" in errors and "outside the sample" in errors
+    assert json.loads(manifest_backup.read_text())["annotations"]["clips"][0]["name"] == "call-1", "a bad save changes nothing"
 
 
 def test_scores_can_only_be_written_as_yaml_in_score_folders():

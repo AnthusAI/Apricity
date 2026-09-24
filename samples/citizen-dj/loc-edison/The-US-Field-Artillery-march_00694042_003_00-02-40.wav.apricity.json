@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
   "sha256": "0d39d3960932334dcb88ba2846045b33ddee2f700773568c653ef6884cbec937",
@@ -3030,7 +3030,47 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.04,
+    "source": "ml",
+    "note": "61beats, Ab"
+   },
+   {
+    "name": "section B",
+    "seconds": 14.26,
+    "source": "ml",
+    "note": "32beats, Db, trio"
+   },
+   {
+    "name": "section B",
+    "seconds": 21.82,
+    "source": "ml",
+    "note": "37beats, Db, trio"
+   },
+   {
+    "name": "transient",
+    "seconds": 4.08,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 18.58,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 20.68,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 24.66,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.04,
@@ -3111,7 +3151,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 4.08,
     "end": 4.32,
     "source": "ml",
@@ -3120,7 +3160,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 18.58,
     "end": 18.82,
     "source": "ml",
@@ -3129,7 +3169,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 20.68,
     "end": 20.92,
     "source": "ml",
@@ -3138,53 +3178,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 24.66,
     "end": 24.9,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.04,
-    "source": "ml",
-    "note": "61beats, Ab"
-   },
-   {
-    "name": "section B",
-    "seconds": 14.26,
-    "source": "ml",
-    "note": "32beats, Db, trio"
-   },
-   {
-    "name": "section B",
-    "seconds": 21.82,
-    "source": "ml",
-    "note": "37beats, Db, trio"
-   },
-   {
-    "name": "hit",
-    "seconds": 4.08,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 18.58,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 20.68,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 24.66,
-    "source": "ml"
    }
   ]
  }
