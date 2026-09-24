@@ -1,31 +1,31 @@
 # Voice layer — a spoken clip over a sampled beat. The announcement plays unwarped (as recorded,
 # not stretched to the grid or moved to the chords), cued on beat 3 of bar 1. Then the same voice
-# is chopped at its phrases and sequenced like a sampler's pads ("Chopped. Looped."), and its last
+# is sliced at its phrases and sequenced like a sampler's pads ("Chopped. Looped."), and its last
 # line comes back at 1.5× speed, pitched up like a record played fast. The beat and horns sit on
-# a `music` bus that ducks under the voice (sidechain compression, the radio DJ's move); the break
+# a `music` group track that ducks under the voice (sidechain compression, the radio DJ's move); the break
 # gets SP-1200-style grit, the horns a little tape drive.
 # The voice was made with macOS `say` (see design/voice-layer notes in design/mixer.md).
 tempo 88
 key F mixolydian
 samples ../samples
 
-clip brk    = marine-band/stems/Thunderer/drums.wav      slice loop-1  warp beats
-clip horns  = marine-band/stems/Thunderer/other.wav      slice loop-2
-clip voice  = voice/announcer.wav  warp off
-clip quick  = voice/announcer.wav  warp off  speed 1.5x
+clip brk    = marine-band/stems/Thunderer/drums.wav  loop-1  warp beats
+clip horns  = marine-band/stems/Thunderer/other.wav  loop-2
+clip voice  = voice/announcer.wav  warp repitch
+clip quick  = voice/announcer.wav  warp repitch  speed 1.5x
 
-kit b     = chop brk by beats 0.5
-kit h     = chop horns by beats 1
-kit words = chop voice by phrases      # 1 "Ladies and gentlemen." … 4 "Chopped." 5 "Looped." …
-kit fast  = chop quick by phrases
+kit b     = slice brk by beats 0.5
+kit h     = slice horns by beats 1
+kit words = slice voice by phrases      # 1 "Ladies and gentlemen." … 4 "Chopped." 5 "Looped." …
+kit fast  = slice quick by phrases
 
 chords I7 . IV7 . | I7 . V7 IV7
 chords I7 . IV7 . | I7 . V7 IV7
 
-track b        steps "1 _ 2 _ 3 _ 3 4 | 5 _ 6 _ 7 8 7 _"   swing 58  transpose 0  out music
+track b        steps "1 _ 2 _ 3 _ 3 4 | 5 _ 6 _ 7 8 7 _"   swing 58  transpose 0  group music
   lofi  12bit  26k
   comp  6:1  -24dB  attack 3ms  release 80ms  makeup 6dB
-track h        steps "1 . . 3 . . 2 . | . . 4 . 3 . . ."   swing 58  follow  filter hp 250  bars 9-16  out music
+track h        steps "1 . . 3 . . 2 . | . . 4 . 3 . . ."   swing 58  follow  filter hp 250  bars 9-16  group music
   drive  8dB  tone 7k
   pan   25
   send  room 25%
@@ -35,18 +35,18 @@ track voice    at 1:3
   noisegate  -50dB
   send  room 12%
 
-# Vocal chops: "Chopped." "Looped." on the beat, then "And played again."
+# Vocal slices: "Chopped." "Looped." on the beat, then "And played again."
 track words    steps "4 . 5 . | 4 . 5 . | 6 _ _ _ | . . . ." grid 4  bars 9-12
   send  room 20%
 track words.4  as stutter  at 13  stutter 4
 track fast.8   at 15
 
-# The music ducks under the announcement and under the vocal chops.
-bus music
+# The music ducks under the announcement and under the vocal slices.
+group music
   comp  3:1  -20dB  attack 5ms  release 300ms  sidechain voice
   comp  3:1  -20dB  attack 5ms  release 200ms  sidechain words
 
-bus room
+return room
   reverb  plate  1.4s  predelay 15ms  damp 40%
   width   140%
 

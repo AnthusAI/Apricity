@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "KingCotton.mp3",
   "sha256": "458edb4e8f232c41130d632dc00cd9361aab92eef37030cd1719ae3caa1942d9",
@@ -16876,7 +16876,107 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.16,
+    "source": "ml",
+    "note": "72beats, Eb"
+   },
+   {
+    "name": "section B",
+    "seconds": 36.32,
+    "source": "ml",
+    "note": "32beats, Eb"
+   },
+   {
+    "name": "section A",
+    "seconds": 52.42,
+    "source": "ml",
+    "note": "32beats, Eb"
+   },
+   {
+    "name": "section C",
+    "seconds": 68.58,
+    "source": "ml",
+    "note": "64beats, Ab, trio"
+   },
+   {
+    "name": "section D",
+    "seconds": 100.76,
+    "source": "ml",
+    "note": "32beats, Ebm"
+   },
+   {
+    "name": "section C",
+    "seconds": 117.1,
+    "source": "ml",
+    "note": "32beats, Ab, trio"
+   },
+   {
+    "name": "section D",
+    "seconds": 133.0,
+    "source": "ml",
+    "note": "16beats, Eb"
+   },
+   {
+    "name": "section E",
+    "seconds": 141.2,
+    "source": "ml",
+    "note": "48beats, Fm"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.1,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 4.175,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 19.616,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 51.88,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 104.763,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 108.897,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 116.037,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 137.062,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 141.137,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 148.266,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.098,
@@ -17266,7 +17366,7 @@
     }
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.1,
     "end": 0.6,
     "source": "ml",
@@ -17278,7 +17378,7 @@
     }
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 4.175,
     "end": 4.675,
     "source": "ml",
@@ -17290,7 +17390,7 @@
     }
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 19.616,
     "end": 20.116,
     "source": "ml",
@@ -17302,7 +17402,7 @@
     }
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 51.88,
     "end": 52.38,
     "source": "ml",
@@ -17314,7 +17414,7 @@
     }
    },
    {
-    "name": "hit-5",
+    "name": "shot-5",
     "start": 104.763,
     "end": 105.263,
     "source": "ml",
@@ -17326,7 +17426,7 @@
     }
    },
    {
-    "name": "hit-6",
+    "name": "shot-6",
     "start": 108.897,
     "end": 109.397,
     "source": "ml",
@@ -17338,7 +17438,7 @@
     }
    },
    {
-    "name": "hit-7",
+    "name": "shot-7",
     "start": 116.037,
     "end": 116.537,
     "source": "ml",
@@ -17350,7 +17450,7 @@
     }
    },
    {
-    "name": "hit-8",
+    "name": "shot-8",
     "start": 137.062,
     "end": 137.562,
     "source": "ml",
@@ -17362,7 +17462,7 @@
     }
    },
    {
-    "name": "hit-9",
+    "name": "shot-9",
     "start": 141.137,
     "end": 141.637,
     "source": "ml",
@@ -17374,7 +17474,7 @@
     }
    },
    {
-    "name": "hit-10",
+    "name": "shot-10",
     "start": 148.266,
     "end": 148.766,
     "source": "ml",
@@ -17384,106 +17484,6 @@
     "evidence": {
      "standout": 11.4
     }
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.16,
-    "source": "ml",
-    "note": "72beats, Eb"
-   },
-   {
-    "name": "section B",
-    "seconds": 36.32,
-    "source": "ml",
-    "note": "32beats, Eb"
-   },
-   {
-    "name": "section A",
-    "seconds": 52.42,
-    "source": "ml",
-    "note": "32beats, Eb"
-   },
-   {
-    "name": "section C",
-    "seconds": 68.58,
-    "source": "ml",
-    "note": "64beats, Ab, trio"
-   },
-   {
-    "name": "section D",
-    "seconds": 100.76,
-    "source": "ml",
-    "note": "32beats, Ebm"
-   },
-   {
-    "name": "section C",
-    "seconds": 117.1,
-    "source": "ml",
-    "note": "32beats, Ab, trio"
-   },
-   {
-    "name": "section D",
-    "seconds": 133.0,
-    "source": "ml",
-    "note": "16beats, Eb"
-   },
-   {
-    "name": "section E",
-    "seconds": 141.2,
-    "source": "ml",
-    "note": "48beats, Fm"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.1,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 4.175,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 19.616,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 51.88,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 104.763,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 108.897,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 116.037,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 137.062,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 141.137,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 148.266,
-    "source": "ml"
    }
   ]
  }

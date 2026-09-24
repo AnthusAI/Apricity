@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "other.wav",
   "sha256": "73b8d481e6e0e7c9cc309aca019d921c3e4da9fd0827bc42b59168b2798d2e6b",
@@ -18935,7 +18935,129 @@
   "model": "htdemucs"
  },
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.26,
+    "source": "ml",
+    "note": "12beats, F, intro"
+   },
+   {
+    "name": "section B",
+    "seconds": 6.3,
+    "source": "ml",
+    "note": "24beats, F"
+   },
+   {
+    "name": "section B",
+    "seconds": 16.3,
+    "source": "ml",
+    "note": "64beats, F"
+   },
+   {
+    "name": "section C",
+    "seconds": 36.58,
+    "source": "ml",
+    "note": "87beats, F"
+   },
+   {
+    "name": "section A",
+    "seconds": 58.78,
+    "source": "ml",
+    "note": "17beats, F"
+   },
+   {
+    "name": "section D",
+    "seconds": 66.92,
+    "source": "ml",
+    "note": "64beats, Bb, trio"
+   },
+   {
+    "name": "section E",
+    "seconds": 99.62,
+    "source": "ml",
+    "note": "30beats, F"
+   },
+   {
+    "name": "section D",
+    "seconds": 114.66,
+    "source": "ml",
+    "note": "36beats, Bb, trio"
+   },
+   {
+    "name": "section E",
+    "seconds": 132.66,
+    "source": "ml",
+    "note": "30beats, F"
+   },
+   {
+    "name": "section F",
+    "seconds": 147.7,
+    "source": "ml",
+    "note": "32beats, Bb, trio"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.204,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 4.256,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 18.78,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 28.381,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 34.442,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 38.587,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 105.634,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 111.602,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 132.36,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 136.598,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 142.565,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 163.162,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.225,
@@ -19219,7 +19341,7 @@
     }
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.204,
     "end": 0.704,
     "source": "ml",
@@ -19231,7 +19353,7 @@
     }
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 4.256,
     "end": 4.756,
     "source": "ml",
@@ -19243,7 +19365,7 @@
     }
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 18.78,
     "end": 19.28,
     "source": "ml",
@@ -19255,7 +19377,7 @@
     }
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 28.381,
     "end": 28.881,
     "source": "ml",
@@ -19267,7 +19389,7 @@
     }
    },
    {
-    "name": "hit-5",
+    "name": "shot-5",
     "start": 34.442,
     "end": 34.942,
     "source": "ml",
@@ -19279,7 +19401,7 @@
     }
    },
    {
-    "name": "hit-6",
+    "name": "shot-6",
     "start": 38.587,
     "end": 39.087,
     "source": "ml",
@@ -19291,7 +19413,7 @@
     }
    },
    {
-    "name": "hit-7",
+    "name": "shot-7",
     "start": 105.634,
     "end": 106.134,
     "source": "ml",
@@ -19303,7 +19425,7 @@
     }
    },
    {
-    "name": "hit-8",
+    "name": "shot-8",
     "start": 111.602,
     "end": 112.102,
     "source": "ml",
@@ -19315,7 +19437,7 @@
     }
    },
    {
-    "name": "hit-9",
+    "name": "shot-9",
     "start": 132.36,
     "end": 132.86,
     "source": "ml",
@@ -19327,7 +19449,7 @@
     }
    },
    {
-    "name": "hit-10",
+    "name": "shot-10",
     "start": 136.598,
     "end": 137.098,
     "source": "ml",
@@ -19339,7 +19461,7 @@
     }
    },
    {
-    "name": "hit-11",
+    "name": "shot-11",
     "start": 142.565,
     "end": 143.065,
     "source": "ml",
@@ -19351,7 +19473,7 @@
     }
    },
    {
-    "name": "hit-12",
+    "name": "shot-12",
     "start": 163.162,
     "end": 163.662,
     "source": "ml",
@@ -19361,128 +19483,6 @@
     "evidence": {
      "standout": 11.6
     }
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.26,
-    "source": "ml",
-    "note": "12beats, F, intro"
-   },
-   {
-    "name": "section B",
-    "seconds": 6.3,
-    "source": "ml",
-    "note": "24beats, F"
-   },
-   {
-    "name": "section B",
-    "seconds": 16.3,
-    "source": "ml",
-    "note": "64beats, F"
-   },
-   {
-    "name": "section C",
-    "seconds": 36.58,
-    "source": "ml",
-    "note": "87beats, F"
-   },
-   {
-    "name": "section A",
-    "seconds": 58.78,
-    "source": "ml",
-    "note": "17beats, F"
-   },
-   {
-    "name": "section D",
-    "seconds": 66.92,
-    "source": "ml",
-    "note": "64beats, Bb, trio"
-   },
-   {
-    "name": "section E",
-    "seconds": 99.62,
-    "source": "ml",
-    "note": "30beats, F"
-   },
-   {
-    "name": "section D",
-    "seconds": 114.66,
-    "source": "ml",
-    "note": "36beats, Bb, trio"
-   },
-   {
-    "name": "section E",
-    "seconds": 132.66,
-    "source": "ml",
-    "note": "30beats, F"
-   },
-   {
-    "name": "section F",
-    "seconds": 147.7,
-    "source": "ml",
-    "note": "32beats, Bb, trio"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.204,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 4.256,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 18.78,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 28.381,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 34.442,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 38.587,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 105.634,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 111.602,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 132.36,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 136.598,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 142.565,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 163.162,
-    "source": "ml"
    }
   ]
  }

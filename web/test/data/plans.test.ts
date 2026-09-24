@@ -55,7 +55,7 @@ describe("planScoreRefs", () => {
       const text = `tempo 90
 key C
 bars 1
-clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
 track beat`;
 
       const refs = getCatalogRefs(text, "scores", "test.apr");
@@ -103,7 +103,7 @@ key C
 bars 1
 clip band = marine-band/Thunderer.mp3
 kit drums
-  crash = band  slice hit-3
+  crash = band  hit-3
 track drums  steps "crash . . ."`;
 
       const refs = getCatalogRefs(text, "scores", "test.apr");
@@ -154,7 +154,7 @@ track drums  steps "crash . . ."`;
       const text1 = `tempo 90
 key C
 bars 1
-clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
 track beat`;
 
       const text2 = `tempo 90
@@ -245,7 +245,7 @@ track x`;
       const text = `tempo 90
 key C
 bars 1
-clip source = @clp_abc123  slice @slc_xyz
+clip source = @clp_abc123  @slc_xyz
 track source`;
 
       const refs = getCatalogRefs(text, "scores", "test.apr");
@@ -283,7 +283,7 @@ track source`;
       const text = `tempo 90
 key C
 bars 1
-clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
 track beat`;
 
       const refs = getCatalogRefs(text, "scores", "test.apr");

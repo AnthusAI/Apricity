@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "St-Patricks-parade_144941_003_00-02-57.wav",
   "sha256": "6e35e1ae85f78061b4a2e5dd8b57ce0046433482f2984586d7648ed839ddcb24",
@@ -499,9 +499,21 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
    {
-    "name": "hit-1",
+    "name": "transient",
+    "seconds": 0.02,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 6.08,
+    "source": "ml"
+   }
+  ],
+  "clips": [
+   {
+    "name": "shot-1",
     "start": 0.02,
     "end": 0.52,
     "source": "ml",
@@ -510,25 +522,13 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 6.08,
     "end": 6.58,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "hit",
-    "seconds": 0.02,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 6.08,
-    "source": "ml"
    }
   ]
  }

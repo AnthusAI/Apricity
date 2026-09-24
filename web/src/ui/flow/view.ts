@@ -1,7 +1,7 @@
-// The Score tab's Flow view: the recordings a score samples, the pieces cut from them (chops,
-// pads, clip regions), and where every piece lands in the piece — with the lineage drawn. Hover
-// anything to trace it (a sound back to its recording, or a piece out to everywhere it plays);
-// click to pin; while playing, what sounds is traced as it plays.
+// The Score tab's Flow view: the samples a score uses, the sounds cut from them (a kit's slices
+// and pads, or a clip played whole), and where each lands in the composition, with the lineage
+// drawn. Hover anything to trace it (a note back to its sample, or a pad out to everywhere it
+// plays); click to pin; while playing, whatever sounds is traced as it plays.
 
 import type { Timeline } from "../../apricity";
 import { player } from "../../audio/player";
@@ -11,7 +11,7 @@ import { type Lineage, lineage } from "./lineage";
 import { type Theme, header, readTheme, rect, ribbon, tile, wave } from "./paint";
 import { type Peaks, peaksOf } from "./peaks";
 
-/** Clip colors, Live-style: one per recording, so every piece and hit shows where it's from. */
+/** Clip colors, Live-style: one per sample, so every pad and note shows where it came from. */
 export const PALETTE = ["#f5a36b", "#cf86c1", "#7fc4d8", "#a6cf6f", "#e8c15a", "#8fa3f0", "#e57f8f", "#6fcfb0"];
 
 type Target = { kind: "event" | "piece" | "row" | "lane" | "recording"; i: number };
@@ -344,7 +344,7 @@ export class FlowView {
       const lit = f ? row.pieces.some((p) => f.pieces.has(p)) : true;
       g.save();
       g.globalAlpha = dim(lit);
-      header(g, geo.right + 8, box.y + box.h / 2, row.label, `${row.pieces.length} ${row.id.includes(".") || row.label.startsWith("clip") ? "piece" : l.pieces[row.pieces[0]]?.label.match(/^\d+$/) ? "chop" : "pad"}${row.pieces.length === 1 ? "" : "s"}`, null, th);
+      header(g, geo.right + 8, box.y + box.h / 2, row.label, row.label.startsWith("clip") ? "played whole" : `${row.pieces.length} ${l.pieces[row.pieces[0]]?.label.match(/^\d+$/) ? "slice" : "pad"}${row.pieces.length === 1 ? "" : "s"}`, null, th);
       g.restore();
       for (const p of row.pieces) {
         const pc = l.pieces[p];
@@ -515,7 +515,7 @@ export class FlowView {
   private say() {
     const tl = this.tl, l = this.lin;
     const t = this.hover ?? this.pinned;
-    const hint = "Hover a sound to trace it back to its recording; click to pin it (Esc to let go).";
+    const hint = "Hover a note or pad to trace it back to its sample; click to pin it (Esc to let go).";
     if (!tl || !l || !t) {
       this.info.replaceChildren(el("span", { className: "muted" }, tl ? hint : "Compile a score to see where its sounds come from."));
       return;
@@ -524,7 +524,8 @@ export class FlowView {
       const pc = l.pieces[p];
       const row = l.rows[pc.row];
       if (row.label.startsWith("clip")) return `clip ${pc.clip}`;
-      return /^\d+$/.test(pc.label) ? `chop ${pc.label} of ${row.label}` : `pad ${pc.label} of ${row.label}`;
+      // A sliced kit's pads are numbered: pad b.3 holds slice 3.
+      return /^\d+$/.test(pc.label) ? `slice ${pc.label} (pad ${row.id}.${pc.label})` : `pad ${row.id}.${pc.label}`;
     };
     const where = (p: number) => {
       const pc = l.pieces[p];
@@ -543,13 +544,14 @@ export class FlowView {
     } else if (t.kind === "row") {
       const row = l.rows[t.i];
       const recs = [...new Set(row.pieces.map((p) => l.recordings[l.pieces[p].recording].title))];
-      text = `${row.label}: ${row.pieces.length} piece${row.pieces.length === 1 ? "" : "s"} from ${recs.join(", ")}.`;
+      text = row.label.startsWith("clip") ? `${row.label}, played whole, from ${recs.join(", ")}.` : `${row.label}: ${row.pieces.length} pad${row.pieces.length === 1 ? "" : "s"}, from ${recs.join(", ")}.`;
     } else if (t.kind === "lane") {
       const ln = l.lanes[t.i];
-      text = `Track ${ln.track} (${ln.detail}): ${ln.events.length} sounds.`;
+      text = `Track ${ln.track} (${ln.detail}): ${ln.events.length} note${ln.events.length === 1 ? "" : "s"}.`;
     } else {
       const rec = l.recordings[t.i];
-      text = `${rec.title} (${rec.path}): ${rec.clips.map((c) => `clip ${c}`).join(", ")}; ${l.pieces.filter((p) => p.recording === t.i).length} pieces used.`;
+      const used = l.pieces.filter((p) => p.recording === t.i).length;
+      text = `Sample ${rec.title} (${rec.path}): ${rec.clips.map((c) => `clip ${c}`).join(", ")}; ${used} sound${used === 1 ? "" : "s"} cut from it.`;
     }
     this.info.replaceChildren(...(this.pinned ? [el("b", {}, "Pinned "), " "] : []), text);
   }

@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
   "sha256": "0489a6588ef499d8a7a54f22188b15b4b339b56dc4b154315ee3015f40af1ba9",
@@ -2926,7 +2926,53 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.04,
+    "source": "ml",
+    "note": "73beats, C"
+   },
+   {
+    "name": "section B",
+    "seconds": 17.26,
+    "source": "ml",
+    "note": "16beats, C"
+   },
+   {
+    "name": "section C",
+    "seconds": 20.98,
+    "source": "ml",
+    "note": "16beats, E"
+   },
+   {
+    "name": "section D",
+    "seconds": 24.62,
+    "source": "ml",
+    "note": "24beats, G"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.04,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 7.58,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 24.42,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 27.6,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.04,
@@ -3016,7 +3062,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.04,
     "end": 0.28,
     "source": "ml",
@@ -3025,7 +3071,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 7.58,
     "end": 7.82,
     "source": "ml",
@@ -3034,7 +3080,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 24.42,
     "end": 24.66,
     "source": "ml",
@@ -3043,59 +3089,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 27.6,
     "end": 27.84,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.04,
-    "source": "ml",
-    "note": "73beats, C"
-   },
-   {
-    "name": "section B",
-    "seconds": 17.26,
-    "source": "ml",
-    "note": "16beats, C"
-   },
-   {
-    "name": "section C",
-    "seconds": 20.98,
-    "source": "ml",
-    "note": "16beats, E"
-   },
-   {
-    "name": "section D",
-    "seconds": 24.62,
-    "source": "ml",
-    "note": "24beats, G"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.04,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 7.58,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 24.42,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 27.6,
-    "source": "ml"
    }
   ]
  }

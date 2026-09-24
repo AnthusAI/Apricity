@@ -3,7 +3,7 @@
   "title": "Vocabulary: web (Library samples/clips, Score + Flow wording, highlighting, hero data + captions)",
   "description": "See design/vocabulary.md §The app. Owner: web/docs session. Lands with tasks 1+2.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,10 +12,23 @@
     "vocabulary"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "aab00044-17aa-4bb2-bd7a-85f63270fc0e",
+      "author": "home",
+      "text": "Done.\n\n- **API types:** SampleSummary/SavedClip.\n- **Library:** samples, their clips, and the clip lane; 'Copy for score' now copies an `.apr` clip line.\n- **Highlighters:** time/group/return/volume/slice/transients/repitch, plus the drive/lofi/noisegate/width lines.\n- **Flow view:** wording is now samples, pads (slices and pads) and notes.\n- **Hero:** chapters are Listen · Clip · Slice · Warp · Again · Tune · Play; captions and the landing copy are updated; hero data regenerated (unchanged).\n- **Wasm:** rebuilt from HEAD plus the Rust rename in a worktree (the storage WIP breaks the wasm build in the shared tree).\n- **Checked in the browser:** chop-shop-mixed, voice-layer and march-blues.yaml compile in the browser with no problems; the Library and hero were checked. web tests 26/26; wasm checks pass.",
+      "created_at": "2026-09-24T17:08:19.310942Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Web/Docs Session"
+      }
+    }
+  ],
   "created_at": "2026-09-24T16:41:48.185093Z",
-  "updated_at": "2026-09-24T16:41:48.185129Z",
-  "closed_at": null,
+  "updated_at": "2026-09-24T17:12:57.779827Z",
+  "closed_at": "2026-09-24T17:12:57.779769Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

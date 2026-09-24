@@ -1,8 +1,8 @@
-//! Score → Timeline: validate everything, lay out pattern hits, solve harmony per chord,
-//! split hits at chord changes, and attach warp maps.
+//! Score → Timeline: validate everything, lay out pattern notes, solve harmony per chord,
+//! split notes at chord changes, and attach warp maps.
 
 use crate::manifest::Clip;
-use crate::score::{parse_bars, parse_duration, parse_position, parse_steps, Chop, Effect, FilterSpec, MasterSpec, Pattern, Score, Sound, Transpose, WarpModeSpec};
+use crate::score::{parse_bars, parse_duration, parse_position, parse_steps, Effect, FilterSpec, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
 use apricity_theory::{rank_keys, solve, Chord, Fit, Key, PitchClass, Voice, Weights};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -166,74 +166,109 @@ fn position(pos: &str, meter: u32, tempo: f64) -> Result<f64, String> {
     parse_position(pos, meter)
 }
 
-/// A bus after compiling: where it goes and what it does. `Timeline::buses` lists them so that
-/// every bus comes after the buses that feed it (render in order).
+/// A group or return track after compiling: where it goes and what it does. `Timeline::buses`
+/// lists them so that each comes after everything that feeds it (render in order).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BusInfo {
     pub name: String,
+    /// "group" or "return".
+    #[serde(default = "group_kind")]
+    pub kind: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub effects: Vec<Effect>,
     pub gain_db: f64,
-    /// Another bus, or "master".
+    /// A group track, or "master".
     pub out: String,
 }
 
-/// Check buses, `out` and `send` targets and cycles; returns buses feeders-first.
+fn group_kind() -> String {
+    "group".into()
+}
+
+/// Check group and return tracks, `group` and `send` targets, and cycles; returns them
+/// feeders-first (groups inside out, then returns).
 fn route(score: &Score, errors: &mut Vec<String>) -> Vec<BusInfo> {
-    let names: Vec<String> = score.buses.keys().cloned().collect();
-    let target_ok = |t: &str, at: String, errors: &mut Vec<String>| {
-        if t != "master" && !score.buses.contains_key(t) {
-            let hint = if names.is_empty() { format!("; add one: `bus {t}` with its effects below") } else { did_you_mean(t, names.iter()) };
-            errors.push(format!("{at}: there's no bus `{t}`{hint}"));
+    let groups: Vec<String> = score.groups.keys().cloned().collect();
+    let returns: Vec<String> = score.returns.keys().cloned().collect();
+    let group_ok = |g: &str, at: String, errors: &mut Vec<String>| {
+        if score.groups.contains_key(g) {
+            return;
         }
+        let hint = if score.returns.contains_key(g) {
+            format!("; `{g}` is a return track: reach it with send {g} 20%")
+        } else if groups.is_empty() {
+            format!("; add one: `group {g}` with its effects below")
+        } else {
+            did_you_mean(g, groups.iter())
+        };
+        errors.push(format!("{at}: there's no group track `{g}`{hint}"));
     };
     let track_names: Vec<String> = score.tracks.iter().map(|t| t.name.clone().unwrap_or_else(|| t.clip.clone())).collect();
     for (i, tr) in score.tracks.iter().enumerate() {
-        if let Some(o) = &tr.out {
-            target_ok(o, format!("tracks[{i}].out"), errors);
+        if let Some(g) = &tr.group {
+            group_ok(g, format!("tracks[{i}].group"), errors);
         }
-        for (b, lvl) in &tr.sends {
-            if b == "master" {
-                errors.push(format!("tracks[{i}].sends: a track already plays into the master; send to a bus"));
+        for (r, lvl) in &tr.sends {
+            if r == "master" {
+                errors.push(format!("tracks[{i}].sends: a track already plays into the master; send to a return track"));
                 continue;
             }
-            target_ok(b, format!("tracks[{i}].sends.{b}"), errors);
-            if !(0.0..=1.0).contains(lvl) {
-                errors.push(format!("tracks[{i}].sends.{b}: {}% is outside 0–100%", lvl * 100.0));
+            if !score.returns.contains_key(r) {
+                let hint = if score.groups.contains_key(r) {
+                    format!("; `{r}` is a group track: put the track in it with group {r}")
+                } else if returns.is_empty() {
+                    format!("; add one: `return {r}` with its effects below")
+                } else {
+                    did_you_mean(r, returns.iter())
+                };
+                errors.push(format!("tracks[{i}].sends.{r}: there's no return track `{r}`{hint}"));
             }
-            if tr.out.as_deref() == Some(b.as_str()) {
-                errors.push(format!("tracks[{i}].sends.{b}: the track already goes out to `{b}`; sending to it too would double it"));
+            if !(0.0..=1.0).contains(lvl) {
+                errors.push(format!("tracks[{i}].sends.{r}: {}% is outside 0–100%", lvl * 100.0));
             }
         }
     }
-    for (name, b) in &score.buses {
-        let at = format!("buses.{name}");
-        if let Some(o) = &b.out {
-            target_ok(o, format!("{at}.out"), errors);
-        }
+    let both = score.groups.iter().map(|(n, g)| (n, "groups", &g.effects, g.volume)).chain(score.returns.iter().map(|(n, r)| (n, "returns", &r.effects, r.volume)));
+    for (name, kind, effects, volume) in both {
+        let at = format!("{kind}.{name}");
         if track_names.contains(name) {
-            errors.push(format!("{at}: a track is also named `{name}`; give the bus another name"));
+            errors.push(format!("{at}: a track is also named `{name}`; give the {} track another name", &kind[..kind.len() - 1]));
         }
-        if !(-60.0..=12.0).contains(&b.gain) {
-            errors.push(format!("{at}.gain: {} dB is outside -60 to +12", b.gain));
+        if kind == "returns" && score.groups.contains_key(name) {
+            errors.push(format!("{at}: a group track is also named `{name}`; give one of them another name"));
         }
-        check_effects(&at, &b.effects, errors);
-        let fed = score.tracks.iter().any(|t| t.out.as_deref() == Some(name.as_str()) || t.sends.contains_key(name))
-            || score.buses.values().any(|o| o.out.as_deref() == Some(name.as_str()));
+        if !(-60.0..=12.0).contains(&volume) {
+            errors.push(format!("{at}.volume: {volume} dB is outside -60 to +12"));
+        }
+        check_effects(&at, effects, errors);
+    }
+    for (name, g) in &score.groups {
+        let at = format!("groups.{name}");
+        if let Some(p) = &g.group {
+            group_ok(p, format!("{at}.group"), errors);
+        }
+        let fed = score.tracks.iter().any(|t| t.group.as_deref() == Some(name.as_str())) || score.groups.values().any(|o| o.group.as_deref() == Some(name.as_str()));
         if !fed {
-            errors.push(format!("{at}: nothing plays into this bus; send a track to it (send {name} 20%) or route one with out {name}"));
+            errors.push(format!("{at}: nothing plays in this group; put a track in it (track … group {name})"));
+        }
+    }
+    for name in score.returns.keys() {
+        if !score.tracks.iter().any(|t| t.sends.contains_key(name)) {
+            errors.push(format!("returns.{name}: nothing sends to this return track; send a track to it (send {name} 20%)"));
         }
     }
     // Sidechains: keyed by a track (by name), never by itself, and no ducking loops between tracks.
     let keys_of = |fx: &[Effect]| fx.iter().filter_map(|e| if let Effect::Comp(c) = e { c.sidechain.clone() } else { None }).collect::<Vec<String>>();
     let chains = score.tracks.iter().enumerate().map(|(i, t)| (format!("tracks[{i}]"), track_names[i].clone(), keys_of(&t.effects)));
-    let chains = chains.chain(score.buses.iter().map(|(n, b)| (format!("buses.{n}"), String::new(), keys_of(&b.effects))));
+    let chains = chains
+        .chain(score.groups.iter().map(|(n, g)| (format!("groups.{n}"), String::new(), keys_of(&g.effects))))
+        .chain(score.returns.iter().map(|(n, r)| (format!("returns.{n}"), String::new(), keys_of(&r.effects))));
     for (at, own, keys) in chains {
         for k in keys {
             if k == own {
                 errors.push(format!("{at}: a comp can't be keyed by its own track; that's just a compressor (drop sidechain)"));
             } else if !track_names.contains(&k) {
-                let hint = if score.buses.contains_key(&k) { " (a bus can't key a sidechain; key it from one of its tracks)".to_string() } else { did_you_mean(&k, track_names.iter()) };
+                let hint = if score.groups.contains_key(&k) || score.returns.contains_key(&k) { " (a group or return track can't key a sidechain; key it from one of the tracks)".to_string() } else { did_you_mean(&k, track_names.iter()) };
                 errors.push(format!("{at}: sidechain `{k}`: there's no track by that name{hint}"));
             }
         }
@@ -253,20 +288,22 @@ fn route(score: &Score, errors: &mut Vec<String>) -> Vec<BusInfo> {
             }
         }
     }
-    // Order feeders first; anything left over sits on a cycle.
-    let out_of = |n: &str| score.buses[n].out.clone().unwrap_or_else(|| "master".into());
+    // Groups inside out (a group comes after the groups in it); anything left over sits on a cycle.
+    let out_of = |n: &str| score.groups.get(n).and_then(|g| g.group.clone()).filter(|p| score.groups.contains_key(p)).unwrap_or_else(|| "master".into());
     let mut order: Vec<String> = Vec::new();
-    let mut left: Vec<String> = names.clone();
+    let mut left: Vec<String> = groups.clone();
     while !left.is_empty() {
         let ready: Vec<String> = left.iter().filter(|n| !left.iter().any(|m| m != *n && out_of(m) == **n)).cloned().collect();
         if ready.is_empty() {
-            errors.push(format!("buses: {} feed each other in a loop; one of them must go out to master", left.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>().join(", ")));
+            errors.push(format!("groups: {} sit inside each other in a loop; one of them must play into the master", left.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>().join(", ")));
             break;
         }
         left.retain(|n| !ready.contains(n));
         order.extend(ready);
     }
-    order.iter().map(|n| BusInfo { name: n.clone(), effects: score.buses[n].effects.clone(), gain_db: score.buses[n].gain, out: out_of(n) }).collect()
+    let mut out: Vec<BusInfo> = order.iter().map(|n| BusInfo { name: n.clone(), kind: "group".into(), effects: score.groups[n].effects.clone(), gain_db: score.groups[n].volume, out: out_of(n) }).collect();
+    out.extend(score.returns.iter().map(|(n, r)| BusInfo { name: n.clone(), kind: "return".into(), effects: r.effects.clone(), gain_db: r.volume, out: "master".into() }));
+    out
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -275,7 +312,7 @@ pub struct SourceRef {
     pub path: PathBuf,
     pub bpm: Option<f64>,
     pub key: String,
-    /// The clip's region (its slice), in source seconds.
+    /// The clip's region in its sample, in source seconds.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub region: Option<(f64, f64)>,
 }
@@ -303,12 +340,12 @@ pub struct Event {
     pub reverse: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub filter: Option<FilterSpec>,
-    /// Which of its track's `pieces` this plays (the chop or pad), for tracing a sound to its source.
+    /// Which of its track's `pieces` this plays (the pad, or slice), for tracing a sound to its source.
     #[serde(default)]
     pub piece: usize,
 }
 
-/// One sound a track can play: its clip's region, one chop, or one pad, and where it is recorded.
+/// One sound a track can play: its clip's region, one slice, or one pad, and where it is recorded.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PieceInfo {
     /// Index into `sources`.
@@ -343,13 +380,13 @@ pub struct TrackInfo {
     pub retune_cents: f64,
     /// Automatic level match: brings the region to a common loudness before the track's `gain`.
     pub level_db: f64,
-    /// Number of chops when the track plays a kit.
+    /// Number of pads when the track plays a kit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub chops: Option<usize>,
     /// The kit it plays, if it plays a whole kit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub kit: Option<String>,
-    /// What it can play (one piece, or a kit's chops or pads); events point into this.
+    /// What it can play (its clip, or a kit's pads: slices or clips); events point into this.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub pieces: Vec<PieceInfo>,
     /// Insert effects, in order.
@@ -358,13 +395,13 @@ pub struct TrackInfo {
     /// −1 (left) … 1 (right).
     #[serde(default)]
     pub pan: f64,
-    /// A bus (a group), or "master".
+    /// A group track, or "master".
     #[serde(default = "master_name")]
     pub out: String,
-    /// Post-fader sends: bus → level (0–1, linear).
+    /// Post-fader sends: return track → level (0–1, linear).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub sends: BTreeMap<String, f64>,
-    /// Set when the clip plays unwarped (`warp off`): its playback speed (1 = as recorded).
+    /// Set when the clip plays re-pitched (`warp repitch`): its playback speed (1 = as recorded).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub varispeed: Option<f64>,
 }
@@ -383,15 +420,15 @@ struct Piece {
     name: Option<String>,
 }
 
-/// What a track plays: one piece (a clip's region, one chop, one pad), or a whole kit.
+/// What a track plays: one piece (a clip's region, one slice, one pad), or a whole kit.
 struct TrackSrc {
     pieces: Vec<Piece>,
     /// Set when the track plays a whole kit (pieces addressed by `steps`).
     kit: Option<String>,
 }
 
-/// Resolve a clip region from `beats` / `seconds` / `slice` (all in the clip's terms).
-fn region_of(clip: &Clip, whole: (f64, f64), beats: Option<[f64; 2]>, seconds: Option<[f64; 2]>, slice: Option<&str>) -> Result<(f64, f64), String> {
+/// Resolve a clip region from `beats` / `seconds` / a saved clip (all in the sample's terms).
+fn region_of(clip: &Clip, whole: (f64, f64), beats: Option<[f64; 2]>, seconds: Option<[f64; 2]>, saved: Option<&str>) -> Result<(f64, f64), String> {
     let (lo, hi) = clip.beat_range();
     let r = if let Some([a, b]) = beats {
         if a < lo - 0.01 || b > hi + 0.01 {
@@ -403,8 +440,8 @@ fn region_of(clip: &Clip, whole: (f64, f64), beats: Option<[f64; 2]>, seconds: O
             return Err(format!("seconds [{a}, {b}] is outside the clip (0..{:.2} s)", clip.duration()));
         }
         (clip.beat_at(a), clip.beat_at(b))
-    } else if let Some(sl) = slice {
-        let s = clip.manifest.annotations.slices.iter().find(|s| s.name == sl).ok_or_else(|| format!("no slice {sl:?} in this clip"))?;
+    } else if let Some(sl) = saved {
+        let s = clip.manifest.annotations.clips.iter().find(|s| s.name == sl).ok_or_else(|| format!("no saved clip {sl:?} in this sample"))?;
         (clip.beat_at(s.start), clip.beat_at(s.end))
     } else {
         whole
@@ -479,8 +516,8 @@ pub fn source_paths(score: &Score, base_dir: &Path) -> Vec<PathBuf> {
     score.clips.values().map(|c| normalize(&samples.join(&c.source))).collect()
 }
 
-/// Every clip and kit pad reference in the score: source paths and optional slices.
-/// Used to track which clips a score depends on and detect when slices have drifted.
+/// Every clip and kit pad reference in the score: sample paths and the saved clips used.
+/// Used to track which samples a score depends on and detect when saved clips have drifted.
 pub fn references(score: &Score, base_dir: &Path) -> Vec<crate::score::Ref> {
     let samples = normalize(&base_dir.join(score.samples.as_deref().unwrap_or(".")));
     let mut refs = Vec::new();
@@ -493,7 +530,7 @@ pub fn references(score: &Score, base_dir: &Path) -> Vec<crate::score::Ref> {
             } else {
                 Some(normalize(&samples.join(&clip_spec.source)))
             };
-            (clip_spec.source.clone(), path, clip_spec.slice.clone())
+            (clip_spec.source.clone(), path, clip_spec.saved.clone())
         })
     };
 
@@ -508,12 +545,12 @@ pub fn references(score: &Score, base_dir: &Path) -> Vec<crate::score::Ref> {
             alias: alias.clone(),
             source: clip.source.clone(),
             path,
-            slice: clip.slice.clone(),
+            slice: clip.saved.clone(),
             kit_pad: None,
         });
     }
 
-    // 2. References from chopped kits.
+    // 2. References from sliced kits.
     for (kit_name, kit) in &score.kits {
         if let Some(clip_name) = &kit.clip {
             if let Some((source, path, slice)) = resolve_clip(clip_name) {
@@ -531,19 +568,19 @@ pub fn references(score: &Score, base_dir: &Path) -> Vec<crate::score::Ref> {
     // 3. References from kit pads (named pieces of clips).
     for (kit_name, kit) in &score.kits {
         for (pad_name, pad) in &kit.pads {
-            // Resolve the clip reference: either a clip name or a chop reference like "k.3".
+            // Resolve the clip reference: either a clip name or a slice reference like "k.3".
             let (clip_alias, source_str, path, slice_from_clip) = if let Some((kit_name_ref, _chop_idx)) = pad.clip.rsplit_once('.') {
-                // Possible chop reference: check if kit_name_ref is a chopped kit.
+                // Possible slice reference: check if kit_name_ref is a sliced kit.
                 if let Some(chop_kit) = score.kits.get(kit_name_ref) {
                     if let Some(original_clip_name) = &chop_kit.clip {
-                        // It's a valid chop reference - resolve to the original clip.
+                        // It's a valid slice reference - resolve to the original clip.
                         if let Some((source, path, slice)) = resolve_clip(original_clip_name) {
                             (original_clip_name.clone(), source, path, slice)
                         } else {
                             continue; // Clip not found, skip
                         }
                     } else {
-                        // It's a pad kit, not a chopped kit - this reference is invalid, skip.
+                        // It's a drum kit, not a sliced kit - this reference is invalid, skip.
                         continue;
                     }
                 } else {
@@ -568,8 +605,8 @@ pub fn references(score: &Score, base_dir: &Path) -> Vec<crate::score::Ref> {
                 alias: clip_alias,
                 source: source_str,
                 path,
-                // Use pad's slice if defined, otherwise use the clip's slice.
-                slice: pad.slice.clone().or(slice_from_clip),
+                // Use the pad's saved clip if it names one, otherwise the clip's.
+                slice: pad.saved.clone().or(slice_from_clip),
                 kit_pad: Some(kit_pad),
             });
         }
@@ -607,7 +644,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         errors.push(format!("tempo: {} is outside 20..400 BPM", score.tempo));
     }
     if !(1..=16).contains(&score.meter) {
-        errors.push(format!("meter: {} beats per bar is outside 1..16", score.meter));
+        errors.push(format!("time: {}/4 is outside 1/4..16/4", score.meter));
     }
     let key: Option<Key> = score.key.parse().map_err(|e| errors.push(format!("key: {e}"))).ok();
     let meter = score.meter.clamp(1, 16);
@@ -625,7 +662,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 continue;
             }
         };
-        let unwarped = spec.warp == WarpModeSpec::Off;
+        let unwarped = spec.warp == WarpModeSpec::Repitch;
         if unwarped {
             let speed = spec.speed.unwrap_or(1.0);
             if !(0.25..=4.0).contains(&speed) {
@@ -633,21 +670,21 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 continue;
             }
             if spec.beat_ratio.is_some() || spec.pick.is_some() {
-                errors.push(format!("{at}: `{}` needs the clip's own beats, but it plays unwarped (warp off); choose the region with seconds, beats or slice", if spec.pick.is_some() { "pick" } else { "beat_ratio" }));
+                errors.push(format!("{at}: `{}` needs the clip's own beats, but it plays re-pitched (warp repitch); choose the region with seconds, beats or a saved clip", if spec.pick.is_some() { "pick" } else { "beat_ratio" }));
                 continue;
             }
             // An even grid at tempo / speed: warping it onto the score's grid is varispeed.
             clip.unwarp(score.tempo.max(1.0) / speed);
         } else if spec.speed.is_some() {
-            errors.push(format!("{at}.speed: speed is for unwarped clips (warp off), which play like a record; a warped clip follows the score's tempo (use the track's half, double or speed to change how it sits on the grid)"));
+            errors.push(format!("{at}.speed: speed is for re-pitched clips (warp repitch), which play like a record; a warped clip follows the score's tempo (use the track's half, double or speed to change how it sits on the grid)"));
             continue;
         } else if !clip.has_beats() {
-            errors.push(format!("{at}: no beat grid was detected, so it can't be warped by beats; add `warp off` to play it as recorded"));
+            errors.push(format!("{at}: no beat grid was detected, so it can't be warped by beats; add `warp repitch` to play it as recorded"));
             continue;
         }
-        let given = [spec.beats.is_some(), spec.seconds.is_some(), spec.slice.is_some(), spec.pick.is_some()].iter().filter(|&&b| b).count();
+        let given = [spec.beats.is_some(), spec.seconds.is_some(), spec.saved.is_some(), spec.pick.is_some()].iter().filter(|&&b| b).count();
         if given > 1 {
-            errors.push(format!("{at}: give at most one of beats, seconds, slice or pick"));
+            errors.push(format!("{at}: give at most one of beats, seconds, a saved clip or pick"));
             continue;
         }
         let (lo, hi) = clip.beat_range();
@@ -663,12 +700,12 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             } else {
                 Ok((clip.beat_at(a), clip.beat_at(b)))
             }
-        } else if let Some(sl) = &spec.slice {
-            match clip.manifest.annotations.slices.iter().find(|s| &s.name == sl) {
+        } else if let Some(sl) = &spec.saved {
+            match clip.manifest.annotations.clips.iter().find(|s| &s.name == sl) {
                 Some(s) => Ok((clip.beat_at(s.start), clip.beat_at(s.end))),
                 None => {
-                    let have: Vec<_> = clip.manifest.annotations.slices.iter().map(|s| s.name.as_str()).collect();
-                    Err(format!("{at}.slice: no slice {sl:?} in this clip{}", if have.is_empty() { " (it has no slices yet)".into() } else { format!("; it has {have:?}") }))
+                    let have: Vec<_> = clip.manifest.annotations.clips.iter().map(|s| s.name.as_str()).collect();
+                    Err(format!("{at}.saved: no saved clip {sl:?} in this sample{}", if have.is_empty() { " (it has no saved clips yet; mark some in the Library or run automatic markup)".into() } else { format!("; it has {have:?}") }))
                 }
             }
         } else if unwarped {
@@ -748,7 +785,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         let mut need = (0.0, String::new());
         for tr in &score.tracks {
             let (Some(rc), Pattern::At(list), None) = (clips.get(&tr.clip), &tr.pattern, &tr.bars) else { continue };
-            if rc.mode != WarpModeSpec::Off {
+            if rc.mode != WarpModeSpec::Repitch {
                 continue;
             }
             let len = (rc.to - rc.from) / tr.speed.unwrap_or(1.0);
@@ -824,8 +861,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         }
     }
 
-    // ---- kits: chopped kits first (numbered pieces of one clip), then pad kits (named pieces from
-    // anywhere, which may themselves be chops like "k.3").
+    // ---- kits: sliced kits first (one clip's slices on numbered pads), then drum kits (named pads
+    // from anywhere, which may hold another kit's slice like "k.3").
     let mut kits: BTreeMap<String, Vec<Piece>> = BTreeMap::new();
     for (name, kit) in &score.kits {
         let at = format!("kits.{name}");
@@ -833,14 +870,14 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             errors.push(format!("{at}: `{name}` is already a clip name; kits and clips share names"));
             continue;
         }
-        match (&kit.clip, &kit.chop, kit.pads.is_empty()) {
+        match (&kit.clip, &kit.slice, kit.pads.is_empty()) {
             (Some(_), Some(_), true) | (None, None, false) => {}
             _ => {
-                errors.push(format!("{at}: a kit is either `clip` + `chop` (a chopped clip) or `pads` (a drum kit), not both or neither"));
+                errors.push(format!("{at}: a kit is either `clip` + `slice` (a sliced clip) or `pads` (a drum kit), not both or neither"));
                 continue;
             }
         }
-        let (Some(clip_name), Some(chop)) = (&kit.clip, &kit.chop) else { continue };
+        let (Some(clip_name), Some(by)) = (&kit.clip, &kit.slice) else { continue };
         let Some(rc) = clips.get(clip_name) else {
             if !score.clips.contains_key(clip_name) {
                 errors.push(format!("{at}.clip: no clip named {:?}{}", clip_name, did_you_mean(clip_name, score.clips.keys())));
@@ -857,48 +894,48 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             }
             v
         };
-        let chops = match chop {
-            Chop::Beats(n) if *n > 0.0 => even(n * rc.ratio),
-            Chop::Bars(n) if *n > 0.0 => even(n * meter as f64 * rc.ratio),
-            Chop::Into(n) if *n > 0 => even((hi - lo) / *n as f64),
-            Chop::Hits => {
-                let mut ts: Vec<f64> = rc.clip.manifest.annotations.markers.iter().filter(|m| m.name == "hit").map(|m| rc.clip.beat_at(m.seconds)).filter(|&b| b >= lo - 1e-6 && b < hi).collect();
+        let chops = match by {
+            SliceBy::Beats(n) if *n > 0.0 => even(n * rc.ratio),
+            SliceBy::Bars(n) if *n > 0.0 => even(n * meter as f64 * rc.ratio),
+            SliceBy::Into(n) if *n > 0 => even((hi - lo) / *n as f64),
+            SliceBy::Transients => {
+                let mut ts: Vec<f64> = rc.clip.manifest.annotations.markers.iter().filter(|m| m.name == "transient").map(|m| rc.clip.beat_at(m.seconds)).filter(|&b| b >= lo - 1e-6 && b < hi).collect();
                 ts.sort_by(|a, b| a.total_cmp(b));
                 ts.dedup_by(|a, b| (*a - *b).abs() < 0.05);
                 if ts.is_empty() {
-                    errors.push(format!("{at}.chop: `{clip_name}` has no hits marked in its region; run automatic markup, mark hits yourself, or chop by beats"));
+                    errors.push(format!("{at}.slice: `{clip_name}` has no transients marked in its region; run automatic markup, mark transients yourself, or slice by beats"));
                     continue;
                 }
-                // Each hit is a one-shot lasting until the next hit, at most a bar.
+                // Each slice is a one-shot lasting until the next transient, at most a bar.
                 let cap = meter as f64 * rc.ratio;
                 ts.iter().enumerate().map(|(i, &t)| (t, ts.get(i + 1).copied().unwrap_or(hi).min(t + cap).min(hi))).collect()
             }
-            Chop::Phrases => {
+            SliceBy::Phrases => {
                 let number = |n: &str| n.strip_prefix("phrase-").and_then(|k| k.parse::<u32>().ok());
                 let mut ph: Vec<(u32, f64, f64)> = rc
                     .clip
                     .manifest
                     .annotations
-                    .slices
+                    .clips
                     .iter()
                     .filter_map(|sl| number(&sl.name).map(|k| (k, rc.clip.beat_at(sl.start).max(lo), rc.clip.beat_at(sl.end).min(hi))))
                     .filter(|(_, a, b)| b > a)
                     .collect();
                 ph.sort_by(|a, b| a.0.cmp(&b.0));
                 if ph.is_empty() {
-                    errors.push(format!("{at}.chop: `{clip_name}` has no phrases marked in its region; run automatic markup (it finds the pauses in speech), or chop by hits or beats"));
+                    errors.push(format!("{at}.slice: `{clip_name}` has no phrases marked in its region; run automatic markup (it finds the pauses in speech), or slice by transients or beats"));
                     continue;
                 }
                 ph.into_iter().map(|(_, a, b)| (a, b)).collect()
             }
             _ => {
-                errors.push(format!("{at}.chop: sizes and counts must be more than zero"));
+                errors.push(format!("{at}.slice: sizes and counts must be more than zero"));
                 continue;
             }
         };
         let chops: Vec<Piece> = chops.into_iter().filter(|(a, b)| b - a > 0.05 * rc.ratio).map(|(from, to)| Piece { clip: clip_name.clone(), from, to, name: None }).collect();
         if chops.len() > 256 {
-            errors.push(format!("{at}.chop: that makes {} chops; 256 is the most a kit can hold", chops.len()));
+            errors.push(format!("{at}.slice: that makes {} slices; 256 is the most a kit can hold", chops.len()));
             continue;
         }
         kits.insert(name.clone(), chops);
@@ -907,12 +944,12 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         let mut pads = Vec::new();
         for (pad, ps) in &kit.pads {
             let at = format!("kits.{name}.pads.{pad}");
-            // A pad can be a chop of a chopped kit ("k.3")…
+            // A pad can hold a slice of a sliced kit ("k.3")…
             if let Some((k, n)) = ps.clip.rsplit_once('.') {
                 if let Some(chops) = kits.get(k).filter(|c| c.iter().all(|p| p.name.is_none())) {
                     match n.parse::<usize>() {
                         Ok(i) if i >= 1 && i <= chops.len() => pads.push(Piece { name: Some(pad.clone()), ..chops[i - 1].clone() }),
-                        _ => errors.push(format!("{at}.clip: kit `{k}` has chops 1–{}; there's no `{}`", chops.len(), ps.clip)),
+                        _ => errors.push(format!("{at}.clip: kit `{k}` has pads 1–{}; there's no `{}`", chops.len(), ps.clip)),
                     }
                     continue;
                 }
@@ -921,11 +958,11 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             let Some(rc) = clips.get(&ps.clip) else {
                 if !score.clips.contains_key(&ps.clip) {
                     let all: Vec<String> = score.clips.keys().chain(score.kits.keys()).cloned().collect();
-                    errors.push(format!("{at}.clip: no clip or chop named {:?}{}", ps.clip, did_you_mean(&ps.clip, all.iter())));
+                    errors.push(format!("{at}.clip: no clip or slice named {:?}{}", ps.clip, did_you_mean(&ps.clip, all.iter())));
                 }
                 continue;
             };
-            match region_of(&rc.clip, (rc.from, rc.to), ps.beats, ps.seconds, ps.slice.as_deref()) {
+            match region_of(&rc.clip, (rc.from, rc.to), ps.beats, ps.seconds, ps.saved.as_deref()) {
                 Ok((from, to)) => pads.push(Piece { clip: ps.clip.clone(), from, to, name: Some(pad.clone()) }),
                 Err(e) => errors.push(format!("{at}: {e}")),
             }
@@ -933,7 +970,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         kits.insert(name.clone(), pads);
     }
 
-    // What each track plays: a clip, a whole kit, one chop ("k.3") or one pad ("drums.kick").
+    // What each track plays: a clip, a whole kit, or one pad ("k.3", "drums.kick").
     let resolve_src = |name: &str| -> Result<TrackSrc, String> {
         if let Some(rc) = clips.get(name) {
             return Ok(TrackSrc { pieces: vec![Piece { clip: name.to_string(), from: rc.from, to: rc.to, name: None }], kit: None });
@@ -955,7 +992,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                         let names: Vec<String> = pieces.iter().filter_map(|p| p.name.clone()).collect();
                         Err(format!("kit `{kit}` has no pad `{which}`{}; its pads are {}", did_you_mean(which, names.iter()), names.join(", ")))
                     }
-                    None => Err(format!("kit `{kit}` has chops 1–{}; there's no `{name}`", pieces.len())),
+                    None => Err(format!("kit `{kit}` has pads 1–{}; there's no `{name}`", pieces.len())),
                 };
             }
         }
@@ -963,7 +1000,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         Err(format!("no clip or kit named {name:?}{}", did_you_mean(name, all.iter())))
     };
 
-    // ---- tracks → hits (start beat, duration, which piece, clip-beat offset)
+    // ---- tracks → notes (start beat, duration, which piece, clip-beat offset)
     struct Hit {
         track: usize,
         start: f64,
@@ -981,7 +1018,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         }
         let name = tr.name.clone().unwrap_or_else(|| tr.clip.clone());
         if track_names.contains(&name) {
-            errors.push(format!("{at}: track name {name:?} is used twice; set `name:` to tell them apart"));
+            errors.push(format!("{at}: track name {name:?} is used twice; name one with `as` (`name:` in YAML) to tell them apart"));
         }
         track_names.push(name);
         // Check the track's own fields even when its source is broken, so every mistake shows up at once.
@@ -1047,8 +1084,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 continue;
             }
         };
-        if src.pieces.iter().any(|p| clips[&p.clip].mode == WarpModeSpec::Off) && tr.transpose != Transpose::Auto && tr.transpose != Transpose::Fixed(0) {
-            errors.push(format!("{at}.transpose: `{}` plays unwarped (as recorded), so it isn't transposed; to change its pitch use the clip's speed (like a turntable), or warp it", tr.clip));
+        if src.pieces.iter().any(|p| clips[&p.clip].mode == WarpModeSpec::Repitch) && tr.transpose != Transpose::Auto && tr.transpose != Transpose::Fixed(0) {
+            errors.push(format!("{at}.transpose: `{}` plays re-pitched (as recorded), so it isn't transposed; to change its pitch use the clip's speed (like a turntable), or warp it", tr.clip));
         }
         let (s0, s1) = span;
         let first_hit = hits.len();
@@ -1066,7 +1103,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 let names: Vec<&str> = src.pieces.iter().filter_map(|p| p.name.as_deref()).take(2).collect();
                 format!("steps \"{} . {} .\" (or one pad: {}.{})", names.first().unwrap_or(&"kick"), names.get(1).unwrap_or(&"snare"), tr.clip, names.first().unwrap_or(&"kick"))
             } else {
-                format!("steps \"1 . 2 . 3 . 4 .\" (or one chop: {}.1)", tr.clip)
+                format!("steps \"1 . 2 . 3 . 4 .\" (or one pad: {}.1)", tr.clip)
             };
             errors.push(format!("{at}.pattern: `{}` is a kit; play it with {example}", tr.clip));
         }
@@ -1082,9 +1119,9 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                         let w = match (&st.sound, single, named) {
                             (None, ..) => Ok(None),
                             (Some(Sound::This), true, _) => Ok(Some(0)),
-                            (Some(Sound::This), false, _) => Err(format!("`x` plays the track's own sound, but this track is the whole kit `{}`; name the {} to play", tr.clip, if named { "pad" } else { "chop number" })),
+                            (Some(Sound::This), false, _) => Err(format!("`x` plays the track's own sound, but this track is the whole kit `{}`; name the {} to play", tr.clip, if named { "pad" } else { "pad number" })),
                             (Some(Sound::Index(n)), false, false) if *n <= src.pieces.len() => Ok(Some(n - 1)),
-                            (Some(Sound::Index(n)), false, false) => Err(format!("uses chop {n}, but kit `{}` has {} chops", tr.clip, src.pieces.len())),
+                            (Some(Sound::Index(n)), false, false) => Err(format!("uses pad {n}, but kit `{}` has {} pads", tr.clip, src.pieces.len())),
                             (Some(Sound::Index(n)), false, true) => Err(format!("`{n}`: kit `{}` has named pads; call them by name ({})", tr.clip, src.pieces.iter().filter_map(|p| p.name.clone()).collect::<Vec<_>>().join(", "))),
                             (Some(Sound::Name(nm)), false, true) => match src.pieces.iter().position(|p| p.name.as_deref() == Some(nm)) {
                                 Some(k) => Ok(Some(k)),
@@ -1093,8 +1130,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                                     Err(format!("kit `{}` has no pad `{nm}`{}", tr.clip, did_you_mean(nm, names.iter())))
                                 }
                             },
-                            (Some(Sound::Name(nm)), false, false) => Err(format!("`{nm}`: kit `{}` is chopped; its chops are numbered 1–{}", tr.clip, src.pieces.len())),
-                            (Some(Sound::Index(n)), true, _) => Err(format!("`{n}` picks a chop, but `{}` is a single sound; use x (e.g. \"x . x .\"), or chop it into a kit", tr.clip)),
+                            (Some(Sound::Name(nm)), false, false) => Err(format!("`{nm}`: kit `{}` is sliced; its pads are numbered 1–{}", tr.clip, src.pieces.len())),
+                            (Some(Sound::Index(n)), true, _) => Err(format!("`{n}` picks a pad, but `{}` is a single sound; use x (e.g. \"x . x .\"), or slice it into a kit", tr.clip)),
                             (Some(Sound::Name(nm)), true, _) => Err(format!("`{nm}` names a pad, but `{}` is a single sound; use x (e.g. \"x . x .\")", tr.clip)),
                         };
                         match w {
@@ -1177,10 +1214,10 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
     for (i, e) in master.effects.iter().enumerate() {
         match e {
             Effect::Reverb(_) | Effect::Delay(_) | Effect::Drive(_) | Effect::Lofi(_) | Effect::NoiseGate(_) => {
-                errors.push(format!("master.effects[{i}]: {} doesn't go on the master (it plays live); put it on a bus and send tracks to it", e.name()))
+                errors.push(format!("master.effects[{i}]: {} doesn't go on the master (it plays live); put it on a return track and send tracks to it", e.name()))
             }
             Effect::Comp(c) if c.sidechain.is_some() => errors.push(format!(
-                "master.effects[{i}]: the master can't duck (it plays live); route the music to a bus (out music) and put the sidechain comp there"
+                "master.effects[{i}]: the master can't duck (it plays live); put the music in a group track (group music) and put the sidechain comp there"
             )),
             _ => {}
         }
@@ -1212,7 +1249,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             }
         }
         let region_key = rank_keys(&pcp).first().map(|k| k.0);
-        let unwarped = rc.mode == WarpModeSpec::Off;
+        let unwarped = rc.mode == WarpModeSpec::Repitch;
         let stretch = rc.clip.manifest.rhythm.bpm.filter(|_| !unwarped).map(|b| (b / rc.ratio / score.tempo * 1000.0).round() / 1000.0);
         if let Some(s) = stretch {
             if !(0.5..=2.0).contains(&s) {
@@ -1222,7 +1259,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         for p in &src.pieces {
             let prc = &clips[&p.clip];
             let irregular = prc.clip.beat_irregularity((p.from, p.to));
-            if prc.mode != WarpModeSpec::Off && irregular > 0.1 && p.to - p.from > 2.0 * prc.ratio && !warned_irregular.contains(&prc.name) {
+            if prc.mode != WarpModeSpec::Repitch && irregular > 0.1 && p.to - p.from > 2.0 * prc.ratio && !warned_irregular.contains(&prc.name) {
                 warned_irregular.push(prc.name.clone());
                 warnings.push(format!("{}: its beats are uneven here (intervals vary {:.0}%), so it won't lock to the grid. Free-time playing or a compound meter (6/8) read in twos are the usual causes; try beat_ratio: 3 or 1.5, or another region.", prc.name, irregular * 100.0));
             }
@@ -1258,7 +1295,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 .collect(),
             effects: tr.effects.clone(),
             pan: tr.pan.unwrap_or(0.0) / 100.0,
-            out: tr.out.clone().unwrap_or_else(master_name),
+            out: tr.group.clone().unwrap_or_else(master_name),
             sends: tr.sends.clone(),
             varispeed: unwarped.then(|| score.tempo / rc.clip.manifest.rhythm.bpm.unwrap_or(score.tempo) * tr.speed.unwrap_or(1.0)),
         });
@@ -1335,7 +1372,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         let piece = &srcs[h.track].as_ref().unwrap().pieces[h.piece];
         let rc = &clips[&piece.clip];
         let ratio = rc.ratio * tr.speed.unwrap_or(1.0);
-        let unwarped = rc.mode == WarpModeSpec::Off;
+        let unwarped = rc.mode == WarpModeSpec::Repitch;
         // Unwarped hits don't follow the chords, so they stay whole (no seams at chord changes).
         let whole = [(h.start, h.start + h.dur, None, String::new())];
         let parts = if unwarped { &whole[..] } else { &spans[..] };
@@ -1365,7 +1402,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 warp,
                 semitones: if unwarped { 0 } else { shifts[si][h.track] },
                 tuning_cents: if unwarped { 0.0 } else { -rc.clip.manifest.tonal.tuning_cents },
-                gain_db: tr.gain + piece_levels[h.track][h.piece],
+                gain_db: tr.volume + piece_levels[h.track][h.piece],
                 mode: rc.mode,
                 reverse: tr.reverse,
                 filter: tr.filter,
@@ -1402,7 +1439,7 @@ fn levenshtein(a: &str, b: &str) -> usize {
 
 impl Timeline {
     /// Human-readable explanation of the harmony choices.
-    /// The mix as written: where each track and bus goes, and its chain (in `.apr` notation).
+    /// The mix as written: where each track, group and return goes, and its chain (in `.apr` notation).
     pub fn explain_mix(&self) -> String {
         let fx = |effects: &[Effect], s: &mut String| {
             for e in effects {
@@ -1422,9 +1459,9 @@ impl Timeline {
             fx(&t.effects, &mut s);
         }
         for b in &self.buses {
-            s += &format!("  bus   {:<14} → {:<8}", b.name, b.out);
+            s += &format!("  {:<6}{:<14} → {:<8}", b.kind, b.name, b.out);
             if b.gain_db != 0.0 {
-                s += &format!("  gain {:+} dB", b.gain_db);
+                s += &format!("  volume {:+} dB", b.gain_db);
             }
             s += "\n";
             fx(&b.effects, &mut s);
@@ -1440,7 +1477,7 @@ impl Timeline {
         s += &format!("{} BPM, {}/4, key {}, {} bars\n\nClips:\n", self.tempo, self.meter, self.key, self.length_beats / self.meter as f64);
         for t in &self.tracks {
             if let Some(v) = t.varispeed {
-                s += &format!("  {:<14} {:<10} seconds {:>6.1}–{:<6.1} unwarped, plays as recorded at {v}× (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0 * 60.0 * v / (self.tempo * t.beat_ratio), t.region_beats.1 * 60.0 * v / (self.tempo * t.beat_ratio), t.level_db);
+                s += &format!("  {:<14} {:<10} seconds {:>6.1}–{:<6.1} re-pitched, plays as recorded at {v}× (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0 * 60.0 * v / (self.tempo * t.beat_ratio), t.region_beats.1 * 60.0 * v / (self.tempo * t.beat_ratio), t.level_db);
                 continue;
             }
             s += &format!("  {:<14} {:<10} clip beats {:>6.1}–{:<6.1} (×{}) sounds in {:<5} stretch {:<7} retune {:+.0}¢  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0, t.region_beats.1, t.beat_ratio, t.region_key,

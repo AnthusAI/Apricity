@@ -178,7 +178,8 @@ def from_markup(store: Store, clip: str) -> list[dict]:
     and sections."""
     m = store.manifest(clip)
     out = []
-    for s in m.get("annotations", {}).get("slices", []):
+    ann = m.get("annotations", {})
+    for s in ann.get("clips", []):
         if s.get("source") != "ml":
             continue
         ev, tags, name = s.get("evidence", {}), s.get("tags", []), s["name"]
@@ -188,7 +189,7 @@ def from_markup(store: Store, clip: str) -> list[dict]:
             # markup's loop score: repeat + ½ steady + ½ still − quietness (≈ 0–2)
             score = (ev.get("repeat", 0.5) + 0.5 * ev.get("steady", 0.5) + 0.5 * ev.get("static", 0.5) - max(0.0, -ev.get("level_db", 0) / 10)) / 2
             out.append(prepare(store, clip, s["start"], s["end"], "loop", "analyzer:markup/loops", _loop_why(ev, key, beats), score, ev, manifest=m))
-        elif name.startswith("hit-"):
+        elif name.startswith("shot-"):
             st = ev.get("standout", 0.0)
             why = f"a hit standing out {st:.0f}× over its surroundings" if st else "a standout hit"
             out.append(prepare(store, clip, s["start"], s["end"], "hit", "analyzer:markup/hits", why, min(1.0, 0.3 + st / 30), ev, manifest=m))
@@ -323,7 +324,7 @@ def _write_slice(store: Store, cand: dict, v: dict | None) -> str | None:
         fcntl.flock(lock, fcntl.LOCK_EX)
         m = json.loads(mp.read_text())
         ann = m.setdefault("annotations", {})
-        slices = [s for s in ann.get("slices", []) if s.get("candidate") != cand["id"]]
+        slices = [s for s in ann.get("clips", []) if s.get("candidate") != cand["id"]]
         made = None
         if v is not None:
             made = _slice_name({s["name"] for s in slices}, v.get("name") or cand["name"])
@@ -334,7 +335,8 @@ def _write_slice(store: Store, cand: dict, v: dict | None) -> str | None:
             if ev:
                 s["evidence"] = ev
             slices.append(s)
-        ann["slices"] = slices
+        ann["clips"] = slices
+        m["apricity_manifest"] = 2
         tmp = mp.with_suffix(".tmp")
         tmp.write_text(json.dumps(m, indent=1) + "\n")
         tmp.replace(mp)
@@ -421,8 +423,9 @@ def export_apr(store: Store, name: str) -> str:
     for it in items:
         cn = clips.setdefault(it["clip"], re.sub(r"[^A-Za-z0-9_-]", "-", f"{it['recording']}-{it['context'].get('stem') or 'mix'}").lower())
         m = store.manifest(it["clip"])
-        sl = next((s["name"] for s in m.get("annotations", {}).get("slices", []) if s.get("candidate") == it["id"]), None)
-        where = f"slice {sl}" if sl else f"seconds {it['start']}..{it['end']}"
+        ann = m.get("annotations", {})
+        sl = next((s["name"] for s in ann.get("clips", []) if s.get("candidate") == it["id"]), None)
+        where = sl if sl else f"seconds {it['start']}..{it['end']}"
         pad = re.sub(r"[^A-Za-z0-9_-]", "-", sl or it["name"])
         stars = it["verdict"].get("stars")
         pads.append(f"  {pad} = {cn}  {where}" + (f"   # {'★' * stars}" if stars else ""))

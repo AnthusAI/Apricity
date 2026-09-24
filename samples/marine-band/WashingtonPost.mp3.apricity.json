@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "WashingtonPost.mp3",
   "sha256": "7f0ecbf04e499553b3714529a10396839359ab5cf06a89681981ad4720675b92",
@@ -15453,7 +15453,57 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.22,
+    "source": "ml",
+    "note": "78beats, F"
+   },
+   {
+    "name": "section B",
+    "seconds": 39.44,
+    "source": "ml",
+    "note": "36beats, Bb, trio"
+   },
+   {
+    "name": "section C",
+    "seconds": 57.46,
+    "source": "ml",
+    "note": "28beats, Dm"
+   },
+   {
+    "name": "section D",
+    "seconds": 71.42,
+    "source": "ml",
+    "note": "32beats, Bb, trio"
+   },
+   {
+    "name": "section D",
+    "seconds": 87.46,
+    "source": "ml",
+    "note": "32beats, Bb, trio"
+   },
+   {
+    "name": "section E",
+    "seconds": 103.56,
+    "source": "ml",
+    "note": "20beats, F"
+   },
+   {
+    "name": "section D",
+    "seconds": 113.6,
+    "source": "ml",
+    "note": "38beats, F"
+   },
+   {
+    "name": "section F",
+    "seconds": 132.66,
+    "source": "ml",
+    "note": "40beats, Bb, trio"
+   }
+  ],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.127,
@@ -15753,56 +15803,6 @@
      "static": 0.985,
      "level_db": 0.8
     }
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.22,
-    "source": "ml",
-    "note": "78beats, F"
-   },
-   {
-    "name": "section B",
-    "seconds": 39.44,
-    "source": "ml",
-    "note": "36beats, Bb, trio"
-   },
-   {
-    "name": "section C",
-    "seconds": 57.46,
-    "source": "ml",
-    "note": "28beats, Dm"
-   },
-   {
-    "name": "section D",
-    "seconds": 71.42,
-    "source": "ml",
-    "note": "32beats, Bb, trio"
-   },
-   {
-    "name": "section D",
-    "seconds": 87.46,
-    "source": "ml",
-    "note": "32beats, Bb, trio"
-   },
-   {
-    "name": "section E",
-    "seconds": 103.56,
-    "source": "ml",
-    "note": "20beats, F"
-   },
-   {
-    "name": "section D",
-    "seconds": 113.6,
-    "source": "ml",
-    "note": "38beats, F"
-   },
-   {
-    "name": "section F",
-    "seconds": 132.66,
-    "source": "ml",
-    "note": "40beats, Bb, trio"
    }
   ]
  }
