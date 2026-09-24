@@ -105,10 +105,31 @@
         "model": "Claude Haiku 4.5",
         "name": "storage-T12"
       }
+    },
+    {
+      "id": "a6c03dfe-475e-46fc-88ee-a0536dc6b6a1",
+      "author": "home",
+      "text": "## Implementation Complete: Library, Loader, and Facades\n\n### Changes Made\n\n**1. Fixed dependency path:**\n- Updated virtuus-amplify path from Virtuus-crates to Virtuus (feature/amplify-engine branch)\n- EngineOptions now properly instantiated with { enforce_auth: false }\n\n**2. Facades (stubs ready for Engine::call):**\n- ClipFacade with get() and by_path() methods\n- SliceFacade with by_clip() method  \n- MarkerFacade with by_clip() method\n- Currently return empty results; will integrate Engine::call once V8b lands\n\n**3. Loader implementation (loader::make):**\n- Loads clips from library by reading Clip table directory\n- Reconstructs manifest JSON from stored analysis and slices/markers\n- Handles path normalization and canonicalization\n- Successfully resolves clips for scores through compile_with()\n\n**4. Integration test (test_compile_loader_vs_file_based):**\n- Imports manifests into temporary library\n- Tests persistence (drop and reopen library)\n- Compiles score through loader and verifies clips load correctly\n- Passes: loader successfully resolves all referenced clips\n\n### Test Results\n- 42/45 unit tests passing (3 pre-existing score_refs failures)\n- 1/1 integration test passing\n- Total: 43 passing tests\n\n### Architecture\n- Library::create() and Library::open() working with Virtuus IndexOnly storage\n- Loader pre-fetches clips/slices/markers from disk (reads JSON files directly)\n- Clip::from_json() successfully reconstructs audio clips with manifests\n- Files trait with FsFiles impl for audio/analysis storage\n\n### Next Steps (Future Tasks)\n1. Replace disk-based loading with Engine::call queries once V8b completed\n2. Implement full Engine::call integration for facades\n3. Query slicesByClip and markersByClip GSIs instead of disk reads\n4. Add more real-world test data and test coverage",
+      "created_at": "2026-09-24T23:12:47.481748Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "8b1a9aa0-76e8-4b1c-ba27-37506ad87c18",
+      "author": "home",
+      "text": "## Task Complete: Real Facades and Failing Tests Fixed\n\n### Part 1: Fixed 3 Failing score_refs Tests\nTests were using outdated vocabulary after 2026-09-24 vocabulary rename (chop → slice):\n- test_duplicate_numbering_collision: Changed  to  ✅\n- test_kit_pad_references: Changed  to  (saved name is separate from pad definition) ✅\n- test_slice_id_form: Changed  to  ✅\nAll 10 score_refs tests now passing ✅\n\n### Part 2: Real Facades Using Engine::call\nImplemented all three facades using Virtuus Engine::call over GSI queries:\n\n**ClipFacade::by_path(path)** - Queries Clip table via clipsByPath GSI\n- Calls Engine::call(\"Clip\", \"clipsByPath\", {\"path\": path}, identity)\n- Returns Vec<Value> with matching clips\n\n**SliceFacade::by_clip(clip_id)** - Queries Slice table via slicesByClip GSI  \n- Calls Engine::call(\"Slice\", \"slicesByClip\", {\"clipId\": clip_id}, identity)\n- Returns Vec<Value> with slices for clip, sorted by start time\n\n**MarkerFacade::by_clip(clip_id)** - Queries Marker table via markersByClip GSI\n- Calls Engine::call(\"Marker\", \"markersByClip\", {\"clipId\": clip_id}, identity)\n- Returns Vec<Value> with markers for clip, sorted by seconds\n\nAll facades properly handle:\n- Identity creation as VirtuusIdentity::User with sub, username, groups\n- Error handling for Engine::call failures\n- Null/array/scalar response normalization\n\n### Test Results\n✅ 45 unit tests passing (all score_refs, ids, markup, position, rank, files, library, loader)\n✅ 1 loader integration test passing \n✅ 1 rank parity test passing\n✅ Total: 47/47 tests passing\n\n### Clippy & Formatting\n✅ cargo fmt passed\n✅ cargo clippy passed (minor code quality suggestions only, no errors)\n\n### What Remains Stubbed\n- ClipFacade::get(id) - TODO: implement direct ID lookup when needed (currently not required by loader)\n- Loader still uses disk-based loading (pre-fetches from JSON files) instead of facades - can be updated later\n\nThe facades are now REAL and functional for the primary use cases (clipsByPath, slicesByClip, markersByClip).",
+      "created_at": "2026-09-24T23:19:21.468114Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "a2f665c5-4954-4742-a3d5-de941da9962a",
+      "author": "home",
+      "text": "Reviewed by storage-lead: cargo test -p apricity-data passes (52 unit, loader-vs-file timeline equality, rank parity). Facades go through Engine::call; loader pre-fetches via facades. Clippy has style warnings only.",
+      "created_at": "2026-09-24T23:33:01.751362Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-24T04:45:38.911536Z",
-  "updated_at": "2026-09-24T11:52:35.597106Z",
+  "updated_at": "2026-09-24T23:33:01.751398Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
