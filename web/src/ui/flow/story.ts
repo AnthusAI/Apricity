@@ -22,15 +22,21 @@ interface Phases {
   fill: Span; // the rest of the pattern fills in
 }
 
+// The listening sweeps last as long as the audio they cross (the source window, about 6 s), so
+// the story can be heard in step: see cues().
 const PHASES: Phases[] = [
-  { appear: [0, 2.5], listen: [2.5, 8], suggest: [7.6, 8.4], point: [10, 13], name: [13.2, 14], lift: [14.5, 16.5], cut: [16.5, 19], code: [19, 20], land: [22.5, 27.5], fill: [27.5, 29.5] },
-  { appear: [34.5, 37], listen: [37, 41], suggest: [40.6, 41.2], point: [42, 44.5], name: [44.6, 45.3], lift: [45.5, 47], cut: [47, 49], code: [49, 50], land: [51, 55.5], fill: [55.5, 58] },
+  { appear: [0, 2.5], listen: [2.5, 8.5], suggest: [8, 8.8], point: [10, 13], name: [13.2, 14], lift: [14.5, 16.5], cut: [16.5, 19], code: [19, 20], land: [22.5, 27.5], fill: [27.5, 29.5] },
+  { appear: [34.5, 37], listen: [37, 43], suggest: [42.4, 43.2], point: [43.6, 45.8], name: [46, 46.6], lift: [46.8, 48], cut: [48, 50], code: [50, 50.8], land: [51.5, 55.5], fill: [55.5, 58] },
 ];
 const COMPOSE: Span = [21, 22.5];
 const COLLAPSE: Span = [31, 34];
-const PLAY_FROM = 29.5;
 const FLY = 1.1;
 export const LOOP = 84;
+/** When the playhead runs: a first taste of the drums, then (after the horns are in) the whole piece. */
+const SESSIONS = [
+  { from: 29.5, to: 34.5, fade: 2 },
+  { from: 58.5, to: LOOP, fade: 2 },
+];
 const FADE: Span = [82, LOOP];
 /** The frame shown when motion is reduced: everything in place. */
 export const STILL = 70;
@@ -41,8 +47,8 @@ export const CHAPTERS = [
   { label: "Chop", t: 14.5 },
   { label: "Warp", t: 21 },
   { label: "Again", t: 34 },
-  { label: "Tune", t: 50.5 },
-  { label: "Play", t: 60 },
+  { label: "Tune", t: 51 },
+  { label: "Play", t: 58.5 },
 ];
 
 export const chapterAt = (t: number) => CHAPTERS.reduce((k, c, i) => (t >= c.t ? i : k), 0);
@@ -51,6 +57,17 @@ const LANE = 26;
 const PITCHED_LANE = 34; // room to show transposition as height
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0");
 const prettyKey = (k: string) => k.replace("b", "♭").replace("#", "♯");
+
+/** Something to hear at story time t: a stretch of a source window, or of a track's render. */
+export interface Cue {
+  t: number;
+  kind: "source" | "track";
+  index: number; // which source (and its track)
+  offset: number; // seconds into the recording
+  dur: number;
+  fadeOut?: number; // seconds of fade at the end
+  loop?: boolean;
+}
 
 interface Timed extends FlowTile {
   t0: number; // when it starts to arrive
@@ -62,13 +79,15 @@ export class Story {
   private peaks: Int8Array[];
   private tiles: Timed[];
   private pitchRange: number[]; // per source: the largest transposition, 0 if never moved
+  private ph: Phases[];
 
   constructor(readonly data: FlowData) {
     this.peaks = data.sources.map((s) => decodePeaks(s.peaks));
+    this.ph = PHASES.map((p, n) => ({ ...p, listen: [p.listen[0], p.listen[0] + data.sources[n].window[1] - data.sources[n].window[0]] }));
     this.tiles = [];
     this.pitchRange = data.sources.map((_, n) => Math.max(0, ...data.tiles.filter((t) => t.source === n).map((t) => Math.abs(t.semitones))));
     data.sources.forEach((_, n) => {
-      const ph = PHASES[n];
+      const ph = this.ph[n];
       const mine = data.tiles.filter((t) => t.source === n).sort((a, b) => a.start - b.start);
       const first = mine[0]?.start ?? 0;
       const bar = data.meter;
@@ -92,17 +111,18 @@ export class Story {
       .filter((c) => this.tiles.some((x) => x.source === 1 && x.start >= c.start && x.start < c.end))
       .map((c) => `${signed(this.tiles.find((x) => x.source === 1 && x.start >= c.start)!.semitones)} under ${c.numeral}`);
     const uniq = [...new Set(follow)];
-    if (t < PHASES[0].appear[1]) return { title: "A recording.", text: `${a.title}: ${a.credit}.` };
-    if (t < 9) return { title: "Listen.", text: `Apricity finds the beats (${a.bpm} BPM) and the tuning (${tuning(a.tuning_cents)}), and suggests loops worth using.` };
-    if (t < 14.5) return { title: "Slice.", text: "Mark the part you want. The selection snaps to the beat." };
-    if (t < 21) return { title: "Chop.", text: `One slice, cut every ${a.chop_beats === 0.5 ? "half beat" : `${a.chop_beats} beats`}: ${a.chops.length} chops, ready to play like pads.` };
-    if (t < 31) return { title: "Warp.", text: `A step pattern places the chops, warped from ${a.bpm} to ${this.data.tempo} BPM so everything sits on one grid.` };
-    if (t < 34.5) return { title: "Focus.", text: "The drums fold down to a summary, to make room for the next sound." };
-    if (t < PHASES[1].appear[1]) return { title: "Another recording.", text: `${b.title}: ${b.credit}.` };
-    if (t < 41.5) return { title: "Listen.", text: `This one is in ${prettyKey(b.key ?? "?")} and ${tuning(b.tuning_cents)}.` };
-    if (t < 45.5) return { title: "Slice.", text: `Mark the riff: ${b.chops.length} beats.` };
-    if (t < 50.5) return { title: "Chop.", text: `Cut every beat: ${b.chops.length} chops.` };
-    if (t < 60) return { title: "Tune.", text: `The horns follow the chords, like a blues riff: ${uniq.join(", ")} semitones.` };
+    const [p, q] = this.ph;
+    if (t < p.appear[1]) return { title: "A recording.", text: `${a.title}: ${a.credit}.` };
+    if (t < p.point[0] - 1) return { title: "Listen.", text: `Apricity finds the beats (${a.bpm} BPM) and the tuning (${tuning(a.tuning_cents)}), and suggests loops worth using.` };
+    if (t < p.lift[0]) return { title: "Slice.", text: "Mark the part you want. The selection snaps to the beat." };
+    if (t < COMPOSE[0]) return { title: "Chop.", text: `One slice, cut every ${a.chop_beats === 0.5 ? "half beat" : `${a.chop_beats} beats`}: ${a.chops.length} chops, ready to play like pads.` };
+    if (t < COLLAPSE[0]) return { title: "Warp.", text: `A step pattern places the chops, warped from ${a.bpm} to ${this.data.tempo} BPM so everything sits on one grid.` };
+    if (t < q.appear[0]) return { title: "Focus.", text: "The drums fold down to a summary, to make room for the next sound." };
+    if (t < q.listen[0]) return { title: "Another recording.", text: `${b.title}: ${b.credit}.` };
+    if (t < q.point[0] - 0.4) return { title: "Listen.", text: `This one is in ${prettyKey(b.key ?? "?")} and ${tuning(b.tuning_cents)}.` };
+    if (t < q.lift[0]) return { title: "Slice.", text: `Mark the riff: ${b.chops.length} beats.` };
+    if (t < q.land[0] - 0.5) return { title: "Chop.", text: `Cut every beat: ${b.chops.length} chops.` };
+    if (t < SESSIONS[1].from) return { title: "Tune.", text: `The horns follow the chords, like a blues riff: ${uniq.join(", ")} semitones.` };
     return { title: "The mashup.", text: "Two slices of an 1889 march, chopped, warped and tuned into a new groove. Press Hear to listen." };
   }
 
@@ -114,7 +134,7 @@ export class Story {
       h,
       [
         { shown: easeOut(seg(t, 0, 0.8)), detail: 1 - easeInOut(seg(t, ...COLLAPSE)) },
-        { shown: easeInOut(seg(t, PHASES[1].appear[0] - 0.8, PHASES[1].appear[0] + 0.6)), detail: 1 },
+        { shown: easeInOut(seg(t, this.ph[1].appear[0] - 0.8, this.ph[1].appear[0] + 0.6)), detail: 1 },
       ],
       this.pitchRange.map((p) => (p ? PITCHED_LANE : LANE)),
       compact,
@@ -123,8 +143,9 @@ export class Story {
     g.globalAlpha = 1 - seg(t, ...FADE);
 
     // What's playing: tiles under the playhead light their whole lineage.
-    const playing = !still && t >= PLAY_FROM;
-    const beat = playing ? (((t - PLAY_FROM) * d.tempo) / 60) % d.beats : -1;
+    const session = still ? undefined : SESSIONS.find((p) => t >= p.from && t < p.to);
+    const playing = !!session;
+    const beat = session ? (((t - session.from) * d.tempo) / 60) % d.beats : -1;
     const active = this.tiles
       .filter((x) => t >= x.landed && beat >= x.start && beat < x.start + x.dur)
       .map((x) => ({ x, glow: 1 - (0.6 * (beat - x.start)) / x.dur }));
@@ -136,7 +157,7 @@ export class Story {
       const x = beatX(L, beat, d.beats);
       const bottom = L.lanes.at(-1)!.y + L.lanes.at(-1)!.h;
       g.save();
-      g.globalAlpha *= easeOut(seg(t, PLAY_FROM, PLAY_FROM + 0.6));
+      g.globalAlpha *= Math.min(easeOut(seg(t, session!.from, session!.from + 0.6)), 1 - seg(t, session!.to - session!.fade, session!.to));
       g.fillStyle = th.sun;
       g.fillRect(x - 0.75, L.ruler.y + 2, 1.5, bottom - L.ruler.y - 2);
       g.beginPath();
@@ -193,7 +214,7 @@ export class Story {
     }
     // Lanes, each appearing just before its chops arrive; track names on the right, as in Live.
     L.lanes.forEach((lane, n) => {
-      const la = seg(t, PHASES[n].land[0] - 1.4, PHASES[n].land[0] - 0.3);
+      const la = seg(t, this.ph[n].land[0] - 1.4, this.ph[n].land[0] - 0.3);
       if (la <= 0) return;
       g.globalAlpha = a * la;
       g.fillStyle = th.card;
@@ -204,7 +225,7 @@ export class Story {
       const src = d.sources[n];
       header(g, L.right + 8, lane.y + lane.h / 2, this.shortName(n), `track ${src.lane}`, th.clips[n], th, compact);
       // "120 → 88 BPM": the warp, said out loud while the first chops land.
-      const ph = PHASES[n];
+      const ph = this.ph[n];
       const say = pulse(t, ph.land[0], ph.land[0] + 0.5, ph.land[1] + 1.5, ph.land[1] + 2.5);
       if (say > 0) {
         g.globalAlpha = a * say;
@@ -238,7 +259,7 @@ export class Story {
     const src = this.data.sources[n];
     const rows = L.sources[n];
     if (rows.shown <= 0.01) return;
-    const ph = PHASES[n];
+    const ph = this.ph[n];
     const color = th.clips[n];
     const peaks = this.peaks[n];
     const win = src.window;
@@ -316,7 +337,7 @@ export class Story {
       g.restore();
 
       // Listening: a sweep crosses the clip; beats and transients appear behind it.
-      const lp = easeInOut(seg(t, ...ph.listen));
+      const lp = seg(t, ...ph.listen); // steady, in step with the recording as it's heard
       const sweep = lerp(wbox.x, wbox.x + wbox.w, lp);
       if (wbox.h > 18) {
         g.fillStyle = th.ink;
@@ -370,9 +391,10 @@ export class Story {
       }
       const sel = this.selection(n, t, wbox);
       if (sel) {
+        const heard = pulse(t, ph.point[1], ph.point[1] + 0.05, ph.point[1] + src.slice.to - src.slice.from, ph.point[1] + src.slice.to - src.slice.from + 0.4);
         g.save();
-        g.globalAlpha *= 0.26;
-        g.fillStyle = color;
+        g.globalAlpha *= 0.26 + 0.3 * heard;
+        g.fillStyle = heard > 0 ? th.sun2 : color;
         g.fillRect(sel[0], wbox.y, sel[1] - sel[0], wbox.h);
         g.restore();
         g.fillStyle = color;
@@ -410,7 +432,7 @@ export class Story {
       if (cut <= 0) {
         tile(g, { x: x0, y, w: x1 - x0, h: chops.h }, color, th, { peaks, win, from: src.slice.from, to: src.slice.to });
       } else {
-        const glowOf = (i: number) => Math.max(0, ...active.filter((a) => a.x.chop === i).map((a) => a.glow));
+        const glowOf = (i: number) => Math.max(this.soundGlow(n, i, t), ...active.filter((a) => a.x.chop === i).map((a) => a.glow));
         for (let i = 0; i < count; i++) {
           // Each boundary opens in turn, left to right.
           const open = (k: number) => (k <= 0 || k >= count ? 1 : easeOut(seg(cut, ((k - 1) / (count - 1)) * 0.8, ((k - 1) / (count - 1)) * 0.8 + 0.2)));
@@ -447,7 +469,7 @@ export class Story {
   /** The hand-made selection on source n at time t, in x: [start, end] snapped to beats. */
   private selection(n: number, t: number, wbox: Box): [number, number] | null {
     const src = this.data.sources[n];
-    const ph = PHASES[n];
+    const ph = this.ph[n];
     if (t < ph.point[0]) return null;
     const x0 = secX(wbox, src.window, src.slice.from);
     const x1 = secX(wbox, src.window, src.slice.to);
@@ -481,7 +503,8 @@ export class Story {
       const nudge = easeOut(seg(t, x.landed, x.landed + 0.5));
       const to = this.slot(L, x, nudge);
       const on = active.find((a) => a.x === x);
-      const opts = { peaks: this.peaks[x.source], win: src.window, from: src.chops[x.chop][0], to: src.chops[x.chop][1], glow: on?.glow ?? 0 };
+      const glow = Math.max(on?.glow ?? 0, x.fly ? this.landGlow(x, t) : 0);
+      const opts = { peaks: this.peaks[x.source], win: src.window, from: src.chops[x.chop][0], to: src.chops[x.chop][1], glow };
       const from = this.chopBox(L, x.source, x.chop);
       if (x.fly && t < x.landed) {
         const u = easeInOut(seg(t, x.t0, x.landed));
@@ -516,11 +539,60 @@ export class Story {
     });
   }
 
+  // ---- sound: what to hear when, and the glow that goes with it
+
+  private secs = (beats: number) => (beats * 60) / this.data.tempo;
+
+  /** When chop i of source n is heard as it's cut: as the boundary to its right opens. */
+  private cutTime(n: number, i: number) {
+    const [a, b] = this.ph[n].cut;
+    const count = this.data.sources[n].chops.length;
+    const step = (0.8 * (b - a)) / Math.max(1, count - 1);
+    return a + Math.min(i, count - 2) * step + (i === count - 1 ? step : 0);
+  }
+
+  private landGlow(x: Timed, t: number) {
+    const d = this.secs(x.dur);
+    return pulse(t, x.landed, x.landed + 0.04, x.landed + d, x.landed + d + 0.35);
+  }
+
+  /** A chop row tile lights while it's heard: being cut, or landing in the composition. */
+  private soundGlow(n: number, i: number, t: number) {
+    const [a, b] = this.data.sources[n].chops[i];
+    const ct = this.cutTime(n, i);
+    let glow = pulse(t, ct, ct + 0.04, ct + b - a, ct + b - a + 0.35);
+    for (const x of this.tiles) if (x.fly && x.source === n && x.chop === i) glow = Math.max(glow, this.landGlow(x, t));
+    return glow;
+  }
+
+  /** Everything to hear, in story time. */
+  cues(): Cue[] {
+    const d = this.data;
+    const out: Cue[] = [];
+    d.sources.forEach((src, n) => {
+      const ph = this.ph[n];
+      const w0 = src.window[0];
+      // Listening: the recording, in step with the sweep.
+      out.push({ t: ph.listen[0], kind: "source", index: n, offset: 0, dur: src.window[1] - w0 });
+      // The slice, heard once the selection is made.
+      out.push({ t: ph.point[1], kind: "source", index: n, offset: src.slice.from - w0, dur: src.slice.to - src.slice.from });
+      // Each chop, as it's cut.
+      src.chops.forEach(([a, b], i) => out.push({ t: this.cutTime(n, i), kind: "source", index: n, offset: a - w0, dur: b - a }));
+    });
+    // Each chop landing in the composition: warped and tuned, from the track's render.
+    for (const x of this.tiles) if (x.fly) out.push({ t: x.landed, kind: "track", index: x.source, offset: this.secs(x.start), dur: this.secs(x.dur) });
+    // The playhead: the drums alone, then the whole piece.
+    const [first, all] = SESSIONS;
+    out.push({ t: first.from, kind: "track", index: 0, offset: 0, dur: first.to - first.from, fadeOut: first.fade, loop: true });
+    d.sources.forEach((_, n) => out.push({ t: all.from, kind: "track", index: n, offset: 0, dur: all.to - all.from, fadeOut: all.fade, loop: true }));
+    return out.sort((p, q) => p.t - q.t);
+  }
+
   // ---- the pointer: the one part a person does
 
   private hand(g: CanvasRenderingContext2D, L: Layout, t: number, th: Theme) {
     this.data.sources.forEach((src, n) => {
-      const ph = PHASES[n];
+      const ph = this.ph[n];
       const wbox = L.sources[n].wave;
       if (t < ph.point[0] - 1 || t > ph.name[1] + 0.8 || wbox.h < 18) return;
       const x0 = secX(wbox, src.window, src.slice.from);
