@@ -1,0 +1,34 @@
+/target
+node_modules/
+__pycache__/
+.venv/
+*.pyc
+/.tools/
+
+# Sample audio (see samples/sources.json + scripts/fetch-samples.py)
+/samples/**/*.wav
+/samples/**/*.mp3
+/samples/**/*.pdf
+/samples/**/*.part
+
+# Python
+/analysis/.venv/
+*.egg-info/
+.pytest_cache/
+
+# Rendered audio
+/renders/
+
+# Web app
+/web/node_modules/
+/web/dist/
+project/.overlay/
+
+# curation store lock (analysis/apricitus_analyze/curation.py)
+/library/.lock
+
+# Kanbus derived state (as in the Kanbus repo)
+/project/.cache/
+/project/events/
+/project/.overlay/
+/project/**/.overlay/

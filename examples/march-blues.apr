@@ -1,0 +1,22 @@
+# March Blues — a 12-bar blues in F from the U.S. Marine Band's "The Washington Post"
+# (a 6/8 march) split into stems, with Army bugle calls answering in the second chorus.
+# The same piece as march-blues.yaml, in Apricitus's text language.
+
+tempo 100                 # one beat = the march's dotted-quarter pulse: 12/8 shuffle bars
+key F mixolydian          # lets the dominant sevenths count as in-key
+samples ../samples
+
+clip groove = marine-band/stems/WashingtonPost/drums.wav   pick 2bars  warp beats
+clip tuba   = marine-band/stems/WashingtonPost/bass.wav    pick 1bar
+clip horns  = marine-band/stems/WashingtonPost/other.wav   pick 1bar
+clip bugle  = citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav  pick 1bar
+
+# chorus 1: quick change in bar 2, turnaround in bar 12
+chords I7 IV7 I7 .  | IV7 . I7 .  | V7 IV7 I7 V7
+# chorus 2
+chords I7 IV7 I7 .  | IV7 . I7 .  | V7 IV7 I7 .
+
+track groove  transpose 0  gain -3        # drums don't follow the chords
+track tuba    follow                      # oom-pah bass moved to each root: I–IV–V
+track horns   follow  bars 13-24  gain -2 # the riff, in parallel on every chord
+track bugle   at 15 19 23  gain -5        # call and response

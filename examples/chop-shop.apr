@@ -1,0 +1,27 @@
+# Chop Shop — sampling-style primitives on 1890s marches: a drum loop chopped into eighths and
+# re-sequenced, a drum kit assembled from hits in two recordings, chopped horns following the
+# chords, all swung like a sampler at 58%.
+tempo 88
+key F mixolydian
+samples ../samples
+
+clip brk    = marine-band/stems/Thunderer/drums.wav      slice loop-1  warp beats
+clip horns  = marine-band/stems/Thunderer/other.wav      slice loop-2
+clip tdrums = marine-band/stems/Thunderer/drums.wav
+clip pdrums = marine-band/stems/WashingtonPost/drums.wav
+clip band   = marine-band/Thunderer.mp3
+
+kit b = chop brk by beats 0.5         # eighth-note chops of the drum loop
+kit h = chop horns by beats 1         # one chop per beat of the horn loop
+
+kit drums
+  kick  = tdrums  beats 62..62.5      # the loudest beats in each drum stem
+  snare = pdrums  beats 70..70.5
+  crash = band    slice hit-3
+
+chords I7 . IV7 . | I7 . V7 IV7
+
+track b            steps "1 _ 2 _ 3 _ 3 4 | 5 _ 6 _ 7 8 7 _"          swing 58  transpose 0
+track drums        steps "kick . . . snare . . kick | . kick . . snare . . ."  swing 58  transpose 0  gain -3
+track h            steps "1 . . 3 . . 2 . | . . 4 . 3 . . ."          swing 58  follow  filter hp 250  bars 5-8
+track drums.crash  at 1 5  transpose 0  gain -8

@@ -1,0 +1,29 @@
+# The first Apricitus milestone: four march recordings that share nothing (different bands,
+# decades, keys and tempos; the Marine Band in 2017 and an Edison disc from the 1910s) warped to one grid and transposed so that together they sound
+# iv of A♭ minor (D♭ F♭ A♭), then carried through a progression.
+apricitus: 0.1
+tempo: 116
+meter: 4
+key: Abm
+samples: ../samples
+
+# `pick:` lets the compiler scan each recording bar by bar for the stretch that best fits the
+# progression (and has a steady beat); `apricitus explain` shows what it chose.
+clips:
+  stripes: { source: marine-band/StarsAndStripesForever.mp3, pick: 4bars }
+  cotton:  { source: marine-band/KingCotton.mp3, pick: 4bars }
+  bugle:   { source: citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav, pick: 2bars }
+  edison:  { source: citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav, pick: 4bars }
+
+progression:
+  - { chord: iv, bars: 4 }      # D♭m — the chord you asked for
+  - { chord: i,  bars: 2 }      # A♭m
+  - { chord: VI, bars: 2 }      # F♭ (E) major
+  - { chord: V,  bars: 2 }      # E♭ major (borrowed dominant: A♭ harmonic minor)
+  - { chord: i,  bars: 2 }
+
+tracks:
+  - { clip: stripes, role: root }
+  - { clip: cotton, role: fifth, gain: -2 }
+  - { clip: bugle,  role: third, pattern: { every: 2bars }, gain: -3 }
+  - { clip: edison, role: chord, gain: -1 }

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Apricitus</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='5' fill='%233a6df0'/><circle cx='16' cy='16' r='10' fill='none' stroke='%233a6df0' stroke-width='2' opacity='.6'/><circle cx='16' cy='16' r='15' fill='none' stroke='%233a6df0' stroke-width='1.5' opacity='.3'/></svg>" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="brand link" type="button" data-tab="home" title="Home"><span class="logo" aria-hidden="true"></span>Apricitus</button>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="library" aria-selected="true">Library</button>
+        <button role="tab" data-tab="score" aria-selected="false">Score</button>
+        <button role="tab" data-tab="docs" aria-selected="false">Docs</button>
+      </nav>
+      <div class="transport" id="transport"></div>
+    </header>
+    <main>
+      <section id="home" class="view" data-view="home" hidden></section>
+      <section id="library" class="view" data-view="library"></section>
+      <section id="score" class="view" data-view="score" hidden></section>
+      <section id="docs" class="view" data-view="docs" hidden></section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

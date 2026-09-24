@@ -1,0 +1,13 @@
+{
+  "source": "https://en.wikipedia.org/wiki/List_of_marches_by_John_Philip_Sousa (main strain / trio, concert pitch). To confirm against the Marine Band full scores linked in samples/sources.json.",
+  "marches": {
+    "marine-band/StarsAndStripesForever.mp3": ["Eb", "Ab"],
+    "marine-band/WashingtonPost.mp3": ["F", "Bb"],
+    "marine-band/LibertyBell.mp3": ["F", "Bb"],
+    "marine-band/Thunderer.mp3": ["F", "Bb"],
+    "marine-band/ElCapitan.mp3": ["Bb", "Eb"],
+    "marine-band/KingCotton.mp3": ["Eb", "Ab"],
+    "marine-band/HighSchoolCadets.mp3": ["Db", "Gb"],
+    "marine-band/SemperFidelis.mp3": ["C", "F"]
+  }
+}

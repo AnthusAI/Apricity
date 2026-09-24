@@ -1,0 +1,9 @@
+# WebAssembly builds use wasi-sdk (fetched into .tools/ by scripts/fetch-tools.sh).
+[env]
+WASI_SDK_PATH = { value = ".tools/wasi-sdk-34.0-arm64-macos", relative = true }
+CC_wasm32_wasip1 = { value = ".tools/wasi-sdk-34.0-arm64-macos/bin/clang", relative = true }
+CXX_wasm32_wasip1 = { value = ".tools/wasi-sdk-34.0-arm64-macos/bin/clang++", relative = true }
+AR_wasm32_wasip1 = { value = ".tools/wasi-sdk-34.0-arm64-macos/bin/llvm-ar", relative = true }
+
+[target.wasm32-wasip1]
+runner = "scripts/wasi-run"

@@ -1,0 +1,440 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apricitus.local/schema/clip-manifest.schema.json",
+  "title": "Apricitus clip manifest",
+  "description": "Everything Apricitus knows about one audio clip. Written by apricitus-analyze next to the audio as <file>.apricitus.json. Analysis sections are regenerated on re-analysis; `annotations` is user data and is always preserved.",
+  "type": "object",
+  "required": [
+    "apricitus_manifest",
+    "source",
+    "rhythm",
+    "tonal"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "apricitus_manifest": {
+      "const": 1,
+      "description": "Manifest format version."
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "sample_rate",
+        "channels",
+        "duration"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Audio file path, relative to the manifest."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "sample_rate": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Seconds."
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "description": "Provenance: which tools and versions produced this manifest.",
+      "properties": {
+        "analyzed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tools": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rhythm": {
+      "type": "object",
+      "required": [
+        "bpm",
+        "beats",
+        "downbeats",
+        "meter",
+        "warp_markers"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "bpm": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Median tempo in beats per minute; null if no pulse was found."
+        },
+        "bpm_stability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "1 = metronomic; lower = rubato / drifting tempo."
+        },
+        "beats": {
+          "$ref": "#/$defs/times"
+        },
+        "downbeats": {
+          "$ref": "#/$defs/times"
+        },
+        "meter": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "Beats per bar (most common downbeat spacing)."
+        },
+        "warp_markers": {
+          "type": "array",
+          "description": "Pins from source time to musical time, strictly increasing in both. Beat 0 is the first downbeat; pickup beats are negative.",
+          "items": {
+            "type": "object",
+            "required": [
+              "seconds",
+              "beat"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "beat": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "beat_loudness": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "RMS level in dBFS of each beat interval (beats[i]..beats[i+1])."
+        },
+        "loudness": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "RMS level in dBFS of each half-second window from the start (i * 0.5 s ..), with or without a beat grid; used for level matching of unwarped clips."
+        }
+      }
+    },
+    "tonal": {
+      "type": "object",
+      "required": [
+        "key",
+        "tuning_hz",
+        "pitch_class_profile"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/keyEstimate"
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/keyEstimate"
+          },
+          "description": "Other plausible keys, best first."
+        },
+        "tuning_hz": {
+          "type": "number",
+          "description": "Estimated reference pitch for A4. Old 78s often sit well away from 440."
+        },
+        "tuning_cents": {
+          "type": "number",
+          "description": "Deviation of tuning_hz from A440 in cents."
+        },
+        "pitch_class_profile": {
+          "$ref": "#/$defs/pcp",
+          "description": "Whole-clip energy per pitch class, C first, normalized so the max is 1."
+        },
+        "segments": {
+          "type": "array",
+          "description": "Key over time (marches modulate, e.g. to the subdominant for the trio).",
+          "items": {
+            "type": "object",
+            "required": [
+              "start",
+              "end",
+              "key"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              },
+              "key": {
+                "$ref": "#/$defs/keyEstimate"
+              },
+              "pitch_class_profile": {
+                "$ref": "#/$defs/pcp"
+              }
+            }
+          }
+        },
+        "beat_chroma": {
+          "type": "array",
+          "description": "Pitch-class profile per beat interval (beats[i]..beats[i+1]); same order as rhythm.beats minus the last.",
+          "items": {
+            "$ref": "#/$defs/pcp"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Polyphonic transcription (Basic Pitch). Optional; can be large.",
+      "items": {
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "midi",
+          "velocity"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "midi": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127
+          },
+          "velocity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "annotations": {
+      "type": "object",
+      "description": "User (or ML) markup. Never overwritten by re-analysis.",
+      "additionalProperties": false,
+      "properties": {
+        "markers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "seconds"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "source": {
+                "enum": [
+                  "user",
+                  "ml"
+                ]
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "slices": {
+          "type": "array",
+          "description": "Named regions usable as sub-clips. Kept inside the clip by construction: start < end <= source.duration.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "start",
+              "end"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "source": {
+                "enum": [
+                  "user",
+                  "ml",
+                  "curated"
+                ],
+                "description": "Who made it: a person (user), automatic markup (ml), or a kept feed candidate (curated)."
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "description": "Why an analyzer proposed it: named measurements (e.g. repeat 0.91, steady 0.98)."
+              },
+              "stars": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "A person's rating of curated material."
+              },
+              "candidate": {
+                "type": "string",
+                "description": "The feed candidate this slice was kept from (library/candidates.json)."
+              }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "derived_from": {
+      "type": "object",
+      "description": "This clip was derived from another (e.g. a Demucs stem); its beat grid is the parent's.",
+      "required": [
+        "source",
+        "stem"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Repo-relative path of the parent audio."
+        },
+        "stem": {
+          "enum": [
+            "drums",
+            "bass",
+            "other",
+            "vocals",
+            "guitar",
+            "piano"
+          ]
+        },
+        "model": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "times": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0
+      },
+      "description": "Seconds, ascending."
+    },
+    "pcp": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0
+      },
+      "minItems": 12,
+      "maxItems": 12
+    },
+    "keyEstimate": {
+      "type": "object",
+      "required": [
+        "tonic",
+        "mode",
+        "strength"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tonic": {
+          "enum": [
+            "C",
+            "Db",
+            "D",
+            "Eb",
+            "E",
+            "F",
+            "Gb",
+            "G",
+            "Ab",
+            "A",
+            "Bb",
+            "B"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "major",
+            "minor"
+          ]
+        },
+        "strength": {
+          "type": "number",
+          "description": "Correlation with the key profile; higher is more confident."
+        },
+        "camelot": {
+          "type": "string",
+          "pattern": "^(1[0-2]|[1-9])[AB]$"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Key profile used (e.g. edma, temperley, bgate)."
+        }
+      }
+    }
+  }
+}

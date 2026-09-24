@@ -1,0 +1,51 @@
+# A 12-bar blues in F, built from the U.S. Marine Band's "The Washington Post" (a 6/8 march)
+# split into stems with Demucs, plus Army bugle calls.
+#
+# Why it's put together this way:
+# - A 6/8 march already swings in threes: taking its dotted-quarter pulse as the beat turns every
+#   bar into a 12/8 shuffle bar, the classic slow-blues feel.
+# - March tubas play "oom-pah" root–fifth bass. Moved with the chord root (`transpose: follow`),
+#   that becomes a walking I–IV–V bass line.
+# - Blues riffs are played in parallel on I, IV and V: the same horn figure moved to each root
+#   is what makes the progression recognizable.
+# - Call and response: blues phrases answer each other every two bars, so the bugle answers
+#   in bars 3–4, 7–8 and 11–12 of the second chorus.
+# - `F mixolydian` lets the dominant sevenths (E♭ over F, A♭ over B♭) count as in-key.
+apricitus: 0.1
+tempo: 100
+meter: 4
+key: F mixolydian
+samples: ../samples
+
+clips:
+  groove: { source: marine-band/stems/WashingtonPost/drums.wav, pick: 2bars, warp: beats }
+  tuba:   { source: marine-band/stems/WashingtonPost/bass.wav,  pick: 1bar }
+  horns:  { source: marine-band/stems/WashingtonPost/other.wav, pick: 1bar }
+  bugle:  { source: citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav, pick: 1bar }
+
+progression:
+  # chorus 1 — quick change in bar 2, turnaround in bar 12
+  - { chord: I7,  bars: 1 }
+  - { chord: IV7, bars: 1 }
+  - { chord: I7,  bars: 2 }
+  - { chord: IV7, bars: 2 }
+  - { chord: I7,  bars: 2 }
+  - { chord: V7,  bars: 1 }
+  - { chord: IV7, bars: 1 }
+  - { chord: I7,  bars: 1 }
+  - { chord: V7,  bars: 1 }
+  # chorus 2
+  - { chord: I7,  bars: 1 }
+  - { chord: IV7, bars: 1 }
+  - { chord: I7,  bars: 2 }
+  - { chord: IV7, bars: 2 }
+  - { chord: I7,  bars: 2 }
+  - { chord: V7,  bars: 1 }
+  - { chord: IV7, bars: 1 }
+  - { chord: I7,  bars: 2 }
+
+tracks:
+  - { clip: groove, transpose: 0, gain: -3 }
+  - { clip: tuba,   transpose: follow }
+  - { clip: horns,  transpose: follow, bars: "13-24", gain: -2 }
+  - { clip: bugle,  pattern: { at: ["15:1", "19:1", "23:1"] }, gain: -5 }

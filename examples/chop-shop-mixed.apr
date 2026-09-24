@@ -1,0 +1,64 @@
+# Chop Shop, mixed — the same beat as chop-shop.apr with a mix written into the score: each
+# track shaped with EQ and compression and placed in the stereo field; the drums glued together
+# on a group bus; a plate reverb and a ping-pong echo the tracks send to; and a master chain that
+# sets the loudness. Render both and compare.
+tempo 88
+key F mixolydian
+samples ../samples
+
+clip brk    = marine-band/stems/Thunderer/drums.wav      slice loop-1  warp beats
+clip horns  = marine-band/stems/Thunderer/other.wav      slice loop-2
+clip tdrums = marine-band/stems/Thunderer/drums.wav
+clip pdrums = marine-band/stems/WashingtonPost/drums.wav
+clip band   = marine-band/Thunderer.mp3
+
+kit b = chop brk by beats 0.5
+kit h = chop horns by beats 1
+
+kit drums
+  kick  = tdrums  beats 62..62.5      # the loudest beats in each drum stem
+  snare = pdrums  beats 70..70.5
+  crash = band    slice hit-3
+
+chords I7 . IV7 . | I7 . V7 IV7
+
+# The break: squashed hard for that sampled-drum punch, low end tightened, a little air.
+track b            steps "1 _ 2 _ 3 _ 3 4 | 5 _ 6 _ 7 8 7 _"          swing 58  transpose 0  out beat
+  eq    lowcut 60  low +3@100  high +3@8k
+  comp  6:1  -24dB  attack 3ms  release 80ms  makeup 6dB
+
+# Kit hits: a bit of body, a touch left.
+track drums        steps "kick . . . snare . . kick | . kick . . snare . . ."  swing 58  transpose 0  gain -3  out beat
+  eq    low +4@80  peak -3@400 q1.2
+  pan   -15
+  send  plate 12%
+
+# Horns: out of the drums' way, gently compressed, off to the right.
+track h            steps "1 . . 3 . . 2 . | . . 4 . 3 . . ."          swing 58  follow  filter hp 250  bars 5-8
+  eq    peak +2@1.5k q0.8  highcut 9k
+  comp  3:1  -20dB  attack 15ms  release 150ms
+  pan   30
+  send  plate 30%  echo 35%
+
+track drums.crash  at 1 5  transpose 0  gain -8
+  pan   -40
+  send  plate 25%
+
+# The drums, glued: break and kit compressed together, like one sampled loop.
+bus beat
+  comp  4:1  -14dB  attack 20ms  release 150ms
+
+# A bright plate for the horns and snare; the tail wraps around the loop seamlessly.
+bus plate
+  eq      lowcut 250
+  reverb  plate  1.8s  predelay 20ms  damp 35%
+
+# Dotted-eighth echoes bouncing left and right, thinning as they go.
+bus echo
+  delay  1/8.  feedback 35%  hp 400  lp 4k  pingpong
+
+master
+  eq       lowcut 30
+  comp     2:1  -12dB  attack 30ms  release 200ms
+  limit    -1dB
+  loudness -14LUFS

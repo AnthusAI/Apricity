@@ -1,0 +1,38 @@
+[project]
+name = "apricitus-analyze"
+version = "0.1.0"
+description = "Offline clip analysis for Apricitus: beats, warp markers, key, tuning, chroma, notes -> <clip>.apricitus.json"
+license = "GPL-2.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy",
+  "essentia==2.1b6.dev1389",
+  "torch",
+  "soundfile",
+  "soxr",
+  "einops",
+  "rotary-embedding-torch",
+  "beat_this @ https://github.com/CPJKU/beat_this/archive/main.zip",
+  # basic-pitch's own pins want tensorflow-macos (absent for py3.12). We run its ONNX model,
+  # so install it with `pip install --no-deps basic-pitch==0.4.0` plus these:
+  "onnxruntime",
+  "librosa",
+  "pretty_midi",
+  "resampy",
+  "mir_eval",
+  "scipy",
+  "jsonschema",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+apricitus-analyze = "apricitus_analyze.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["apricitus_analyze"]
