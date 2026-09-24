@@ -275,6 +275,9 @@ pub struct SourceRef {
     pub path: PathBuf,
     pub bpm: Option<f64>,
     pub key: String,
+    /// The clip's region (its slice), in source seconds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub region: Option<(f64, f64)>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -300,6 +303,21 @@ pub struct Event {
     pub reverse: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub filter: Option<FilterSpec>,
+    /// Which of its track's `pieces` this plays (the chop or pad), for tracing a sound to its source.
+    #[serde(default)]
+    pub piece: usize,
+}
+
+/// One sound a track can play: its clip's region, one chop, or one pad, and where it is recorded.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PieceInfo {
+    /// Index into `sources`.
+    pub source: usize,
+    pub src_start: f64,
+    pub src_end: f64,
+    /// A drum-kit pad's name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -328,6 +346,12 @@ pub struct TrackInfo {
     /// Number of chops when the track plays a kit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub chops: Option<usize>,
+    /// The kit it plays, if it plays a whole kit.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kit: Option<String>,
+    /// What it can play (one piece, or a kit's chops or pads); events point into this.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub pieces: Vec<PieceInfo>,
     /// Insert effects, in order.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub effects: Vec<Effect>,
@@ -656,7 +680,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             Ok((a, b)) if b - a < 0.25 => errors.push(format!("{at}: the region is empty or backwards ({a:.2}..{b:.2} beats)")),
             Ok((from, to)) => {
                 let m = &clip.manifest;
-                sources.push(SourceRef { clip: name.clone(), path: clip.audio.clone(), bpm: m.rhythm.bpm, key: format!("{} {}", m.tonal.key.tonic, m.tonal.key.mode) });
+                sources.push(SourceRef { clip: name.clone(), path: clip.audio.clone(), bpm: m.rhythm.bpm, key: format!("{} {}", m.tonal.key.tonic, m.tonal.key.mode), region: Some((clip.seconds_at(from), clip.seconds_at(to))) });
                 let ratio = match spec.beat_ratio.or(unwarped.then_some(1.0)) {
                     Some(r) if r > 0.0 => r,
                     Some(r) => {
@@ -1223,6 +1247,15 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             retune_cents: -rc.clip.manifest.tonal.tuning_cents,
             level_db: levels[0],
             chops: src.kit.as_ref().map(|_| src.pieces.len()),
+            kit: src.kit.clone(),
+            pieces: src
+                .pieces
+                .iter()
+                .map(|p| {
+                    let prc = &clips[&p.clip];
+                    PieceInfo { source: prc.source, src_start: prc.clip.seconds_at(p.from), src_end: prc.clip.seconds_at(p.to), name: p.name.clone() }
+                })
+                .collect(),
             effects: tr.effects.clone(),
             pan: tr.pan.unwrap_or(0.0) / 100.0,
             out: tr.out.clone().unwrap_or_else(master_name),
@@ -1336,6 +1369,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 mode: rc.mode,
                 reverse: tr.reverse,
                 filter: tr.filter,
+                piece: h.piece,
             });
         }
     }

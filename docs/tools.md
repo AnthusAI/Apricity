@@ -112,6 +112,17 @@ Or `npm --prefix web run build` once and use http://localhost:5181 alone.
   files on the sidebar to add and analyze them.
 - **Score** — edit `.apr` or YAML; it compiles as you type, underlines mistakes, shows the chord strip
   and how everything was solved. Play with the button or Space; edits land at the next bar; ⌘S saves.
+- **Flow** (under the score, toggled by the **Flow** button): where every sound comes from. Top to
+  bottom:
+  - the **recordings** the score samples, showing only the stretches it uses (a ⫽ marks time left out);
+  - the **pieces** cut from them: each kit's chops or pads, and each clip played whole;
+  - the **composition**, one lane per track.
+
+  Each recording has its own color, and its pieces and hits carry that color. Hover any hit, piece
+  or row to trace it: the recording it came from opens up, and curves run from the recording to the
+  piece to every place it plays. Click to pin it (Esc to let go). While the score plays, whatever is
+  sounding is traced as it plays. Click the ruler or chords to jump to a bar. Drag the panel's top
+  edge to resize it.
 - **Docs** — these pages.
 
 The server only listens on 127.0.0.1 and only writes clip annotations, scores (in `examples/` and
