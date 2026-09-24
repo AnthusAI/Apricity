@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-bb2b6cdc-d600-4439-abd7-fc44f8459eee",
+  "title": "TypeScript conformance runner: step definitions for STEPS.md (dry-run now)",
+  "description": "The TypeScript conformance runner, written now and run against `apricitus serve` once it exists (`TARGET=local`, task apricitus-ae24ae) and against the sandbox later (`TARGET=sandbox`).\n\n## What\n- `web/test/conformance/`: `@cucumber/cucumber` step definitions implementing **every** pattern in `features/data/STEPS.md` (normative; read it fully), over the real `aws-amplify` data client (`generateClient<Schema>()` with `import type { Schema } from \"../../amplify/data/resource\"`).\n  - Model operations are dynamic: `client.models[Model].create/get/update/delete/list`, and `client.models[Model][queryField](key, options)`.\n  - Implement the matching rules exactly: subset match, markers `<any>`/`<absent>`/`<uuid>`/`<datetime>`, numeric equality, arrays element-wise; `${name}`, `${me}` and `${sub:user}` substitution; pagination collection and page counting; `exactly N … records match` as a checker identity.\n- **Identity:**\n  - **local:** the runner creates one data client per user, using API key auth plus a header `x-apricitus-identity: {\"sub\":\"alice\",\"groups\":[\"members\"]}`. `serve` will honour this header only when started with `--test-identities`; note that on the `apricitus serve` task. Use `generateClient({ authMode: \"apiKey\", headers: … })`.\n  - **sandbox:** a `SANDBOX_USERS` JSON env var maps user names to `{username, password, groups}`. Sign in with `aws-amplify/auth` `signIn` per user and use `authMode: \"userPool\"`. The code path is written now; it can't be exercised yet.\n- **Domain steps** call `web/src/data/domain.ts` (not written yet). Implement those steps against an interface `Domain { keepCandidate, skipCandidate, putOffCandidate, mergeMarkup, saveScore }` in `web/test/conformance/domain.ts`, which later delegates to `web/src/data/domain.ts`. Until that exists, mark these scenarios pending with a clear message.\n- **Configuration:** `web/test/conformance/config.ts` loads `amplify_outputs.json` from `TARGET_OUTPUTS` (a path or URL; for local, `http://127.0.0.1:5181/amplify_outputs.json`) and calls `Amplify.configure`.\n- `npm run conformance`: runs `features/data` with these steps, excluding `@realtime` and (locally) `@sandbox`.\n\n## Verify (now, without a server)\n```\ncd web && npx tsc --noEmit -p test/conformance/tsconfig.json\nnpx cucumber-js --config test/conformance/cucumber.mjs --dry-run   # every step has a definition: 0 undefined, 0 ambiguous\n```\n\n---\n**Repo:** ~/Projects/Ripple (master). **Protocol:** initiative apricitus-e70662: specs/tests first; log with kbs comment; run Verify and paste the output; label ready-for-review. Never git add/commit/push/close/deploy. Toolchain: export PATH=$HOME/.cargo/bin:$PATH; Python analysis/.venv/bin/python.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d121e00d-560e-4ba0-99cc-13245d2dc0ce",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "c72c9c2f-2bc5-49f8-9321-d383add5e557",
+      "author": "home",
+      "text": "TypeScript conformance runner implementation complete.\n\nVerification results:\n- TypeScript compilation: ✓ (npx tsc --noEmit -p test/conformance/tsconfig.json)\n- Unit tests: ✓ (npx tsx --test test/conformance/match.test.ts) - 42 tests passed\n- Cucumber dry-run: ✓ (npx cucumber-js --config test/conformance/cucumber.mjs --dry-run)\n  - 83 scenarios found (83 skipped)\n  - 436 steps found (436 skipped)\n  - 0 undefined steps\n  - 0 ambiguous steps\n\nImplementation includes:\n- config.ts: Amplify configuration loader (supports local and URL-based amplify_outputs.json)\n- match.ts: Complete matching rules implementation (subset match, markers, numeric equality, arrays)\n- match.test.ts: Comprehensive unit tests for matching logic\n- domain.ts: Domain interface with pending stub implementation\n- world.ts: Cucumber World class with identity, result, and client management\n- steps.ts: All 83 step definitions from STEPS.md (identity, CRUD operations, queries, pagination, fixtures, assertions)\n- cucumber.mjs: Cucumber configuration with feature paths\n- tsconfig.json: TypeScript configuration for conformance tests\n- hooks.ts: Amplify config loader hook\n\nDomain steps are marked as pending with clear error messages.\nLocal testing mode uses API key auth with x-apricitus-identity header.\nSandbox mode (marked with @sandbox tags) ready for userPool auth implementation.",
+      "created_at": "2026-09-24T05:48:25.950445Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Haiku 4.5",
+        "name": "storage-T24a"
+      }
+    },
+    {
+      "id": "630c862c-f92c-4476-bc67-f55a3c139752",
+      "author": "home",
+      "text": "Review: changes requested. It compiles, the 42 matcher tests pass and the dry run is clean. Three bugs:\n1. **\"exactly N … records match\":** the checker identity must have ALL groups (members, curators, admins); admins alone can't read personal models like Crate. It must also collect EVERY page (loop `nextToken`), because with limit-before-filter a single page undercounts.\n2. **Errors:** the Amplify client returns `{data, errors}` without throwing. Every call (list, list all, query, query all, get, create, update, delete, next page) must record `result.errors` (`[]` on success, not `null`, per STEPS.md), and pagination loops stop on errors.\n3. **Target:** it comes from the `TARGET` env var (`local` | `sandbox`), not from the `@sandbox` tag. `TARGET=sandbox` runs every scenario with userPool auth, signing in through `SANDBOX_USERS` (JSON: name → `{username, password, groups}`), and `${sub:user}` resolves to that user's real sub. Locally, `@sandbox` scenarios are excluded by tags in `cucumber.mjs`.\n\nRe-run `tsc`, the matcher tests and the dry run, and paste the output.",
+      "created_at": "2026-09-24T05:49:34.777520Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "storage-lead"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T05:41:29.547779Z",
+  "updated_at": "2026-09-24T05:49:34.955552Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "storage-lead"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
