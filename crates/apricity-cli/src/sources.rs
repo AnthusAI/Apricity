@@ -56,7 +56,10 @@ pub fn run(action: &Action, samples: &Path, fetcher: &dyn Fetcher, out: &mut dyn
         Action::List => {
             for s in apricity_sources::list_sources() {
                 let manual = s.files.iter().filter(|f| f.fetch == FetchKind::Manual).count();
-                let note = if manual > 0 { format!(", {manual} manual") } else { String::new() };
+                let mut note = if manual > 0 { format!(", {manual} manual") } else { String::new() };
+                if let Some(a) = &s.archive {
+                    note.push_str(&format!(", one {} archive ({} MiB)", a.format, a.size >> 20));
+                }
                 writeln!(out, "{}  {} files{}  {}", s.id, s.files.len(), note, s.title).map_err(e)?;
             }
             Ok(true)
@@ -99,6 +102,7 @@ pub fn run(action: &Action, samples: &Path, fetcher: &dyn Fetcher, out: &mut dyn
                         Progress::Finished { path, sha256 } => writeln!(out, "  done     {path} sha256={sha256}"),
                         Progress::Skipped { path } => writeln!(out, "  skipped  {path} (already present)"),
                         Progress::Manual { path } => writeln!(out, "  manual   {path} (download by hand; see {})", s.source_page),
+                        Progress::Extracting { path } => writeln!(out, "  extracting {path}"),
                         Progress::Failed { path, error } => writeln!(out, "  FAILED   {path}: {error}"),
                     };
                 });
@@ -150,7 +154,7 @@ mod tests {
         let d = tempfile::tempdir().unwrap();
         let (r, out) = go(Action::List, d.path());
         assert_eq!(r, Ok(true));
-        for id in ["loc-edison", "loc-jukebox-classical", "loc-jukebox-popular", "loc-tony-schwartz", "marine-band"] {
+        for id in ["loc-edison", "loc-jukebox-classical", "loc-jukebox-popular", "loc-tony-schwartz", "marine-band", "salamander-drumkit"] {
             assert!(out.contains(id), "{out}");
         }
     }
@@ -169,7 +173,7 @@ mod tests {
         let keep = d.path().join("other.wav");
         std::fs::write(&keep, b"y").unwrap();
         let (_, out) = go(Action::Status { id: Some("loc-tony-schwartz".into()) }, d.path());
-        assert!(out.contains("present"), "{out}");
+        assert!(out.contains("corrupt"), "{out}"); // a 1-byte stand-in fails the pinned size/sha256
         let (r, out) = go(Action::Remove { id: "loc-tony-schwartz".into() }, d.path());
         assert_eq!(r, Ok(true));
         assert!(out.contains("removed 1 files"), "{out}");

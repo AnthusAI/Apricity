@@ -14,7 +14,7 @@ Feature: Predefined sources
     Then the catalog has source "loc-edison" with 15 files
     And the catalog has source "loc-tony-schwartz" with 6 files
     And the catalog has source "marine-band" with 15 files
-    And the catalog has 5 sources
+    And the catalog has 6 sources
 
   Scenario: Status of an empty directory
     When I check the status

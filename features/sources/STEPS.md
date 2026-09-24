@@ -43,3 +43,23 @@ the runner uses a fake in-memory `Fetcher` and a fresh temp directory per scenar
 | `Then the report records a sha256 for {string}` | Report holds the computed digest of the file. |
 | `Then the progress events include {word} for {string}` | Events: `started`, `bytes`, `finished`, `skipped`, `manual`, `failed`. |
 | `Then the first progress event for {string} is {word}` | Ordering check. |
+
+## Archive sources (features/sources/archive.feature)
+The fixture source `kit` has an archive at `https://fake.test/kit.tar.bz2` (built in memory by the runner,
+`into` = `kit`). Table paths are samples-root relative (`kit/OH/kick.wav`); the tar entry is the path minus `kit/`.
+The archive counts as one download.
+
+| Step | Meaning |
+|---|---|
+| `Given an archive source "kit" with these files:` | Table `path`, `content`. Builds the tar.bz2, the archive sha256/size, and file entries (fetch=archive, sha256 of content). |
+| `Given the archive "kit" is served with wrong bytes` | The fake serves other bytes than the catalog sha256. |
+| `Given the archive "kit" also contains the entry {string}` | Adds a raw tar entry (e.g. `../evil.txt`), archive sha256 recomputed. |
+| `Given the archive "kit" also contains a symlink {string}` | Adds a symlink entry. |
+| `Given the archive "kit" lacks the entry {string}` | Omits a listed file from the tar. |
+| `Then nothing exists under {string}` | The directory is absent or empty (no files, no `.archive.part`, no staging). |
+| `Then no staging directory remains` | No `.extract` directory under root. |
+| `Then the source {string} is an archive extracted into {string}` | Catalog source has `archive` with that `into`, format tar.bz2, size and sha256 set. |
+| `Then the progress events include extracting for {string}` | The `extracting` event (path = archive label `<into>/.archive.part`). |
+
+Archive progress: `started`, `bytes`, `finished` use the label `<into>/.archive.part`; then `extracting`; then
+`finished` per extracted file. Extraction goes through `<into>/.extract/`, removed at the end.

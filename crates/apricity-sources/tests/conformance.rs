@@ -41,12 +41,104 @@ struct W {
     statuses: Vec<(String, FileState)>,
     report: Option<Report>,
     events: Vec<Progress>,
+    kit: Option<Kit>,
+}
+
+/// What the in-memory archive for the `kit` source contains.
+#[derive(Default)]
+struct Kit {
+    files: Vec<(String, String)>, // (samples-root path, content)
+    raw_entries: Vec<String>,
+    symlinks: Vec<String>,
+    lacks: Vec<String>,
+    wrong_bytes: bool,
+}
+
+const KIT_URL: &str = "https://fake.test/kit.tar.bz2";
+
+fn raw_entry(b: &mut tar::Builder<Vec<u8>>, name: &str, kind: tar::EntryType, link: Option<&str>, data: &[u8]) {
+    let mut h = tar::Header::new_gnu();
+    h.as_old_mut().name[..name.len()].copy_from_slice(name.as_bytes()); // bypasses the ".." check
+    h.set_entry_type(kind);
+    h.set_size(data.len() as u64);
+    h.set_mode(0o644);
+    if let Some(l) = link {
+        h.set_link_name(l).unwrap();
+    }
+    h.set_cksum();
+    b.append(&h, data).unwrap();
+}
+
+fn build_tar_bz2(kit: &Kit) -> Vec<u8> {
+    let mut b = tar::Builder::new(Vec::new());
+    for (path, content) in &kit.files {
+        let rel = path.strip_prefix("kit/").unwrap();
+        if kit.lacks.iter().any(|l| l == rel) {
+            continue;
+        }
+        raw_entry(&mut b, rel, tar::EntryType::Regular, None, content.as_bytes());
+    }
+    for e in &kit.raw_entries {
+        raw_entry(&mut b, e, tar::EntryType::Regular, None, b"evil");
+    }
+    for l in &kit.symlinks {
+        raw_entry(&mut b, l, tar::EntryType::Symlink, Some("/etc/passwd"), b"");
+    }
+    let tar_bytes = b.into_inner().unwrap();
+    let mut enc = bzip2::write::BzEncoder::new(Vec::new(), bzip2::Compression::fast());
+    enc.write_all(&tar_bytes).unwrap();
+    enc.finish().unwrap()
 }
 
 impl std::fmt::Debug for W {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("W")
     }
+}
+
+fn kit_source(kit: &Kit) -> (Source, Vec<u8>) {
+    let served = build_tar_bz2(kit);
+    let files = kit
+        .files
+        .iter()
+        .map(|(p, c)| File {
+            path: p.clone(),
+            url: String::new(),
+            size: Some(c.len() as u64),
+            sha256: Some(digest(c.as_bytes())),
+            fetch: FetchKind::Archive,
+            title: None,
+            excerpt_start: None,
+        })
+        .collect();
+    let source = Source {
+        id: "kit".into(),
+        title: "Kit".into(),
+        credit: "c".into(),
+        rights: "r".into(),
+        source_page: "https://fake.test".into(),
+        archive: Some(Archive { url: KIT_URL.into(), size: served.len() as u64, sha256: digest(&served), format: "tar.bz2".into(), into: "kit".into() }),
+        files,
+    };
+    (source, served)
+}
+
+/// Rebuilds the catalog source (whose sha256 always matches the pristine archive) and what the fake serves.
+fn refresh_kit(w: &mut W) {
+    let kit = w.kit.as_ref().unwrap();
+    let pristine = Kit { files: kit.files.clone(), ..Kit::default() };
+    let (source, good) = kit_source(&pristine);
+    let served = if kit.wrong_bytes { b"garbage".to_vec() } else { build_tar_bz2(kit) };
+    w.fake.served.insert(KIT_URL.into(), if kit.wrong_bytes || !(kit.raw_entries.is_empty() && kit.symlinks.is_empty() && kit.lacks.is_empty()) { served } else { good });
+    let mut source = source;
+    // The catalog pins the archive that is actually served (a tampered archive is still "the" archive).
+    if !kit.wrong_bytes {
+        let a = source.archive.as_mut().unwrap();
+        let bytes = &w.fake.served[KIT_URL];
+        a.size = bytes.len() as u64;
+        a.sha256 = digest(bytes);
+    }
+    w.source = Some(source);
 }
 
 fn digest(b: &[u8]) -> String {
@@ -105,8 +197,41 @@ fn define(w: &mut W, id: String, step: &Step) {
         credit: "c".into(),
         rights: "r".into(),
         source_page: "https://fake.test".into(),
+        archive: None,
         files,
     });
+}
+
+#[given(expr = "an archive source {string} with these files:")]
+fn define_kit(w: &mut W, _id: String, step: &Step) {
+    let table = step.table.as_ref().expect("table");
+    let files = table.rows.iter().skip(1).map(|r| (r[0].clone(), r[1].clone())).collect();
+    w.kit = Some(Kit { files, ..Kit::default() });
+    refresh_kit(w);
+}
+
+#[given(expr = "the archive {string} is served with wrong bytes")]
+fn kit_wrong(w: &mut W, _id: String) {
+    w.kit.as_mut().unwrap().wrong_bytes = true;
+    refresh_kit(w);
+}
+
+#[given(expr = "the archive {string} also contains the entry {string}")]
+fn kit_extra(w: &mut W, _id: String, entry: String) {
+    w.kit.as_mut().unwrap().raw_entries.push(entry);
+    refresh_kit(w);
+}
+
+#[given(expr = "the archive {string} also contains a symlink {string}")]
+fn kit_symlink(w: &mut W, _id: String, entry: String) {
+    w.kit.as_mut().unwrap().symlinks.push(entry);
+    refresh_kit(w);
+}
+
+#[given(expr = "the archive {string} lacks the entry {string}")]
+fn kit_lacks(w: &mut W, _id: String, entry: String) {
+    w.kit.as_mut().unwrap().lacks.push(entry);
+    refresh_kit(w);
 }
 
 #[given(expr = "the file {string} already contains {string}")]
@@ -200,6 +325,32 @@ fn not_exists(w: &mut W, path: String) {
     assert!(!r.join(path).exists());
 }
 
+#[then(expr = "nothing exists under {string}")]
+fn nothing_under(w: &mut W, dir: String) {
+    let r = w.root();
+    let mut v = vec![];
+    if r.join(&dir).exists() {
+        all_files(&r.join(&dir), &mut v);
+    }
+    assert!(v.is_empty(), "leftover: {v:?}");
+    assert!(!r.join(&dir).join(".extract").exists());
+}
+
+#[then("no staging directory remains")]
+fn no_staging(w: &mut W) {
+    let r = w.root();
+    assert!(!r.join("kit/.extract").exists());
+}
+
+#[then(expr = "the source {string} is an archive extracted into {string}")]
+fn is_archive(w: &mut W, id: String, into: String) {
+    let s = w.listed.iter().find(|s| s.id == id).expect("source");
+    let a = s.archive.as_ref().expect("archive");
+    assert_eq!((a.into.as_str(), a.format.as_str()), (into.as_str(), "tar.bz2"));
+    assert!(a.size > 0 && a.sha256.len() == 64 && a.url.starts_with("https://"));
+    assert!(s.files.iter().all(|f| f.fetch == FetchKind::Archive && f.sha256.is_some() && f.size.is_some()));
+}
+
 #[then("no partial files remain")]
 fn no_part(w: &mut W) {
     let r = w.root();
@@ -251,6 +402,7 @@ fn kind_of(p: &Progress) -> (&'static str, &str) {
         Progress::Finished { path, .. } => ("finished", path),
         Progress::Skipped { path } => ("skipped", path),
         Progress::Manual { path } => ("manual", path),
+        Progress::Extracting { path } => ("extracting", path),
         Progress::Failed { path, .. } => ("failed", path),
     }
 }
