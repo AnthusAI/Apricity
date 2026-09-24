@@ -3,7 +3,7 @@
   "title": "Vocabulary: language + compiler (slice, clip names, group/return, volume, time, repitch)",
   "description": "See design/vocabulary.md.\n- dsl.rs / score.rs / compile.rs: the new keywords and YAML keys, plus 'renamed' errors for the old words.\n- Tests updated; examples migrated with fmt; timeline JSON unchanged except for user-facing messages.\n- Owner: engine session.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,10 +12,23 @@
     "vocabulary"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "822bef3f-b5ca-4e3d-a7cc-e8242895008a",
+      "author": "home",
+      "text": "Done by the web/docs session at the user's request (the user asked us to do the renames ourselves).\n\n- **score.rs:** time signature (`time` ⇄ meter), `GroupSpec`/`ReturnSpec` replace `BusSpec`, `ClipSpec.saved`, `KitSpec.slice: SliceBy` (`Transients`), `PadSpec.saved`, `WarpModeSpec::Repitch`, `TrackSpec.volume`/`.group`.\n- **dsl.rs:** `renamed()` gives errors for the old words; a saved clip goes right after the path (clip and pad lines); group/return statements; the format follows.\n- **compile.rs:** `route()` rewritten for groups (nested, inside out) and returns (sends only, into master); `BusInfo.kind`; messages updated; manifest `clips` (alias `slices`).\n- **Engine and CLI:** Repitch; the CLI live command is `volume` (`gain` gives an error); the render report shows group/return.\n- **Tests:** score 19+21+3+5, engine and CLI pass; all examples migrated (scripts/migrate-vocabulary.py) and compile.\n- **Kept on purpose (storage contract, task db3dc2):** the Ref.slice field and the @clp_/@slc_ id prefixes.",
+      "created_at": "2026-09-24T17:08:19.220898Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Web/Docs Session"
+      }
+    }
+  ],
   "created_at": "2026-09-24T16:41:48.067631Z",
-  "updated_at": "2026-09-24T16:41:48.067676Z",
-  "closed_at": null,
+  "updated_at": "2026-09-24T17:12:57.668196Z",
+  "closed_at": "2026-09-24T17:12:57.666899Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",
