@@ -20,7 +20,7 @@ impl HttpFetcher {
     pub fn new() -> Self {
         let agent: ureq::Agent = ureq::Agent::config_builder()
             .user_agent(USER_AGENT)
-            .timeout_global(Some(Duration::from_secs(600)))
+            .timeout_global(Some(Duration::from_secs(3600)))
             .build()
             .into();
         Self { agent }

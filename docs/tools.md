@@ -8,7 +8,7 @@ Commands are run from the repository root. Python tools use the analysis environ
 ```sh
 git submodule update --init                       # Rubber Band source
 scripts/fetch-tools.sh                            # wasi-sdk, for the WebAssembly build
-apricity sources fetch --all                      # the public-domain sample library (verified, resumable)
+apricity sources fetch --all                      # the sample library: public-domain sources plus the Salamander Drumkit (CC BY-SA 3.0; a 370 MB archive that is verified, then extracted)
 scripts/fetch-samples.py                          # legacy Python fetcher, superseded by the line above
 cargo build --release -p apricity-cli               # ./target/release/apricity
 cargo build -p apricity-web --release --target wasm32-wasip1    # the engine for the browser
