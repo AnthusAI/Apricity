@@ -28,7 +28,7 @@ import sys
 
 import numpy as np
 
-from .analyze import SR, upgrade_annotations, validate
+from .analyze import SR, validate
 from .theory import PITCH_NAMES, rank_keys
 
 HOP = 512
@@ -349,7 +349,6 @@ def markup(audio_path: pathlib.Path) -> dict:
 
 def merge(existing: dict, ml: dict) -> dict:
     """Keep everything a person made; replace earlier ML markup; never clobber a name you gave."""
-    existing = upgrade_annotations(existing)
     keep_slices = [s for s in existing.get("clips", []) if s.get("source") != "ml"]
     keep_markers = [x for x in existing.get("markers", []) if x.get("source") != "ml"]
     taken = {s["name"] for s in keep_slices}

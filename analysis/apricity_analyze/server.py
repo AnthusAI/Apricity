@@ -93,14 +93,13 @@ def _summary(manifest_path: pathlib.Path, credits: dict) -> dict:
         "keys_over_time": segs,
         "tuning_cents": m["tonal"].get("tuning_cents"),
         "notes": len(m.get("notes", [])),
-        "clips": len(m.get("annotations", {}).get("clips", m.get("annotations", {}).get("slices", []))),
+        "clips": len(m.get("annotations", {}).get("clips", [])),
         "markers": len(m.get("annotations", {}).get("markers", [])),
         "stem": stem["stem"] if stem else None,
     }
 
 
 @app.get("/api/samples")
-@app.get("/api/clips", include_in_schema=False)  # the name before the vocabulary change (2026-09-24)
 def samples():
     credits = _credits()
     # Modern, full-length recordings first; then the archive excerpts; then uploads.
@@ -117,9 +116,7 @@ async def put_annotations(path: str, request: Request):
     mpath = audio.with_name(audio.name + ".apricity.json")
     if not mpath.exists():
         raise HTTPException(404, f"{path} has no manifest")
-    from .analyze import upgrade_annotations
-
-    ann = upgrade_annotations(await request.json())
+    ann = await request.json()
     m = json.loads(mpath.read_text())
     dur = m["source"]["duration"]
     problems = []

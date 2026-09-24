@@ -41,7 +41,7 @@ fn speech_fixture(dir: &Path) {
         "rhythm": { "bpm": null, "bpm_stability": 0.0, "beats": [], "downbeats": [], "meter": null, "warp_markers": [], "loudness": vec![-30.0; 40] },
         "tonal": { "key": {"tonic": "F#", "mode": "minor", "strength": 0.1}, "tuning_hz": 440.0, "tuning_cents": 12.0,
                    "pitch_class_profile": vec![0.5; 12], "beat_chroma": [] },
-        "annotations": { "slices": [
+        "annotations": { "clips": [
             { "name": "phrase-1", "start": 0.4, "end": 3.1 },
             { "name": "phrase-2", "start": 3.9, "end": 7.5 },
             { "name": "phrase-3", "start": 8.2, "end": 19.0 }

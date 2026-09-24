@@ -83,11 +83,8 @@ track b     steps "1 _ 2 _"  group beat  volume -2
   - `return <name>` with indented effects defines one; `volume` goes on its line.
   - Tracks reach returns only by `send` (sends from group tracks: later).
   - Returns go to the master.
-- **Old words** are errors that name the new one, with no silent aliases:
-  - "`chop` is now `slice` (as in Live): kit b = slice brk by beats 0.5";
-  - "`bus` is now `return` (shared effects) or `group` (tracks summed together)";
-  - "a sample's saved clip goes right after the path now: clip brk = drums.wav loop-1" (on a pad: "…right after the clip's name now: kick = tdrums shot-1");
-  - "`meter` is now `time`, written as a time signature: time 4/4", "`gain` is now `volume`", "`warp off` is now `warp repitch`".
+- **No backward compatibility.** The old words are simply gone: they're unknown words like any
+  other, with the usual "did you mean" suggestions. The examples and manifests were moved over once.
 
 YAML follows the same words:
 - `time: 4/4`
@@ -105,8 +102,8 @@ YAML follows the same words:
   - automatic `hit-N` clips become `shot-N` (one-shots);
   - `apricity_manifest` goes to 2.
 
-  Readers accept version 1 for one release. A migration script rewrites the 45 manifests in place,
-  keeping every name the scores use.
+  All 45 manifests were rewritten once, keeping every name the scores use; readers take version 2
+  only.
 - **Server API:**
   - `GET /api/clips` becomes `GET /api/samples` (entries are samples, each with a count of saved clips);
   - `PUT /api/annotations` stays, and writes `clips`.

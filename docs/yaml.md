@@ -5,10 +5,8 @@ want every field spelled out. YAML scores and [`.apr` scores](language.md) are t
 the same structure: they compile identically, and `apricity fmt` converts either way. JSON works too
 (it's valid YAML) from the command line.
 
-Unknown fields are errors — a typo like `volme: 3` is reported, never silently ignored. That
-includes the fields renamed to Ableton Live's words (`meter` is now `time`, a track's `gain` is
-`volume` and its `out` is `group`, `buses` are `groups` and `returns`, a kit's `chop` is `slice`,
-a clip's or pad's `slice` is `saved`): the error lists the fields that exist.
+Unknown fields are errors — a typo like `volme: 3` is reported, never silently ignored, and the
+error lists the fields that exist.
 
 ## The same score both ways
 

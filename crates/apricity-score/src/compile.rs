@@ -899,7 +899,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             SliceBy::Bars(n) if *n > 0.0 => even(n * meter as f64 * rc.ratio),
             SliceBy::Into(n) if *n > 0 => even((hi - lo) / *n as f64),
             SliceBy::Transients => {
-                let mut ts: Vec<f64> = rc.clip.manifest.annotations.markers.iter().filter(|m| m.name == "transient" || m.name == "hit").map(|m| rc.clip.beat_at(m.seconds)).filter(|&b| b >= lo - 1e-6 && b < hi).collect();
+                let mut ts: Vec<f64> = rc.clip.manifest.annotations.markers.iter().filter(|m| m.name == "transient").map(|m| rc.clip.beat_at(m.seconds)).filter(|&b| b >= lo - 1e-6 && b < hi).collect();
                 ts.sort_by(|a, b| a.total_cmp(b));
                 ts.dedup_by(|a, b| (*a - *b).abs() < 0.05);
                 if ts.is_empty() {

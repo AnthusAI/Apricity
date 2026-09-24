@@ -186,7 +186,6 @@ fn apply_mix_command(ctl: &mut Controller, tracks: &[String], verb: &str, args: 
         "unmute" | "um" => set(name(args.first())?, &|c| c.mute = false),
         "solo" | "s" => set(name(args.first())?, &|c| c.solo = true),
         "unsolo" | "us" => set(name(args.first())?, &|c| c.solo = false),
-        "gain" => Err("`gain` is now `volume` (as in Live): volume NAME dB, e.g. `volume bass -6`".into()),
         "volume" | "v" => {
             let n = name(args.first())?;
             let db: f32 = args.get(1).map(|d| d.trim_end_matches("dB").trim_end_matches("db")).and_then(|d| d.parse().ok()).ok_or("volume NAME dB, e.g. `volume bass -6`")?;
