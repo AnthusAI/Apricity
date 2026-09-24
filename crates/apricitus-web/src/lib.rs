@@ -463,8 +463,8 @@ pub unsafe extern "C" fn rw_markup_merge(json: *const u8, json_len: usize) {
 }
 
 /// Extract score references: clips and slices (including kit pads) referenced in a score.
-/// Input: `{ "text": "<score text>", "path": "scores/x.apr" }`
-/// Output: `{ "data": [{ "alias", "source", "path"?, "slice"?, "kit_pad"? }], "errors": [] }`
+/// Input: `{ "text": "<score text>", "folder": "scores", "file": "x.apr" }`
+/// Output: `{ "data": [{ "idSuffix", "alias", "source", "catalogPath"?, "clipId"?, "sliceName"?, "sliceId"?, "kitPad"? }], "errors": [] }`
 ///
 /// # Safety
 /// UTF-8 (ptr, len) in wasm memory.
@@ -474,47 +474,23 @@ pub unsafe extern "C" fn rw_references(json: *const u8, json_len: usize) {
     let result = match serde_json::from_str::<serde_json::Value>(json_str) {
         Ok(input) => {
             let text = input.get("text").and_then(|v| v.as_str()).unwrap_or("");
-            let score_path = input.get("path").and_then(|v| v.as_str()).unwrap_or("scores/untitled.apr");
+            let folder = input.get("folder").and_then(|v| v.as_str()).unwrap_or("scores");
+            let file = input.get("file").and_then(|v| v.as_str()).unwrap_or("untitled.apr");
 
-            // Parse the score (detects .apr/.yaml by extension)
-            match apricitus_score::parse_score(text, Path::new(score_path)) {
-                Ok((score, _)) => {
-                    // Extract base_dir from score_path
-                    let score_path_obj = Path::new(score_path);
-                    let base_dir = score_path_obj.parent().unwrap_or(Path::new("."));
-
-                    // Get references from the parsed score
-                    let refs = apricitus_score::references(&score, base_dir);
-
-                    // Build response data
+            // Call catalog_refs to extract and resolve references
+            match apricitus_data::catalog_refs(text, folder, file) {
+                Ok(refs) => {
+                    // Convert to JSON, using serde serialization which respects camelCase
                     let data: Vec<Value> = refs
                         .iter()
-                        .map(|r| {
-                            let mut ref_obj = json!({
-                                "alias": r.alias,
-                                "source": r.source,
-                            });
-                            if let Some(path) = &r.path {
-                                ref_obj["path"] = json!(path.to_string_lossy().to_string());
-                            } else {
-                                ref_obj["path"] = Value::Null;
-                            }
-                            if let Some(slice) = &r.slice {
-                                ref_obj["slice"] = json!(slice);
-                            }
-                            if let Some(kit_pad) = &r.kit_pad {
-                                ref_obj["kit_pad"] = json!(kit_pad);
-                            }
-                            ref_obj
-                        })
+                        .map(|r| serde_json::to_value(r).unwrap_or(json!({})))
                         .collect();
 
                     json!({ "data": data, "errors": [] })
                 }
                 Err(e) => {
                     // Parse error
-                    let error_messages: Vec<String> = e.iter().map(|s| s.to_string()).collect();
-                    json!({ "errors": error_messages })
+                    json!({ "errors": e })
                 }
             }
         }

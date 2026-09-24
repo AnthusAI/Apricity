@@ -3,6 +3,7 @@
 
 import { client } from "./client.js";
 import { callWasm, extractReferences } from "../apricitus.js";
+import { planScoreRefs, type CatalogRef, type Lookups, type ScoreRef } from "./plans.js";
 
 interface OpResult<T = unknown> {
   data?: T;
@@ -395,7 +396,7 @@ export async function mergeMarkup(
 }
 
 /**
- * Save a score: parse its text via wasm rw_references, resolve clips/slices, write ScoreRef records.
+ * Save a score: parse its text via wasm, resolve clips/slices, write ScoreRef records.
  * Implements features/data/domain/score_refs.feature
  */
 export async function saveScore(scoreId: string, text: string): Promise<OpResult> {
@@ -407,16 +408,22 @@ export async function saveScore(scoreId: string, text: string): Promise<OpResult
       return { errors: [{ message: "No authenticated user", errorType: "Unauthorized" }] };
     }
 
-    const baseDir = "scores";
+    const folder = "scores";
+    const file = scoreId + ".apr";
 
-    // Upsert Score record
+    // Step 1: Parse first (extract references to check for errors)
+    const refsResult = (await extractReferences(text, folder, file)) as any;
+
+    // Step 2: Create/update Score once with text and lastErrors
     let score: any;
     const existingResult = await dataClient.models.Score.get({ id: scoreId });
+    const lastErrors = refsResult.errors || [];
+
     if (existingResult.data) {
       const updateResult = await dataClient.models.Score.update({
         id: scoreId,
         text,
-        lastErrors: [],
+        lastErrors,
       });
       if (updateResult.errors?.length) {
         return { errors: updateResult.errors as any };
@@ -426,9 +433,10 @@ export async function saveScore(scoreId: string, text: string): Promise<OpResult
       const createResult = await dataClient.models.Score.create({
         id: scoreId,
         title: scoreId,
-        folder: "scores",
+        folder,
         format: "apr",
         text,
+        lastErrors,
       });
       if (createResult.errors?.length) {
         return { errors: createResult.errors as any };
@@ -436,93 +444,157 @@ export async function saveScore(scoreId: string, text: string): Promise<OpResult
       score = createResult.data;
     }
 
-    // Extract references via wasm rw_references
-    const refsResult = (await extractReferences(text, baseDir)) as any;
+    // On parse errors, return the score without processing refs
+    if (refsResult.errors?.length) {
+      return { data: { score } };
+    }
 
-    if (!refsResult.data || refsResult.errors?.length) {
-      if (refsResult.errors) {
-        return { errors: [{ message: refsResult.errors.join("; "), errorType: "Validation" }] };
-      }
+    if (!refsResult.data) {
       return { errors: [{ message: "Failed to extract references from score", errorType: "Internal" }] };
     }
 
-    const references = refsResult.data || [];
+    const catalogRefs: CatalogRef[] = refsResult.data;
+
+    // Fetch lookups: clips and slices
+    const lookups = await fetchLookups(dataClient, catalogRefs);
 
     // Get existing ScoreRefs for this score
     const existingRefs = await collectAll(
       async (token) =>
-        await dataClient.models.ScoreRef.list({
-          filter: { scoreId: { eq: scoreId } },
-          nextToken: token,
-        })
+        await dataClient.models.ScoreRef.refsByScore({ scoreId }, { nextToken: token })
     );
-    const oldRefIds = new Set((existingRefs || []).map((r: any) => r.id));
 
-    // Process each reference
-    for (let i = 0; i < references.length; i++) {
-      const ref = references[i];
-      const clipAlias = ref.alias;
-      const sliceName = ref.slice;
-      const kitPad = ref.kit_pad;
+    // Plan the diff
+    const plan = planScoreRefs(scoreId, catalogRefs, lookups, (existingRefs || []) as ScoreRef[]);
 
-      // Resolve clip via clipsByPath index
-      const clipResults = await collectAll(
-        async (token) =>
-          await dataClient.models.Clip.clipsByPath({ path: clipAlias }, { nextToken: token })
-      );
-      const clip = clipResults?.[0] as any;
-      const clipId = clip?.id;
-      const clipPath = clip?.path;
-
-      // Resolve slice if named
-      let sliceId: string | undefined;
-      let sliceStart: number | undefined;
-      let sliceEnd: number | undefined;
-
-      if (sliceName && clipId) {
-        const sliceResults = await collectAll(
-          async (token) =>
-            await dataClient.models.Slice.slicesByClipAndName(
-              { clipId, name: sliceName },
-              { nextToken: token }
-            )
-        );
-        const slice = sliceResults?.[0] as any;
-        sliceId = slice?.id;
-        sliceStart = slice?.start;
-        sliceEnd = slice?.end;
+    // Apply the plan: deletes first, then updates, then creates
+    for (const id of plan.delete) {
+      const deleteRes = await dataClient.models.ScoreRef.delete({ id });
+      if (deleteRes.errors?.length) {
+        return { errors: deleteRes.errors as any };
       }
-
-      // Create ScoreRef (composite ID: sref_<scoreId>_<n>)
-      const refId = `sref_${scoreId}_${i}`;
-      const createRefRes = await dataClient.models.ScoreRef.create({
-        id: refId,
-        scoreId,
-        clipAlias,
-        clipPath,
-        clipId,
-        sliceName,
-        sliceId,
-        start: sliceStart,
-        end: sliceEnd,
-      });
-
-      if (createRefRes.errors?.length) {
-        return { errors: createRefRes.errors as any };
-      }
-
-      oldRefIds.delete(refId);
     }
 
-    // Delete stale refs
-    for (const oldId of oldRefIds) {
-      await dataClient.models.ScoreRef.delete({ id: oldId });
+    for (const ref of plan.update) {
+      const updateRes = await dataClient.models.ScoreRef.update(ref as any);
+      if (updateRes.errors?.length) {
+        return { errors: updateRes.errors as any };
+      }
+    }
+
+    for (const ref of plan.create) {
+      const createRes = await dataClient.models.ScoreRef.create(ref as any);
+      if (createRes.errors?.length) {
+        return { errors: createRes.errors as any };
+      }
     }
 
     return { data: { score } };
   } catch (e) {
     return { errors: [{ message: String(e), errorType: "Internal" }] };
   }
+}
+
+/**
+ * Fetch lookup maps for clips and slices referenced in catalog refs.
+ */
+async function fetchLookups(
+  dataClient: any,
+  catalogRefs: CatalogRef[]
+): Promise<Lookups> {
+  const lookups: Lookups = {
+    clipsByPath: new Map(),
+    clipsById: new Map(),
+    slicesByClipAndName: new Map(),
+    slicesById: new Map(),
+  };
+
+  // Collect all unique paths and ids we need to fetch
+  const pathsToFetch = new Set<string>();
+  const idsToFetch = new Set<string>();
+  const sliceIdNamesToFetch = new Set<string>();
+  const sliceIdsToFetch = new Set<string>();
+
+  for (const ref of catalogRefs) {
+    if (ref.catalogPath) {
+      pathsToFetch.add(ref.catalogPath);
+    }
+    if (ref.clipId) {
+      idsToFetch.add(ref.clipId);
+    }
+    if (ref.sliceName && ref.clipId) {
+      sliceIdNamesToFetch.add(ref.clipId); // Track which clip ids we need slice names for
+    }
+    if (ref.sliceId) {
+      sliceIdsToFetch.add(ref.sliceId);
+    }
+  }
+
+  // Fetch clips by path
+  for (const path of pathsToFetch) {
+    const clipResults = await collectAll(async (token) => await dataClient.models.Clip.clipsByPath({ path }, { nextToken: token }));
+    const clip = (clipResults as any[])?.[0];
+    if (clip) {
+      lookups.clipsByPath.set(path, { id: clip.id, path: clip.path });
+    }
+  }
+
+  // Fetch clips by id
+  for (const id of idsToFetch) {
+    const clipResult = await dataClient.models.Clip.get({ id });
+    if (clipResult.data) {
+      const clip = clipResult.data as any;
+      lookups.clipsById.set(id, { id: clip.id, path: clip.path });
+    }
+  }
+
+  // Fetch slices by (clipId, name)
+  for (const clipId of sliceIdNamesToFetch) {
+    // Find all catalog refs for this clipId to get the names
+    const names = new Set<string>();
+    for (const ref of catalogRefs) {
+      if (ref.sliceName) {
+        // Check if this ref's clipId matches
+        let refClipId = ref.clipId;
+        if (!refClipId && ref.catalogPath) {
+          const clip = lookups.clipsByPath.get(ref.catalogPath);
+          if (clip) refClipId = clip.id;
+        }
+        if (refClipId === clipId) {
+          names.add(ref.sliceName);
+        }
+      }
+    }
+
+    for (const name of names) {
+      const sliceResults = await collectAll(
+        async (token) =>
+          await dataClient.models.Slice.slicesByClipAndName({ clipId, name }, { nextToken: token })
+      );
+      const slice = (sliceResults as any[])?.[0];
+      if (slice) {
+        if (!lookups.slicesByClipAndName.has(clipId)) {
+          lookups.slicesByClipAndName.set(clipId, new Map());
+        }
+        (lookups.slicesByClipAndName.get(clipId) as Map<string, any>).set(name, {
+          id: slice.id,
+          start: slice.start,
+          end: slice.end,
+        });
+      }
+    }
+  }
+
+  // Fetch slices by id
+  for (const id of sliceIdsToFetch) {
+    const sliceResult = await dataClient.models.Slice.get({ id });
+    if (sliceResult.data) {
+      const slice = sliceResult.data as any;
+      lookups.slicesById.set(id, { id: slice.id, start: slice.start, end: slice.end });
+    }
+  }
+
+  return lookups;
 }
 
 // ---- helpers

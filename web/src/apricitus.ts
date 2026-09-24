@@ -153,9 +153,22 @@ export async function extractSources(yaml: string, scorePath: string): Promise<{
  */
 export async function extractReferences(
   text: string,
-  baseDir: string
-): Promise<{ data?: Array<{ alias: string; source: string; slice?: string; kit_pad?: string }>; errors?: string[] }> {
+  folder: string,
+  file: string
+): Promise<{
+  data?: Array<{
+    idSuffix: string;
+    alias: string;
+    source: string;
+    catalogPath?: string;
+    clipId?: string;
+    sliceName?: string;
+    sliceId?: string;
+    kitPad?: string;
+  }>;
+  errors?: string[];
+}> {
   const rw = await getCompiler();
-  const result = rw.call("rw_references", JSON.stringify({ text, base_dir: baseDir }));
+  const result = rw.call("rw_references", JSON.stringify({ text, folder, file }));
   return result;
 }

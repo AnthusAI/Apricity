@@ -175,53 +175,125 @@ assert.equal(mergeCreateResult.data.create[0][0], "loop-1");
 assert.equal(mergeCreateResult.data.name_counters.loop, 1);
 console.log(`rw_markup_merge create ok: ${mergeCreateResult.data.create[0][0]}`);
 
-// Test rw_references: (a) clip with slice
+// Test rw_references: (i) score_refs.feature scenario 1: clip with slice
 const referencesInput1 = {
-  text: `tempo 120
+  text: `tempo 90
 key C
-samples ../samples
+bars 1
 clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
 track beat`,
-  path: "scores/test.apr",
+  folder: "scores",
+  file: "test.apr",
 };
 const referencesResult1 = rw.call("rw_references", JSON.stringify(referencesInput1));
-assert.ok(Array.isArray(referencesResult1.data));
-assert.ok(referencesResult1.data.length >= 1);
-const beatRef = referencesResult1.data.find((r) => r.source === "marine-band/stems/Thunderer/drums.wav");
-assert.ok(beatRef);
-assert.equal(beatRef.slice, "loop-1");
-console.log(`rw_references clip+slice ok: ${beatRef.source} slice ${beatRef.slice}`);
+assert.deepEqual(referencesResult1, {
+  data: [
+    {
+      idSuffix: "beat",
+      alias: "beat",
+      source: "marine-band/stems/Thunderer/drums.wav",
+      catalogPath: "marine-band/stems/Thunderer/drums.wav",
+      sliceName: "loop-1",
+    },
+  ],
+  errors: [],
+});
+console.log(`rw_references scenario (i) ok: clip with slice`);
 
-// Test rw_references: (b) another clip reference
+// Test rw_references: (ii) kit-pad scenario: two refs with distinct suffixes
 const referencesInput2 = {
-  text: `tempo 120
+  text: `tempo 90
 key C
-samples ../samples
-clip bugle = citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav
-track bugle`,
-  path: "scores/bugle.apr",
+bars 1
+clip band = marine-band/Thunderer.mp3
+kit drums
+  crash = band  slice hit-3
+track drums  steps "crash . . ."`,
+  folder: "scores",
+  file: "test.apr",
 };
 const referencesResult2 = rw.call("rw_references", JSON.stringify(referencesInput2));
-assert.ok(Array.isArray(referencesResult2.data));
-assert.ok(referencesResult2.data.length >= 1);
-const bugleRef = referencesResult2.data.find((r) => r.source === "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav");
-assert.ok(bugleRef);
-console.log(`rw_references multiple clips ok: found ${referencesResult2.data.length} references`);
+assert.deepEqual(referencesResult2, {
+  data: [
+    {
+      idSuffix: "band",
+      alias: "band",
+      source: "marine-band/Thunderer.mp3",
+      catalogPath: "marine-band/Thunderer.mp3",
+    },
+    {
+      idSuffix: "band_drums.crash",
+      alias: "band",
+      source: "marine-band/Thunderer.mp3",
+      catalogPath: "marine-band/Thunderer.mp3",
+      sliceName: "hit-3",
+      kitPad: "drums.crash",
+    },
+  ],
+  errors: [],
+});
+console.log(`rw_references scenario (ii) ok: kit-pad with distinct suffixes`);
 
-// Test rw_references: (c) clip id source (path null)
+// Test rw_references: (iii) @clp_ and @slc_ id forms
 const referencesInput3 = {
-  text: `tempo 120
+  text: `tempo 90
 key C
-samples ../samples
-clip source = @clp_abc123def45678901234
+bars 1
+clip source = @clp_abc123def45678901234  slice @slc_xyz789
 track source`,
-  path: "scores/idref.apr",
+  folder: "scores",
+  file: "idref.apr",
 };
 const referencesResult3 = rw.call("rw_references", JSON.stringify(referencesInput3));
-assert.ok(Array.isArray(referencesResult3.data));
-const idRef = referencesResult3.data.find((r) => r.source === "@clp_abc123def45678901234");
-assert.ok(idRef, `@clp_ id reference not found, data: ${JSON.stringify(referencesResult3.data)}`);
-assert.equal(idRef.path, null);
-console.log(`rw_references @clp_ id ok: path is null`);
+assert.deepEqual(referencesResult3, {
+  data: [
+    {
+      idSuffix: "source",
+      alias: "source",
+      source: "@clp_abc123def45678901234",
+      clipId: "clp_abc123def45678901234",
+      sliceId: "slc_xyz789",
+    },
+  ],
+  errors: [],
+});
+console.log(`rw_references scenario (iii) ok: @clp_ and @slc_ id forms`);
+
+// Test rw_references: (iv) samples ../samples score in folder examples
+const referencesInput4 = {
+  text: `tempo 90
+key C
+samples ../samples
+bars 1
+clip beat = marine-band/x.wav
+track beat`,
+  folder: "examples",
+  file: "test.apr",
+};
+const referencesResult4 = rw.call("rw_references", JSON.stringify(referencesInput4));
+assert.deepEqual(referencesResult4, {
+  data: [
+    {
+      idSuffix: "beat",
+      alias: "beat",
+      source: "marine-band/x.wav",
+      catalogPath: "marine-band/x.wav",
+    },
+  ],
+  errors: [],
+});
+console.log(`rw_references scenario (iv) ok: samples ../samples from examples`);
+
+// Test rw_references: (v) parse error case
+const referencesInput5 = {
+  text: "not valid apr",
+  folder: "scores",
+  file: "bad.apr",
+};
+const referencesResult5 = rw.call("rw_references", JSON.stringify(referencesInput5));
+assert.ok(!referencesResult5.data, "Parse error should not have data");
+assert.ok(Array.isArray(referencesResult5.errors), "Parse error should have errors array");
+assert.ok(referencesResult5.errors.length > 0, "Parse error should have at least one error message");
+console.log(`rw_references scenario (v) ok: parse error`);
 
 console.log("all wasm checks passed");
