@@ -408,15 +408,6 @@ export class Story {
           g.restore();
         }
       }
-      // Lineage: the playing chop's span on the recording.
-      for (const { x, glow } of active) {
-        const [a, b] = src.chops[x.chop];
-        g.save();
-        g.globalAlpha *= 0.4 * glow * detail;
-        g.fillStyle = th.sun2;
-        g.fillRect(secX(wbox, win, a), wbox.y, secX(wbox, win, b) - secX(wbox, win, a), wbox.h);
-        g.restore();
-      }
     }
 
     // The slice lifts out of the recording and opens into the chop row, then is cut.
@@ -449,6 +440,22 @@ export class Story {
             glow: glowOf(i),
           });
         }
+      }
+      // Lineage: the playing chop's span on the recording, lit, with a curve down to its chop.
+      // A folded source shows it too, on its summary strip.
+      const span = wbox.h > 2 ? wbox : title;
+      for (const { x, glow } of active) {
+        const [a, b] = src.chops[x.chop];
+        const x0 = secX(span, win, a);
+        const x1 = secX(span, win, b);
+        g.save();
+        g.globalAlpha *= (span === wbox ? 0.45 : 0.85) * glow;
+        g.fillStyle = th.sun2;
+        rect(g, { x: x0, y: span.y, w: x1 - x0, h: span.h }, 2);
+        g.fill();
+        g.restore();
+        const to = this.chopBox(L, n, x.chop);
+        ribbon(g, { x0, x1, y: span.y + span.h }, { x0: to.x, x1: to.x + to.w, y: to.y }, th.sun2, 0.5 * glow, 0.8);
       }
       // The line of score that did it.
       const code = seg(t, ...ph.code) * detail;
@@ -516,7 +523,7 @@ export class Story {
       const a = x.fly ? 1 : seg(t, x.t0, x.landed);
       g.save();
       g.globalAlpha *= a;
-      if (on) ribbon(g, { x0: from.x, x1: from.x + from.w, y: from.y + from.h }, { x0: to.x, x1: to.x + to.w, y: to.y }, color, 0.22 * on.glow);
+      if (on) ribbon(g, { x0: from.x, x1: from.x + from.w, y: from.y + from.h }, { x0: to.x, x1: to.x + to.w, y: to.y }, color, 0.42 * on.glow, 0.7);
       tile(g, { ...to, y: to.y - (1 - a) * 4 }, color, th, opts);
       g.restore();
     }
