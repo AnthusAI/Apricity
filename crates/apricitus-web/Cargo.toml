@@ -9,6 +9,7 @@ description = "C-ABI WebAssembly surface of Apricitus for the browser: compiler 
 crate-type = ["cdylib"]
 
 [dependencies]
+apricitus-data.workspace = true
 apricitus-engine.workspace = true
 apricitus-score.workspace = true
 serde.workspace = true

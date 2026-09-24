@@ -96,4 +96,132 @@ for (let i = 0; i < 400; i++) {
 assert.ok(energy > 1, `mixer output energy ${energy}`);
 assert.equal(rw.exports.rw_engine_position(), (400 * 128) % info.frames);
 console.log(`mix ok: position ${rw.exports.rw_engine_position()} frames, swaps ${rw.exports.rw_engine_swaps()}`);
+
+// --- data layer: ids, rank, markup_merge
+
+// Test rw_ids: clip_id
+const clipIdInput = { kind: "clip_id", audio_sha256: "abc123def456789012345678" };
+const clipIdResult = rw.call("rw_ids", JSON.stringify(clipIdInput));
+assert.ok(clipIdResult.data);
+assert.match(clipIdResult.data, /^clp_/);
+console.log(`rw_ids ok: ${clipIdResult.data}`);
+
+// Test rw_ids: candidate_id
+const candIdInput = { kind: "candidate_id", clip_id: "clp_abc123", start: 10.0, end: 14.0, kind_val: "loop" };
+const candIdResult = rw.call("rw_ids", JSON.stringify(candIdInput));
+assert.ok(candIdResult.data);
+assert.match(candIdResult.data, /^cand_/);
+console.log(`rw_ids candidate ok: ${candIdResult.data}`);
+
+// Test rw_ids: curated_slice_id
+const curatedSliceIdInput = { kind: "curated_slice_id", candidate_id: "cand_test123" };
+const curatedSliceIdResult = rw.call("rw_ids", JSON.stringify(curatedSliceIdInput));
+assert.ok(curatedSliceIdResult.data);
+assert.match(curatedSliceIdResult.data, /^slc_/);
+console.log(`rw_ids curated_slice ok: ${curatedSliceIdResult.data}`);
+
+// Test rw_rank: no candidates
+const rankEmptyInput = { candidates: [], verdicts: {} };
+const rankEmptyResult = rw.call("rw_rank", JSON.stringify(rankEmptyInput));
+assert.ok(Array.isArray(rankEmptyResult.data));
+assert.equal(rankEmptyResult.data.length, 0);
+console.log(`rw_rank empty ok`);
+
+// Test rw_rank: single candidate, no verdicts
+const rankInput = {
+  candidates: [
+    {
+      id: "cand_1",
+      kind: "loop",
+      recording: "test",
+      proposers: [{ by: "analyzer", score: 0.8, why: "test" }],
+      context: null,
+    },
+  ],
+  verdicts: {},
+};
+const rankResult = rw.call("rw_rank", JSON.stringify(rankInput));
+assert.ok(Array.isArray(rankResult.data));
+assert.equal(rankResult.data.length, 1);
+assert.equal(rankResult.data[0].id, "cand_1");
+assert.equal(rankResult.data[0].rank, 0.8);
+assert.equal(rankResult.data[0].later, false);
+console.log(`rw_rank single ok: rank=${rankResult.data[0].rank}`);
+
+// Test rw_markup_merge: empty proposals
+const mergeInput = {
+  existing: [],
+  proposed: [],
+  name_counters: {},
+  used_by_score: [],
+};
+const mergeResult = rw.call("rw_markup_merge", JSON.stringify(mergeInput));
+assert.ok(mergeResult.data);
+assert.equal(mergeResult.data.keep.length, 0);
+assert.equal(mergeResult.data.create.length, 0);
+console.log(`rw_markup_merge empty ok`);
+
+// Test rw_markup_merge: new proposal creates name
+const mergeCreateInput = {
+  existing: [],
+  proposed: [{ kind: "loop", start: 10.0, end: 14.0, rank: 1 }],
+  name_counters: { loop: 0 },
+  used_by_score: [],
+};
+const mergeCreateResult = rw.call("rw_markup_merge", JSON.stringify(mergeCreateInput));
+assert.ok(mergeCreateResult.data);
+assert.equal(mergeCreateResult.data.create.length, 1);
+assert.equal(mergeCreateResult.data.create[0][0], "loop-1");
+assert.equal(mergeCreateResult.data.name_counters.loop, 1);
+console.log(`rw_markup_merge create ok: ${mergeCreateResult.data.create[0][0]}`);
+
+// Test rw_references: (a) clip with slice
+const referencesInput1 = {
+  text: `tempo 120
+key C
+samples ../samples
+clip beat = marine-band/stems/Thunderer/drums.wav  slice loop-1
+track beat`,
+  path: "scores/test.apr",
+};
+const referencesResult1 = rw.call("rw_references", JSON.stringify(referencesInput1));
+assert.ok(Array.isArray(referencesResult1.data));
+assert.ok(referencesResult1.data.length >= 1);
+const beatRef = referencesResult1.data.find((r) => r.source === "marine-band/stems/Thunderer/drums.wav");
+assert.ok(beatRef);
+assert.equal(beatRef.slice, "loop-1");
+console.log(`rw_references clip+slice ok: ${beatRef.source} slice ${beatRef.slice}`);
+
+// Test rw_references: (b) another clip reference
+const referencesInput2 = {
+  text: `tempo 120
+key C
+samples ../samples
+clip bugle = citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav
+track bugle`,
+  path: "scores/bugle.apr",
+};
+const referencesResult2 = rw.call("rw_references", JSON.stringify(referencesInput2));
+assert.ok(Array.isArray(referencesResult2.data));
+assert.ok(referencesResult2.data.length >= 1);
+const bugleRef = referencesResult2.data.find((r) => r.source === "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav");
+assert.ok(bugleRef);
+console.log(`rw_references multiple clips ok: found ${referencesResult2.data.length} references`);
+
+// Test rw_references: (c) clip id source (path null)
+const referencesInput3 = {
+  text: `tempo 120
+key C
+samples ../samples
+clip source = @clp_abc123def45678901234
+track source`,
+  path: "scores/idref.apr",
+};
+const referencesResult3 = rw.call("rw_references", JSON.stringify(referencesInput3));
+assert.ok(Array.isArray(referencesResult3.data));
+const idRef = referencesResult3.data.find((r) => r.source === "@clp_abc123def45678901234");
+assert.ok(idRef, `@clp_ id reference not found, data: ${JSON.stringify(referencesResult3.data)}`);
+assert.equal(idRef.path, null);
+console.log(`rw_references @clp_ id ok: path is null`);
+
 console.log("all wasm checks passed");

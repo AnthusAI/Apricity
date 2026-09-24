@@ -124,3 +124,38 @@ export const api = {
     return fetch("/api/upload", { method: "POST", body: fd }).then((r) => json<{ path: string; state: string }>(r));
   },
 };
+
+// ------------------------------------------------------------------ data layer wasm helpers
+
+/**
+ * Call a wasm data function (rw_ids, rw_rank, rw_markup_merge).
+ * Input and output are JSON objects; errors are returned in the result.
+ */
+export async function callWasm(
+  funcName: "rw_ids" | "rw_rank" | "rw_markup_merge",
+  input: unknown
+): Promise<{ data?: unknown; errors?: string[] }> {
+  const rw = await getCompiler();
+  const result = rw.call(funcName, JSON.stringify(input));
+  return result;
+}
+
+/**
+ * Extract sources from a score (for finding clips to load).
+ */
+export async function extractSources(yaml: string, scorePath: string): Promise<{ sources?: string[]; errors?: string[] }> {
+  const rw = await getCompiler();
+  return rw.call("rw_sources", yaml, scorePath);
+}
+
+/**
+ * Extract score references: clips and slices referenced in score text.
+ */
+export async function extractReferences(
+  text: string,
+  baseDir: string
+): Promise<{ data?: Array<{ alias: string; source: string; slice?: string; kit_pad?: string }>; errors?: string[] }> {
+  const rw = await getCompiler();
+  const result = rw.call("rw_references", JSON.stringify({ text, base_dir: baseDir }));
+  return result;
+}

@@ -7,11 +7,13 @@
 //! Strings go in as (ptr, len) UTF-8 in wasm memory the caller allocated with `rw_alloc_bytes`;
 //! JSON results come back through `rw_result_ptr` / `rw_result_len` (valid until the next call).
 
+use apricitus_data::{ids, markup, rank};
 use apricitus_engine::{engine, Arrangement, Audio, Command, Controller, Mixer, Placement, Renderer, SwapAt};
 use apricitus_score::score::MasterSpec;
 use apricitus_score::{Clip, Timeline};
 use serde_json::{json, Value};
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -324,4 +326,199 @@ pub extern "C" fn rw_engine_pending() -> bool {
 #[unsafe(no_mangle)]
 pub extern "C" fn rw_engine_swaps() -> f64 {
     ENGINE.with(|e| e.borrow().as_ref().map_or(0.0, |(ctl, _)| ctl.status.swaps.load(std::sync::atomic::Ordering::Relaxed) as f64))
+}
+
+// ------------------------------------------------------------------ data layer (pure logic)
+
+/// Generate stable IDs for clips, candidates, and curated slices.
+/// Input: `{ "kind": "clip_id" | "stem_clip_id" | "candidate_id" | "curated_slice_id" | "migrated_slice_id", ... }`
+/// Output: `{ "data": <id string>, "errors": [] }` or `{ "errors": [message] }`
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_ids(json: *const u8, json_len: usize) {
+    let json_str = unsafe { str_arg(json, json_len) };
+    let result = match serde_json::from_str::<serde_json::Value>(json_str) {
+        Ok(input) => {
+            let kind = input.get("kind").and_then(|v| v.as_str()).unwrap_or("");
+            match kind {
+                "clip_id" => {
+                    let audio_sha256 = input.get("audio_sha256").and_then(|v| v.as_str()).unwrap_or("");
+                    let id = ids::clip_id(audio_sha256);
+                    json!({ "data": id, "errors": [] })
+                }
+                "stem_clip_id" => {
+                    let parent_id = input.get("parent_id").and_then(|v| v.as_str()).unwrap_or("");
+                    let stem = input.get("stem").and_then(|v| v.as_str()).unwrap_or("");
+                    let model = input.get("model").and_then(|v| v.as_str()).unwrap_or("");
+                    let id = ids::stem_clip_id(parent_id, stem, model);
+                    json!({ "data": id, "errors": [] })
+                }
+                "candidate_id" => {
+                    let clip_id = input.get("clip_id").and_then(|v| v.as_str()).unwrap_or("");
+                    let start = input.get("start").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                    let end = input.get("end").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                    let candidate_kind = input.get("kind_val").and_then(|v| v.as_str()).unwrap_or("");
+                    let id = ids::candidate_id(clip_id, start, end, candidate_kind);
+                    json!({ "data": id, "errors": [] })
+                }
+                "curated_slice_id" => {
+                    let candidate_id = input.get("candidate_id").and_then(|v| v.as_str()).unwrap_or("");
+                    let id = ids::curated_slice_id(candidate_id);
+                    json!({ "data": id, "errors": [] })
+                }
+                "migrated_slice_id" => {
+                    let clip_id = input.get("clip_id").and_then(|v| v.as_str()).unwrap_or("");
+                    let name = input.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                    let id = ids::migrated_slice_id(clip_id, name);
+                    json!({ "data": id, "errors": [] })
+                }
+                _ => json!({ "errors": [format!("unknown id kind: {}", kind)] }),
+            }
+        }
+        Err(e) => json!({ "errors": [format!("invalid JSON: {}", e)] }),
+    };
+    set_result(result);
+}
+
+/// Rank candidates: filter unjudged and "later" by trait lift (smoothed keep rate).
+/// Input: `{ "candidates": [{ "id", "kind", "recording", "proposers": [{ "by", "score", ... }], "context"? }], "verdicts": { "id": { "verdict", "stars"? } } }`
+/// Output: `{ "data": [{ "id", "kind", "recording", "rank", "score", "why_ranked", "later" }], "errors": [] }`
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_rank(json: *const u8, json_len: usize) {
+    let json_str = unsafe { str_arg(json, json_len) };
+    let result = match serde_json::from_str::<serde_json::Value>(json_str) {
+        Ok(input) => {
+            let candidates_val = input.get("candidates").cloned().unwrap_or(json!([]));
+            let verdicts_val = input.get("verdicts").cloned().unwrap_or(json!({}));
+
+            match (serde_json::from_value::<Vec<rank::Candidate>>(candidates_val), serde_json::from_value::<HashMap<String, rank::Verdict>>(verdicts_val)) {
+                (Ok(candidates), Ok(verdicts)) => {
+                    let ranked = rank::rank(&candidates, &verdicts);
+                    json!({ "data": ranked, "errors": [] })
+                }
+                (Err(e), _) | (_, Err(e)) => json!({ "errors": [format!("invalid data structure: {}", e)] }),
+            }
+        }
+        Err(e) => json!({ "errors": [format!("invalid JSON: {}", e)] }),
+    };
+    set_result(result);
+}
+
+/// Plan a markup merge: match proposed ML slices to existing ones, handle names and retirement.
+/// Input: `{ "existing": [{ "id", "name", "kind", "start", "end", "source", "retired" }], "proposed": [{ "kind", "start", "end", "rank"? }], "name_counters": { "kind": count }, "used_by_score": ["slice-id"] }`
+/// Output: `{ "data": { "keep": [[id, [start, end], rank]], "create": [[name, start, end, rank]], "retire": [id], "delete": [id], "name_counters": {} }, "errors": [] }`
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_markup_merge(json: *const u8, json_len: usize) {
+    let json_str = unsafe { str_arg(json, json_len) };
+    let result = match serde_json::from_str::<serde_json::Value>(json_str) {
+        Ok(input) => {
+            let existing_val = input.get("existing").cloned().unwrap_or(json!([]));
+            let proposed_val = input.get("proposed").cloned().unwrap_or(json!([]));
+            let name_counters_val = input.get("name_counters").cloned().unwrap_or(json!({}));
+            let used_by_score_val = input.get("used_by_score").cloned().unwrap_or(json!([]));
+
+            match (
+                serde_json::from_value::<Vec<markup::ExistingSlice>>(existing_val),
+                serde_json::from_value::<Vec<markup::ProposedSlice>>(proposed_val),
+                serde_json::from_value::<HashMap<String, u32>>(name_counters_val),
+                serde_json::from_value::<Vec<String>>(used_by_score_val),
+            ) {
+                (Ok(existing), Ok(proposed), Ok(name_counters), Ok(used_by_score_vec)) => {
+                    let used_by_score: std::collections::HashSet<String> = used_by_score_vec.into_iter().collect();
+                    let plan = markup::plan_merge(&existing, &proposed, name_counters, &used_by_score);
+                    json!({
+                        "data": {
+                            "keep": plan.keep.iter().map(|(id, (start, end), rank)| vec![
+                                serde_json::Value::String(id.clone()),
+                                serde_json::json!([start, end]),
+                                rank.map(serde_json::Value::from).unwrap_or(serde_json::Value::Null)
+                            ]).collect::<Vec<_>>(),
+                            "create": plan.create.iter().map(|(name, start, end, rank)| vec![
+                                serde_json::Value::String(name.clone()),
+                                serde_json::Value::from(*start),
+                                serde_json::Value::from(*end),
+                                rank.map(serde_json::Value::from).unwrap_or(serde_json::Value::Null)
+                            ]).collect::<Vec<_>>(),
+                            "retire": plan.retire,
+                            "delete": plan.delete,
+                            "name_counters": plan.name_counters
+                        },
+                        "errors": []
+                    })
+                }
+                _ => json!({ "errors": ["invalid data structure"] }),
+            }
+        }
+        Err(e) => json!({ "errors": [format!("invalid JSON: {}", e)] }),
+    };
+    set_result(result);
+}
+
+/// Extract score references: clips and slices (including kit pads) referenced in a score.
+/// Input: `{ "text": "<score text>", "path": "scores/x.apr" }`
+/// Output: `{ "data": [{ "alias", "source", "path"?, "slice"?, "kit_pad"? }], "errors": [] }`
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_references(json: *const u8, json_len: usize) {
+    let json_str = unsafe { str_arg(json, json_len) };
+    let result = match serde_json::from_str::<serde_json::Value>(json_str) {
+        Ok(input) => {
+            let text = input.get("text").and_then(|v| v.as_str()).unwrap_or("");
+            let score_path = input.get("path").and_then(|v| v.as_str()).unwrap_or("scores/untitled.apr");
+
+            // Parse the score (detects .apr/.yaml by extension)
+            match apricitus_score::parse_score(text, Path::new(score_path)) {
+                Ok((score, _)) => {
+                    // Extract base_dir from score_path
+                    let score_path_obj = Path::new(score_path);
+                    let base_dir = score_path_obj.parent().unwrap_or(Path::new("."));
+
+                    // Get references from the parsed score
+                    let refs = apricitus_score::references(&score, base_dir);
+
+                    // Build response data
+                    let data: Vec<Value> = refs
+                        .iter()
+                        .map(|r| {
+                            let mut ref_obj = json!({
+                                "alias": r.alias,
+                                "source": r.source,
+                            });
+                            if let Some(path) = &r.path {
+                                ref_obj["path"] = json!(path.to_string_lossy().to_string());
+                            } else {
+                                ref_obj["path"] = Value::Null;
+                            }
+                            if let Some(slice) = &r.slice {
+                                ref_obj["slice"] = json!(slice);
+                            }
+                            if let Some(kit_pad) = &r.kit_pad {
+                                ref_obj["kit_pad"] = json!(kit_pad);
+                            }
+                            ref_obj
+                        })
+                        .collect();
+
+                    json!({ "data": data, "errors": [] })
+                }
+                Err(e) => {
+                    // Parse error
+                    let error_messages: Vec<String> = e.iter().map(|s| s.to_string()).collect();
+                    json!({ "errors": error_messages })
+                }
+            }
+        }
+        Err(e) => json!({ "errors": [format!("invalid JSON: {}", e)] }),
+    };
+    set_result(result);
 }

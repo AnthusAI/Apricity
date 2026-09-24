@@ -1,10 +1,11 @@
 /// Markup merge: match proposed ML slices to existing ones, handle names and retirement.
 /// Implements design/storage.md §1.3 exactly.
 
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
 /// A proposed slice from markup analysis.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ProposedSlice {
     pub kind: String,
     pub start: f64,
@@ -13,7 +14,7 @@ pub struct ProposedSlice {
 }
 
 /// An existing slice to potentially match.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ExistingSlice {
     pub id: String,
     pub name: String,

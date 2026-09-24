@@ -138,6 +138,7 @@ dependencies = [
 name = "apricitus-web"
 version = "0.1.0"
 dependencies = [
+ "apricitus-data",
  "apricitus-engine",
  "apricitus-score",
  "serde",
