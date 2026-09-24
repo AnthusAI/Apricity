@@ -249,7 +249,7 @@ export interface MergePlan {
  * @param options - Keep options (stars, tags, name, crates)
  * @returns A plan with create/update for Verdict, Slice, Crates, CrateItems, or error if candidate is null
  */
-export function planKeep(
+export async function planKeep(
   candidateId: string,
   judge: string,
   candidate: any,
@@ -261,8 +261,9 @@ export function planKeep(
   now: string,
   newId: () => string,
   lastPositionByCrate: Map<string, string | null>,
+  positionAfter: (last: string | null) => string | Promise<string>,
   options?: { stars?: number; tags?: string[]; name?: string; crates?: string[] }
-): KeepPlan | { errors: Array<{ errorType: string }> } {
+): Promise<KeepPlan | { errors: Array<{ errorType: string }> }> {
   // Handle null candidate
   if (!candidate) {
     return { errors: [{ errorType: "NotFound" }] };
@@ -330,16 +331,9 @@ export function planKeep(
       // Check if CrateItem already exists
       const existingItem = existingCrateItems.find((item: any) => item.crateId === crateId);
       if (!existingItem) {
-        // Calculate position: "a0" if no last item, otherwise increment from "aN"
+        // Calculate position using fractional indexing
         const lastPosition = lastPositionByCrate.get(crateId);
-        let position = "a0";
-        if (lastPosition) {
-          const match = lastPosition.match(/^a(\d+)$/);
-          if (match) {
-            const num = parseInt(match[1], 10) + 1;
-            position = `a${num}`;
-          }
-        }
+        const position = await positionAfter(lastPosition || null);
 
         crateItemsToCreate.push({
           crateId,

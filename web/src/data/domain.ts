@@ -75,16 +75,13 @@ export async function keepCandidate(
       for (const crateName of options.crates) {
         const crateRecord = cratesByName.get(crateName);
         if (crateRecord) {
-          // Fetch last item for existing crate
-          const lastItemResult = await collectAll(
-            async (token) =>
-              await dataClient.models.CrateItem.crateItemsByCrate(
-                { crateId: crateRecord.id },
-                { sortDirection: "DESC", limit: 1, nextToken: token }
-              )
+          // Fetch last item for existing crate with single call
+          const lastItemResult = await dataClient.models.CrateItem.crateItemsByCrate(
+            { crateId: crateRecord.id },
+            { sortDirection: "DESC", limit: 1 }
           );
-          if (lastItemResult && lastItemResult.length > 0) {
-            const lastItem = lastItemResult[0] as any;
+          if (lastItemResult && lastItemResult.data && lastItemResult.data.length > 0) {
+            const lastItem = lastItemResult.data[0] as any;
             lastPositionByCrate.set(crateRecord.id, lastItem.position || null);
           } else {
             lastPositionByCrate.set(crateRecord.id, null);
@@ -95,8 +92,14 @@ export async function keepCandidate(
       }
     }
 
+    // Helper to generate the next position using wasm
+    const positionAfter = async (lastPosition: string | null): Promise<string> => {
+      const result = await callWasm("rw_ids", { kind: "position_between", a: lastPosition, b: null });
+      return result.data as string;
+    };
+
     // Plan the operations
-    const plan = planKeep(
+    const plan = await planKeep(
       candidateId,
       judge,
       candidate,
@@ -108,6 +111,7 @@ export async function keepCandidate(
       new Date().toISOString(),
       () => crypto.randomUUID(),
       lastPositionByCrate,
+      positionAfter,
       options
     );
 

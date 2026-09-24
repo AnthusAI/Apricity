@@ -26,6 +26,14 @@ function getCuratedSliceId(candidateId: string): string {
 }
 
 /**
+ * Get the next position after a given position using fractional indexing
+ */
+function getPositionAfter(lastPosition: string | null): string {
+  const result = rw.call("rw_ids", JSON.stringify({ kind: "position_between", a: lastPosition, b: null }));
+  return result.data as string;
+}
+
+/**
  * Call rw_markup_merge to merge ML slices. Throws on wasm errors.
  */
 function callMarkupMerge(existing: any[], proposals: any[], usedByScore: string[], nameCounters: any): any {
@@ -373,7 +381,7 @@ track beat`;
 
 describe("planKeep (keep.feature)", () => {
   describe("Scenario 1: Keeping creates a verdict, a curated slice and a crate item", () => {
-    it("should plan verdict create, slice create, and crate item create", () => {
+    it("should plan verdict create, slice create, and crate item create", async () => {
       const candidateId = "cand-1";
       const candidate = {
         id: candidateId,
@@ -392,7 +400,7 @@ describe("planKeep (keep.feature)", () => {
       let newIdCounter = 0;
       const newId = () => `crate-new-${++newIdCounter}`;
 
-      const plan = planKeep(
+      const plan = await planKeep(
         candidateId,
         judge,
         candidate,
@@ -404,6 +412,7 @@ describe("planKeep (keep.feature)", () => {
         now,
         newId,
         new Map(),
+        getPositionAfter,
         { stars: 4, tags: ["brass"], name: "horn-loop", crates: ["digs"] }
       ) as any;
 
@@ -456,7 +465,7 @@ describe("planKeep (keep.feature)", () => {
   });
 
   describe("Scenario 2: Keeping twice changes nothing", () => {
-    it("should plan no changes if verdict and crates unchanged", () => {
+    it("should plan no changes if verdict and crates unchanged", async () => {
       const candidateId = "cand-1";
       const candidate = {
         id: candidateId,
@@ -497,7 +506,7 @@ describe("planKeep (keep.feature)", () => {
       let newIdCounter = 0;
       const newId = () => `crate-new-${++newIdCounter}`;
 
-      const plan = planKeep(
+      const plan = await planKeep(
         candidateId,
         judge,
         candidate,
@@ -509,6 +518,7 @@ describe("planKeep (keep.feature)", () => {
         now,
         newId,
         new Map([[crateId, null]]),
+        getPositionAfter,
         { stars: 4, tags: ["brass"], name: "horn-loop", crates: ["digs"] }
       ) as any;
 
@@ -541,7 +551,7 @@ describe("planKeep (keep.feature)", () => {
   });
 
   describe("Scenario 3: Crate with existing item at a3 gets next position a4", () => {
-    it("should create crate item at position a4 when last item is at a3", () => {
+    it("should create crate item at position a4 when last item is at a3", async () => {
       const candidateId = "cand-2";
       const candidate = {
         id: candidateId,
@@ -561,7 +571,7 @@ describe("planKeep (keep.feature)", () => {
       let newIdCounter = 0;
       const newId = () => `crate-new-${++newIdCounter}`;
 
-      const plan = planKeep(
+      const plan = await planKeep(
         candidateId,
         judge,
         candidate,
@@ -573,6 +583,7 @@ describe("planKeep (keep.feature)", () => {
         now,
         newId,
         new Map([[crateId, "a3"]]),
+        getPositionAfter,
         { crates: ["digs"] }
       ) as any;
 
@@ -619,8 +630,88 @@ describe("planKeep (keep.feature)", () => {
     });
   });
 
+  describe("Scenario 3b: Crate with existing item at a9 gets next position aA", () => {
+    it("should create crate item at position aA when last item is at a9", async () => {
+      const candidateId = "cand-2b";
+      const candidate = {
+        id: candidateId,
+        clipId: "clp-1",
+        recordingId: "rec-1",
+        start: 20,
+        end: 24,
+        kind: "loop",
+        name: "loop-cand-2b",
+      };
+
+      const judge = "alice";
+      const sliceId = getCuratedSliceId(candidateId);
+      const now = "2026-09-24T12:00:00.000Z";
+
+      const crateId = "crate-digs";
+      let newIdCounter = 0;
+      const newId = () => `crate-new-${++newIdCounter}`;
+
+      const plan = await planKeep(
+        candidateId,
+        judge,
+        candidate,
+        null,
+        null,
+        new Map([["digs", { id: crateId, name: "digs" }]]),
+        [],
+        sliceId,
+        now,
+        newId,
+        new Map([[crateId, "a9"]]),
+        getPositionAfter,
+        { crates: ["digs"] }
+      ) as any;
+
+      assert.deepEqual(plan, {
+        verdicts: {
+          create: {
+            candidateId,
+            judge,
+            verdict: "keep",
+            stars: undefined,
+            tags: undefined,
+            name: undefined,
+            judgedAt: now,
+            by: "person",
+          },
+          update: undefined,
+        },
+        slices: {
+          create: {
+            id: sliceId,
+            clipId: "clp-1",
+            name: "loop-cand-2b",
+            start: 20,
+            end: 24,
+            source: "curated",
+            candidateId,
+            kind: "loop",
+          },
+          update: undefined,
+        },
+        crates: {
+          create: [],
+        },
+        crateItems: {
+          create: [
+            {
+              crateId: "crate-digs",
+              candidateId,
+              position: "aA",
+            },
+          ],
+        },
+      });
+    });
+  });
+
   describe("Scenario 4: Keeping an unknown candidate fails", () => {
-    it("should return error when candidate is null", () => {
+    it("should return error when candidate is null", async () => {
       const candidateId = "no-such-candidate";
       const judge = "alice";
       const sliceId = getCuratedSliceId(candidateId);
@@ -628,7 +719,7 @@ describe("planKeep (keep.feature)", () => {
 
       const newId = () => "crate-new-1";
 
-      const result = planKeep(
+      const result = await planKeep(
         candidateId,
         judge,
         null,
@@ -639,7 +730,8 @@ describe("planKeep (keep.feature)", () => {
         sliceId,
         now,
         newId,
-        new Map()
+        new Map(),
+        getPositionAfter
       );
 
       assert.deepEqual(result, { errors: [{ errorType: "NotFound" }] });

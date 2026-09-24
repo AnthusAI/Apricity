@@ -7,7 +7,7 @@
 //! Strings go in as (ptr, len) UTF-8 in wasm memory the caller allocated with `rw_alloc_bytes`;
 //! JSON results come back through `rw_result_ptr` / `rw_result_len` (valid until the next call).
 
-use apricitus_data::{ids, markup, rank};
+use apricitus_data::{ids, markup, position, rank};
 use apricitus_engine::{engine, Arrangement, Audio, Command, Controller, Mixer, Placement, Renderer, SwapAt};
 use apricitus_score::score::MasterSpec;
 use apricitus_score::{Clip, Timeline};
@@ -331,7 +331,7 @@ pub extern "C" fn rw_engine_swaps() -> f64 {
 // ------------------------------------------------------------------ data layer (pure logic)
 
 /// Generate stable IDs for clips, candidates, and curated slices.
-/// Input: `{ "kind": "clip_id" | "stem_clip_id" | "candidate_id" | "curated_slice_id" | "migrated_slice_id", ... }`
+/// Input: `{ "kind": "clip_id" | "stem_clip_id" | "candidate_id" | "curated_slice_id" | "migrated_slice_id" | "position_between", ... }`
 /// Output: `{ "data": <id string>, "errors": [] }` or `{ "errors": [message] }`
 ///
 /// # Safety
@@ -373,6 +373,14 @@ pub unsafe extern "C" fn rw_ids(json: *const u8, json_len: usize) {
                     let name = input.get("name").and_then(|v| v.as_str()).unwrap_or("");
                     let id = ids::migrated_slice_id(clip_id, name);
                     json!({ "data": id, "errors": [] })
+                }
+                "position_between" => {
+                    let a = input.get("a").and_then(|v| v.as_str());
+                    let b = input.get("b").and_then(|v| v.as_str());
+                    match position::generate_key_between(a, b) {
+                        Ok(pos) => json!({ "data": pos, "errors": [] }),
+                        Err(e) => json!({ "errors": [e] }),
+                    }
                 }
                 _ => json!({ "errors": [format!("unknown id kind: {}", kind)] }),
             }

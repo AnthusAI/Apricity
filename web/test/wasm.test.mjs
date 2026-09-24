@@ -120,6 +120,27 @@ assert.ok(curatedSliceIdResult.data);
 assert.match(curatedSliceIdResult.data, /^slc_/);
 console.log(`rw_ids curated_slice ok: ${curatedSliceIdResult.data}`);
 
+// Test rw_ids: position_between (fractional indexing)
+const positionBetweenInput1 = { kind: "position_between", a: null, b: null };
+const positionBetweenResult1 = rw.call("rw_ids", JSON.stringify(positionBetweenInput1));
+assert.deepEqual(positionBetweenResult1.data, "a0");
+console.log(`rw_ids position_between (null, null) ok: ${positionBetweenResult1.data}`);
+
+const positionBetweenInput2 = { kind: "position_between", a: "a0", b: "a1" };
+const positionBetweenResult2 = rw.call("rw_ids", JSON.stringify(positionBetweenInput2));
+assert.deepEqual(positionBetweenResult2.data, "a0V");
+console.log(`rw_ids position_between (a0, a1) ok: ${positionBetweenResult2.data}`);
+
+const positionBetweenInput3 = { kind: "position_between", a: "a3", b: null };
+const positionBetweenResult3 = rw.call("rw_ids", JSON.stringify(positionBetweenInput3));
+assert.deepEqual(positionBetweenResult3.data, "a4");
+console.log(`rw_ids position_between (a3, null) ok: ${positionBetweenResult3.data}`);
+
+const positionBetweenInput4 = { kind: "position_between", a: "a9", b: null };
+const positionBetweenResult4 = rw.call("rw_ids", JSON.stringify(positionBetweenInput4));
+assert.deepEqual(positionBetweenResult4.data, "aA");
+console.log(`rw_ids position_between (a9, null) ok: ${positionBetweenResult4.data}`);
+
 // Test rw_rank: no candidates
 const rankEmptyInput = { candidates: [], verdicts: {} };
 const rankEmptyResult = rw.call("rw_rank", JSON.stringify(rankEmptyInput));
