@@ -3,7 +3,7 @@
   "title": "Conformance corpus: features/data/*.feature and STEPS.md",
   "description": "Write the shared behaviour specs (`design/storage.md` §2.2 and §6) that the Rust, TypeScript and Python runners will execute against every backend. They use the real Apricitus models from `contract/apricitus.contract.json`.\n\n## Files in `features/data/`\n- `crud.feature`: create with an id or a generated one, get (missing gives `null`), partial update, `null` removes a field, delete returns the item, conditional failures.\n- `filters.feature`: every operator in §2.2, missing-field semantics, `contains` on lists, `and`/`or`/`not`.\n- `key_conditions.feature`: sort-key conditions on indexes (e.g. `slicesByClip` by `start`, `candidatesByKind` by `baseScore`).\n- `pagination.feature`: `limit` before the filter, loop until `nextToken` is null, short and empty pages, `sortDirection`, an invalid token.\n- `relationships.feature`: `Clip.slices` connection with arguments, `Slice.clip`, `selectionSet`.\n- `auth.feature`: owner filled in, others can't update personal records, members read the catalog, curators write it (tag `@auth`).\n- `errors.feature`: the §2.2 error types.\n- `domain/keep.feature`, `domain/markup_merge.feature`, `domain/score_refs.feature`: from §1.3, §1.4 and the stories of epic apricitus-9433e6.\n- Tag realtime scenarios `@realtime` and cloud-only ones `@sandbox`.\n\n## STEPS.md\nThe step vocabulary: every step pattern with its exact meaning. For example, `When I list all <Model> with <json options>` loops until `nextToken` is null; `Then data is <json>` ignores `id`/`createdAt`/`updatedAt`/`owner` unless named; lists compare as sets and index queries as sequences.\n\n## Checker\n`features/data/check-steps.mjs` parses every `.feature` with `@cucumber/gherkin` and fails if a step matches no pattern in STEPS.md, or a pattern is never used.\n\n## Verify\n`node features/data/check-steps.mjs` → \"OK: N features, M scenarios, K steps\".\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,7 +17,7 @@
   ],
   "comments": [],
   "created_at": "2026-09-24T04:45:38.618973Z",
-  "updated_at": "2026-09-24T04:45:50.514579Z",
+  "updated_at": "2026-09-24T05:18:48.700390Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
