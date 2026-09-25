@@ -1,5 +1,5 @@
 {
-  "version": "9f73076494d68660",
+  "version": "b14e14e39505afdf",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -2252,9 +2252,15 @@
       {
         "path": "files/hero/*",
         "readable": [
-          "guest"
+          "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
         ],
-        "writable": []
+        "writable": [
+          "admins"
+        ]
       },
       {
         "path": "uploads/{entity_id}/*",

@@ -198,6 +198,10 @@ async function generate(outDir: string) {
       if (o.includes("write") || o.includes("delete")) wr.add(g);
     }
     if (at.includes("allow.guest")) rd.add("guest");
+    if (at.includes("readAll(allow)")) {
+      for (const g of ["authenticated", "members", "curators", "admins"]) rd.add(g);
+      wr.add("admins");
+    }
     if (at.includes('allow.entity("identity")')) {
       for (const em of at.matchAll(/allow\.entity\([^)]+\)\.to\(\[([^\]]+)\]\)/g)) {
         const o = em[1];
