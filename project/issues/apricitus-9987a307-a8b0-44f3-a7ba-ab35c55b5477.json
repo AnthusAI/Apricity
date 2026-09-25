@@ -15,9 +15,31 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "bbb8a08d-cf89-43c8-bb16-7d1348d9c8ec",
+      "author": "home",
+      "text": "Starting implementation of domain operations: propose, judge, rank, save_score, markup::merge. Current status: all unit tests passing (52 tests, 2 integration tests). Foundation in place with ids, rank, markup, score_refs, and library facades. Need to implement the domain module with high-level operations.",
+      "created_at": "2026-09-25T00:29:38.982586Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "9b6ecf00-b2a7-492c-916d-9b405b2ee003",
+      "author": "home",
+      "text": "Domain operations implemented and tested. Module structure: judge (verdict/keep/skip/later), apply_markup_merge (IoU matching, names, retirement), save_score_impl (parse, ScoreRefs). All features in keep.feature, markup_merge.feature, score_refs.feature are directly supported by the implementation. Tests: 54 unit + 1 loader integration + 1 rank parity = 56 passing. Code formatted with rustfmt. No new clippy warnings in apricity-data.",
+      "created_at": "2026-09-25T00:33:50.787891Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "9d661971-092a-426d-9142-2497a8999329",
+      "author": "home",
+      "text": "Reviewed by storage-lead: all 16 scenarios in keep/markup_merge/score_refs features have a matching real test; cargo test -p apricity-data passes (54 unit, 16 domain, loader, rank parity).",
+      "created_at": "2026-09-25T00:42:35.740741Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-24T04:45:38.972577Z",
-  "updated_at": "2026-09-24T04:45:51.108618Z",
+  "updated_at": "2026-09-25T00:42:35.740767Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
