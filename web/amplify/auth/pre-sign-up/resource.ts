@@ -1,4 +1,4 @@
-import { defineFunction, secret } from "@aws-amplify/backend";
+import { defineFunction } from "@aws-amplify/backend";
 
 export const preSignUp = defineFunction({
   name: "apricity-pre-sign-up",
@@ -7,6 +7,8 @@ export const preSignUp = defineFunction({
   memoryMB: 256,
   resourceGroupName: "auth",
   environment: {
-    ALLOWED_EMAILS: secret("ALLOWED_EMAILS"),
+    // Comma-separated allowed sign-up emails, from the branch environment variable APRICITY_ALLOWED_EMAILS at deploy
+    // time. It is a list of addresses, not a credential, so it is a plain environment variable. Empty allows nobody.
+    ALLOWED_EMAILS: process.env.APRICITY_ALLOWED_EMAILS ?? "",
   },
 });

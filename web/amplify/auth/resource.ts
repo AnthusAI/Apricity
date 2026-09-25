@@ -32,22 +32,37 @@ function resolveCognitoDomainPrefix(): string | undefined {
   return undefined;
 }
 
+// Google sign-in needs the branch secrets GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, which only exist once the
+// owner has created a Google OAuth client. Until APRICITY_GOOGLE_AUTH=true is set for the branch, the app uses
+// email sign-in only (still restricted by the pre-sign-up allow-list).
+function googleAuthEnabled(): boolean {
+  return typeof process !== "undefined" && process.env.APRICITY_GOOGLE_AUTH === "true";
+}
+
+const oauthUrls = {
+  callbackUrls: resolveAuthRedirectUrls(),
+  logoutUrls: resolveAuthRedirectUrls(),
+  ...(resolveCognitoDomainPrefix() ? { domainPrefix: resolveCognitoDomainPrefix() } : {}),
+};
+
 export const auth = defineAuth({
   loginWith: {
     email: true,
-    externalProviders: {
-      google: {
-        clientId: secret("GOOGLE_CLIENT_ID"),
-        clientSecret: secret("GOOGLE_CLIENT_SECRET"),
-        scopes: ["email", "profile", "openid"],
-        attributeMapping: {
-          email: "email",
-        },
-      },
-      callbackUrls: resolveAuthRedirectUrls(),
-      logoutUrls: resolveAuthRedirectUrls(),
-      ...(resolveCognitoDomainPrefix() ? { domainPrefix: resolveCognitoDomainPrefix() } : {}),
-    },
+    ...(googleAuthEnabled()
+      ? {
+          externalProviders: {
+            google: {
+              clientId: secret("GOOGLE_CLIENT_ID"),
+              clientSecret: secret("GOOGLE_CLIENT_SECRET"),
+              scopes: ["email", "profile", "openid"],
+              attributeMapping: {
+                email: "email",
+              },
+            },
+            ...oauthUrls,
+          },
+        }
+      : {}),
   },
   groups: ["members", "curators", "admins"],
   triggers: {

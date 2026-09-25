@@ -32,6 +32,8 @@ export const storage = defineStorage({
   isDefault: true,
   access: (allow) => ({
     "files/*": readAll(allow),
+    // The home page hero demo plays these; they are public, so signed-out visitors hear it too.
+    "files/hero/*": [allow.guest.to(["read"])],
     ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, readAll(allow)])),
     "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
   }),
