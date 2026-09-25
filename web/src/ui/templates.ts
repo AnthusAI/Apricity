@@ -22,7 +22,6 @@ tempo 96
 key C major   # required by the language; unused, since drums are unpitched
 samples ../samples
 bars 2
-swing 56
 
 clip kick  = salamander-drumkit/OH/kick_OH_F_1.wav         warp repitch
 clip snare = salamander-drumkit/OH/snare_OH_F_1.wav        warp repitch
@@ -35,8 +34,8 @@ kit drums
   ghost = ghost
   hat   = hat
 
-track drums      steps "kick . . . snare . . ghost | . . kick . snare . . . | kick . . . snare . . ghost | . . kick . snare . kick ."  volume -3
-track drums.hat  steps "x . x . x . x . | x . x . x . x . | x . x . x . x . | x . x . x . x ."  volume -9
+track drums      steps "kick . . . snare . . ghost | . . kick . snare . . . | kick . . . snare . . ghost | . . kick . snare . kick ."  swing 56  volume -3
+track drums.hat  steps "x . x . x . x . | x . x . x . x . | x . x . x . x . | x . x . x . x ."  swing 56  volume -9
 `;
 
 const CHORDS = `# A new chord progression: set the key, write the chords in numerals, and let clips follow them.

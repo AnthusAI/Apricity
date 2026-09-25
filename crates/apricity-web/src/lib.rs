@@ -122,6 +122,20 @@ pub unsafe extern "C" fn rw_compile(yaml: *const u8, yaml_len: usize, path: *con
     });
 }
 
+/// What the Beat editor's step grid needs: kits (pads in written order) and the tracks that play them with steps,
+/// with their line spans. Result: the view (see `apricity_score::beat`) or `{"errors": [...]}`.
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_steps(text: *const u8, text_len: usize) {
+    let text = unsafe { str_arg(text, text_len) };
+    set_result(match apricity_score::beat::beat_view(text) {
+        Ok(v) => v,
+        Err(errors) => json!({ "errors": errors }),
+    });
+}
+
 // ------------------------------------------------------------------ renderer (worker)
 
 #[unsafe(no_mangle)]

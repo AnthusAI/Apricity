@@ -3,6 +3,7 @@
 import { instantiate, type Apricity } from "./wasm/shim.js";
 import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut, type Me, type ScoreKind } from "./data/catalog.js";
 import type { Ratings } from "./data/ratings.js";
+export type { ClipItem } from "./data/catalog.js";
 
 /** A sample in the library: an analyzed audio file. */
 export interface SampleSummary {
@@ -121,6 +122,11 @@ export function manifest(audioPath: string, fresh = false): Promise<Manifest | n
 
 /** Where a sample's audio can be fetched (with Range): /files/<key> locally, a signed URL in the cloud. */
 export const audioUrl = (path: string) => catalog().audioUrl(path);
+
+/** What the Beat editor's grid needs from a score's text (kits, pads, step tracks and their lines). */
+export async function stepsView(text: string): Promise<import("./ui/beat/model").StepsView> {
+  return (await getCompiler()).call("rw_steps", text);
+}
 
 /** Compile a score: find its sources, fetch their manifests, compile in wasm. */
 export async function compile(yaml: string, scorePath: string): Promise<CompileResult> {

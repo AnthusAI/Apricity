@@ -18,6 +18,7 @@ import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
 import { currentAccount } from "../data/auth";
 import { FlowView } from "./flow/view";
+import { BeatView } from "./beat/view";
 
 
 // Colors from the page's CSS variables, so the editor follows light/dark mode.
@@ -57,6 +58,13 @@ export class ScoreView {
   private head = el("i", { className: "head" });
   private flow = new FlowView();
   private flowBtn = el("button", { className: "btn", type: "button", title: "Show where every sound comes from" }, "Flow");
+  private beat = new BeatView({
+    text: () => this.view.state.doc.toString(),
+    edit: (text) => this.replaceText(text),
+    resend: () => player.transport.playing && this.send(),
+  });
+  private stepsBtn = el("button", { className: "btn", type: "button", title: "The drum machine: pads and steps" }, "Steps");
+  private applyDock = () => {};
   private saved = "";
   private compileTimer = 0;
   private generation = 0;
@@ -101,45 +109,82 @@ export class ScoreView {
     });
     root.append(
       this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
       this.sideEl,
-      this.flowPanel(),
+      ...this.dockPanels(),
     );
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     document.addEventListener("apricity:auth-changed", () => this.loadList());
     this.list.rename(KIND_LABEL[this.kind].many, `New ${KIND_LABEL[this.kind].one}`);
   }
 
-  /** The Flow panel under the editor: open or closed, and how tall, remembered. */
-  private flowPanel() {
-    let saved = { open: true, height: 440 };
+  /**
+   * The panel under the editor: Steps (the drum machine, for beats) or Flow (where every sound comes from), or
+   * neither. Which one is open is remembered per kind of score; the height is shared.
+   */
+  private dockPanels() {
+    type Dock = "steps" | "flow" | null;
+    let saved: { height: number } & Partial<Record<ScoreKind, Dock>> = { height: 440 };
     try {
-      saved = { ...saved, ...JSON.parse(localStorage.getItem("apricity.flow") ?? "{}") };
+      const old = JSON.parse(localStorage.getItem("apricity.flow") ?? "{}"); // the Flow panel's old setting
+      saved = { ...saved, ...(typeof old.height === "number" ? { height: old.height } : {}), ...(old.open === false ? { song: null } : {}) };
+      saved = { ...saved, ...JSON.parse(localStorage.getItem("apricity.dock") ?? "{}") };
     } catch {}
-    const panel = this.flow.root;
-    const grip = el("div", { className: "flow-grip", title: "Drag to resize", role: "separator", ariaOrientation: "horizontal" });
-    panel.prepend(grip);
-    const apply = () => {
-      panel.hidden = !saved.open;
-      panel.style.height = `${saved.height}px`;
-      this.flowBtn.setAttribute("aria-pressed", String(saved.open));
-      this.flowBtn.classList.toggle("on", saved.open);
-      try {
-        localStorage.setItem("apricity.flow", JSON.stringify(saved));
-      } catch {}
-      if (saved.open) this.flow.redraw();
+    const panels = { flow: this.flow.root, steps: this.beat.root };
+    const current = (): Dock => {
+      const d = this.kind in saved ? saved[this.kind]! : this.kind === "beat" ? "steps" : "flow";
+      return d === "steps" && this.kind !== "beat" ? "flow" : d;
     };
-    this.flowBtn.addEventListener("click", () => ((saved.open = !saved.open), apply()));
-    grip.addEventListener("pointerdown", (e) => {
-      const y0 = e.clientY, h0 = saved.height;
-      grip.setPointerCapture(e.pointerId);
-      const move = (m: PointerEvent) => ((saved.height = Math.max(140, Math.min(innerHeight * 0.8, h0 - (m.clientY - y0)))), (panel.style.height = `${saved.height}px`));
-      const up = () => (grip.removeEventListener("pointermove", move), apply());
-      grip.addEventListener("pointermove", move);
-      grip.addEventListener("pointerup", up, { once: true });
+    const apply = (this.applyDock = () => {
+      const d = current();
+      for (const [name, panel] of Object.entries(panels)) {
+        panel.hidden = d !== name;
+        panel.style.height = `${saved.height}px`;
+      }
+      this.stepsBtn.hidden = this.kind !== "beat";
+      for (const [btn, name] of [[this.flowBtn, "flow"], [this.stepsBtn, "steps"]] as const) {
+        btn.setAttribute("aria-pressed", String(d === name));
+        btn.classList.toggle("on", d === name);
+      }
+      try {
+        localStorage.setItem("apricity.dock", JSON.stringify(saved));
+      } catch {}
+      if (d === "flow") this.flow.redraw();
+      if (d === "steps") this.beat.update(this.view.state.doc.toString(), this.timeline);
     });
+    const toggle = (name: "steps" | "flow") => {
+      saved[this.kind] = current() === name ? null : name;
+      apply();
+    };
+    this.flowBtn.addEventListener("click", () => toggle("flow"));
+    this.stepsBtn.addEventListener("click", () => toggle("steps"));
+    for (const panel of Object.values(panels)) {
+      const grip = el("div", { className: "flow-grip", title: "Drag to resize", role: "separator", ariaOrientation: "horizontal" });
+      panel.prepend(grip);
+      grip.addEventListener("pointerdown", (e) => {
+        const y0 = e.clientY,
+          h0 = saved.height;
+        grip.setPointerCapture(e.pointerId);
+        const move = (m: PointerEvent) => ((saved.height = Math.max(140, Math.min(innerHeight * 0.8, h0 - (m.clientY - y0)))), (panel.style.height = `${saved.height}px`));
+        const up = () => (grip.removeEventListener("pointermove", move), apply());
+        grip.addEventListener("pointermove", move);
+        grip.addEventListener("pointerup", up, { once: true });
+      });
+    }
     apply();
-    return panel;
+    return Object.values(panels);
+  }
+
+  /** Replace the whole text (the drum machine's edits); the editor recompiles as for any edit. */
+  private replaceText(text: string) {
+    const doc = this.view.state.doc.toString();
+    if (text === doc) return;
+    // Change only the lines that differ, so the cursor and undo history stay sensible.
+    let a = 0;
+    while (a < doc.length && a < text.length && doc[a] === text[a]) a++;
+    let b = 0;
+    while (b < doc.length - a && b < text.length - a && doc[doc.length - 1 - b] === text[text.length - 1 - b]) b++;
+    this.view.dispatch({ changes: { from: a, to: doc.length - b, insert: text.slice(a, text.length - b) } });
   }
 
   /** Opens the reference for whichever format is being edited. */
@@ -163,6 +208,7 @@ export class ScoreView {
     this.kind = kind;
     const label = KIND_LABEL[kind];
     this.list.rename(label.many, `New ${label.one}`);
+    this.applyDock();
     this.loadList();
   }
 
@@ -354,6 +400,7 @@ export class ScoreView {
       return [{ from, to: Math.min(to, line.to), severity: "error" as const, message: msg.replace(/^.*?: (line \d+ column \d+: )?/, "") }];
     });
     this.view.dispatch(setDiagnostics(this.view.state, diagnostics));
+    if (!this.beat.root.hidden) this.beat.update(text, r.timeline ?? null);
     if (r.errors) {
       this.renderSide(null, r.errors, "");
       this.statusEl.textContent = player.transport.playing ? "still playing the last good version" : "";
@@ -369,7 +416,7 @@ export class ScoreView {
   async send(tl = this.timeline) {
     if (!tl) return;
     try {
-      const res = await player.arrange(tl, (m) => (this.statusEl.textContent = m + "…"));
+      const res = await player.arrange(this.beat.filter(tl), (m) => (this.statusEl.textContent = m + "…"));
       this.statusEl.textContent = `${res.rendered} rendered, ${res.reused} reused in ${(res.ms / 1000).toFixed(1)} s` + (player.transport.playing ? " · lands at the next bar" : "");
     } catch (e) {
       if (e instanceof Superseded) return; // a newer edit's render will report
