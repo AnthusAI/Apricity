@@ -70,6 +70,14 @@ export interface Cue {
   loop?: boolean;
 }
 
+/** Clicks every `spb` seconds on a grid through `anchor`, from story time 0 up to `until`; every `meter`th is accented. */
+export interface Metronome {
+  anchor: number;
+  until: number;
+  spb: number;
+  meter: number;
+}
+
 interface Timed extends FlowTile {
   t0: number; // when it starts to arrive
   fly: boolean; // flies in from its pad (the first bar), or simply appears (the rest)
@@ -583,6 +591,12 @@ export class Story {
     let glow = pulse(t, ct, ct + 0.04, ct + b - a, ct + b - a + 0.35);
     for (const x of this.tiles) if (x.fly && x.source === n && x.chop === i) glow = Math.max(glow, this.landGlow(x, t));
     return glow;
+  }
+
+  /** The metronome: clicks on the score's beat, lined up with the horns' first playback, from the
+   *  start of the story until the drums are first heard (then they keep time). */
+  metronome(): Metronome {
+    return { anchor: SESSIONS[0].from, until: this.ph[1].listen[0], spb: 60 / this.data.tempo, meter: this.data.meter };
   }
 
   /** Everything to hear, in story time. */

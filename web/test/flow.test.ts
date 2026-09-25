@@ -154,3 +154,17 @@ test("lineage: recordings, kit rows and lanes from a compiled timeline", async (
   assert.equal(l.recordings[0].islands.length, 2, "10–12 s and 40 s are far apart: two islands");
   assert.deepEqual(islands([[1, 2], [2.5, 3]], 2, 0.5), [{ from: 0.5, to: 3.5 }], "near spans merge");
 });
+
+test("hero metronome: on the horns' grid, from the start until the drums are heard", async () => {
+  const { Story } = await import("../src/ui/flow/story.ts");
+  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+  const story = new Story(d);
+  const m = story.metronome();
+  const cues = story.cues();
+  const hornsAlone = cues.find((c) => c.loop && c.index === 0)!;
+  const drumsHeard = Math.min(...cues.filter((c) => c.kind === "source" && c.index === 1).map((c) => c.t));
+  assert.equal(m.anchor, hornsAlone.t, "a click falls exactly where the horns' first playback starts");
+  assert.equal(m.until, drumsHeard, "the clicks stop when the drums are first heard");
+  assert.ok(Math.abs(m.spb - 60 / d.tempo) < 1e-9, "one click per beat of the score");
+  assert.ok(m.anchor % m.spb < m.spb && m.until > m.anchor, "clicks run from the start through the horns' playback");
+});

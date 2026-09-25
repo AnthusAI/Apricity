@@ -59,9 +59,10 @@ export class Landing {
   private shown = { chapter: -1, caption: "" };
   // Sound, off until asked for: then the audio clock drives the story.
   private sound = heroData.audio
-    ? new StorySound((heroData as FlowData).audio!, this.story.cues(), LOOP, (heroData.beats * 60) / heroData.tempo)
+    ? new StorySound((heroData as FlowData).audio!, this.story.cues(), LOOP, (heroData.beats * 60) / heroData.tempo, this.story.metronome())
     : null;
   private soundBtn = el("button", { type: "button", className: "sound" });
+  private metronomeBox = el("input", { type: "checkbox", checked: true });
   private soundState: SoundState = "checking"; // until the library is asked whether it has the sound
 
   constructor(root: HTMLElement, go: LandingActions) {
@@ -168,7 +169,10 @@ export class Landing {
     );
     this.soundButton("checking");
     this.soundBtn.addEventListener("click", () => this.toggleSound());
-    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [this.soundBtn] : []), this.info, nav), steps);
+    // The metronome clicks the beat from the first second until the drums take over.
+    this.metronomeBox.addEventListener("change", () => this.sound && (this.sound.clicks = this.metronomeBox.checked));
+    const metronome = el("label", { className: "metronome", title: "Click the beat until the drums come in" }, this.metronomeBox, "Metronome");
+    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [el("div", { className: "sound-controls" }, this.soundBtn, metronome)] : []), this.info, nav), steps);
     // Hovering the picture holds it still, to look closer (not while listening: the music goes on).
     this.stage.addEventListener("pointerenter", (e) => (e.pointerType === "mouse" ? (this.paused = true) : null));
     this.stage.addEventListener("pointerleave", () => (this.paused = false));

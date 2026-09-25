@@ -73,6 +73,9 @@
 .landing .stage .sound.on { background: var(--sun); border-color: var(--sun); color: #2a1420; box-shadow: 0 0 18px -4px var(--sun); }
 .landing .stage .sound.on svg { color: #2a1420; }
 .landing .stage .sound:disabled { opacity: 0.7; cursor: progress; }
+.landing .stage .sound-controls { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.landing .stage .metronome { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding-left: 4px; }
+.landing .stage .metronome input { accent-color: var(--ember); margin: 0; }
 .landing .chapters { display: flex; gap: 2px; flex: none; }
 .landing .chapters button { border: 0; background: none; color: var(--ink-soft); font: 500 11px var(--mono); padding: 5px 8px; border-radius: 6px; cursor: pointer; }
 .landing .chapters button:hover { color: var(--ink); background: var(--card); }
@@ -109,7 +112,7 @@
   .landing .stage-canvas { height: 340px; }
   .landing .stage figcaption { flex-direction: column; align-items: stretch; gap: 6px; }
   .landing .chapters { overflow-x: auto; }
-  .landing .stage .sound { align-self: flex-start; }
+  .landing .stage .sound-controls { flex-direction: row; align-items: center; gap: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .landing .wordmark { animation: none; }

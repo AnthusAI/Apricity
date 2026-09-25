@@ -5,7 +5,7 @@
 import { getUrl } from "../../data/files";
 import { audioKeys as audioKeysOf, isAudioStatus, isLibraryKey } from "./hero-audio";
 import type { FlowAudio } from "./model";
-import type { Cue } from "./story";
+import type { Cue, Metronome } from "./story";
 
 const LOOKAHEAD = 1.2; // seconds of cues scheduled ahead, so a late timer never drops one
 
@@ -37,18 +37,21 @@ export class StorySound {
   private sources: AudioBuffer[] = [];
   private tracks: AudioBuffer[] = [];
   private gains: number[] = [];
-  private nodes = new Set<AudioBufferSourceNode>();
+  private nodes = new Set<AudioScheduledSourceNode>();
   // Absolute story time `story` (it keeps counting past the loop) happens at audio time `audio`.
   private anchor = { story: 0, audio: 0 };
   private cursor = 0; // absolute story time scheduled up to
   private timer = 0;
   on = false;
+  /** Click the beat until the drums come in (the page's Metronome checkbox). */
+  clicks = true;
 
   constructor(
     private audio: FlowAudio,
     private cues: Cue[],
     private loop: number, // story length, seconds
     private trackLoop: number, // length of one pass of a track render, seconds
+    private metronome?: Metronome,
   ) {}
 
   /** Start (loading the sounds the first time), joining the story at `storyT`. Must follow a click. */
@@ -117,8 +120,39 @@ export class StorySound {
         const T = base + c.t;
         if (T >= this.cursor && T < horizon) this.play(c, T);
       }
+      if (this.clicks) this.clickBetween(base, this.cursor, horizon);
     }
     this.cursor = Math.max(this.cursor, horizon);
+  }
+
+  /** Schedule the metronome's clicks due in [from, to) of the lap starting at absolute story time `base`. */
+  private clickBetween(base: number, from: number, to: number) {
+    const m = this.metronome;
+    if (!m) return;
+    const first = Math.ceil((Math.max(from, base) - base - m.anchor) / m.spb - 1e-9);
+    for (let k = first; ; k++) {
+      const t = m.anchor + k * m.spb; // story time of this click
+      if (t >= m.until || base + t >= to) break;
+      if (t >= 0) this.click(base + t, ((k % m.meter) + m.meter) % m.meter === 0);
+    }
+  }
+
+  /** One short click, due at absolute story time T: higher on the downbeat. */
+  private click(T: number, accent: boolean) {
+    const ctx = this.ctx!;
+    const when = this.anchor.audio + (T - this.anchor.story);
+    if (when < ctx.currentTime) return;
+    const osc = ctx.createOscillator();
+    osc.frequency.value = accent ? 1760 : 1320;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(accent ? 0.35 : 0.22, when + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
+    osc.connect(g).connect(this.out);
+    osc.start(when);
+    osc.stop(when + 0.06);
+    this.nodes.add(osc);
+    osc.onended = () => this.nodes.delete(osc);
   }
 
   private abs() {
