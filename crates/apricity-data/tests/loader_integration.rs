@@ -171,6 +171,22 @@ fn test_compile_loader_vs_file_based() {
     let score_path = root.join("examples/chop-shop.apr");
     let samples_root = root.join("samples");
 
+    let required_audio = [
+        "marine-band/Thunderer.mp3",
+        "marine-band/stems/Thunderer/drums.wav",
+        "marine-band/stems/Thunderer/other.wav",
+        "marine-band/stems/WashingtonPost/drums.wav",
+    ];
+    if let Some(missing) = required_audio
+        .iter()
+        .find(|audio| !samples_root.join(audio).exists())
+    {
+        eprintln!(
+            "skipping: samples/{missing} is not downloaded (the Marine Band recordings are a manual download, see `apricity sources list`)"
+        );
+        return;
+    }
+
     // Parse the score
     let score_text =
         fs::read_to_string(&score_path).expect("Failed to read score from examples/chop-shop.apr");
