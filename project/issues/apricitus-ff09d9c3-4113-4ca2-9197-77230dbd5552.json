@@ -24,10 +24,17 @@
       "text": "User decision 2026-09-25: authentication is Google only (no email/password users). Amplify auth is always a Cognito user pool with Google federated through it; email sign-in exists only as a stopgap until Google secrets exist. Code is ready: setting APRICITY_GOOGLE_AUTH=true builds the pool with externalProviders only (replaces the pool, currently 0 users) and the dialog then shows only 'Sign in with Google'. TODO for the owner: (1) Google Cloud project + OAuth consent screen, (2) OAuth client (Web application): authorized JavaScript origin https://apricity.anth.us, authorized redirect URI https://apricity-anthus.auth.us-east-1.amazoncognito.com/oauth2/idpresponse, (3) put GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET in Amplify Hosting > Secret management (branch main), (4) tell the agent; it sets APRICITY_GOOGLE_AUTH=true and APRICITY_COGNITO_DOMAIN_PREFIX=apricity-anthus and redeploys. Needs 'aws login' again (session expired).",
       "created_at": "2026-09-25T10:40:40.439570Z",
       "comment_type": "default"
+    },
+    {
+      "id": "6be8b395-c8bc-4af1-a424-8e805cf2d1d0",
+      "author": "home",
+      "text": "CORRECTION to the earlier instructions (per Papyrus docs/google-oauth-setup.md): Google's Authorized JavaScript origin is the COGNITO hosted-UI origin https://apricity-anthus.auth.us-east-1.amazoncognito.com (NOT https://apricity.anth.us), and the Authorized redirect URI is https://apricity-anthus.auth.us-east-1.amazoncognito.com/oauth2/idpresponse. https://apricity.anth.us is only in the app's APRICITY_OAUTH_REDIRECT_URLS (where Cognito returns the user). Also: Google Cloud Console is currently blocked for the owner's account until 2-step verification is enabled on the Google account (Google enforces 2SV since 2026-09-16); the owner must do that.",
+      "created_at": "2026-09-25T10:43:39.799758Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.338842Z",
-  "updated_at": "2026-09-25T10:40:40.439594Z",
+  "updated_at": "2026-09-25T10:43:39.799785Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
