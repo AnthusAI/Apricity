@@ -373,13 +373,51 @@ specs `@rust-only` (parity policy for Virtuus core changes: both languages).
 ```
 MyLibrary.apricity/
   apricity-library.json      # {format:1, contractVersion, libraryId, identity:{sub:"local", groups:[...]}, apiKey}
-  tables/<Model>/<key>.json   # one JSON file per record; composite key: <pk>__<sort>.json (Virtuus convention)
+  <Model>/<key>.json          # one JSON file per record, at the library root (Virtuus convention; composite key: <pk>__<sort>.json)
+  tables/                     # created empty, unused
   files/                      # exactly the S3 keys
     audio/<clipId>/<original-filename>
     analysis/<clipId>/<sha256>.json
     documents/<recordingId>/<file>.pdf
   .virtuus/                   # derived, deletable: lock, changes.jsonl, index snapshots (gitignored)
 ```
+
+### §3.4 Sync and the bucket layout
+
+The Amplify Storage bucket (S3) is the cloud **hub**: its key space is the library folder layout,
+key for key, using library-relative paths (`files/audio/<clipId>/…`, `files/analysis/…`,
+`<Model>/<key>.json` for every record Virtuus writes, and so on). Analysis runs on a Mac, then
+`apricity sync push` sends the results; other people `sync pull` or play back from the bucket.
+Nothing analyses in the cloud. Local `apricity serve` serves the library's `files/` folder at
+`/files/<key>`; the web app's cloud mode adds the `files/` prefix, so app paths are identical in both.
+
+- **Never synced (machine-local):** any path with a dot-prefixed segment (`.virtuus/`, the sync state
+  `.apricity-sync.json`, transfer scratch, `.DS_Store`) and `apricity-library.json` (this machine's
+  API key and identity). Everything else syncs.
+- **Commands:** `apricity sync push|pull|status --library <dir> (--bucket <name> [--prefix p]
+  [--region r] | --remote-dir <folder>) [--dry-run] [--delete] [--prefer local|remote]`. `status`
+  and `--dry-run` print the plan (push, pull, deletions, conflicts) and change nothing. A pull into
+  an empty folder creates the library.
+- **Manifests and three-way plan** (`apricity-data/src/sync.rs`): each side is key -> (size, SHA-256).
+  Hashes are cached against the file's modification time (folder) or ETag (S3), and S3 stores the
+  SHA-256 as object metadata (`x-amz-meta-sha256`), so unchanged files are neither re-hashed nor
+  re-downloaded. The base manifest from the last sync (in `.apricity-sync.json`, per remote) says
+  which side changed a key: only changed keys transfer.
+- **Safety:** a key changed on both sides (or added differently on both, or edited on one side and
+  deleted on the other) is a **conflict**: reported, both copies untouched, exit status 1, unless
+  `--prefer` names the winner. Deletions are never propagated without `--delete`. A pull verifies the
+  downloaded SHA-256 before it replaces a file; remote keys that are not plain relative paths are ignored.
+- **S3Files** (`apricity-data/src/s3.rs`) implements `Files` with `aws-sdk-s3`: real ranged GETs,
+  HEAD, PUT (single request, so files up to 5 GiB), DELETE, paged ListObjectsV2, optional prefix.
+  Credentials come from the standard AWS provider chain and are never stored or logged. `serve`
+  reads through `Files::stat`/`read_range`, so it no longer needs a local path.
+- **Access** (`web/amplify/storage/resource.ts`): `files/*` and one `<Model>/*` folder per contract
+  model are readable by every signed-in user and writable by the `admins` group; `uploads/{entity_id}/*`
+  stays owner-only. The CLI writes with the caller's own AWS credentials, not these rules.
+- **Not yet:** the hosted app reads records from DynamoDB, not from the synced `<Model>/*.json` files
+  in the bucket, so cloud browsing of metadata needs a loader from the bucket into DynamoDB (or a pull
+  to a local library). Not deployed or verified against real AWS; S3Files is tested against an
+  in-process fake S3 endpoint.
 
 ## §4 `apricity serve` and the web app
 

@@ -4,6 +4,7 @@
 //! `GET|HEAD|PUT|DELETE /files/*key` with byte ranges, and the built web app with the
 //! cross-origin isolation headers `analysis/apricity_analyze/server.py` sets.
 
+use apricity_data::files::content_type_for as content_type;
 use apricity_data::{Files, FsFiles, Library};
 use axum::{
     Router,
@@ -16,7 +17,7 @@ use axum::{
 };
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use virtuus_amplify::Contract;
 use virtuus_appsync::{RouterOptions, router};
@@ -30,17 +31,27 @@ const MODEL_INTROSPECTION: &str = include_str!("../../../contract/model-introspe
 struct Shared {
     /// Scratch space for uploads (beside, not under, the files folder).
     scratch: PathBuf,
-    files: Arc<Mutex<FsFiles>>,
+    files: Arc<RwLock<Box<dyn Files>>>,
     outputs: Arc<Value>,
     web: Option<PathBuf>,
 }
 
 /// Build the whole application for a library served at `origin` (e.g. `http://127.0.0.1:5181`).
 pub fn app(library: Library, origin: &str, web: Option<PathBuf>) -> Result<Router, String> {
+    let store = Box::new(FsFiles::new(library.path().join("files")));
+    app_with_store(library, origin, web, store)
+}
+
+/// Like [`app`], serving `/files/*key` from any `Files` store (a folder, or S3).
+pub fn app_with_store(
+    library: Library,
+    origin: &str,
+    web: Option<PathBuf>,
+    store: Box<dyn Files>,
+) -> Result<Router, String> {
     let mut library = library;
     let api_key = library.ensure_api_key().map_err(|e| e.to_string())?;
     let metadata = library.metadata().clone();
-    let files_root = library.path().join("files");
     let scratch = library.path().to_path_buf();
     let contract = routable_contract()?;
     let introspection: Value =
@@ -72,7 +83,7 @@ pub fn app(library: Library, origin: &str, web: Option<PathBuf>) -> Result<Route
     )
     .map_err(|e| e.to_string())?;
     let state = Shared {
-        files: Arc::new(Mutex::new(FsFiles::new(&files_root))),
+        files: Arc::new(RwLock::new(store)),
         scratch,
         outputs: Arc::new(outputs),
         web,
@@ -145,32 +156,6 @@ fn safe_key(key: &str) -> bool {
         && key.split('/').all(|seg| !seg.is_empty() && seg != "..")
 }
 
-fn content_type(name: &str) -> &'static str {
-    match name
-        .rsplit('.')
-        .next()
-        .map(str::to_ascii_lowercase)
-        .as_deref()
-    {
-        Some("wav") => "audio/wav",
-        Some("mp3") => "audio/mpeg",
-        Some("flac") => "audio/flac",
-        Some("ogg") => "audio/ogg",
-        Some("m4a") => "audio/mp4",
-        Some("json") => "application/json",
-        Some("pdf") => "application/pdf",
-        Some("html") => "text/html; charset=utf-8",
-        Some("js" | "mjs") => "text/javascript; charset=utf-8",
-        Some("css") => "text/css; charset=utf-8",
-        Some("wasm") => "application/wasm",
-        Some("svg") => "image/svg+xml",
-        Some("png") => "image/png",
-        Some("jpg" | "jpeg") => "image/jpeg",
-        Some("txt") => "text/plain; charset=utf-8",
-        _ => "application/octet-stream",
-    }
-}
-
 /// A parsed `Range` header against a file of `size` bytes.
 #[derive(Debug, PartialEq)]
 enum Range {
@@ -211,22 +196,13 @@ fn check_key(key: &str) -> Result<(), Box<Response>> {
     }
 }
 
-/// Where a stored file can be read from, asked of the `Files` store rather than assumed from the
-/// folder layout. A store with no local path (a future S3 one) needs a ranged-read method on the
-/// trait before it can be served here; until then its files answer 404.
-fn stored_path(s: &Shared, key: &str) -> Result<Option<PathBuf>, Box<Response>> {
-    check_key(key)?;
-    Ok(s.files.lock().unwrap().path(key))
-}
-
-async fn serve_path(path: &Path, headers: &HeaderMap, head: bool, ctype: &str) -> Response {
-    let Ok(meta) = tokio::fs::metadata(path).await else {
-        return text(StatusCode::NOT_FOUND, "not found");
-    };
-    if !meta.is_file() {
-        return text(StatusCode::NOT_FOUND, "not found");
-    }
-    let size = meta.len();
+/// Response status, headers and byte span for a file of `size` bytes and the request's Range
+/// header; `Err` is the finished 416 when the range cannot be satisfied.
+fn range_plan(
+    size: u64,
+    headers: &HeaderMap,
+    ctype: &str,
+) -> Result<(axum::http::response::Builder, u64, u64), Box<Response>> {
     let range = parse_range(
         headers.get(header::RANGE).and_then(|v| v.to_str().ok()),
         size,
@@ -235,11 +211,13 @@ async fn serve_path(path: &Path, headers: &HeaderMap, head: bool, ctype: &str) -
         Range::Whole => (StatusCode::OK, 0, size),
         Range::Bytes(a, b) => (StatusCode::PARTIAL_CONTENT, a, b - a + 1),
         Range::Unsatisfiable => {
-            return Response::builder()
-                .status(StatusCode::RANGE_NOT_SATISFIABLE)
-                .header(header::CONTENT_RANGE, format!("bytes */{size}"))
-                .body(Body::empty())
-                .unwrap();
+            return Err(Box::new(
+                Response::builder()
+                    .status(StatusCode::RANGE_NOT_SATISFIABLE)
+                    .header(header::CONTENT_RANGE, format!("bytes */{size}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            ));
         }
     };
     let mut resp = Response::builder()
@@ -253,6 +231,21 @@ async fn serve_path(path: &Path, headers: &HeaderMap, head: bool, ctype: &str) -
             format!("bytes {start}-{}/{size}", start + len - 1),
         );
     }
+    Ok((resp, start, len))
+}
+
+/// A folder file (the built web app): metadata and bytes from the filesystem.
+async fn serve_path(path: &Path, headers: &HeaderMap, head: bool, ctype: &str) -> Response {
+    let Ok(meta) = tokio::fs::metadata(path).await else {
+        return text(StatusCode::NOT_FOUND, "not found");
+    };
+    if !meta.is_file() {
+        return text(StatusCode::NOT_FOUND, "not found");
+    }
+    let (resp, start, len) = match range_plan(meta.len(), headers, ctype) {
+        Ok(p) => p,
+        Err(r) => return *r,
+    };
     if head {
         return resp.body(Body::empty()).unwrap();
     }
@@ -269,16 +262,45 @@ async fn serve_path(path: &Path, headers: &HeaderMap, head: bool, ctype: &str) -
     }
 }
 
+/// A file from the `Files` store, by `stat` and `read_range` only: nothing here assumes the
+/// store is a folder, so an S3 store serves the same way.
+async fn serve_stored(s: Shared, key: String, headers: HeaderMap, head: bool) -> Response {
+    if let Err(r) = check_key(&key) {
+        return *r;
+    }
+    let ctype = content_type(&key);
+    let done = tokio::task::spawn_blocking(move || -> Response {
+        let files = s.files.read().unwrap();
+        let size = match files.stat(&key) {
+            Ok(Some(m)) => m.size,
+            Ok(None) => return text(StatusCode::NOT_FOUND, "not found"),
+            Err(e) => return text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()),
+        };
+        let (resp, start, len) = match range_plan(size, &headers, ctype) {
+            Ok(p) => p,
+            Err(r) => return *r,
+        };
+        if head {
+            return resp.body(Body::empty()).unwrap();
+        }
+        match files.read_range(&key, start, len) {
+            Ok(buf) => resp.body(Body::from(buf)).unwrap(),
+            Err(apricity_data::files::Error::NotFound(_)) => {
+                text(StatusCode::NOT_FOUND, "not found")
+            }
+            Err(e) => text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()),
+        }
+    })
+    .await;
+    done.unwrap_or_else(|e| text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))
+}
+
 async fn file_get(
     State(s): State<Shared>,
     UrlPath(key): UrlPath<String>,
     headers: HeaderMap,
 ) -> Response {
-    match stored_path(&s, &key) {
-        Ok(Some(p)) => serve_path(&p, &headers, false, content_type(&key)).await,
-        Ok(None) => text(StatusCode::NOT_FOUND, "not found"),
-        Err(r) => *r,
-    }
+    serve_stored(s, key, headers, false).await
 }
 
 async fn file_head(
@@ -286,11 +308,7 @@ async fn file_head(
     UrlPath(key): UrlPath<String>,
     headers: HeaderMap,
 ) -> Response {
-    match stored_path(&s, &key) {
-        Ok(Some(p)) => serve_path(&p, &headers, true, content_type(&key)).await,
-        Ok(None) => text(StatusCode::NOT_FOUND, "not found"),
-        Err(r) => *r,
-    }
+    serve_stored(s, key, headers, true).await
 }
 
 async fn file_put(
@@ -310,8 +328,8 @@ async fn file_put(
         let mut tmp = tempfile_in(&s.scratch)?;
         std::io::Write::write_all(&mut tmp.1, &body).map_err(|e| e.to_string())?;
         drop(tmp.1);
-        let mut files = s.files.lock().unwrap();
-        let existed = files.path(&key).is_some();
+        let mut files = s.files.write().unwrap();
+        let existed = files.stat(&key).map_err(|e| e.to_string())?.is_some();
         let put = files.put(&key, &tmp.0, ctype.as_deref());
         let _ = std::fs::remove_file(&tmp.0);
         let r = put.map_err(|e| e.to_string())?;
@@ -354,15 +372,23 @@ fn uuid_like() -> String {
 }
 
 async fn file_delete(State(s): State<Shared>, UrlPath(key): UrlPath<String>) -> Response {
-    match stored_path(&s, &key) {
-        Ok(Some(p)) if p.is_file() => {}
-        Ok(_) => return text(StatusCode::NOT_FOUND, "not found"),
-        Err(r) => return *r,
+    if let Err(r) = check_key(&key) {
+        return *r;
     }
-    match s.files.lock().unwrap().delete(&key) {
-        Ok(()) => StatusCode::NO_CONTENT.into_response(),
-        Err(e) => text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()),
-    }
+    let done = tokio::task::spawn_blocking(move || {
+        let files = s.files.read().unwrap();
+        match files.stat(&key) {
+            Ok(Some(_)) => {}
+            Ok(None) => return text(StatusCode::NOT_FOUND, "not found"),
+            Err(e) => return text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()),
+        }
+        match files.delete(&key) {
+            Ok(()) => StatusCode::NO_CONTENT.into_response(),
+            Err(e) => text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()),
+        }
+    })
+    .await;
+    done.unwrap_or_else(|e| text(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))
 }
 
 /// The built web app: `/` is index.html, other paths are files under the web directory.
@@ -746,6 +772,92 @@ mod tests {
         assert_eq!(s, StatusCode::NOT_FOUND);
         assert!(String::from_utf8_lossy(&b).contains("not built"));
         assert_eq!(h["cross-origin-opener-policy"], "same-origin");
+    }
+
+    /// A store that has no local path and answers only through `stat`/`read_range`, as S3 does.
+    struct RemoteLike(FsFiles);
+
+    impl Files for RemoteLike {
+        fn put(
+            &mut self,
+            k: &str,
+            s: &Path,
+            c: Option<&str>,
+        ) -> apricity_data::files::Result<apricity_data::FileRef> {
+            self.0.put(k, s, c)
+        }
+        fn get(&self, k: &str, d: &Path) -> apricity_data::files::Result<()> {
+            self.0.get(k, d)
+        }
+        fn read_range(&self, k: &str, s: u64, l: u64) -> apricity_data::files::Result<Vec<u8>> {
+            self.0.read_range(k, s, l)
+        }
+        fn stat(&self, k: &str) -> apricity_data::files::Result<Option<apricity_data::FileMeta>> {
+            self.0.stat(k)
+        }
+        fn list(&self, p: &str) -> apricity_data::files::Result<Vec<apricity_data::FileMeta>> {
+            self.0.list(p)
+        }
+        fn head(&self, k: &str) -> apricity_data::files::Result<Option<apricity_data::FileRef>> {
+            self.0.head(k)
+        }
+        fn delete(&self, k: &str) -> apricity_data::files::Result<()> {
+            self.0.delete(k)
+        }
+        fn path(&self, _: &str) -> Option<PathBuf> {
+            None
+        }
+    }
+
+    #[tokio::test]
+    async fn a_store_with_no_local_path_serves_ranges_head_put_and_delete() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let root = dir.path().join("lib");
+        let lib = Library::create(&root).unwrap();
+        std::fs::create_dir_all(root.join("files/audio/c1")).unwrap();
+        std::fs::write(root.join("files/audio/c1/a.wav"), WAV).unwrap();
+        let store = Box::new(RemoteLike(FsFiles::new(root.join("files"))));
+        let app = app_with_store(lib, "http://127.0.0.1:5181", None, store).unwrap();
+        let (s, h, b) = send(
+            &app,
+            req(
+                "GET",
+                "/files/audio/c1/a.wav",
+                &[("range", "bytes=2-5")],
+                b"",
+            ),
+        )
+        .await;
+        assert_eq!((s, b.as_slice()), (StatusCode::PARTIAL_CONTENT, &WAV[2..6]));
+        assert_eq!(h[header::CONTENT_RANGE], "bytes 2-5/20");
+        let (s, h, b) = send(&app, req("HEAD", "/files/audio/c1/a.wav", &[], b"")).await;
+        assert_eq!(
+            (s, h[header::CONTENT_LENGTH].to_str().unwrap(), b.len()),
+            (StatusCode::OK, "20", 0)
+        );
+        let (s, _, _) = send(
+            &app,
+            req(
+                "GET",
+                "/files/audio/c1/a.wav",
+                &[("range", "bytes=20-")],
+                b"",
+            ),
+        )
+        .await;
+        assert_eq!(s, StatusCode::RANGE_NOT_SATISFIABLE);
+        let (s, _, _) = send(&app, req("GET", "/files/audio/none.wav", &[], b"")).await;
+        assert_eq!(s, StatusCode::NOT_FOUND);
+        let (s, _, _) = send(&app, req("PUT", "/files/documents/x.txt", &[], b"hi")).await;
+        assert_eq!(s, StatusCode::CREATED);
+        let (s, _, _) = send(&app, req("PUT", "/files/documents/x.txt", &[], b"hi2")).await;
+        assert_eq!(s, StatusCode::OK);
+        let (_, _, b) = send(&app, req("GET", "/files/documents/x.txt", &[], b"")).await;
+        assert_eq!(b, b"hi2");
+        let (s, _, _) = send(&app, req("DELETE", "/files/documents/x.txt", &[], b"")).await;
+        assert_eq!(s, StatusCode::NO_CONTENT);
+        let (s, _, _) = send(&app, req("DELETE", "/files/documents/x.txt", &[], b"")).await;
+        assert_eq!(s, StatusCode::NOT_FOUND);
     }
 
     #[test]

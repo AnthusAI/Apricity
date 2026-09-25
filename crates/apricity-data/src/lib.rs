@@ -9,10 +9,12 @@ pub mod markup;
 pub mod migration;
 pub mod position;
 pub mod rank;
+pub mod s3;
 pub mod score_refs;
+pub mod sync;
 
 pub use domain::{DomainError, JudgeInput, Proposal, apply_markup_merge, judge, save_score_impl};
-pub use files::{Files, FsFiles};
+pub use files::{FileMeta, FileRef, Files, FsFiles};
 pub use ids::{candidate_id, clip_id, curated_slice_id, migrated_marker_id, migrated_slice_id, stem_clip_id};
 pub use library::Library;
 pub use loader::make;

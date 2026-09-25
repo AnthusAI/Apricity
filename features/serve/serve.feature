@@ -40,3 +40,8 @@ Feature: apricity serve
     Then I get index.html with Cross-Origin-Opener-Policy same-origin, Cross-Origin-Embedder-Policy require-corp and Cross-Origin-Resource-Policy same-origin
     Given web/dist does not exist
     Then GET "/" is a 404 that says the app is not built
+
+  Scenario: Files are served from any Files store, not only a folder
+    Given the library's files live in a store that has no local path (such as S3)
+    When I GET, HEAD, PUT or DELETE "/files/<key>", with or without a Range header
+    Then the answers are the same as for a folder, using only the store's stat and ranged read

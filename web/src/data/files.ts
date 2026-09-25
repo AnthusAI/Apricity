@@ -2,6 +2,14 @@
 
 import { mode } from "./client.js";
 
+/**
+ * Cloud bucket keys are library-relative paths (design/storage.md, sync): the library's `files/`
+ * folder holds what local mode serves at `/files/<path>`, so callers keep using `audio/...`,
+ * `analysis/...`, `documents/...` and cloud mode adds this prefix.
+ */
+const CLOUD_PREFIX = "files/";
+const cloudPath = (path: string): string => CLOUD_PREFIX + path;
+
 interface UploadDataOptions {
   contentType?: string;
 }
@@ -50,7 +58,7 @@ export async function uploadData({
     // Cloud mode: use aws-amplify/storage
     const { uploadData: amplifyUpload } = await import("aws-amplify/storage");
     const result = (await amplifyUpload({
-      path,
+      path: cloudPath(path),
       data,
       options,
     })) as any;
@@ -76,7 +84,7 @@ export async function getUrl({
   } else {
     // Cloud mode: use aws-amplify/storage
     const { getUrl: amplifyGetUrl } = await import("aws-amplify/storage");
-    const result = await amplifyGetUrl({ path });
+    const result = await amplifyGetUrl({ path: cloudPath(path) });
     return { url: result.url.href };
   }
 }
@@ -101,7 +109,7 @@ export async function downloadData({
   } else {
     // Cloud mode: use aws-amplify/storage
     const { downloadData: amplifyDownload } = await import("aws-amplify/storage");
-    const result = (await amplifyDownload({ path })) as any;
+    const result = (await amplifyDownload({ path: cloudPath(path) })) as any;
     return result.body || result;
   }
 }
@@ -123,6 +131,6 @@ export async function remove({ path }: { path: string }): Promise<void> {
   } else {
     // Cloud mode: use aws-amplify/storage
     const { remove: amplifyRemove } = await import("aws-amplify/storage");
-    await amplifyRemove({ path });
+    await amplifyRemove({ path: cloudPath(path) });
   }
 }

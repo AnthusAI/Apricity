@@ -4,6 +4,7 @@ mod migrate;
 mod play;
 mod render;
 mod serve;
+mod sync;
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
@@ -75,6 +76,11 @@ enum Cmd {
         #[arg(long)]
         web: Option<PathBuf>,
     },
+    /// Keep a library and a bucket (or folder) identical: push, pull, or show the plan.
+    Sync {
+        #[command(subcommand)]
+        action: sync::Action,
+    },
     /// Import a repository's samples, manifests, candidates and scores into a library.
     Migrate {
         /// Repository root (holds samples/, library/, examples/).
@@ -111,6 +117,16 @@ fn main() -> ExitCode {
     if let Cmd::Serve { library, port, web } = &cli.cmd {
         return match serve::run(library, *port, web.clone()) {
             Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
+    if let Cmd::Sync { .. } = &cli.cmd {
+        let Cmd::Sync { action } = cli.cmd else { unreachable!() };
+        return match sync::run(action) {
+            Ok(code) => code,
             Err(e) => {
                 eprintln!("{e}");
                 ExitCode::FAILURE
@@ -157,7 +173,7 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sync { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let compiled = match &cli.cmd {
@@ -175,7 +191,7 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sync { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {
