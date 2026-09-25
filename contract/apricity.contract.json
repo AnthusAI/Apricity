@@ -1,5 +1,5 @@
 {
-  "version": "499016891060864e",
+  "version": "7f32b0a392cd15d8",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -2250,42 +2250,132 @@
   "storage": {
     "paths": [
       {
-        "path": "audio/*",
-        "readable": [
-          "members",
-          "curators"
-        ],
-        "writable": [
-          "curators"
-        ]
-      },
-      {
-        "path": "analysis/*",
-        "readable": [
-          "members",
-          "curators"
-        ],
-        "writable": [
-          "curators"
-        ]
-      },
-      {
-        "path": "documents/*",
-        "readable": [
-          "members",
-          "curators"
-        ],
-        "writable": [
-          "curators"
-        ]
-      },
-      {
         "path": "uploads/{entity_id}/*",
         "readable": [
           "owner"
         ],
         "writable": [
           "owner"
+        ]
+      },
+      {
+        "path": "files/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Recording/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Clip/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Slice/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Marker/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Candidate/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Verdict/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Crate/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "CrateItem/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Score/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "ScoreRef/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Job/*",
+        "readable": [
+          "authenticated",
+          "admins"
+        ],
+        "writable": [
+          "admins"
         ]
       }
     ]

@@ -207,6 +207,18 @@ async function generate(outDir: string) {
     contract.storage.paths.push({ path: p, readable: [...rd], writable: [...wr] });
   }
 
+  // Library-layout paths use the shared `readAll(allow)` rule: every signed-in user reads, only admins write.
+  // A `"files/*": readAll(allow)` entry is one path; `recordFolders` expands to one `<Model>/*` folder per model.
+  const readAllRule = { readable: ["authenticated", "admins"], writable: ["admins"] };
+  for (const m of ss.matchAll(/"([^"]+)":\s*readAll\(allow\)/g)) {
+    contract.storage.paths.push({ path: m[1], ...readAllRule });
+  }
+  if (/recordFolders\.map\(/.test(ss)) {
+    for (const model of Object.keys(contract.models)) {
+      contract.storage.paths.push({ path: `${model}/*`, ...readAllRule });
+    }
+  }
+
   for (const [mn, m] of Object.entries(contract.models)) contract.authRules[mn] = (m as any).authRules;
 
   const ds = readFileSync(dataResourcePath, "utf8");
