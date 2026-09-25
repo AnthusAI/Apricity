@@ -131,9 +131,10 @@ impl fmt::Display for Chord {
 fn roman_prefix(s: &str) -> Option<(usize, bool, usize)> {
     const NUMERALS: [(&str, usize); 7] = [("vii", 6), ("iii", 2), ("iv", 3), ("vi", 5), ("ii", 1), ("v", 4), ("i", 0)];
     for (n, deg) in NUMERALS {
-        if s.len() >= n.len() && s[..n.len()].eq_ignore_ascii_case(n) {
-            let upper = s[..n.len()].chars().all(|c| c.is_ascii_uppercase());
-            let lower = s[..n.len()].chars().all(|c| c.is_ascii_lowercase());
+        // `get`, not slicing: the text may go on with a multi-byte character (`iiø`).
+        if let Some(head) = s.get(..n.len()).filter(|h| h.eq_ignore_ascii_case(n)) {
+            let upper = head.chars().all(|c| c.is_ascii_uppercase());
+            let lower = head.chars().all(|c| c.is_ascii_lowercase());
             if !(upper || lower) {
                 return None; // "Iv" is a typo, not a chord
             }
@@ -227,6 +228,14 @@ mod tests {
         assert_eq!(roman("iv", "Abm").name(), "Dbm");
         assert_eq!(names(&roman("IV", "Abm")), ["Db", "F", "Ab"]);
         assert_eq!(roman("IV", "Abm").name(), "Db");
+    }
+
+    #[test]
+    fn a_short_numeral_before_a_multibyte_suffix() {
+        // "iiø" once panicked: the 3-letter numerals were tried by slicing into the ø.
+        assert_eq!(roman("iiø", "C").name(), "Dm7b5");
+        assert_eq!(roman("viiø", "C").name(), "Bm7b5");
+        assert_eq!(roman("i°", "Am").name(), "Adim");
     }
 
     #[test]
