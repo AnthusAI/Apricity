@@ -1,7 +1,7 @@
 // Waveform peaks for whole recordings, decoded once per path and kept small: min/max pairs (int8)
 // every 128 samples at 22.05 kHz, about 6 ms per column. That is fine enough for a 0.1 s chop.
 
-import { encodePath } from "../../apricity";
+import { audioUrl } from "../../apricity";
 
 export interface Peaks {
   peaks: Int8Array; // min/max pairs, −127…127
@@ -16,7 +16,7 @@ export function peaksOf(path: string): Promise<Peaks> {
   let p = cache.get(path);
   if (!p) {
     p = (async () => {
-      const bytes = await fetch(`/files/${encodePath(path)}`).then((r) => {
+      const bytes = await fetch(await audioUrl(path)).then((r) => {
         if (!r.ok) throw new Error(`${path}: ${r.status}`);
         return r.arrayBuffer();
       });

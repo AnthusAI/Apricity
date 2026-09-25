@@ -9,7 +9,7 @@
 
 import workletUrl from "./engine-worklet.ts?worker&url";
 import RenderWorker from "./render-worker.ts?worker";
-import { encodePath, apricityModule, type Timeline } from "../apricity";
+import { audioUrl, apricityModule, type Timeline } from "../apricity";
 
 export interface Transport {
   playing: boolean;
@@ -124,7 +124,7 @@ export class Player {
             p,
             (async () => {
               onProgress?.(`decoding ${p.split("/").pop()}`);
-              const bytes = await fetch(`/files/${encodePath(p)}`).then((r) => {
+              const bytes = await fetch(await audioUrl(p)).then((r) => {
                 if (!r.ok) throw new Error(`${p}: ${r.status}`);
                 return r.arrayBuffer();
               });

@@ -4,10 +4,14 @@ import { Library } from "./ui/library";
 import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
-import { bootstrap } from "./data/client";
+import { bootstrap, mode } from "./data/client";
+import { AccountControl, realDeps } from "./ui/account";
 
 // Configure the data layer first: /amplify_outputs.json says whether files come from `apricity serve` or the bucket.
 await bootstrap();
+
+// Sign in / out lives in the header; it only appears against the cloud backend.
+new AccountControl(document.querySelector<HTMLElement>("#account")!, realDeps(() => mode() === "cloud"));
 
 const library = new Library(document.querySelector("#library")!);
 const score = new ScoreView(document.querySelector("#score")!);

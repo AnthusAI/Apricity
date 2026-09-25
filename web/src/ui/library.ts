@@ -1,6 +1,8 @@
 // Library: every analyzed sample, its analysis, and a waveform editor for the clips saved with it.
 
-import { api, encodePath, manifest, type SampleSummary, type SavedClip } from "../apricity";
+import { api, audioUrl, manifest, type SampleSummary, type SavedClip } from "../apricity";
+import { SignedOut } from "../data/catalog";
+import { mode } from "../data/client";
 import { player } from "../audio/player";
 import { el } from "./dom";
 import { computePeaks, Waveform } from "./waveform";
@@ -35,12 +37,26 @@ export class Library {
       drop.classList.remove("over");
       this.upload([...(e.dataTransfer?.files ?? [])]);
     });
+    // Uploads need the local analysis server; in the cloud there's nothing to drop onto.
+    drop.hidden = mode() === "cloud";
     root.append(el("aside", { className: "sidebar" }, el("div", { className: "search" }, search), this.listEl, drop, pick), this.detailEl);
+    document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
     this.refresh();
   }
 
   async refresh(select?: string) {
-    const r = await api.samples();
+    let r: Awaited<ReturnType<typeof api.samples>>;
+    try {
+      r = await api.samples();
+    } catch (e) {
+      clearTimeout(this.jobsTimer);
+      this.samples = [];
+      this.jobs = [];
+      const msg = e instanceof SignedOut ? "Sign in to see the library." : `Couldn't load the library: ${(e as Error).message}`;
+      this.listEl.replaceChildren(el("div", { className: "empty" }, msg));
+      this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
+      return;
+    }
     this.samples = r.samples;
     const running = r.jobs.filter((j) => j.state === "analyzing" || j.state === "queued");
     clearTimeout(this.jobsTimer);
@@ -95,8 +111,9 @@ export class Library {
     if (!this.decoded.has(path)) {
       this.decoded.set(
         path,
-        fetch(`/files/${encodePath(path)}`)
-          .then((r) => r.arrayBuffer())
+        audioUrl(path)
+          .then((url) => fetch(url))
+          .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${path}: ${r.status}`))))
           .then((b) => new OfflineAudioContext(2, 1, 48000).decodeAudioData(b)),
       );
     }
@@ -108,10 +125,19 @@ export class Library {
     this.renderList();
     this.stopAudition();
     const c = this.samples.find((x) => x.path === path);
-    const m = await manifest(path, true);
-    if (!c || !m || this.current !== path) return;
-    this.detailEl.replaceChildren(el("div", { className: "empty" }, "Loading audio…"));
-    const buf = await this.decode(path);
+    let m: Awaited<ReturnType<typeof manifest>>, buf: AudioBuffer;
+    try {
+      m = await manifest(path, true);
+      if (!c || !m || this.current !== path) return;
+      this.detailEl.replaceChildren(el("div", { className: "empty" }, "Loading audio…"));
+      buf = await this.decode(path);
+    } catch (e) {
+      this.decoded.delete(path);
+      if (this.current !== path) return;
+      const msg = e instanceof SignedOut ? "Sign in to see the library." : `Couldn't load ${path}: ${(e as Error).message}`;
+      this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
+      return;
+    }
     if (this.current !== path) return;
 
     const channels = Array.from({ length: buf.numberOfChannels }, (_, i) => buf.getChannelData(i));
@@ -119,7 +145,7 @@ export class Library {
       duration: buf.duration,
       peaks: computePeaks(channels),
       manifest: m,
-      clips: structuredClone(m.annotations?.clips ?? []),
+      clips: structuredClone((m.annotations?.clips ?? []).filter((x) => !x.retired)),
       selected: null,
       selection: null,
       playhead: null,

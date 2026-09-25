@@ -10,6 +10,7 @@ import { Compartment } from "@codemirror/state";
 import { aprLanguage } from "./apr-lang";
 import { tags as t } from "@lezer/highlight";
 import { api, compile, type Timeline } from "../apricity";
+import { SignedOut } from "../data/catalog";
 import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
 import { FlowView } from "./flow/view";
@@ -90,7 +91,14 @@ export class ScoreView {
       this.flowPanel(),
     );
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
+    document.addEventListener("apricity:auth-changed", () => this.loadList());
     this.loadList();
+  }
+
+  /** A signed-out visitor (or a failed load) sees why the list is empty, not an error in the console. */
+  private unavailable(e: unknown) {
+    const msg = e instanceof SignedOut ? "Sign in to see your scores." : `Couldn't load scores: ${(e as Error).message}`;
+    this.listEl.replaceChildren(el("div", { className: "group" }, "Scores"), el("div", { className: "empty" }, msg));
   }
 
   /** The Flow panel under the editor: open or closed, and how tall, remembered. */
@@ -136,7 +144,13 @@ export class ScoreView {
   }
 
   async loadList(select?: string) {
-    const { scores } = await api.scores();
+    let scores: { path: string; modified: number }[];
+    try {
+      ({ scores } = await api.scores());
+    } catch (e) {
+      this.unavailable(e);
+      return;
+    }
     this.listEl.replaceChildren(
       el("div", { className: "group" }, "Scores"),
       ...scores.map((s) => {
@@ -152,7 +166,13 @@ export class ScoreView {
 
   async open(path: string) {
     if (this.dirty() && !confirm(`Discard unsaved changes to ${this.path}?`)) return;
-    const text = await api.score(path);
+    let text: string;
+    try {
+      text = await api.score(path);
+    } catch (e) {
+      this.statusEl.textContent = e instanceof SignedOut ? "sign in to open scores" : `couldn't open ${path}: ${(e as Error).message}`;
+      return;
+    }
     this.path = path;
     this.saved = text;
     this.nameEl.textContent = path;
@@ -168,7 +188,12 @@ export class ScoreView {
     if (!name) return;
     const safe = name.replace(/[^A-Za-z0-9_-]+/g, "-");
     const path = `scores/${safe}.apr`;
-    await api.saveScore(path, NEW_SCORE);
+    try {
+      await api.saveScore(path, NEW_SCORE);
+    } catch (e) {
+      this.statusEl.textContent = `couldn't create ${path}: ${(e as Error).message}`;
+      return;
+    }
     this.saved = "";
     await this.loadList(path);
     this.open(path);
@@ -181,7 +206,12 @@ export class ScoreView {
   private async save() {
     if (!this.path) return;
     const text = this.view.state.doc.toString();
-    await api.saveScore(this.path, text);
+    try {
+      await api.saveScore(this.path, text);
+    } catch (e) {
+      this.statusEl.textContent = `couldn't save: ${(e as Error).message}`;
+      return;
+    }
     this.saved = text;
     this.changedDirty();
   }

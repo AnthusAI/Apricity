@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "node test/wasm.test.mjs",
-    "test:flow": "tsx --test test/flow.test.ts",
+    "test:flow": "tsx --test test/flow.test.ts test/data/auth-signin.test.ts test/data/import-library.test.ts test/catalog.test.ts test/catalog.live.test.ts",
     "contract": "tsx scripts/generate-contract.ts",
     "contract:check": "tsx scripts/generate-contract.ts --check"
   },

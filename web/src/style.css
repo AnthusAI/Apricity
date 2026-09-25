@@ -173,3 +173,27 @@ code, .mono { font-family: var(--mono); font-size: 12.5px; }
 .t-comment { color: var(--muted); font-style: italic; }
 .t-string { color: var(--slice); }
 @media (max-width: 900px) { #docs { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } .docs-page { padding: 16px; } }
+
+/* Account control (cloud only): header buttons and the sign-in dialog, in the app's tokens with the landing's apricot. */
+.account { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.account[hidden] { display: none; }
+.account:not([hidden]) + .transport { margin-left: 0; }
+.account button { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 5px 11px; }
+.account .acct-in { background: #f59e5b; border-color: #f59e5b; color: #2a1420; font-weight: 550; }
+.account .acct-email { border-color: transparent; background: none; color: var(--muted); max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-dialog { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--fg); padding: 20px; width: min(92vw, 380px); }
+.acct-dialog::backdrop { background: rgba(20, 14, 20, .45); }
+.acct-form { display: flex; flex-direction: column; gap: 12px; }
+.acct-form h2 { margin: 0; font-size: 18px; }
+.acct-field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.acct-field input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+.acct-field input:focus-visible, .account button:focus-visible, .acct-dialog button:focus-visible { outline: 2px solid #f59e5b; outline-offset: 2px; }
+.acct-error { color: var(--bad); font-size: 13px; margin: 0; min-height: 1.3em; }
+.acct-note, .acct-groups { margin: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.acct-actions { display: flex; gap: 8px; }
+.acct-actions .btn.primary { background: #f59e5b; border-color: #f59e5b; color: #2a1420; }
+.acct-alt { margin: 0; font-size: 13px; color: var(--muted); }
+.acct-link { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; font-size: inherit; }
+.acct-or { text-align: center; color: var(--muted); font-size: 12px; }
+.acct-form progress { width: 100%; }
+.acct-failed { max-height: 180px; overflow: auto; margin: 0; padding-left: 18px; font-size: 12px; color: var(--bad); overflow-wrap: anywhere; }

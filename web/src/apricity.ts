@@ -1,6 +1,7 @@
-// Page-side Apricity: compiling scores (wasm) and talking to the local server.
+// Page-side Apricity: compiling scores (wasm) and reading the library through the data layer.
 
 import { instantiate, type Apricity } from "./wasm/shim.js";
+import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut } from "./data/catalog.js";
 
 /** A sample in the library: an analyzed audio file. */
 export interface SampleSummary {
@@ -31,6 +32,9 @@ export interface SavedClip {
   end: number;
   source?: "user" | "ml";
   tags?: string[];
+  id?: string; // its Slice record, when it has one
+  retired?: boolean; // no longer proposed, kept for the scores that use it
+  candidate?: string;
 }
 export interface Marker {
   name: string;
@@ -100,16 +104,18 @@ function getCompiler() {
 }
 
 const manifestCache = new Map<string, Promise<Manifest | null>>();
+/** A sample's manifest (analysis + annotations), rebuilt from its library records. */
 export function manifest(audioPath: string, fresh = false): Promise<Manifest | null> {
   if (fresh || !manifestCache.has(audioPath)) {
-    manifestCache.set(audioPath, fetch(`/files/${encodePath(audioPath)}.apricity.json`).then((r) => (r.ok ? r.json() : null)));
+    const p = catalog().manifest(audioPath);
+    p.catch(() => manifestCache.delete(audioPath));
+    manifestCache.set(audioPath, p);
   }
   return manifestCache.get(audioPath)!;
 }
 
-export function encodePath(p: string) {
-  return p.split("/").map(encodeURIComponent).join("/");
-}
+/** Where a sample's audio can be fetched (with Range): /files/<key> locally, a signed URL in the cloud. */
+export const audioUrl = (path: string) => catalog().audioUrl(path);
 
 /** Compile a score: find its sources, fetch their manifests, compile in wasm. */
 export async function compile(yaml: string, scorePath: string): Promise<CompileResult> {
@@ -117,34 +123,61 @@ export async function compile(yaml: string, scorePath: string): Promise<CompileR
   const s = rw.call("rw_sources", yaml, scorePath);
   if (s.errors) return { errors: s.errors };
   const manifests: Record<string, Manifest> = {};
-  await Promise.all(
-    (s.sources as string[]).map(async (p) => {
-      const m = await manifest(p);
-      if (m) manifests[p] = m;
-    }),
-  );
+  try {
+    await Promise.all(
+      (s.sources as string[]).map(async (p) => {
+        const m = await manifest(p);
+        if (m) manifests[p] = m;
+      }),
+    );
+  } catch (e) {
+    return { errors: [e instanceof SignedOut ? "Sign in to compile scores against the library." : `Couldn't load the samples: ${(e as Error).message}`] };
+  }
   return rw.call("rw_compile", yaml, scorePath, JSON.stringify(manifests));
 }
 
-// ------------------------------------------------------------------ server
+// ------------------------------------------------------------------ library data
 
-async function json<T>(r: Response): Promise<T> {
-  const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(body.detail ?? body.errors?.join("\n") ?? r.statusText), { errors: body.errors });
-  return body;
+let catalogInstance: Catalog | null = null;
+/** The library catalog over the data layer (loaded lazily, so tests can import this module). */
+function catalog(): Catalog {
+  if (!catalogInstance) throw new Error("the data layer is not ready yet");
+  return catalogInstance;
 }
 
+/** Wire the catalog to the data layer; main.ts's bootstrap() must have run. */
+export async function connectCatalog() {
+  if (catalogInstance) return catalogInstance;
+  const [{ client }, files] = await Promise.all([import("./data/client.js"), import("./data/files.js")]);
+  catalogInstance = new Catalog({
+    client,
+    readText: async (key) => (await files.downloadData({ path: key })).text(),
+    url: async (key) => (await files.getUrl({ path: key })).url,
+  });
+  // Sign-in or sign-out changes what may be read: forget what was loaded.
+  document.addEventListener("apricity:auth-changed", () => (catalogInstance?.reset(), manifestCache.clear()));
+  return catalogInstance;
+}
+
+const ready = () => connectCatalog();
+
 export const api = {
-  samples: () => fetch("/api/samples").then((r) => json<{ samples: SampleSummary[]; unanalyzed: string[]; jobs: { path: string; state: string; error?: string }[] }>(r)),
-  scores: () => fetch("/api/scores").then((r) => json<{ scores: { path: string; modified: number }[] }>(r)),
-  score: (path: string) => fetch(`/files/${encodePath(path)}`).then((r) => (r.ok ? r.text() : Promise.reject(new Error(`${path}: ${r.status}`)))),
-  saveScore: (path: string, text: string) => fetch(`/api/score?path=${encodeURIComponent(path)}`, { method: "PUT", body: text }).then(json),
-  saveAnnotations: (path: string, ann: Manifest["annotations"]) =>
-    fetch(`/api/annotations?path=${encodeURIComponent(path)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(ann) }).then(json),
-  upload: (file: File) => {
-    const fd = new FormData();
-    fd.append("file", file);
-    return fetch("/api/upload", { method: "POST", body: fd }).then((r) => json<{ path: string; state: string }>(r));
+  samples: async () => (await ready()).samples(),
+  scores: async () => (await ready()).scores(),
+  score: async (path: string) => (await ready()).score(path),
+  saveScore: async (path: string, text: string) => {
+    const { saveScore } = await import("./data/domain.js");
+    return (await ready()).saveScore(path, text, saveScore);
+  },
+  /** Saves the clips (as Slice records); markers and tags are not edited here. */
+  saveAnnotations: async (path: string, ann: Manifest["annotations"]) => {
+    const r = await (await ready()).saveClips(path, ann?.clips ?? []);
+    manifestCache.delete(path);
+    return r;
+  },
+  upload: async (_file: File): Promise<{ path: string; state: string }> => {
+    const { mode } = await import("./data/client.js");
+    throw new Error(mode() === "cloud" ? NEEDS_ANALYSIS_SERVER : NEEDS_ANALYSIS_LOCAL);
   },
 };
 

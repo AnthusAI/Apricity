@@ -458,6 +458,63 @@ auth and storage facades. One build works in both modes. The data client is the 
 - **Subscriptions:** if the Amplify client refuses plain `ws://` for a non-AppSync host, `serve`
   uses TLS with an mkcert certificate. Until realtime ships, the app avoids `observeQuery` and `onCreate`.
 
+### Cloud sign-in and importing a library
+
+Sign-in exists only against the cloud backend; local mode (`apricity serve`) shows no account control.
+
+1. **Sign up.** The header's "Sign in" opens a dialog: email and password, "Create account" (Cognito emails a
+   confirmation code, then the dialog confirms it and signs in), and "Sign in with Google" only when the loaded
+   `amplify_outputs.json` has `auth.oauth`. Only addresses in `APRICITY_ALLOWED_EMAILS` pass the pre-sign-up
+   trigger; anyone else sees "not allowed to sign up". After any sign-in or sign-out the page dispatches
+   `apricity:auth-changed`, which the Library and Score views listen for.
+2. **Groups.** The post-confirmation trigger adds every new user to `members` (read access). Nothing adds anyone to
+   `admins` or `curators`, so the **first admin is added by hand after signing up**. Records other than Verdict
+   are written through AppSync only by `curators` (plus owners for Slice, Marker, Crate, CrateItem, Score,
+   ScoreRef), and the bucket's `<Model>/*` and `files/*` are writable only by `admins`, so the importing account
+   needs both groups:
+
+   ```
+   aws cognito-idp admin-add-user-to-group --user-pool-id <USER_POOL_ID> --username <USERNAME_OR_SUB> --group-name admins
+   aws cognito-idp admin-add-user-to-group --user-pool-id <USER_POOL_ID> --username <USERNAME_OR_SUB> --group-name curators
+   ```
+
+   Group membership is read from the token, so sign out and in again afterwards.
+3. **Import library from bucket** (account menu, admins only; `web/src/data/import-library.ts`). `apricity sync push`
+   puts `<Model>/<key>.json` in the bucket but the DynamoDB tables behind AppSync start empty, so an admin runs
+   the import in the browser: it lists each model's root-level prefix (following pagination), downloads each
+   record, and upserts it (get, then create or update by key) with parents before children (order derived from
+   the contract's `belongsTo` relationships). `__typename` is dropped, `a.json` values (`nameCounters`,
+   `evidence`, also inside `proposers`) become JSON strings, enums and required fields are checked, and the
+   migrator's `local::migrator` owner and `local` judge become the importer's identity. Creation timestamps are
+   kept where the API accepts them. Re-running is safe; one bad record is reported and the rest continue. The
+   result is `{created, updated, failed: [{key, error}]}`.
+
+### §4.1 Library and Score views on the data layer (`web/src/data/catalog.ts`)
+
+The Library and Score tabs read only records and library files, the same way in both modes
+(local: `apricity serve` GraphQL with the library's API key and `/files/<key>`; cloud: AppSync as
+the signed-in Cognito user and the bucket through `aws-amplify/storage`). `apricity.ts` keeps the
+old `api`/`manifest()` shapes on top of a `Catalog`, so the views barely changed:
+
+- **Samples:** `Clip.list` + `Recording.list` (+ `Slice`/`Marker`/`Job` lists for counts and
+  jobs), every page via `nextToken`. The UI's sample path is `samples/<Clip.path>` (the alias
+  scores resolve; `Clip.aliases` also match); titles, credit and rights come from the Recording
+  (stems: `<recording> · <stem>`).
+- **Manifest** (what `rw_compile` and the waveform take): the `Clip.analysis` attachment
+  (`analysis/<clipId>/<sha>.json`) plus `annotations` rebuilt from `slicesByClip` and
+  `markersByClip`, as `apricity-data::loader` does for the CLI. Audio comes from `Clip.audio.key`
+  through `files.ts` `getUrl` (signed URL in the cloud; Range works in both).
+- **Scores:** `Score.list`; a score's path is `<folder>/<title>.<format>` (= `legacyPath` for
+  migrated ones), its id `scr_<folder>_<title>_<format>`. Saving creates the record if needed,
+  then calls `domain.ts` `saveScore` (text + `ScoreRef`s). Saving clips edits `Slice` records one
+  by one (create, update, delete), not a whole manifest.
+- **Signed out:** an unauthorized read (no Cognito session, or not a member) shows "Sign in to
+  see the library" instead of an error; both views reload on the `apricity:auth-changed` event.
+- **Not yet:** uploading and re-analysing (analysis runs on a Mac, §7.7; the drop zone is hidden
+  in the cloud and says so locally). Locally, score and clip saves are blocked by two known
+  bugs: Virtuus validation rejects array fields (`tags`, `lastErrors`) on create/update, and
+  `auth.ts` returns no local user, which `saveScore` requires.
+
 ## §5 Migration and score references
 
 `apricity migrate --from <repo root> --to <library>` (in `apricity-data`; deterministic and
