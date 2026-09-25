@@ -1,0 +1,28 @@
+[package]
+name = "apricity-sources"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Download, verify and remove predefined public-domain audio sources."
+
+[features]
+default = ["http"]
+# The real network fetcher (ureq + rustls). Tests never use it.
+http = ["dep:ureq"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2 = "0.10"
+tar = "0.4"
+bzip2 = "0.5"
+ureq = { version = "3", optional = true }
+
+[dev-dependencies]
+cucumber = "0.21"
+futures = "0.3"
+tempfile = "3"
+
+[[test]]
+name = "conformance"
+harness = false

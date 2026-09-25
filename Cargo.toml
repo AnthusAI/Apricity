@@ -11,6 +11,7 @@ license = "GPL-2.0-or-later"
 apricity-data = { path = "crates/apricity-data", default-features = false }
 apricity-dsp = { path = "crates/apricity-dsp" }
 apricity-theory = { path = "crates/apricity-theory" }
+apricity-sources = { path = "crates/apricity-sources" }
 apricity-score = { path = "crates/apricity-score" }
 apricity-engine = { path = "crates/apricity-engine", default-features = false }
 serde = { version = "1", features = ["derive"] }

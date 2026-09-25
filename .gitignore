@@ -67,3 +67,7 @@ project/.overlay/
 *.aiff
 *.opus
 /web/.cache/
+
+# Salamander Drumkit files that are not audio (fetched by `apricity sources fetch salamander-drumkit`; its manifests are tracked)
+/samples/salamander-drumkit/*.sfz
+/samples/salamander-drumkit/REAMDE

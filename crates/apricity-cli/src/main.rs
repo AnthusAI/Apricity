@@ -4,6 +4,7 @@ mod migrate;
 mod play;
 mod render;
 mod serve;
+mod sources;
 mod sync;
 
 use clap::{Parser, Subcommand};
@@ -50,6 +51,14 @@ enum Cmd {
         /// Write here instead of stdout.
         #[arg(short, long)]
         out: Option<PathBuf>,
+    },
+    /// List, check, download or remove predefined sample sources.
+    Sources {
+        /// Samples directory.
+        #[arg(long, default_value = "samples", global = true)]
+        samples: PathBuf,
+        #[command(subcommand)]
+        action: sources::Action,
     },
     /// Render a score to a 48 kHz stereo WAV.
     Render {
@@ -105,6 +114,9 @@ fn compile_from_library(score: &std::path::Path, library: &std::path::Path) -> R
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    if let Cmd::Sources { samples, action } = &cli.cmd {
+        return sources::main(action, samples);
+    }
     if let Cmd::Play { score, no_audio, seconds, volume } = cli.cmd {
         return match play::run(play::Options { score, no_audio, seconds, volume_db: volume }) {
             Ok(()) => ExitCode::SUCCESS,
@@ -173,7 +185,7 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sync { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let compiled = match &cli.cmd {
@@ -191,7 +203,7 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sync { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {
