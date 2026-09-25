@@ -13,6 +13,8 @@ import { api, compile, type Timeline } from "../apricity";
 import { SignedOut } from "../data/catalog";
 import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
+import { emptyKind, emptyText } from "./account-state";
+import { currentAccount } from "../data/auth";
 import { FlowView } from "./flow/view";
 
 
@@ -96,8 +98,14 @@ export class ScoreView {
   }
 
   /** A signed-out visitor (or a failed load) sees why the list is empty, not an error in the console. */
-  private unavailable(e: unknown) {
-    const msg = e instanceof SignedOut ? "Sign in to see your scores." : `Couldn't load scores: ${(e as Error).message}`;
+  private async unavailable(e: unknown) {
+    let inn = false;
+    try {
+      inn = !!(await currentAccount());
+    } catch {}
+    const refused = inn && (e instanceof SignedOut || /not authori[sz]ed|unauthori[sz]ed|forbidden|denied|access/i.test((e as Error)?.message ?? ""));
+    const kind = emptyKind({ signedIn: inn, refused, empty: false });
+    const msg = kind ? emptyText("score", kind) : `Couldn't load scores: ${(e as Error).message}`;
     this.listEl.replaceChildren(el("div", { className: "group" }, "Scores"), el("div", { className: "empty" }, msg));
   }
 
@@ -148,11 +156,12 @@ export class ScoreView {
     try {
       ({ scores } = await api.scores());
     } catch (e) {
-      this.unavailable(e);
+      await this.unavailable(e);
       return;
     }
     this.listEl.replaceChildren(
       el("div", { className: "group" }, "Scores"),
+      ...(scores.length ? [] : [el("div", { className: "empty" }, emptyText("score", "empty"))]),
       ...scores.map((s) => {
         const row = el("button", { className: "row", type: "button" }, el("span", { className: "t" }, s.path.split("/").pop()!), el("span", { className: "sub" }, s.path));
         row.setAttribute("aria-current", String(s.path === this.path));

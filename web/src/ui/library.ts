@@ -5,6 +5,17 @@ import { SignedOut } from "../data/catalog";
 import { mode } from "../data/client";
 import { player } from "../audio/player";
 import { el } from "./dom";
+import { emptyKind, emptyText } from "./account-state";
+import { currentAccount } from "../data/auth";
+
+const REFUSED = /not authori[sz]ed|unauthori[sz]ed|forbidden|denied|access/i;
+async function signedIn(): Promise<boolean> {
+  try {
+    return !!(await currentAccount());
+  } catch {
+    return false;
+  }
+}
 import { computePeaks, Waveform } from "./waveform";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
@@ -52,12 +63,20 @@ export class Library {
       clearTimeout(this.jobsTimer);
       this.samples = [];
       this.jobs = [];
-      const msg = e instanceof SignedOut ? "Sign in to see the library." : `Couldn't load the library: ${(e as Error).message}`;
+      const inn = await signedIn();
+      const kind = emptyKind({ signedIn: inn, refused: inn && (e instanceof SignedOut || REFUSED.test((e as Error)?.message ?? "")), empty: false });
+      const msg = kind ? emptyText("library", kind) : `Couldn't load the library: ${(e as Error).message}`;
       this.listEl.replaceChildren(el("div", { className: "empty" }, msg));
       this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
       return;
     }
     this.samples = r.samples;
+    if (!r.samples.length && !r.jobs.length) {
+      const msg = emptyText("library", "empty");
+      this.listEl.replaceChildren(el("div", { className: "empty" }, msg));
+      this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
+      return;
+    }
     const running = r.jobs.filter((j) => j.state === "analyzing" || j.state === "queued");
     clearTimeout(this.jobsTimer);
     if (running.length) this.jobsTimer = window.setTimeout(() => this.refresh(), 3000);

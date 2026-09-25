@@ -5,6 +5,7 @@
 import * as auth from "../data/auth";
 import type { Account, AuthStep } from "../data/auth";
 import { el } from "./dom";
+import { displayName, initial } from "./account-state";
 import type { ImportProgress, ImportSummary } from "../data/import-library";
 
 export interface AccountDeps {
@@ -74,13 +75,42 @@ export class AccountControl {
       this.account = null;
     }
     this.host.replaceChildren(
-      ...(this.account
-        ? [
-            el("button", { className: "acct-email", type: "button", title: "Account", onclick: () => this.open("account") }, this.account.email),
-            el("button", { className: "acct-out", type: "button", onclick: () => void this.signOut() }, "Sign out"),
-          ]
-        : [el("button", { className: "acct-in", type: "button", onclick: () => this.open("signin") }, "Sign in")]),
+      ...(this.account ? this.pill(this.account) : [el("button", { className: "acct-in", type: "button", onclick: () => this.open("signin") }, "Sign in")]),
     );
+  }
+
+  private pill(a: Account): HTMLElement[] {
+    const name = displayName(a);
+    const menu = el("div", { className: "acct-menu", role: "menu", hidden: true });
+    const btn = el(
+      "button",
+      { className: "acct-pill", type: "button", title: "Account", ariaHasPopup: "menu", ariaExpanded: "false" },
+      el("span", { className: "acct-avatar", ariaHidden: "true" }, initial(a)),
+      el("span", { className: "acct-email" }, name),
+    );
+    const close = () => {
+      menu.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+    };
+    const item = (label: string, fn: () => void) => el("button", { className: "acct-item", type: "button", role: "menuitem", onclick: () => (close(), fn()) }, label);
+    menu.append(
+      el("div", { className: "acct-who" }, name),
+      item("Account settings", () => this.open("account")),
+      ...(a.admin ? [item("Import library from bucket", () => this.open("import"))] : []),
+      item("Sign out", () => void this.signOut()),
+    );
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.hidden = !menu.hidden;
+      btn.setAttribute("aria-expanded", String(!menu.hidden));
+    });
+    const away = (e: Event) => {
+      if (!menu.isConnected) return document.removeEventListener("click", away);
+      if (!menu.hidden && !this.host.contains(e.target as Node)) close();
+    };
+    document.addEventListener("click", away);
+    menu.addEventListener("keydown", (e) => (e as KeyboardEvent).key === "Escape" && (close(), btn.focus()));
+    return [menu, btn];
   }
 
   private async signOut() {
@@ -249,7 +279,7 @@ export class AccountControl {
           "div",
           { className: "acct-form" },
           el("h2", { id: "acct-title" }, "Account"),
-          el("p", { className: "acct-note" }, a?.email ?? ""),
+          el("p", { className: "acct-note" }, a ? displayName(a) : ""),
           el("p", { className: "acct-groups" }, a?.groups.length ? `Groups: ${a.groups.join(", ")}` : "No groups yet."),
           el(
             "div",

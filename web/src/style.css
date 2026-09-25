@@ -175,12 +175,20 @@ code, .mono { font-family: var(--mono); font-size: 12.5px; }
 @media (max-width: 900px) { #docs { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } .docs-page { padding: 16px; } }
 
 /* Account control (cloud only): header buttons and the sign-in dialog, in the app's tokens with the landing's apricot. */
-.account { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.account { position: fixed; left: 12px; bottom: 12px; z-index: 20; font-size: 13px; max-width: min(260px, calc(100vw - 24px)); }
 .account[hidden] { display: none; }
-.account:not([hidden]) + .transport { margin-left: 0; }
-.account button { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 5px 11px; }
-.account .acct-in { background: #f59e5b; border-color: #f59e5b; color: #2a1420; font-weight: 550; }
-.account .acct-email { border-color: transparent; background: none; color: var(--muted); max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account button { font: inherit; color: var(--fg); }
+.account .acct-in { border: 1px solid #f59e5b; background: #f59e5b; color: #2a1420; font-weight: 550; border-radius: 999px; padding: 6px 14px; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.account .acct-pill { display: flex; align-items: center; gap: 8px; max-width: 100%; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 12px 4px 4px; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.acct-avatar { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #f59e5b; color: #2a1420; display: grid; place-items: center; font-weight: 650; font-size: 12px; }
+.account .acct-email { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-menu { position: absolute; left: 0; bottom: calc(100% + 6px); min-width: 210px; display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+.acct-menu[hidden] { display: none; }
+.acct-who { padding: 6px 10px; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account .acct-item { border: 0; background: none; text-align: left; padding: 7px 10px; border-radius: 6px; }
+.account .acct-item:hover { background: var(--accent-soft); }
+/* Keep the fixed account pill clear of the left panes' bottom controls. */
+.sidebar { padding-bottom: 56px; }
 .acct-dialog { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--fg); padding: 20px; width: min(92vw, 380px); }
 .acct-dialog::backdrop { background: rgba(20, 14, 20, .45); }
 .acct-form { display: flex; flex-direction: column; gap: 12px; }

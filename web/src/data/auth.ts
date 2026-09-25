@@ -1,5 +1,6 @@
 // Web data layer: authentication facade with local and cloud backends.
 
+import { Hub } from "aws-amplify/utils";
 import { Amplify } from "aws-amplify";
 import { mode } from "./client.js";
 
@@ -260,6 +261,48 @@ export function googleAvailable(): boolean {
 export function emailLoginAvailable(): boolean {
   if (mode() === "local") return false;
   return !googleAvailable();
+}
+
+/** True when the URL is a Google redirect coming back to us (`?code=...&state=...`). */
+export function isOAuthReturn(search: string): boolean {
+  const q = new URLSearchParams(search);
+  return q.has("code") && q.has("state");
+}
+
+/** Auth events after which the views and the account control must re-read the session. */
+export const SESSION_EVENTS = ["signedIn", "signedOut", "tokenRefresh", "signInWithRedirect"] as const;
+
+/**
+ * Start listening BEFORE Amplify.configure(): when the page loads as a Google redirect, Amplify exchanges the code for
+ * tokens asynchronously, and the views used to render "signed out" before that finished (and the account label fell back
+ * to the raw provider id). The returned promise resolves once the exchange has finished (or failed, or after a timeout),
+ * with the redirect parameters stripped from the address bar. It resolves at once for an ordinary page load. From here on
+ * every session change is also announced with `apricity:auth-changed`.
+ */
+export function watchAuth(timeoutMs = 12000): Promise<void> {
+  const returning = typeof location !== "undefined" && isOAuthReturn(location.search);
+  return new Promise<void>((resolve) => {
+    let finished = !returning;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      try {
+        history.replaceState(null, "", location.pathname + location.hash);
+      } catch {
+        /* the address bar is cosmetic */
+      }
+      resolve();
+    };
+    const timer = returning ? setTimeout(finish, timeoutMs) : undefined;
+    Hub.listen("auth", ({ payload }: { payload: { event: string } }) => {
+      if ((SESSION_EVENTS as readonly string[]).includes(payload.event)) {
+        document.dispatchEvent(new CustomEvent("apricity:auth-changed"));
+      }
+      if (payload.event === "signInWithRedirect" || payload.event === "signInWithRedirect_failure") finish();
+    });
+    if (finished) resolve();
+  });
 }
 
 /** Email + group info for the signed-in user; null when signed out (never throws). */

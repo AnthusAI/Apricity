@@ -1,5 +1,5 @@
 {
-  "version": "94cbe8355400d9e1",
+  "version": "9f73076494d68660",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -2269,6 +2269,8 @@
         "path": "files/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2279,6 +2281,8 @@
         "path": "Recording/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2289,6 +2293,8 @@
         "path": "Clip/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2299,6 +2305,8 @@
         "path": "Slice/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2309,6 +2317,8 @@
         "path": "Marker/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2319,6 +2329,8 @@
         "path": "Candidate/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2329,6 +2341,8 @@
         "path": "Verdict/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2339,6 +2353,8 @@
         "path": "Crate/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2349,6 +2365,8 @@
         "path": "CrateItem/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2359,6 +2377,8 @@
         "path": "Score/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2369,6 +2389,8 @@
         "path": "ScoreRef/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [
@@ -2379,6 +2401,8 @@
         "path": "Job/*",
         "readable": [
           "authenticated",
+          "members",
+          "curators",
           "admins"
         ],
         "writable": [

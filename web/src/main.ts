@@ -5,10 +5,13 @@ import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
 import { bootstrap, mode } from "./data/client";
+import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
 
 // Configure the data layer first: /amplify_outputs.json says whether files come from `apricity serve` or the bucket.
+const oauthReturned = watchAuth(); // listen before configure: Amplify exchanges a Google redirect code asynchronously
 await bootstrap();
+await oauthReturned; // views and the account label must not render before the session exists
 
 // Sign in / out lives in the header; it only appears against the cloud backend.
 new AccountControl(document.querySelector<HTMLElement>("#account")!, realDeps(() => mode() === "cloud"));

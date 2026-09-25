@@ -19,8 +19,11 @@ import contract from "../../../contract/apricity.contract.json";
  * credentials (the bucket owner's), so these rules govern browser access. User uploads stay
  * owner-only under `uploads/{entity_id}/`.
  */
+// Users in a Cognito group get THAT group's AWS role, not the generic authenticated one, so every group that may read
+// needs its own rule here: members and curators read, admins read and write.
 const readAll = (allow: any) => [
   allow.authenticated.to(["read"]),
+  allow.groups(["members", "curators"]).to(["read"]),
   allow.groups(["admins"]).to(["read", "write", "delete"]),
 ];
 
