@@ -10,9 +10,17 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "251549e2-7380-4c26-a1e0-a2e11f63d400",
+      "author": "home",
+      "text": "User confirmed: use the default AWS profile (aws login). Verified read-only: account 335163751677, region us-east-1, Route 53 public hosted zone anth.us. (Z02552332GG6AM25SFP73) is in this account, so apricity.anth.us records can be created directly. Note: the session identity is the account ROOT user. Still needed: explicit approval to create billable resources / point apricity.anth.us at them.",
+      "created_at": "2026-09-25T02:39:40.930472Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:28:48.256783Z",
-  "updated_at": "2026-09-25T02:28:48.256804Z",
+  "updated_at": "2026-09-25T02:39:40.930487Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
