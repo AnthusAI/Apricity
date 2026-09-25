@@ -45,7 +45,7 @@ export class DocsView {
   root: HTMLElement;
   private nav = el("nav", { className: "docs-nav", ariaLabel: "Documentation pages" });
   private article = el("article", { className: "docs-page" });
-  private search = el("input", { type: "search", placeholder: "Search headings and glossary…", ariaLabel: "Search the docs" });
+  private search = el("input", { type: "search", placeholder: "Search headings and glossary…", ariaLabel: "Search help" });
   private results = el("div", { className: "docs-results" });
   current = pages[0]?.file ?? "README.md";
 

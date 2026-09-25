@@ -79,7 +79,7 @@ export class Landing {
             el("div", { className: "eyebrow" }, "The mashup machine"),
             el("h1", { className: "wordmark" }, "Apricity"),
             el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every sample, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
-            el("div", { className: "actions" }, hear, cta("Open the library", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Read the docs", "ghost", go.docs)),
+            el("div", { className: "actions" }, hear, cta("Browse samples", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Help", "ghost", go.docs)),
           ),
           new Breakdown(breakdown(HERO)!, { variant: "hero", open: go.open, remember: true }).root,
         ),

@@ -144,7 +144,7 @@ export class ScoreView {
 
   /** Opens the reference for whichever format is being edited. */
   private refBtn() {
-    const b = el("button", { className: "btn", type: "button", title: "Open the language reference in the Docs tab" }, "Reference");
+    const b = el("button", { className: "btn", type: "button", title: "Open the language reference in Help" }, "Reference");
     b.addEventListener("click", () => {
       const file = this.path?.endsWith(".yaml") ? "yaml.md" : "language.md";
       document.dispatchEvent(new CustomEvent("apricity:docs", { detail: { file } }));
