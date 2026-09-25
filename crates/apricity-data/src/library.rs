@@ -313,6 +313,25 @@ impl Library {
         &self.engine
     }
 
+    /// The library's API key, minting and saving one in `apricity-library.json` if it has none.
+    pub fn ensure_api_key(&mut self) -> Result<String> {
+        if let Some(key) = &self.metadata.api_key {
+            return Ok(key.clone());
+        }
+        let key = format!("da2-{}", Uuid::new_v4().simple());
+        self.metadata.api_key = Some(key.clone());
+        std::fs::write(
+            self.path.join("apricity-library.json"),
+            serde_json::to_string_pretty(&self.metadata)?,
+        )?;
+        Ok(key)
+    }
+
+    /// Give up the library and keep its engine (for serving it behind a lock).
+    pub fn into_engine(self) -> Engine {
+        self.engine
+    }
+
     /// Get a mutable clip facade
     pub fn clips(&mut self) -> ClipFacade<'_> {
         ClipFacade { library: self }
@@ -343,6 +362,17 @@ mod tests {
 
         let metadata_path = temp_dir.path().join("apricity-library.json");
         assert!(metadata_path.exists());
+    }
+
+    #[test]
+    fn ensure_api_key_mints_once_and_persists() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let mut lib = Library::create(temp_dir.path()).unwrap();
+        let key = lib.ensure_api_key().unwrap();
+        assert!(key.starts_with("da2-") && key.len() > 10);
+        assert_eq!(lib.ensure_api_key().unwrap(), key);
+        let mut reopened = Library::open(temp_dir.path(), None).unwrap();
+        assert_eq!(reopened.ensure_api_key().unwrap(), key);
     }
 
     #[test]

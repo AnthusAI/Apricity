@@ -19,6 +19,12 @@ serde_yaml = "0.9"
 clap = { version = "4", features = ["derive"] }
 cpal = "0.18"
 hound = "3"
+axum = "0.7"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "fs"] }
+virtuus-amplify = { path = "../../../Virtuus/rust/crates/virtuus-amplify" }
+virtuus-appsync = { path = "../../../Virtuus/rust/crates/virtuus-appsync" }
 
 [dev-dependencies]
 tempfile = "3"
+tower = { version = "0.4", features = ["util"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

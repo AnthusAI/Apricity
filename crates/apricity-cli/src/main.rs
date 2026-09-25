@@ -3,6 +3,7 @@
 mod migrate;
 mod play;
 mod render;
+mod serve;
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
@@ -62,6 +63,18 @@ enum Cmd {
         #[arg(long)]
         library: Option<PathBuf>,
     },
+    /// Serve a library over HTTP: GraphQL, files with Range, amplify_outputs.json and the web app.
+    Serve {
+        /// Library folder.
+        #[arg(long)]
+        library: PathBuf,
+        /// Port on 127.0.0.1 (0 picks a free one).
+        #[arg(long, default_value_t = 5181)]
+        port: u16,
+        /// Built web app to serve at / (default: web/dist when it exists).
+        #[arg(long)]
+        web: Option<PathBuf>,
+    },
     /// Import a repository's samples, manifests, candidates and scores into a library.
     Migrate {
         /// Repository root (holds samples/, library/, examples/).
@@ -88,6 +101,15 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
     if let Cmd::Play { score, no_audio, seconds, volume } = cli.cmd {
         return match play::run(play::Options { score, no_audio, seconds, volume_db: volume }) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
+    if let Cmd::Serve { library, port, web } = &cli.cmd {
+        return match serve::run(library, *port, web.clone()) {
             Ok(()) => ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("{e}");
@@ -135,7 +157,7 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let compiled = match &cli.cmd {
@@ -153,7 +175,7 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {
