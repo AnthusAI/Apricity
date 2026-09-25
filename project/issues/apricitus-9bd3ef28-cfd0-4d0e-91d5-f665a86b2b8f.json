@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-9bd3ef28-cfd0-4d0e-91d5-f665a86b2b8f",
+  "title": "Hero demo plays from the library's downloaded assets",
+  "description": "Remove bundled hero MP3s from web/public/hero. Hero audio and peaks come from library stems/slices via /files/<library-relative key>, locally (apricity serve) or from the S3 bucket. Regenerate hero-data.json with library-relative paths (no absolute Ripple/samples paths). Expected: hero has no sound on a fresh clone until the fetch utility has downloaded the assets. Web/UI files belong to the web/docs session: coordinate via this issue. Depends on the purge, ae24ae.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T02:01:24.457513Z",
+  "updated_at": "2026-09-25T02:01:24.457540Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-256ca444-99c1-4963-b9f3-08120676c2de",
+  "title": "Purge audio assets from git history",
+  "description": "Inventory every audio file ever committed (all extensions, all branches; known: web/public/hero/*.mp3). Run git filter-repo to remove them as though never committed; .gitignore web/public/hero and audio extensions. Do AFTER T22 (ae24ae) with a clean tree. Coordinate develop branch + worktree + other sessions (hashes change). Never force-push without explicit user go-ahead; hero MP3s were probably pushed to origin (public AnthusAI/Apricity), so GitHub caches/forks may retain them.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T02:01:24.417170Z",
+  "updated_at": "2026-09-25T02:01:24.417375Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

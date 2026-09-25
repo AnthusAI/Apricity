@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-25e2164c-26b1-4069-a590-2df7a694db85",
+  "title": "S3-backed Files + apricity sync (library <-> bucket, same layout)",
+  "description": "S3 key layout exactly mirrors the library folder layout (stems, slices, clips, all metadata Virtuus writes). Add an S3 implementation of the Files trait beside FsFiles (Range works natively on S3); Amplify Storage bucket + access rules in the backend definition and in amplify_outputs.json. apricity sync push|pull --library <dir> using hash manifests, transferring only differences, both directions. Goal: analyze on a local Mac, push to the cloud hub, others play back and browse the metadata; no cloud analysis yet. Depends on ae24ae.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T02:01:24.436105Z",
+  "updated_at": "2026-09-25T02:01:24.436140Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
