@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.5.4 (2026-09-25)
+
+### Bug Fixes
+
+- **apricitus-4fd2e3**: Reload once when a deploy replaced the lazy chunks; do not block rendering
+  on the Google redirect
+  ([`35e9de8`](https://github.com/AnthusAI/Apricity/commit/35e9de898aec953105a028d031fc3bd21d17497f))
+
+
 ## v0.5.3 (2026-09-25)
 
 
