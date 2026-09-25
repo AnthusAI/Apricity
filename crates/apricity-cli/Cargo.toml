@@ -10,6 +10,7 @@ name = "apricity"
 path = "src/main.rs"
 
 [dependencies]
+apricity-data.workspace = true
 apricity-dsp.workspace = true
 apricity-engine = { workspace = true, features = ["decode"] }
 apricity-score.workspace = true
@@ -18,3 +19,6 @@ serde_yaml = "0.9"
 clap = { version = "4", features = ["derive"] }
 cpal = "0.18"
 hound = "3"
+
+[dev-dependencies]
+tempfile = "3"

@@ -63,6 +63,67 @@ impl FsFiles {
     fn full_path(&self, key: &str) -> PathBuf {
         self.root.join(key)
     }
+
+    /// Where `key` lives on disk.
+    pub fn path_of(&self, key: &str) -> PathBuf {
+        self.full_path(key)
+    }
+
+    /// Import a file under `key` by hard link (`link`) or copy (APFS clone where the filesystem
+    /// supports it), streaming the bytes through SHA-256. Returns the `FileRef` and whether the
+    /// store changed: an existing destination that is already the same file (same inode when
+    /// linking, same bytes when copying) is left alone.
+    pub fn import(&mut self, key: &str, src_path: &Path, content_type: Option<&str>, link: bool) -> Result<(FileRef, bool)> {
+        let dst = self.full_path(key);
+        if let Some(parent) = dst.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let (sha256, size) = sha256_file(src_path)?;
+        let mut changed = true;
+        if dst.exists() {
+            changed = if link {
+                !same_inode(src_path, &dst)?
+            } else {
+                sha256_file(&dst)? != (sha256.clone(), size)
+            };
+            if changed {
+                std::fs::remove_file(&dst)?;
+            }
+        }
+        if changed {
+            if link {
+                std::fs::hard_link(src_path, &dst)?;
+            } else {
+                std::fs::copy(src_path, &dst)?;
+            }
+        }
+        Ok((FileRef { key: key.to_string(), sha256, size, content_type: content_type.map(String::from) }, changed))
+    }
+}
+
+/// SHA-256 (lowercase hex) and length of a file, read in chunks.
+fn sha256_file(path: &Path) -> Result<(String, u64)> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+    let mut file = std::fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buf = vec![0u8; 1 << 20];
+    let mut size = 0u64;
+    loop {
+        let n = file.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+        size += n as u64;
+    }
+    Ok((format!("{:x}", hasher.finalize()), size))
+}
+
+fn same_inode(a: &Path, b: &Path) -> Result<bool> {
+    use std::os::unix::fs::MetadataExt;
+    let (ma, mb) = (std::fs::metadata(a)?, std::fs::metadata(b)?);
+    Ok(ma.dev() == mb.dev() && ma.ino() == mb.ino())
 }
 
 impl Files for FsFiles {

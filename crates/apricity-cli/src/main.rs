@@ -1,5 +1,6 @@
 //! `apricity`: compile, explain and render Apricity scores.
 
+mod migrate;
 mod play;
 mod render;
 
@@ -56,7 +57,31 @@ enum Cmd {
         /// Only these bars, 1-based inclusive, e.g. "1-4".
         #[arg(long)]
         bars: Option<String>,
+        /// Take clips from this library instead of the sample files; clip paths in the score
+        /// are resolved relative to the current directory, as with files.
+        #[arg(long)]
+        library: Option<PathBuf>,
     },
+    /// Import a repository's samples, manifests, candidates and scores into a library.
+    Migrate {
+        /// Repository root (holds samples/, library/, examples/).
+        #[arg(long)]
+        from: PathBuf,
+        /// Library folder; created if missing, updated in place otherwise.
+        #[arg(long)]
+        to: PathBuf,
+        /// Hard-link audio into the library instead of copying it.
+        #[arg(long)]
+        link: bool,
+    },
+}
+
+/// Compile a score with its clips taken from a library.
+fn compile_from_library(score: &std::path::Path, library: &std::path::Path) -> Result<apricity_score::Timeline, Vec<String>> {
+    let text = std::fs::read_to_string(score).map_err(|e| vec![format!("{}: {e}", score.display())])?;
+    let mut lib = apricity_data::Library::open(library, None).map_err(|e| vec![format!("{}: {e}", library.display())])?;
+    let mut loader = apricity_data::loader::make(&mut lib, std::path::Path::new(".")).map_err(|e| vec![e])?;
+    apricity_score::compile_text(&text, score, &mut loader)
 }
 
 fn main() -> ExitCode {
@@ -64,6 +89,15 @@ fn main() -> ExitCode {
     if let Cmd::Play { score, no_audio, seconds, volume } = cli.cmd {
         return match play::run(play::Options { score, no_audio, seconds, volume_db: volume }) {
             Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
+    if let Cmd::Migrate { from, to, link } = &cli.cmd {
+        return match migrate::run(migrate::Options { from: from.clone(), to: to.clone(), link: *link }) {
+            Ok(code) => code,
             Err(e) => {
                 eprintln!("{e}");
                 ExitCode::FAILURE
@@ -101,10 +135,14 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
-    let tl = match apricity_score::compile_file(score) {
+    let compiled = match &cli.cmd {
+        Cmd::Render { library: Some(library), .. } => compile_from_library(score, library),
+        _ => apricity_score::compile_file(score),
+    };
+    let tl = match compiled {
         Ok(tl) => tl,
         Err(errors) => {
             eprintln!("{} has {} problem{}:", score.display(), errors.len(), if errors.len() == 1 { "" } else { "s" });
@@ -115,7 +153,7 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {

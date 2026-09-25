@@ -55,6 +55,14 @@ pub fn migrated_slice_id(clip_id: &str, name: &str) -> String {
     format!("slc_{}", &hex[..20.min(hex.len())])
 }
 
+/// Generate a migrated marker ID from clip ID, name and position.
+/// Format: "mrk_" + first 20 hex chars of SHA1("clipId|name|seconds")
+pub fn migrated_marker_id(clip_id: &str, name: &str, seconds: f64) -> String {
+    let key = format!("{}|{}|{}", clip_id, name, seconds);
+    let hex = format!("{:x}", Sha1::digest(key.as_bytes()));
+    format!("mrk_{}", &hex[..20])
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

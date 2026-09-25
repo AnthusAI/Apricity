@@ -437,8 +437,12 @@ pub fn apply_markup_merge(
     }
 
     // Parse name counters
+    // `nameCounters` is AWSJSON: a JSON string in the contract, though older writers stored an object.
     let name_counters: HashMap<String, u32> = if let Some(nc) = clip_data.get("nameCounters") {
-        serde_json::from_value(nc.clone()).unwrap_or_default()
+        match nc.as_str() {
+            Some(text) => serde_json::from_str(text).unwrap_or_default(),
+            None => serde_json::from_value(nc.clone()).unwrap_or_default(),
+        }
     } else {
         HashMap::new()
     };
