@@ -404,6 +404,10 @@ pub struct TrackInfo {
     /// Set when the clip plays re-pitched (`warp repitch`): its playback speed (1 = as recorded).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub varispeed: Option<f64>,
+    /// What the harmony solver knows about it, so an editor can ask how it would fit any chord (`assist::fit_chords`).
+    /// Absent when it plays re-pitched and sits out of the harmony.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub voice: Option<crate::assist::VoiceInfo>,
 }
 
 fn master_name() -> String {
@@ -1298,11 +1302,15 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             out: tr.group.clone().unwrap_or_else(master_name),
             sends: tr.sends.clone(),
             varispeed: unwarped.then(|| score.tempo / rc.clip.manifest.rhythm.bpm.unwrap_or(score.tempo) * tr.speed.unwrap_or(1.0)),
+            voice: None,
         });
         piece_levels.push(levels);
         let mut v = Voice::new(infos.last().unwrap().name.clone(), pcp);
         v.tonic = if src.kit.is_none() { rc.root } else { None }.or(region_key.map(|k| k.tonic));
         v.role = tr.role;
+        if !unwarped {
+            infos.last_mut().unwrap().voice = Some(crate::assist::VoiceInfo { name: v.name.clone(), pcp, tonic: v.tonic, role: tr.role, transpose: tr.transpose.clone() });
+        }
         v.fixed = match tr.transpose {
             Transpose::Auto | Transpose::Follow => None,
             Transpose::Fixed(n) => Some(n),

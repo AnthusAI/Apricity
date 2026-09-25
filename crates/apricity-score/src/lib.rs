@@ -1,7 +1,9 @@
 //! Apricity scores: a declarative description of a piece built from analyzed clips, compiled
 //! into a timeline of warped, transposed events.
 
+pub mod assist;
 pub mod beat;
+pub mod chords;
 pub mod compile;
 pub mod dsl;
 pub mod manifest;

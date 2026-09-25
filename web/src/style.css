@@ -302,10 +302,10 @@ code, .mono { font-family: var(--mono); font-size: 12.5px; }
 .beat:not(:focus-within) .step.cursor { box-shadow: none; }
 .beat.readonly .step { cursor: default; }
 .beat-add { margin-top: 10px; }
-.beat-pick { width: min(480px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--fg); padding: 16px; }
-.beat-pick h3 { margin: 0 0 10px; font-size: 15px; }
-.beat-pick input { width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); box-sizing: border-box; }
-.beat-pick .list { max-height: 50vh; overflow: auto; margin-top: 8px; }
+.clip-pick { width: min(480px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--fg); padding: 16px; }
+.clip-pick h3 { margin: 0 0 10px; font-size: 15px; }
+.clip-pick input { width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); box-sizing: border-box; }
+.clip-pick .list { max-height: 50vh; overflow: auto; margin-top: 8px; }
 @media (max-width: 900px) {
   .beat { grid-column: auto; --pad-w: 124px; }
 }
@@ -315,3 +315,76 @@ code, .mono { font-family: var(--mono); font-size: 12.5px; }
   .topbar .tabs { order: 3; flex-basis: 100%; }
   .transport .meter { display: none; }
 }
+
+/* ---- the chord harp (Chords): chord bars, the progression, the strings */
+.harp {
+  grid-column: 2 / span 2; position: relative; display: flex; flex-direction: column; min-height: 0;
+  border-top: 1px solid var(--line); background: var(--bg); outline: none;
+  --tonic: #7fc4d8; --subdominant: #e8c15a; --dominant: #e57f8f;
+}
+.harp[hidden] { display: none; }
+.harp-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); font-size: 12.5px; }
+.harp-bar select { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 6px; padding: 3px 6px; font-size: 12.5px; }
+.harp-bar .btn { padding: 4px 10px; font-size: 12.5px; }
+.harp-bar .btn.tog[aria-pressed="true"] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.harp-bar .btn.rec[aria-pressed="true"] { background: color-mix(in srgb, var(--bad) 18%, transparent); border-color: var(--bad); color: var(--bad); }
+.harp-pos { margin-left: auto; color: var(--fg); font-size: 13px; }
+.harp-note { flex-basis: 100%; color: var(--muted); }
+.harp-note:empty { display: none; }
+.harp-body { flex: 1; min-height: 0; overflow: auto; padding: 10px 12px 14px; }
+.harp-h { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 6px; }
+.harp-h .hint { text-transform: none; letter-spacing: 0; font-size: 12px; margin: 0; }
+
+.chord-bars { display: grid; grid-template-columns: repeat(7, minmax(72px, 1fr)); gap: 6px; }
+.chord-bars .cb {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 10px 8px;
+  border: 1px solid color-mix(in srgb, var(--fn) 55%, var(--line)); border-radius: 8px; cursor: pointer; text-align: left;
+  background: color-mix(in srgb, var(--fn) 16%, var(--panel)); color: var(--fg);
+}
+.chord-bars .cb:hover { background: color-mix(in srgb, var(--fn) 28%, var(--panel)); }
+.chord-bars .cb:active { transform: translateY(1px); background: color-mix(in srgb, var(--fn) 45%, var(--panel)); }
+.chord-bars .cb.tonic { --fn: var(--tonic); }
+.chord-bars .cb.subdominant { --fn: var(--subdominant); }
+.chord-bars .cb.dominant { --fn: var(--dominant); }
+.chord-bars .num { font-size: 20px; font-weight: 640; font-family: var(--mono); line-height: 1.1; }
+.chord-bars .name { font-size: 12px; color: var(--muted); }
+.chord-bars .fit, .prog .fit { display: block; width: 100%; height: 3px; border-radius: 2px; background: color-mix(in srgb, var(--fg) 10%, transparent); margin-top: 4px; overflow: hidden; }
+.chord-bars .fit i, .prog .fit i { display: block; height: 100%; background: color-mix(in srgb, var(--ok) 80%, transparent); }
+.chord-bars .rank { position: absolute; top: 6px; right: 7px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent); color: white; }
+
+.prog { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 4px; }
+.prog .slot { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 8px; min-height: 58px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); text-align: left; cursor: pointer; }
+.prog .slot:nth-child(4n + 1) { border-left: 3px solid color-mix(in srgb, var(--fg) 25%, var(--line)); }
+.prog .slot.hold { background: color-mix(in srgb, var(--fg) 4%, transparent); color: var(--muted); }
+.prog .slot[aria-current="true"] { outline: 2px solid var(--accent); outline-offset: -1px; }
+.prog .slot.now { background: var(--accent-soft); }
+.prog .slot .bar-no { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.prog .slot .num { font-family: var(--mono); font-weight: 620; font-size: 14px; }
+.prog .slot .name { font-size: 11px; color: var(--muted); min-height: 1.2em; }
+.prog .slot.add { align-items: center; justify-content: center; font-size: 18px; color: var(--muted); min-height: 58px; border-style: dashed; }
+.harp.readonly .chord-bars .cb, .harp.readonly .prog .slot { cursor: default; }
+
+.strings { display: flex; flex-direction: column; gap: 4px; }
+.strings .string { display: grid; grid-template-columns: minmax(80px, 140px) minmax(120px, 170px) auto auto auto 1fr; align-items: center; gap: 6px; }
+.strings .string.quiet .s-name { opacity: .45; }
+.strings .s-name { font-weight: 560; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.strings select { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 6px; padding: 3px 6px; font-size: 12.5px; }
+.strings .ms { width: 24px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--muted); font-size: 11px; font-weight: 600; }
+.strings .ms[aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: #1b1b1a; }
+.strings .shifts { display: flex; gap: 2px; min-width: 0; overflow: hidden; }
+.strings .sh { flex: 1 0 22px; max-width: 40px; height: 22px; display: grid; place-items: center; font-family: var(--mono); font-size: 10.5px; border-radius: 3px; background: color-mix(in srgb, var(--ok) calc(var(--on, 0) * 45%), color-mix(in srgb, var(--fg) 5%, transparent)); }
+.harp-body > .btn { margin-top: 10px; }
+@media (max-width: 900px) {
+  .harp { grid-column: auto; }
+  #score .harp { order: 1; }
+  .chord-bars { grid-template-columns: repeat(4, minmax(64px, 1fr)); }
+  .chord-bars .num { font-size: 16px; }
+  .chord-bars .cb { padding: 8px 8px 6px; min-width: 0; overflow: hidden; }
+  .strings .string { grid-template-columns: minmax(70px, 1fr) minmax(110px, 1fr) auto auto auto; }
+  .strings .shifts { grid-column: 1 / -1; }
+}
+.cb-menu { position: absolute; z-index: 10; display: grid; grid-template-columns: repeat(2, auto); gap: 2px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.cb-menu button { display: flex; align-items: baseline; gap: 8px; padding: 5px 10px; border: 0; border-radius: 5px; background: none; color: var(--fg); text-align: left; }
+.cb-menu button:hover { background: var(--accent-soft); }
+.cb-menu b { font-family: var(--mono); min-width: 5ch; }
+.cb-menu span { font-size: 12px; color: var(--muted); }

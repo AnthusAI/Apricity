@@ -4,7 +4,8 @@
 // the change at the next bar. Mute and solo are for listening only and are never saved.
 
 import { el } from "../dom";
-import { api, audioUrl, stepsView, type ClipItem, type Timeline } from "../../apricity";
+import { audioUrl, stepsView, type ClipItem, type Timeline } from "../../apricity";
+import { pickClip } from "../clip-picker";
 import { player } from "../../audio/player";
 import { PALETTE } from "../flow/view";
 import { addPad, off, readBeat, setBars, setCell, setSwing, setTempo, writeBeat, type Beat, type Cell, type StepsView } from "./model";
@@ -336,41 +337,11 @@ export class BeatView {
     }
   }
 
-  /** Pick a clip for a new pad: yours and the best rated first. */
+  /** Pick a clip for a new pad: short hits first. */
   private async pickPad() {
     if (!this.view || !this.beat) return;
-    const dlg = el("dialog", { className: "beat-pick" });
-    const search = el("input", { type: "search", placeholder: "Find a clip (kick, snare, hat…)", ariaLabel: "Find a clip" });
-    const list = el("div", { className: "list" });
-    const close = el("button", { type: "button", className: "btn" }, "Cancel");
-    close.addEventListener("click", () => dlg.close());
-    dlg.append(el("h3", {}, "Add a pad"), search, list, el("div", { className: "toolbar" }, close));
-    dlg.addEventListener("close", () => dlg.remove());
-    document.body.append(dlg);
-    dlg.showModal();
-    let clips: ClipItem[] = [];
-    try {
-      clips = await api.clips();
-    } catch (e) {
-      list.replaceChildren(el("div", { className: "empty" }, `Couldn't load clips: ${(e as Error).message}`));
-      return;
-    }
-    const show = () => {
-      const q = search.value.trim().toLowerCase();
-      const hits = clips.filter((c) => !q || `${c.name} ${c.sampleTitle}`.toLowerCase().includes(q)).slice(0, 60);
-      list.replaceChildren(
-        ...hits.map((c) => {
-          const row = el("button", { type: "button", className: "row" }, el("span", { className: "t" }, c.name), el("span", { className: "sub" }, `${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s`));
-          row.addEventListener("click", () => {
-            dlg.close();
-            this.add(c);
-          });
-          return row;
-        }),
-      );
-    };
-    search.addEventListener("input", show);
-    show();
+    const c = await pickClip("Add a pad", "Find a clip (kick, snare, hat…)", (c) => (/^(shot|hit)/.test(c.name) ? 2 : 0) - Math.min(1, c.end - c.start));
+    if (c) this.add(c);
   }
 
   private add(c: ClipItem) {

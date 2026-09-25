@@ -19,6 +19,7 @@ import { el } from "./dom";
 import { currentAccount } from "../data/auth";
 import { FlowView } from "./flow/view";
 import { BeatView } from "./beat/view";
+import { HarpView } from "./chords/view";
 
 
 // Colors from the page's CSS variables, so the editor follows light/dark mode.
@@ -64,6 +65,13 @@ export class ScoreView {
     resend: () => player.transport.playing && this.send(),
   });
   private stepsBtn = el("button", { className: "btn", type: "button", title: "The drum machine: pads and steps" }, "Steps");
+  private harp = new HarpView({
+    text: () => this.view.state.doc.toString(),
+    edit: (text) => this.replaceText(text),
+    path: () => this.path,
+    resend: () => player.transport.playing && this.send(),
+  });
+  private harpBtn = el("button", { className: "btn", type: "button", title: "The chord harp: chords of the key, the progression, and the clips that play it" }, "Harp");
   private applyDock = () => {};
   private saved = "";
   private compileTimer = 0;
@@ -109,7 +117,7 @@ export class ScoreView {
     });
     root.append(
       this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
       this.sideEl,
       ...this.dockPanels(),
     );
@@ -123,17 +131,19 @@ export class ScoreView {
    * neither. Which one is open is remembered per kind of score; the height is shared.
    */
   private dockPanels() {
-    type Dock = "steps" | "flow" | null;
+    type Dock = "steps" | "harp" | "flow" | null;
+    // Each kind of score has its own editor panel; every kind has Flow.
+    const own: Partial<Record<ScoreKind, "steps" | "harp">> = { beat: "steps", chords: "harp" };
     let saved: { height: number } & Partial<Record<ScoreKind, Dock>> = { height: 440 };
     try {
       const old = JSON.parse(localStorage.getItem("apricity.flow") ?? "{}"); // the Flow panel's old setting
       saved = { ...saved, ...(typeof old.height === "number" ? { height: old.height } : {}), ...(old.open === false ? { song: null } : {}) };
       saved = { ...saved, ...JSON.parse(localStorage.getItem("apricity.dock") ?? "{}") };
     } catch {}
-    const panels = { flow: this.flow.root, steps: this.beat.root };
+    const panels = { flow: this.flow.root, steps: this.beat.root, harp: this.harp.root };
     const current = (): Dock => {
-      const d = this.kind in saved ? saved[this.kind]! : this.kind === "beat" ? "steps" : "flow";
-      return d === "steps" && this.kind !== "beat" ? "flow" : d;
+      const d = this.kind in saved ? saved[this.kind]! : (own[this.kind] ?? "flow");
+      return d === "flow" || d === null || d === own[this.kind] ? d : "flow";
     };
     const apply = (this.applyDock = () => {
       const d = current();
@@ -141,8 +151,9 @@ export class ScoreView {
         panel.hidden = d !== name;
         panel.style.height = `${saved.height}px`;
       }
-      this.stepsBtn.hidden = this.kind !== "beat";
-      for (const [btn, name] of [[this.flowBtn, "flow"], [this.stepsBtn, "steps"]] as const) {
+      this.stepsBtn.hidden = own[this.kind] !== "steps";
+      this.harpBtn.hidden = own[this.kind] !== "harp";
+      for (const [btn, name] of [[this.flowBtn, "flow"], [this.stepsBtn, "steps"], [this.harpBtn, "harp"]] as const) {
         btn.setAttribute("aria-pressed", String(d === name));
         btn.classList.toggle("on", d === name);
       }
@@ -151,13 +162,15 @@ export class ScoreView {
       } catch {}
       if (d === "flow") this.flow.redraw();
       if (d === "steps") this.beat.update(this.view.state.doc.toString(), this.timeline);
+      if (d === "harp") this.harp.update(this.view.state.doc.toString(), this.timeline);
     });
-    const toggle = (name: "steps" | "flow") => {
+    const toggle = (name: "steps" | "harp" | "flow") => {
       saved[this.kind] = current() === name ? null : name;
       apply();
     };
     this.flowBtn.addEventListener("click", () => toggle("flow"));
     this.stepsBtn.addEventListener("click", () => toggle("steps"));
+    this.harpBtn.addEventListener("click", () => toggle("harp"));
     for (const panel of Object.values(panels)) {
       const grip = el("div", { className: "flow-grip", title: "Drag to resize", role: "separator", ariaOrientation: "horizontal" });
       panel.prepend(grip);
@@ -401,6 +414,7 @@ export class ScoreView {
     });
     this.view.dispatch(setDiagnostics(this.view.state, diagnostics));
     if (!this.beat.root.hidden) this.beat.update(text, r.timeline ?? null);
+    if (!this.harp.root.hidden) this.harp.update(text, r.timeline ?? null);
     if (r.errors) {
       this.renderSide(null, r.errors, "");
       this.statusEl.textContent = player.transport.playing ? "still playing the last good version" : "";
@@ -416,7 +430,7 @@ export class ScoreView {
   async send(tl = this.timeline) {
     if (!tl) return;
     try {
-      const res = await player.arrange(this.beat.filter(tl), (m) => (this.statusEl.textContent = m + "…"));
+      const res = await player.arrange(this.harp.filter(this.beat.filter(tl)), (m) => (this.statusEl.textContent = m + "…"));
       this.statusEl.textContent = `${res.rendered} rendered, ${res.reused} reused in ${(res.ms / 1000).toFixed(1)} s` + (player.transport.playing ? " · lands at the next bar" : "");
     } catch (e) {
       if (e instanceof Superseded) return; // a newer edit's render will report

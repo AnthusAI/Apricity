@@ -38,17 +38,21 @@ track drums      steps "kick . . . snare . . ghost | . . kick . snare . . . | ki
 track drums.hat  steps "x . x . x . x . | x . x . x . x . | x . x . x . x . | x . x . x . x ."  swing 56  volume -9
 `;
 
-const CHORDS = `# A new chord progression: set the key, write the chords in numerals, and let clips follow them.
-tempo 88
-key F mixolydian
+const CHORDS = `# A new chord progression. Pick chords on the harp; each string is a clip with a job: follow moves
+# it with the chord root, a role (root, third, fifth…) asks the solver to put its center on that chord tone.
+tempo 100
+key F mixolydian   # dominant sevenths count as in-key
 samples ../samples
 
-clip horns = marine-band/stems/Thunderer/other.wav  pick 1bar
+clip tuba  = marine-band/stems/WashingtonPost/bass.wav   pick 1bar
+clip horns = marine-band/stems/WashingtonPost/other.wav  pick 1bar
+clip bugle = citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav  pick 1bar
 
-# One chord per bar; "." holds the chord before it.
 chords I7 . IV7 . | I7 . V7 IV7
 
-track horns  follow
+track tuba   follow
+track horns  role third  volume -2
+track bugle  role fifth  volume -6
 `;
 
 const MELODY = `# A new melody: one line over the chords. (Note-by-note melodies are coming; for now a clip follows the chords.)

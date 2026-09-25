@@ -136,6 +136,33 @@ pub unsafe extern "C" fn rw_steps(text: *const u8, text_len: usize) {
     });
 }
 
+/// What the Chords editor needs: key and palette, the progression and its lines, and the strings.
+/// Result: the view (see `apricity_score::chords`) or `{"errors": [...]}`.
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_chords(text: *const u8, text_len: usize) {
+    let text = unsafe { str_arg(text, text_len) };
+    set_result(match apricity_score::chords::chords_view(text) {
+        Ok(v) => v,
+        Err(errors) => json!({ "errors": errors }),
+    });
+}
+
+/// How well a score's strings fit each chord: `key` ("F mixolydian"), `voices` (the compiled timeline's
+/// `tracks[].voice`, as a JSON array) and `labels` (a JSON array of chords). Result: `{"fits": [...]}` or
+/// `{"errors": [...]}`.
+///
+/// # Safety
+/// UTF-8 (ptr, len) pairs in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_fit(key: *const u8, key_len: usize, voices: *const u8, voices_len: usize, labels: *const u8, labels_len: usize) {
+    let (key, voices, labels) = unsafe { (str_arg(key, key_len), str_arg(voices, voices_len), str_arg(labels, labels_len)) };
+    let result = apricity_score::assist::fit_json(key, voices, labels);
+    set_result(result.unwrap_or_else(|errors| json!({ "errors": errors })));
+}
+
 // ------------------------------------------------------------------ renderer (worker)
 
 #[unsafe(no_mangle)]

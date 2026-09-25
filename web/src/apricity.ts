@@ -83,6 +83,15 @@ export interface TimelineEvent {
   reverse?: boolean;
 }
 
+/** What the harmony solver knows about a track (absent when it plays re-pitched). */
+export interface TrackVoice {
+  name: string;
+  pcp: number[];
+  tonic?: number;
+  role?: string;
+  transpose?: "auto" | "follow" | number;
+}
+
 export interface Timeline {
   tempo: number;
   meter: number;
@@ -91,7 +100,7 @@ export interface Timeline {
   sources: { clip: string; path: string; bpm?: number | null; key?: string; region?: [number, number] }[];
   events: TimelineEvent[];
   harmony: { start_beat: number; end_beat: number; label: string; fit: { chord: string; coverage: number } | null }[];
-  tracks: { name: string; clip: string; region_key: string; kit?: string; chops?: number; pieces?: TimelinePiece[] }[];
+  tracks: { name: string; clip: string; region_key: string; kit?: string; chops?: number; pieces?: TimelinePiece[]; voice?: TrackVoice }[];
   warnings: string[];
 }
 
@@ -126,6 +135,18 @@ export const audioUrl = (path: string) => catalog().audioUrl(path);
 /** What the Beat editor's grid needs from a score's text (kits, pads, step tracks and their lines). */
 export async function stepsView(text: string): Promise<import("./ui/beat/model").StepsView> {
   return (await getCompiler()).call("rw_steps", text);
+}
+
+/** What the chord harp needs from a score's text (key, palette, progression, strings and their lines). */
+export async function chordsView(text: string): Promise<import("./ui/chords/model").ChordsView> {
+  return (await getCompiler()).call("rw_chords", text);
+}
+
+/** How well a compiled score's strings (its tracks' voices) fit each chord: the harmony solver's score and coverage. */
+export async function chordFits(key: string, voices: TrackVoice[], labels: string[]): Promise<{ label: string; name: string; score: number; coverage: number; voices: { name: string; semitones: number; on_chord: number }[] }[]> {
+  const r = (await getCompiler()).call("rw_fit", key, JSON.stringify(voices), JSON.stringify(labels));
+  if (r.errors) throw new Error(r.errors.join("; "));
+  return r.fits;
 }
 
 /** Compile a score: find its sources, fetch their manifests, compile in wasm. */

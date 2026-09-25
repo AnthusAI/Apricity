@@ -7,7 +7,7 @@ use crate::score::{parse_steps, Pattern, Sound, TrackSpec};
 use serde_json::{json, Value};
 
 /// The statement word of a non-indented line (comments and blank lines have none).
-fn statement(line: &str) -> Option<&str> {
+pub(crate) fn statement(line: &str) -> Option<&str> {
     if line.starts_with([' ', '\t']) {
         return None;
     }
@@ -17,7 +17,7 @@ fn statement(line: &str) -> Option<&str> {
 
 /// The last line (1-based) of the statement starting at `line`: it and the indented lines under it (blank lines
 /// in between count only when more indented lines follow).
-fn last_line(lines: &[&str], line: usize) -> usize {
+pub(crate) fn last_line(lines: &[&str], line: usize) -> usize {
     let mut last = line;
     for (i, l) in lines.iter().enumerate().skip(line) {
         if l.trim().is_empty() {
