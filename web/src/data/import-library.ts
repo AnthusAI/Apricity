@@ -174,12 +174,11 @@ async function upsert(api: any, model: string, input: Record<string, unknown>, c
     if (res.errors?.length) throw new Error(messageOf(res.errors));
     return "updated";
   }
-  let res = await m.create(input);
-  if (res.errors?.length && /createdAt|updatedAt/.test(messageOf(res.errors))) {
-    // This API build does not accept caller-set timestamps: fall back to server-set ones.
-    const { createdAt: _c, updatedAt: _u, ...rest } = input;
-    res = await m.create(rest);
-  }
+  // The create input has no createdAt/updatedAt (AppSync sets them), so they are never sent. The old code retried
+  // without them only when the error NAMED them; the real message ("a field that is not defined for input object type")
+  // does not, so every record failed.
+  const { createdAt: _c, updatedAt: _u, ...rest } = input;
+  const res = await m.create(rest);
   if (res.errors?.length) throw new Error(messageOf(res.errors));
   return "created";
 }

@@ -44,7 +44,8 @@ function fakeClient(opts: { rejectTimestamps?: boolean; failIds?: string[] } = {
       get: async (k: any) => ({ data: t.get(keyOf(m, k)) ?? null }),
       create: async (i: any) => {
         if (opts.failIds?.includes(i.id)) return { errors: [{ message: "Unauthorized" }] };
-        if (opts.rejectTimestamps && (i.createdAt || i.updatedAt)) return { errors: [{ message: "Variable 'createdAt' is not defined in CreateXInput" }] };
+        // The real API's create input has no createdAt/updatedAt, and its message does not name the field.
+        if (i.createdAt || i.updatedAt) return { errors: [{ message: `The variables input contains a field that is not defined for input object type 'Create${m}Input'` }] };
         writes.push({ op: "create", model: m, input: i });
         t.set(keyOf(m, i), i);
         return { data: i };
@@ -167,8 +168,7 @@ describe("importLibraryFromBucket", () => {
     for (const m of models) for (const r of (contract as any).models[m].relationships.filter((r: any) => r.kind === "belongsTo"))
       assert.ok(lastWrite(r.target) < firstWrite(m), `${r.target} fully written before ${m}`);
     assert.deepEqual([...new Set(seen)], order);
-    const clip = c.tables.Clip.get("clp_0bbdd194d2aac016c73f");
-    assert.equal(clip.createdAt, fixtures("Clip").find((f) => f.rec.id === clip.id)!.rec.createdAt, "createdAt preserved");
+    assert.ok(c.writes.filter((w) => w.op === "create").every((w) => !("createdAt" in w.input) && !("updatedAt" in w.input)), "timestamps are never sent on create (AppSync sets them)");
   });
 
   it("is idempotent: a second run updates and creates nothing new", async () => {
@@ -206,9 +206,9 @@ describe("importLibraryFromBucket", () => {
     assert.ok(s.perModel.Score.created > 0 && s.perModel.ScoreRef.created > 0, "later models still imported");
   });
 
-  it("falls back to server timestamps when the API rejects createdAt/updatedAt", async () => {
+  it("imports every record even though the API rejects caller-set timestamps with an unnamed message", async () => {
     const b = bucket();
-    const c = fakeClient({ rejectTimestamps: true });
+    const c = fakeClient({});
     const s = await importLibraryFromBucket({}, deps(b, c));
     assert.deepEqual(s.failed, []);
     assert.ok(c.writes.every((w) => !("createdAt" in w.input)));
