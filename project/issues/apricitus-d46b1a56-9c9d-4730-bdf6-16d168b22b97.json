@@ -10,9 +10,17 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "be341a43-c738-42fb-a98c-3757ccd1b9cc",
+      "author": "home",
+      "text": "Domain association created 2026-09-24: anth.us -> subdomain apricity -> branch main. Route 53 (zone Z02552332GG6AM25SFP73) now has the ACM validation CNAME and apricity.anth.us CNAME -> d1lk18gx81atqg.cloudfront.net (created by Amplify). Status AWAITING_APP_CNAME; needs a successful deploy of main. The other app's anth.us association (Anth.us app, www) is unaffected (AVAILABLE).",
+      "created_at": "2026-09-25T03:27:51.701042Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:28:48.312185Z",
-  "updated_at": "2026-09-25T02:28:48.312203Z",
+  "updated_at": "2026-09-25T03:27:51.701059Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

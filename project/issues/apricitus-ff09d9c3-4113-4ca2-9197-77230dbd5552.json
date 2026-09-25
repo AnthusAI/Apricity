@@ -10,9 +10,17 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "4d4c9d6c-a5ed-40ff-b5d6-ba5ffa3306d4",
+      "author": "home",
+      "text": "Env var APRICITY_OAUTH_REDIRECT_URLS set on app d2n7w4kwqyfwn4 = https://apricity.anth.us/,http://localhost:5173/,http://127.0.0.1:5181/. STILL NEEDED (user must set; agents may not enter credentials): branch secrets GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ALLOWED_EMAILS for app d2n7w4kwqyfwn4 branch main (Amplify console: Hosting > Secret management, or SSM /amplify/d2n7w4kwqyfwn4/main/<NAME>). Google client needs authorized redirect https://<cognito-domain>/oauth2/idpresponse after the first successful backend deploy, plus JS origin https://apricity.anth.us.",
+      "created_at": "2026-09-25T03:27:51.673944Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:28:48.338842Z",
-  "updated_at": "2026-09-25T02:28:48.338863Z",
+  "updated_at": "2026-09-25T03:27:51.673961Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

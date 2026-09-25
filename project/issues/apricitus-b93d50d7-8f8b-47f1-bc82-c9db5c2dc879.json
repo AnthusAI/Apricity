@@ -24,10 +24,17 @@
       "text": "Committed. Reviewer re-ran cargo test (cli+data), wasm npm test, serve-smoke: pass; cargo tree for apricity-web has no virtuus/aws/tokio. UNVERIFIED until first Amplify build: Linux rustup/wasi-sdk steps, submodule fetch, how Amplify treats customHttp.yml vs customHeaders in a monorepo, cache paths relative to appRoot. Rust toolchain is unpinned (stable); needs >=1.85. Task stays open until the app builds on Amplify.",
       "created_at": "2026-09-25T02:53:16.300908Z",
       "comment_type": "default"
+    },
+    {
+      "id": "d4e8cc30-5ccb-4e69-9b70-0ce8654b24be",
+      "author": "home",
+      "text": "Amplify app d2n7w4kwqyfwn4 (us-east-1, default profile) connected to AnthusAI/Apricity, branch main = PRODUCTION, AMPLIFY_MONOREPO_APP_ROOT=web. Builds 1 and 2 reached the backend CloudFormation deploy (so npm ci and ampx pipeline-deploy start fine) and FAILED only at auth/AmplifySecretFetcherResource: ParameterNotFound for secret GOOGLE_CLIENT_ID. The wasm/rustup/frontend steps run after the backend and are still UNTESTED on Amplify's Linux image.",
+      "created_at": "2026-09-25T03:27:51.635721Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.286227Z",
-  "updated_at": "2026-09-25T02:53:16.300933Z",
+  "updated_at": "2026-09-25T03:27:51.635745Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

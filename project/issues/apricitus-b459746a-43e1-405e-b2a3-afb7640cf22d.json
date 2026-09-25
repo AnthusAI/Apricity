@@ -17,10 +17,17 @@
       "text": "User confirmed: use the default AWS profile (aws login). Verified read-only: account 335163751677, region us-east-1, Route 53 public hosted zone anth.us. (Z02552332GG6AM25SFP73) is in this account, so apricity.anth.us records can be created directly. Note: the session identity is the account ROOT user. Still needed: explicit approval to create billable resources / point apricity.anth.us at them.",
       "created_at": "2026-09-25T02:39:40.930472Z",
       "comment_type": "default"
+    },
+    {
+      "id": "1870dab6-7dca-4e75-8e81-e1a6c095dbd7",
+      "author": "home",
+      "text": "AWS default profile confirmed; zone found; deploy approved by user (no sandbox, straight to production). Amplify app created by user: d2n7w4kwqyfwn4.",
+      "created_at": "2026-09-25T03:27:51.727443Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.256783Z",
-  "updated_at": "2026-09-25T02:39:40.930487Z",
+  "updated_at": "2026-09-25T03:27:51.727467Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
