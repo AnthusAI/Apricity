@@ -3,17 +3,30 @@
   "title": "Reusable score breakdowns: the hero animation for any score",
   "description": "Generalize the landing hero's how-it-was-made animation into a Breakdown component fed by bundles baked automatically from any score (scripts/breakdown.py). Tabs for the score code, generated provenance, CTA deep link into the Score tab, landing gallery, docs embed. Plan: ~/.claude/plans/system-reminder-you-are-operating-jolly-heron.md. Backend note for the cloud session: adds a guest-read rule for files/breakdowns/* in web/amplify/storage/resource.ts.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "4268ef97-61ac-4df6-9934-e0a17a27e394",
+      "author": "home",
+      "text": "Shipped 4a43f2d, live on apricity.anth.us. scripts/breakdown.py bakes any score; N-source story; Breakdown component (Breakdown/Score tabs, generated provenance, Open in Score); landing gallery (Chop Shop, March Blues); docs embed (concepts.md); #score= deep links; signed-out Hear no longer hangs. Verified: web tests 74/0, cargo apricity-data pass, breakdown-smoke 99 ok, prod-smoke 30 ok (guest reads all breakdown audio), live Open in Score compiles and plays. Storage rule files/breakdowns/* deployed (was files/hero/*). Not verified: signed-out click-through in a browser (smoke covers guest access).",
+      "created_at": "2026-09-25T15:16:27.792262Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-25T14:46:34.455319Z",
-  "updated_at": "2026-09-25T14:46:34.455346Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T15:16:27.978351Z",
+  "closed_at": "2026-09-25T15:16:27.978316Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
