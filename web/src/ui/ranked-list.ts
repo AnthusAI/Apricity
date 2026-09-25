@@ -97,12 +97,13 @@ export class RankedList<T extends Rankable> {
       this.render();
     });
     const tools = el("div", { className: "rank-tools" }, this.windowEl, this.mineBtn);
-    const kids: HTMLElement[] = [el("div", { className: "search" }, search), tools, this.noteEl, this.listEl];
+    const searchRow: HTMLElement[] = [search];
     if (src.create) {
       const add = (this.addBtn = el("button", { type: "button", className: "btn primary new", textContent: src.create.label }));
       add.addEventListener("click", () => src.create!.run());
-      kids.push(el("div", { className: "list-foot" }, add));
+      searchRow.push(add);
     }
+    const kids: HTMLElement[] = [el("div", { className: "search" }, ...searchRow), tools, this.noteEl, this.listEl];
     this.el = el("aside", { className: "sidebar ranked" }, ...kids);
   }
 

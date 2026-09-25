@@ -49,6 +49,7 @@ const brand = document.querySelector<HTMLButtonElement>(".brand.link")!;
 const loaded = new Set<string>();
 function showTab(name: string) {
   if (!TABS.includes(name)) name = "scores";
+  document.body.dataset.tab = name;
   const kind = KIND_OF_TAB[name];
   const view = kind ? "score" : name;
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
