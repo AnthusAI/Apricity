@@ -4,6 +4,7 @@
 # Fetch the kit with: apricity sources fetch salamander-drumkit
 tempo 104
 key F mixolydian
+humanize 6ms 10%   # a drummer's feel: every note a little early or late, softer or louder
 samples ../samples
 
 clip horns    = marine-band/stems/Thunderer/other.wav  beats 14..18   # four beats whose attacks land on the beat (within 9 ms)
@@ -40,9 +41,9 @@ track h  steps "1 _ _ _ 2 _ _ _ 3 _ _ _ 4 _ _ _ | 1 _ _ 1 _ _ 2 _ . . 3 _ 4 _ _ 
 # Kick on every beat (with a pushed kick in some bars); the snare backbeat, with ghosts, sticks and
 # tom fills changing bar to bar.
 track drums.kick  steps "x _ _ _ x _ _ _ x _ _ _ x _ _ _ | x _ _ _ x _ _ _ x _ _ x x _ _ _ | x _ _ _ x _ _ _ x _ _ _ x _ _ _ | x _ _ _ x _ _ _ x _ _ _ x _ x _ | x _ _ _ x _ _ _ x _ _ _ x _ _ _ | x _ _ x x _ _ _ x _ _ _ x _ _ _ | x _ _ _ x _ _ _ x _ x _ x _ _ _ | x _ _ _ x _ _ _ x _ _ _ x _ _ _"  volume +1
-track drums  steps ". . . . snare _ _ _ . . . . snare _ _ _ | . . . ghost snare _ _ _ . . ghost . snare _ _ ghost | . . . . snare _ _ stick . . . stick snare _ _ _ | . . . . snare _ ghost . . . . . snare _ tom floor | . . . . snare _ _ _ . . . ghost snare _ ghost . | . . ghost . snare _ _ _ . . . . snare _ stick stick | . . . . snare _ _ ghost . . ghost . snare _ _ _ | . . . . snare _ _ _ . . tom tom floor floor [snare snare] [snare snare]"  volume -9
+track drums  steps ". . . . snare _ _ _ . . . . snare _ _ _ | . . . ghost@55 snare _ _ _ . . ghost@55 . snare _ _ ghost@55 | . . . . snare _ _ stick@80 . . . stick@80 snare _ _ _ | . . . . snare _ ghost@55 . . . . . snare _ tom floor | . . . . snare _ _ _ . . . ghost@55 snare _ ghost@55 . | . . ghost@55 . snare _ _ _ . . . . snare _ stick@80 stick@80 | . . . . snare _ _ ghost@55 . . ghost@55 . snare _ _ _ | . . . . snare _ _ _ . . tom tom floor floor [snare@70 snare@85] [snare@100 snare!]"  volume -9
 
 # Hats: straight eighths, sixteenths, and open hats on the off-beats, a different figure each bar.
-track drums.hat   steps ". . x . . . x . . . x . . . x . | x x x x x x x x x x x x x x x x | . . x . . . x . . . x . . . x x | x . x . x . x . x . x . x . x . | . . x . . . x . . . x . . . x . | x x x . x x x . x x x . x x x . | . . x . . . x x . . x . . . x . | x . x . x . x . x . x . . . . ."  volume -9
+track drums.hat   steps ". . x . . . x . . . x . . . x . | x x@65 x x@65 x x@65 x x@65 x x@65 x x@65 x x@65 x x@65 | . . x . . . x . . . x . . . x x@65 | x . x . x . x . x . x . x . x . | . . x . . . x . . . x . . . x . | x x@65 x . x x@65 x . x x@65 x . x x@65 x . | . . x . . . x x@65 . . x . . . x . | x . x . x . x . x . x . . . . ."  volume -9
 track drums.open  steps ". . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . x . . . x . . . x . . . x . | . . . . . . . . . . . . . . . . | . . . . . . . . . . x . . . . . | . . . . . . . . . . . . . . . ."  gate 50%  volume -22
 track drums.crash  at 1 5  volume -22

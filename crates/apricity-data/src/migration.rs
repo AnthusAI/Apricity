@@ -930,7 +930,9 @@ fn migrate_scores(
     let mut paths = Vec::new();
     for dir in ["examples", "scores"] {
         walk(&repo.join(dir), &mut |p| {
-            if matches!(p.extension().and_then(|e| e.to_str()), Some("apr" | "yaml")) {
+            // `<score>.breakdown.yaml` is a breakdown's sidecar (scripts/breakdown.py), not a score.
+            let sidecar = p.file_name().and_then(|n| n.to_str()).is_some_and(|n| n.ends_with(".breakdown.yaml"));
+            if !sidecar && matches!(p.extension().and_then(|e| e.to_str()), Some("apr" | "yaml")) {
                 paths.push(p.to_path_buf());
             }
         })?;
