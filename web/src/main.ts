@@ -9,11 +9,24 @@ import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
 
 // Configure the data layer first: /amplify_outputs.json says whether files come from `apricity serve` or the bucket.
-const oauthReturned = watchAuth(); // listen before configure: Amplify exchanges a Google redirect code asynchronously
-await bootstrap();
-await oauthReturned; // views and the account label must not render before the session exists
+// A deploy renames every built file. A tab opened before the deploy then fails to load its lazy chunks (sign-out, storage)
+// with a 404: reload once to pick up the new build instead of leaving a dead page.
+window.addEventListener("vite:preloadError", (e) => {
+  e.preventDefault();
+  try {
+    const last = Number(sessionStorage.getItem("apricity.reloadedAt") ?? "0");
+    if (Date.now() - last < 30_000) return; // already tried a moment ago: do not loop
+    sessionStorage.setItem("apricity.reloadedAt", String(Date.now()));
+  } catch {}
+  location.reload();
+});
 
-// Sign in / out lives in the header; it only appears against the cloud backend.
+// Listen before configure: Amplify exchanges a Google redirect code asynchronously. Nothing waits for it: the views render
+// at once and reload when watchAuth announces the session (apricity:auth-changed), so the page is never blank.
+void watchAuth();
+await bootstrap();
+
+// Sign in / out lives in the bottom-left pill; it only appears against the cloud backend.
 new AccountControl(document.querySelector<HTMLElement>("#account")!, realDeps(() => mode() === "cloud"));
 
 const library = new Library(document.querySelector("#library")!);
