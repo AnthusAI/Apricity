@@ -1,9 +1,8 @@
-// The landing page's hero story: first the finished groove (examples/hero.apr), full from the first
-// bar, then how it was made, slowly enough to follow: the horn stem of Sousa's "The Thunderer" is
-// analyzed, clipped, sliced and placed into the composition, warped to its tempo and transposed to its
-// chords; then a kit of drum one-shots (the Salamander Drumkit) is laid onto pads and played by step
-// patterns. Everything drawn comes from hero-data.json (see scripts/hero-data.py): real peaks, beats
-// and placements.
+// The landing page's hero story: the groove of examples/hero.apr being made, slowly enough to follow.
+// The horn stem of Sousa's "The Thunderer" is analyzed, clipped, sliced and placed into the
+// composition, warped to its tempo and transposed to its chords; then a kit of drum one-shots (the
+// Salamander Drumkit) is laid onto pads and played by step patterns, and the whole groove plays.
+// Everything drawn comes from hero-data.json (see scripts/hero-data.py): real peaks, beats and placements.
 
 import { type Box, type Layout, beatX, layout, secX } from "./layout";
 import { type FlowData, type FlowTile, decodePeaks } from "./model";
@@ -26,35 +25,30 @@ interface Phases {
 
 // The listening sweeps last as long as the audio they cross (the source window, about 6 s), so
 // the story can be heard in step: see cues().
-/** The story opens on the finished groove, one full pass (examples/hero.apr: 8 bars at 104 BPM, 18.5 s). */
-export const INTRO = 19;
-const at = (s: Span): Span => [s[0] + INTRO, s[1] + INTRO];
 const PHASES: Phases[] = [
   { appear: [0, 2.5], listen: [2.5, 8.5], suggest: [8, 8.8], point: [10, 13], name: [13.2, 14], lift: [14.5, 16.5], cut: [16.5, 19], code: [19, 20], land: [22.5, 27.5], fill: [27.5, 29.5] },
   { appear: [34.5, 37], listen: [37, 43], suggest: [42.4, 43.2], point: [43.6, 45.8], name: [46, 46.6], lift: [46.8, 48], cut: [48, 50], code: [50, 50.8], land: [51.5, 55.5], fill: [55.5, 58] },
-].map((p) => Object.fromEntries(Object.entries(p).map(([k, v]) => [k, at(v as Span)])) as unknown as Phases);
-const COMPOSE: Span = at([21, 22.5]);
-const COLLAPSE: Span = at([31, 34]);
-const FLY = 1.1;
-export const LOOP = INTRO + 84;
-/** When the playhead runs: the whole groove first, a taste of the horns alone, then (after the drums are in) the whole piece again. */
-const OPENING = { from: 0, to: INTRO - 0.5, fade: 1 };
-const SESSIONS = [
-  { from: INTRO + 29.5, to: INTRO + 34.5, fade: 2 },
-  { from: INTRO + 58.5, to: LOOP, fade: 2 },
 ];
-const FADE: Span = [LOOP - 2, LOOP];
+const COMPOSE: Span = [21, 22.5];
+const COLLAPSE: Span = [31, 34];
+const FLY = 1.1;
+export const LOOP = 84;
+/** When the playhead runs: a first taste of the horns, then (after the drums are in) the whole groove. */
+const SESSIONS = [
+  { from: 29.5, to: 34.5, fade: 2 },
+  { from: 58.5, to: LOOP, fade: 2 },
+];
+const FADE: Span = [82, LOOP];
 /** The frame shown when motion is reduced: everything in place. */
-export const STILL = INTRO + 70;
+export const STILL = 70;
 
 export const CHAPTERS = [
-  { label: "Groove", t: 0 },
-  { label: "Listen", t: INTRO },
-  { label: "Clip", t: INTRO + 9 },
-  { label: "Slice", t: INTRO + 14.5 },
-  { label: "Warp", t: INTRO + 21 },
-  { label: "Kit", t: INTRO + 34 },
-  { label: "Play", t: INTRO + 58.5 },
+  { label: "Listen", t: 0 },
+  { label: "Clip", t: 9 },
+  { label: "Slice", t: 14.5 },
+  { label: "Warp", t: 21 },
+  { label: "Kit", t: 34 },
+  { label: "Play", t: 58.5 },
 ];
 
 export const chapterAt = (t: number) => CHAPTERS.reduce((k, c, i) => (t >= c.t ? i : k), 0);
@@ -120,7 +114,6 @@ export class Story {
     const uniq = [...new Set(follow)];
     const pads = b.pads ?? [];
     const [p, q] = this.ph;
-    if (t < INTRO) return { title: "The groove.", text: "Horn stabs cut from an 1889 Sousa march, over a kit of drum one-shots: a different rhythm every bar. Here's how it's made." };
     if (t < p.appear[1]) return { title: "A sample.", text: `${a.title}: ${a.credit}.` };
     if (t < p.point[0] - 1) return { title: "Listen.", text: `Apricity finds the beats (${a.bpm} BPM), the key (${prettyKey(a.key ?? "?")}) and the tuning (${tuning(a.tuning_cents)}).` };
     if (t < p.lift[0]) return { title: "Clip.", text: "Mark the part you want as a clip. The selection snaps to the beat." };
@@ -131,7 +124,7 @@ export class Story {
     if (t < q.lift[0]) return { title: "One-shots.", text: `${pads.length} single hits. Drums play as recorded: no stretching, no retuning.` };
     if (t < q.land[0] - 0.5) return { title: "Pads.", text: `One pad per drum: ${pads.join(", ")}.` };
     if (t < SESSIONS[1].from) return { title: "Steps.", text: "Step patterns play the pads: the kick on every beat, and a different snare, hat and tom figure in every bar." };
-    return { title: "The mashup.", text: "Sliced horns and a drum kit, warped and tuned into one groove." };
+    return { title: "The groove.", text: "Horn stabs cut from an 1889 Sousa march, over a kit of drum one-shots: warped, tuned, and a different rhythm every bar." };
   }
 
   draw(g: CanvasRenderingContext2D, w: number, h: number, t: number, th: Theme, still = false) {
@@ -141,7 +134,7 @@ export class Story {
       w,
       h,
       [
-        { shown: easeOut(seg(t, INTRO, INTRO + 0.8)), detail: 1 - easeInOut(seg(t, ...COLLAPSE)) },
+        { shown: easeOut(seg(t, 0, 0.8)), detail: 1 - easeInOut(seg(t, ...COLLAPSE)) },
         { shown: easeInOut(seg(t, this.ph[1].appear[0] - 0.8, this.ph[1].appear[0] + 0.6)), detail: 1 },
       ],
       this.pitchRange.map((p, n) => (d.sources[n].kind === "kit" ? KIT_LANE : p ? PITCHED_LANE : LANE)),
@@ -151,7 +144,7 @@ export class Story {
     g.globalAlpha = 1 - seg(t, ...FADE);
 
     // What's playing: tiles under the playhead light their whole lineage.
-    const session = still ? undefined : [OPENING, ...SESSIONS].find((p) => t >= p.from && t < p.to);
+    const session = still ? undefined : SESSIONS.find((p) => t >= p.from && t < p.to);
     const playing = !!session;
     const beat = session ? (((t - session.from) * d.tempo) / 60) % d.beats : -1;
     const active = this.tiles
@@ -179,11 +172,6 @@ export class Story {
     g.restore();
   }
 
-  /** The opening: the finished piece, in full, fading away as the story of its making begins. */
-  private opening(t: number) {
-    return 1 - seg(t, INTRO - 1.2, INTRO - 0.2);
-  }
-
   /** A pad's label: its number, or a kit pad's name when there's room. */
   private padLabel(n: number, i: number, w: number) {
     const name = this.data.sources[n].pads?.[i];
@@ -194,7 +182,7 @@ export class Story {
 
   private composition(g: CanvasRenderingContext2D, L: Layout, t: number, th: Theme, beat: number, compact: boolean) {
     const d = this.data;
-    const a = t < INTRO ? this.opening(t) : easeOut(seg(t, ...COMPOSE));
+    const a = easeOut(seg(t, ...COMPOSE));
     if (a <= 0) return;
     g.save();
     g.globalAlpha *= a;
@@ -233,7 +221,7 @@ export class Story {
     }
     // Lanes, each appearing just before its chops arrive; track names on the right, as in Live.
     L.lanes.forEach((lane, n) => {
-      const la = t < INTRO ? 1 : seg(t, this.ph[n].land[0] - 1.4, this.ph[n].land[0] - 0.3);
+      const la = seg(t, this.ph[n].land[0] - 1.4, this.ph[n].land[0] - 0.3);
       if (la <= 0) return;
       g.globalAlpha = a * la;
       g.fillStyle = th.card;
@@ -245,7 +233,7 @@ export class Story {
       header(g, L.right + 8, lane.y + lane.h / 2, this.shortName(n), `track ${src.lane}`, th.clips[n], th, compact);
       // "120 → 88 BPM": the warp, said out loud while the first chops land.
       const ph = this.ph[n];
-      const say = t < INTRO ? 0 : pulse(t, ph.land[0], ph.land[0] + 0.5, ph.land[1] + 1.5, ph.land[1] + 2.5);
+      const say = pulse(t, ph.land[0], ph.land[0] + 0.5, ph.land[1] + 1.5, ph.land[1] + 2.5);
       if (say > 0) {
         g.globalAlpha = a * say;
         g.fillStyle = th.ink;
@@ -528,16 +516,6 @@ export class Story {
 
   private placed(g: CanvasRenderingContext2D, L: Layout, t: number, th: Theme, active: { x: Timed; glow: number }[]) {
     const d = this.data;
-    if (t < INTRO) {
-      g.save();
-      g.globalAlpha *= this.opening(t);
-      for (const x of this.tiles) {
-        const on = active.find((a) => a.x === x);
-        tile(g, this.slot(L, x, 1), th.clips[x.source], th, { peaks: this.peaks[x.source], win: d.sources[x.source].window, from: d.sources[x.source].chops[x.chop][0], to: d.sources[x.source].chops[x.chop][1], glow: on?.glow ?? 0 });
-      }
-      g.restore();
-      return;
-    }
     for (const x of this.tiles) {
       if (t < x.t0) continue;
       const color = th.clips[x.source];
@@ -623,9 +601,8 @@ export class Story {
     });
     // Each chop landing in the composition: warped and tuned, from the track's render.
     for (const x of this.tiles) if (x.fly) out.push({ t: x.landed, kind: "track", index: x.source, offset: this.secs(x.start), dur: this.secs(x.dur) });
-    // The playhead: the whole piece, then the horns alone, then the whole piece again.
+    // The playhead: the horns alone, then the whole groove.
     const [first, all] = SESSIONS;
-    d.sources.forEach((_, n) => out.push({ t: OPENING.from, kind: "track", index: n, offset: 0, dur: OPENING.to - OPENING.from, fadeOut: OPENING.fade, loop: true }));
     out.push({ t: first.from, kind: "track", index: 0, offset: 0, dur: first.to - first.from, fadeOut: first.fade, loop: true });
     d.sources.forEach((_, n) => out.push({ t: all.from, kind: "track", index: n, offset: 0, dur: all.to - all.from, fadeOut: all.fade, loop: true }));
     return out.sort((p, q) => p.t - q.t);

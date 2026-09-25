@@ -139,7 +139,7 @@ export class Landing {
     this.stage.setAttribute("role", "img");
     this.stage.setAttribute(
       "aria-label",
-      "Animation: a groove of horn stabs and drums plays; then the horn stem of Sousa's The Thunderer is analyzed, cut into a clip, sliced onto pads and placed into the composition, warped to one tempo and transposed to follow its chords, and drum one-shots from the Salamander Drumkit are laid onto pads and played by step patterns.",
+      "Animation: the horn stem of Sousa's The Thunderer is analyzed, cut into a clip, sliced onto pads and placed into a new composition, warped to one tempo and transposed to follow its chords; then drum one-shots from the Salamander Drumkit are laid onto pads and played by step patterns, and the whole groove plays.",
     );
     const nav = el("nav", { className: "chapters", ariaLabel: "Story chapters" });
     this.chapters = CHAPTERS.map((c, i) => {
@@ -158,13 +158,12 @@ export class Landing {
       "ol",
       { className: "sr-only" },
       ...[
-        "Groove: the finished piece plays, full from the first bar, a different rhythm every bar.",
         "Listen: a horn recording is analyzed for its beats, tempo, key and tuning.",
         "Clip: you mark the part you want as a clip; the selection snaps to the beat.",
         "Slice: the clip is sliced into equal pieces, one on each pad of a kit.",
         "Warp: a step pattern plays the pads, stretched to the piece's tempo and transposed to follow its chords.",
         "Kit: drum one-shots go onto pads of their own and play as recorded, from step patterns.",
-        "Play: the finished piece plays again, each sound lit back to where it came from.",
+        "Play: the finished groove plays, each sound lit back to where it came from.",
       ].map((t) => el("li", {}, t)),
     );
     this.soundButton("checking");

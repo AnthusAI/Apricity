@@ -115,10 +115,7 @@ test("hero story cues: each step is heard, in order", async () => {
   const chops = cues.filter((c) => c.kind === "source" && c.dur < 1);
   assert.equal(chops.length, 4 + 9, "every chop and pad is heard as it's cut");
   const loops = cues.filter((c) => c.loop);
-  assert.equal(loops.length, 5, "the whole groove, the horns alone, then the whole groove again");
-  const opening = cues.filter((c) => c.t === 0);
-  assert.deepEqual(opening.map((c) => c.index).sort(), [0, 1], "the very first sound is every track together");
-  assert.ok(opening.every((c) => c.kind === "track" && c.loop && c.dur >= (d.beats * 60) / d.tempo - 1), "a full pass of the piece");
+  assert.equal(loops.length, 3, "the horns alone, then the whole groove");
   for (const c of cues.filter((c) => c.kind === "track" && !c.loop)) assert.ok(c.offset + c.dur <= (d.beats * 60) / d.tempo + 1e-6, "landings stay inside the render");
 });
 
