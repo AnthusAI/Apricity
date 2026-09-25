@@ -5,19 +5,26 @@ edition.workspace = true
 license.workspace = true
 description = "Apricity domain logic: pure functions for ids, ranking, and markup merge."
 
+[features]
+# The storage stack (Virtuus engine, S3, sync, migration). Default on for the CLI and tests; the
+# browser wasm module (apricity-web) depends with default-features = false and gets only the pure
+# modules: ids, markup, position, rank, score_refs.
+default = ["storage"]
+storage = ["dep:virtuus-amplify", "dep:chrono", "dep:thiserror", "dep:uuid", "dep:aws-config", "dep:aws-sdk-s3", "dep:tokio"]
+
 [dependencies]
 apricity-score.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha1 = "0.10"
 sha2 = "0.10"
-uuid = { version = "1", features = ["v4"] }
-virtuus-amplify = { path = "../../../Virtuus/rust/crates/virtuus-amplify" }
-chrono = "0.4"
-thiserror = "1"
-aws-config = "1"
-aws-sdk-s3 = "1"
-tokio = { version = "1", features = ["rt-multi-thread"] }
+uuid = { version = "1", features = ["v4"], optional = true }
+virtuus-amplify = { path = "../../../Virtuus/rust/crates/virtuus-amplify", optional = true }
+chrono = { version = "0.4", optional = true }
+thiserror = { version = "1", optional = true }
+aws-config = { version = "1", optional = true }
+aws-sdk-s3 = { version = "1", optional = true }
+tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 
 [dev-dependencies]
 tempfile = "3"

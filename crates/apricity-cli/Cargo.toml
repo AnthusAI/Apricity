@@ -10,7 +10,7 @@ name = "apricity"
 path = "src/main.rs"
 
 [dependencies]
-apricity-data.workspace = true
+apricity-data = { workspace = true, features = ["storage"] }
 apricity-dsp.workspace = true
 apricity-engine = { workspace = true, features = ["decode"] }
 apricity-score.workspace = true

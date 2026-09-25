@@ -1,0 +1,45 @@
+version: 1
+applications:
+  - appRoot: web
+    backend:
+      phases:
+        build:
+          commands:
+            - npm ci --cache .npm --prefer-offline
+            - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci --cache .npm --prefer-offline
+            # Rust + wasi-sdk, then the wasm module (from the repo root, one level above appRoot).
+            - ../scripts/amplify-wasm.sh
+        build:
+          commands:
+            - npm run build
+            # vite empties dist/, so the wasm is copied in afterwards; it is served at /apricity_web.wasm.
+            - cp .cache/apricity_web.wasm dist/apricity_web.wasm
+      artifacts:
+        baseDirectory: dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - .npm/**/*
+          - .cache/cargo/registry/**/*
+          - .cache/rustup/**/*
+          - .cache/target/**/*
+    customHeaders:
+      - pattern: '**/*'
+        headers:
+          - key: 'Cross-Origin-Opener-Policy'
+            value: 'same-origin'
+          - key: 'Cross-Origin-Embedder-Policy'
+            value: 'require-corp'
+          - key: 'Cross-Origin-Resource-Policy'
+            value: 'same-origin'
+      - pattern: '/apricity_web.wasm'
+        headers:
+          - key: 'Content-Type'
+            value: 'application/wasm'

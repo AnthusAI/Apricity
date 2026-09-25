@@ -66,3 +66,4 @@ project/.overlay/
 *.aif
 *.aiff
 *.opus
+/web/.cache/

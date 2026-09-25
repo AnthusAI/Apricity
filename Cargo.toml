@@ -8,7 +8,7 @@ edition = "2024"
 license = "GPL-2.0-or-later"
 
 [workspace.dependencies]
-apricity-data = { path = "crates/apricity-data" }
+apricity-data = { path = "crates/apricity-data", default-features = false }
 apricity-dsp = { path = "crates/apricity-dsp" }
 apricity-theory = { path = "crates/apricity-theory" }
 apricity-score = { path = "crates/apricity-score" }

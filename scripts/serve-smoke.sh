@@ -99,6 +99,16 @@ if [ -d "$REPO_ROOT/web/dist" ]; then
     grep -qi "^cross-origin-opener-policy: same-origin" "$WORK/root.txt"; check "COOP header on /" $?
     grep -qi "^cross-origin-embedder-policy: require-corp" "$WORK/root.txt"; check "COEP header on /" $?
     grep -qi "^cross-origin-resource-policy: same-origin" "$WORK/root.txt"; check "CORP header on /" $?
+    # Production serves /apricity_web.wasm out of dist/ (amplify.yml copies it there).
+    if [ -f "$REPO_ROOT/web/dist/apricity_web.wasm" ]; then
+        CODE="$(curl -s -D "$WORK/wasm.txt" -o "$WORK/served.wasm" -w '%{http_code}' "$BASE/apricity_web.wasm")"
+        [ "$CODE" = "200" ]; check "GET /apricity_web.wasm is 200 (got $CODE)" $?
+        grep -qi "^content-type: application/wasm" "$WORK/wasm.txt"; check "wasm Content-Type is application/wasm" $?
+        grep -qi "^cross-origin-embedder-policy: require-corp" "$WORK/wasm.txt"; check "COEP header on the wasm" $?
+        cmp -s "$WORK/served.wasm" "$REPO_ROOT/web/dist/apricity_web.wasm"; check "served wasm identical to dist/apricity_web.wasm" $?
+    else
+        echo "SKIPPED web/dist/apricity_web.wasm is absent (copy it there as amplify.yml does)"
+    fi
 else
     echo "SKIPPED web/dist is not built; / would be a 404 (run npm run build in web/)"
 fi
