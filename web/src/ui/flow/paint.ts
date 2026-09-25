@@ -29,7 +29,7 @@ export function readTheme(el: Element): Theme {
     night: v("--night", "#fff"),
     sun: v("--sun", "#f59e5b"),
     sun2: v("--sun-2", "#ffcf8a"),
-    clips: [v("--clip-a", "#c46bb4"), v("--clip-b", "#f59e5b"), v("--clip-c", "#6bb6c4")],
+    clips: [v("--clip-a", "#c46bb4"), v("--clip-b", "#f59e5b"), v("--clip-c", "#6bb6c4"), v("--clip-d", "#a9c47f")],
     clipInk: v("--clip-ink", "#2a1420"),
     mono: v("--mono", "ui-monospace, Menlo, monospace"),
     sans: css.fontFamily || "system-ui, sans-serif",

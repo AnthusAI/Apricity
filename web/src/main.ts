@@ -7,6 +7,7 @@ import { Landing } from "./ui/landing";
 import { bootstrap, mode } from "./data/client";
 import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
+import { parseRoute, routeFor } from "./route";
 
 // Configure the data layer first: /amplify_outputs.json says whether files come from `apricity serve` or the bucket.
 // A deploy renames every built file. A tab opened before the deploy then fails to load its lazy chunks (sign-out, storage)
@@ -53,18 +54,39 @@ let initial = "home";
 try {
   initial = localStorage.getItem("apricity.tab") ?? initial;
 } catch {}
+/** Open a score in the Score tab, and play it once it has compiled. Signed out, the Score tab says to
+ *  sign in and the sign-in dialog opens; nothing waits forever. */
+async function openScore(path: string, play: boolean) {
+  await score.open(path);
+  showTab("score");
+  if (score.path !== path) {
+    document.dispatchEvent(new CustomEvent("apricity:sign-in"));
+    return;
+  }
+  if (!play) return;
+  for (let i = 0; i < 100 && !(score.timeline && score.path === path); i++) await new Promise((r) => setTimeout(r, 100));
+  if (score.timeline && score.path === path && !player.transport.playing) playBtn.click();
+}
+
+// Deep links: #score=<path>[&play] (a breakdown's "Open in Score", or a shared link).
+async function followRoute() {
+  const r = parseRoute(location.hash);
+  if (!r.score) return;
+  await openScore(r.score, r.play);
+  // The link has done its job: drop it, so a reload doesn't reopen (and replay) the score.
+  history.replaceState(null, "", location.pathname + location.search);
+}
+window.addEventListener("hashchange", () => void followRoute());
+
 new Landing(document.querySelector("#home")!, {
   library: () => showTab("library"),
   score: () => showTab("score"),
   docs: () => showTab("docs"),
-  hear: async () => {
-    await score.open("examples/chop-shop.apr");
-    while (!score.timeline || score.path !== "examples/chop-shop.apr") await new Promise((r) => setTimeout(r, 100));
-    showTab("score");
-    if (!player.transport.playing) playBtn.click();
-  },
+  hear: () => openScore("examples/chop-shop.apr", true),
+  open: (path) => (location.hash = routeFor(path, true)),
 });
 showTab(initial);
+void followRoute();
 
 // The score editor's "Reference" button opens the language docs.
 document.addEventListener("apricity:docs", (e) => {

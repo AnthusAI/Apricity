@@ -3,12 +3,8 @@
 import "./landing.css";
 import { api } from "../apricity";
 import { el } from "./dom";
-import heroData from "./flow/hero-data.json";
-import type { FlowData } from "./flow/model";
-import { readTheme } from "./flow/paint";
-import { rememberSound, soundRemembered, soundView, stateAfterProbe, type SoundState } from "./flow/hero-audio";
-import { soundStatus, StorySound } from "./flow/sound";
-import { CHAPTERS, LOOP, STILL, Story, chapterAt } from "./flow/story";
+import { HERO, breakdown, breakdowns } from "../breakdowns";
+import { Breakdown } from "./breakdown/breakdown";
 
 const DEMO = `tempo 100
 key F mixolydian
@@ -40,6 +36,8 @@ export interface LandingActions {
   score(): void;
   docs(): void;
   hear(): Promise<void>;
+  /** Open a score in the Score tab and play it (a breakdown's "Open in Score"). */
+  open(score: string): void;
 }
 
 export class Landing {
@@ -47,23 +45,6 @@ export class Landing {
   private canvas = el("canvas", { ariaHidden: "true" });
   private raf = 0;
   private visible = false;
-  // The hero story: a mashup being made, on its own clock so it can pause and jump.
-  private story = new Story(heroData as FlowData);
-  private stage = el("canvas", { className: "stage-canvas" });
-  private info = el("p", { className: "info" });
-  private chapters: HTMLButtonElement[] = [];
-  private storyT = 0;
-  private stillT = STILL; // with reduced motion: the settled frame of the chosen chapter
-  private last = 0;
-  private paused = false;
-  private shown = { chapter: -1, caption: "" };
-  // Sound, off until asked for: then the audio clock drives the story.
-  private sound = heroData.audio
-    ? new StorySound((heroData as FlowData).audio!, this.story.cues(), LOOP, (heroData.beats * 60) / heroData.tempo, this.story.metronome())
-    : null;
-  private soundBtn = el("button", { type: "button", className: "sound" });
-  private metronomeBox = el("input", { type: "checkbox", checked: true });
-  private soundState: SoundState = "checking"; // until the library is asked whether it has the sound
 
   constructor(root: HTMLElement, go: LandingActions) {
     this.root = root;
@@ -100,7 +81,7 @@ export class Landing {
             el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every sample, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
             el("div", { className: "actions" }, hear, cta("Open the library", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Read the docs", "ghost", go.docs)),
           ),
-          this.stageFigure(),
+          new Breakdown(breakdown(HERO)!, { variant: "hero", open: go.open, remember: true }).root,
         ),
         el(
           "section",
@@ -116,6 +97,7 @@ export class Landing {
           ),
           el("div", { className: "score" }, el("div", { className: "head" }, el("span", {}, "a 12-bar blues, from an 1889 march"), el("span", {}, ".apr")), el("pre", { innerHTML: highlight(DEMO) })),
         ),
+        this.gallery(go),
         el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every sample analyzed and ready to use: the public-domain collection Apricity ships with, plus anything you drop in."), stats),
         el(
           "section",
@@ -128,141 +110,33 @@ export class Landing {
       ),
     );
     this.loadStats(stats);
-    void this.probeSound();
     new IntersectionObserver(([e]) => {
       this.visible = e.isIntersecting;
-      this.sound?.hold(!this.visible);
       if (this.visible && !this.raf) this.loop();
     }).observe(this.canvas);
   }
 
-  private stageFigure() {
-    this.stage.setAttribute("role", "img");
-    this.stage.setAttribute(
-      "aria-label",
-      "Animation: the horn stem of Sousa's The Thunderer is analyzed, cut into a clip, sliced onto pads and placed into a new composition, warped to one tempo and transposed to follow its chords; then drum one-shots from the Salamander Drumkit are laid onto pads and played by step patterns, and the whole groove plays.",
-    );
-    const nav = el("nav", { className: "chapters", ariaLabel: "Story chapters" });
-    this.chapters = CHAPTERS.map((c, i) => {
-      const b = el("button", { type: "button" }, c.label);
-      b.addEventListener("click", () => {
-        this.storyT = c.t;
-        this.sound?.on && this.sound.seek(c.t);
-        this.stillT = i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].t - 0.5 : STILL;
-        this.paused = false;
-        this.frame();
-      });
-      return b;
-    });
-    nav.append(...this.chapters);
-    const steps = el(
-      "ol",
-      { className: "sr-only" },
-      ...[
-        "Listen: a horn recording is analyzed for its beats, tempo, key and tuning.",
-        "Clip: you mark the part you want as a clip; the selection snaps to the beat.",
-        "Slice: the clip is sliced into equal pieces, one on each pad of a kit.",
-        "Warp: a step pattern plays the pads, stretched to the piece's tempo and transposed to follow its chords.",
-        "Kit: drum one-shots go onto pads of their own and play as recorded, from step patterns.",
-        "Play: the finished groove plays, each sound lit back to where it came from.",
-      ].map((t) => el("li", {}, t)),
-    );
-    this.soundButton("checking");
-    this.soundBtn.addEventListener("click", () => this.toggleSound());
-    // The metronome clicks the beat from the first second until the drums take over.
-    this.metronomeBox.addEventListener("change", () => this.sound && (this.sound.clicks = this.metronomeBox.checked));
-    const metronome = el("label", { className: "metronome", title: "Click the beat until the drums come in" }, this.metronomeBox, "Metronome");
-    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [el("div", { className: "sound-controls" }, this.soundBtn, metronome)] : []), this.info, nav), this.provenance(), steps);
-    // Hovering the picture holds it still, to look closer (not while listening: the music goes on).
-    this.stage.addEventListener("pointerenter", (e) => (e.pointerType === "mouse" ? (this.paused = true) : null));
-    this.stage.addEventListener("pointerleave", () => (this.paused = false));
-    new ResizeObserver(() => this.still() && this.frame()).observe(this.stage);
-    return fig;
-  }
-
-  /** Where the story's sounds come from: every sample carries its provenance. */
-  private provenance() {
-    return el(
-      "div",
-      { className: "provenance" },
-      el("h3", {}, "Where these sounds come from"),
-      el("p", {
-        innerHTML:
-          '<b>Horns:</b> <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/The-Thunderer-March/" target="_blank" rel="noopener">“The Thunderer”</a>, a march John Philip Sousa composed in 1889, recorded in 2017 by “The President’s Own” United States Marine Band for <i>The Complete Marches of John Philip Sousa</i>. Apricity split the horns out of the full band recording, then cut four beats of them into stabs. Public domain: the march is from 1889, and the recording is a work of the U.S. Government.',
-      }),
-      el("p", {
-        innerHTML:
-          '<b>Drums:</b> single hits from the <a href="https://archive.org/details/SalamanderDrumkit" target="_blank" rel="noopener">Salamander Drumkit</a>, an acoustic kit recorded and shared by Alexander Holm, taken from the overhead microphone. Licensed <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>.',
-      }),
-    );
-  }
-
-  /** The sound is in the library, or it isn't: the story plays either way, silent when it isn't. */
-  private async probeSound() {
-    if (!this.sound) return;
-    const state = stateAfterProbe(await soundStatus((heroData as FlowData).audio!));
-    this.soundButton(state);
-    if (state === "ready" && soundRemembered()) this.resumeRemembered();
-  }
-
-  /** Sound was on before a reload: start it now if the browser allows sound without a click, else on
-   *  the first click or key press anywhere on the page. */
-  private resumeRemembered() {
-    const policy = (navigator as Navigator & { getAutoplayPolicy?: (type: string) => string }).getAutoplayPolicy?.("audiocontext");
-    if (policy === "allowed") {
-      void this.toggleSound();
-      return;
-    }
-    this.soundButton("armed");
-    const start = () => {
-      document.removeEventListener("click", start, true);
-      document.removeEventListener("keydown", start, true);
-      if (this.soundState === "armed") void this.toggleSound();
+  /** "See how it's made": every other breakdown, one at a time. */
+  private gallery(go: LandingActions) {
+    const others = breakdowns.filter((b) => b.slug !== HERO);
+    if (!others.length) return el("div");
+    const picker = el("div", { className: "gallery-picker", role: "tablist" });
+    const slot = el("div", { className: "gallery-slot" });
+    const shown = new Map<string, HTMLElement>();
+    const pick = (slug: string) => {
+      for (const b of picker.children) b.classList.toggle("on", (b as HTMLElement).dataset.slug === slug);
+      if (!shown.has(slug)) shown.set(slug, new Breakdown(breakdown(slug)!, { variant: "card", open: go.open }).root);
+      slot.replaceChildren(shown.get(slug)!);
     };
-    document.addEventListener("click", start, true);
-    document.addEventListener("keydown", start, true);
-  }
-
-  private soundButton(state: SoundState) {
-    this.soundState = state;
-    const on = state === "on";
-    const v = soundView(state);
-    const icon = on
-      ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
-      : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13.5 8l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-    this.soundBtn.innerHTML = `${icon}<span>${v.label}</span>`;
-    this.soundBtn.setAttribute("aria-pressed", String(v.pressed));
-    this.soundBtn.title = v.hint;
-    this.soundBtn.setAttribute("aria-label", v.hint);
-    this.soundBtn.classList.toggle("on", on);
-    this.soundBtn.disabled = v.disabled;
-  }
-
-  private async toggleSound() {
-    if (!this.sound || this.soundState === "missing" || this.soundState === "checking" || this.soundState === "loading") return;
-    if (this.sound.on) {
-      this.storyT = this.sound.now();
-      this.sound.disable();
-      this.soundButton("ready");
-      rememberSound(false);
-      return;
+    for (const b of others) {
+      const btn = el("button", { type: "button", role: "tab" }, b.title ?? b.slug!);
+      btn.dataset.slug = b.slug!;
+      btn.addEventListener("click", () => pick(b.slug!));
+      picker.append(btn);
     }
-    this.soundButton("loading");
-    try {
-      await this.sound.enable(this.storyT);
-      this.paused = false;
-      this.soundButton("on");
-      rememberSound(true);
-      if (!this.raf && this.visible) this.loop();
-    } catch {
-      // The library answered the probe but the sound could not be played: silent, and says so.
-      this.soundButton("missing");
-    }
+    pick(others[0].slug!);
+    return el("section", { className: "band gallery" }, el("h2", {}, "See how it's made"), el("p", { className: "lede" }, "Each piece below is a score, taken apart: its samples, how they were cut, and where they landed. Open the Score tab to read it, or open it in the editor to play with it."), picker, slot);
   }
-
-  private reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  /** Hold still frames for reduced motion, unless the reader turned the sound on (then it plays). */
-  private still = () => this.reduced() && !this.sound?.on;
 
   private step(n: string, title: string, text: string) {
     return el("div", { className: "step" }, el("div", { className: "n" }, n), el("h3", {}, title), el("p", {}, text));
@@ -289,42 +163,9 @@ export class Landing {
   private loop = () => {
     this.raf = 0;
     if (!this.visible) return;
-    this.frame();
-    if (!this.still()) this.raf = requestAnimationFrame(this.loop);
+    this.draw(performance.now() / 1000);
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) this.raf = requestAnimationFrame(this.loop);
   };
-
-  private frame() {
-    const now = performance.now() / 1000;
-    const dt = this.last ? Math.min(0.1, now - this.last) : 0;
-    this.last = now;
-    if (this.sound?.on) {
-      this.storyT = this.sound.now();
-    } else if (!this.paused) this.storyT = (this.storyT + dt) % LOOP;
-    this.draw(now);
-    this.drawStage(this.still() ? this.stillT : this.storyT, this.still());
-  }
-
-  private drawStage(t: number, still: boolean) {
-    const c = this.stage, dpr = Math.min(2, devicePixelRatio || 1);
-    const w = c.clientWidth, h = c.clientHeight;
-    if (!w || !h) return;
-    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) (c.width = Math.round(w * dpr)), (c.height = Math.round(h * dpr));
-    const g = c.getContext("2d")!;
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.clearRect(0, 0, w, h);
-    this.story.draw(g, w, h, t, readTheme(this.root.querySelector(".landing")!), still);
-    const k = chapterAt(t);
-    if (k !== this.shown.chapter) {
-      this.chapters.forEach((b, i) => b.classList.toggle("on", i === k));
-      this.shown.chapter = k;
-    }
-    const cap = this.story.caption(t);
-    const key = cap.title + cap.text;
-    if (key !== this.shown.caption) {
-      this.info.replaceChildren(el("b", {}, cap.title), " ", cap.text);
-      this.shown.caption = key;
-    }
-  }
 
   private draw(t: number) {
     const c = this.canvas, dpr = Math.min(2, devicePixelRatio || 1);

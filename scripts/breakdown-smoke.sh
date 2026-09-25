@@ -1,9 +1,10 @@
 #!/bin/bash
-# Smoke-test the landing hero's sound path end to end: migrate (or reuse) a library, write the hero
-# audio into it with scripts/hero-data.py, serve it with `apricity serve --library` plus the built web
-# app, and check every hero audio key is served as audio, the way the browser asks for it.
-# Usage: scripts/hero-smoke.sh [--repo REPO_ROOT] [--library DIR]
-#   --library DIR  reuse a migrated library (the hero audio is written into it; nothing else changes)
+# Smoke-test every breakdown's sound path end to end: migrate (or reuse) a library, bake each
+# breakdown bundle (web/src/breakdowns/*.json) into it with scripts/breakdown.py, serve it with
+# `apricity serve --library` plus the built web app, and check every audio key is served as audio,
+# the way the browser asks for it.
+# Usage: scripts/breakdown-smoke.sh [--repo REPO_ROOT] [--library DIR]
+#   --library DIR  reuse a migrated library (breakdown audio is written into it; nothing else changes)
 #                  instead of migrating a throwaway one.
 # APRICITY overrides the binary (default: the newer of target/release and target/debug).
 # PYTHON overrides the interpreter (default: analysis/.venv/bin/python).
@@ -46,30 +47,36 @@ fi
 [ -f "$LIB/apricity-library.json" ] || { echo "$LIB is not a library"; exit 1; }
 echo "library $LIB"
 
-# The keys the hero asks for, straight from the baked data.
-KEYS="$("$PYTHON" -c '
+BUNDLES="$REPO_ROOT/web/src/breakdowns"
+# The keys the breakdowns ask for, straight from the baked bundles.
+keys() { "$PYTHON" -c '
 import json, sys
-a = json.load(open(sys.argv[1]))["audio"]
-print("\n".join(dict.fromkeys(a["sources"] + [t["key"] for t in a["tracks"]])))
-' "$REPO_ROOT/web/src/ui/flow/hero-data.json")"
-[ "$(printf '%s\n' "$KEYS" | wc -l | tr -d ' ')" = "4" ]; check "hero-data.json names four audio keys" $?
+for f in sys.argv[1:]:
+    a = json.load(open(f))["audio"]
+    print("\n".join(dict.fromkeys(a["sources"] + [t["key"] for t in a["tracks"]])))
+' "$BUNDLES"/*.json; }
+KEYS="$(keys)"
+[ -n "$KEYS" ]; check "the bundles name their audio keys ($(printf '%s\n' "$KEYS" | wc -l | tr -d ' '))" $?
 
-# hero-data.json holds library keys only.
-! grep -q '/Users/' "$REPO_ROOT/web/src/ui/flow/hero-data.json"; check "hero-data.json has no '/Users/'" $?
+# Bundles hold library keys only.
+! grep -q '/Users/' "$BUNDLES"/*.json; check "no bundle has '/Users/'" $?
 
 # Nothing in the app bundle carries the audio.
-[ -z "$(find "$REPO_ROOT/web/dist" -name '*.mp3' -o -name '*.wav' -o -type d -name hero)" ]; check "web/dist bundles no audio and no hero folder" $?
+[ -z "$(find "$REPO_ROOT/web/dist" -name '*.mp3' -o -name '*.wav')" ]; check "web/dist bundles no audio" $?
 
-# Bake the hero into the library (also rewrites hero-data.json; it must come out the same).
-cp "$REPO_ROOT/web/src/ui/flow/hero-data.json" "$WORK/hero-data.before.json"
-rm -rf "$LIB/files/hero"
-"$PYTHON" "$REPO_ROOT/scripts/hero-data.py" --library "$LIB" >"$WORK/hero.log" 2>&1 || { echo "hero-data.py failed"; tail -8 "$WORK/hero.log"; exit 1; }
-cmp -s "$WORK/hero-data.before.json" "$REPO_ROOT/web/src/ui/flow/hero-data.json"; check "regenerating hero-data.json from the library reproduces the committed file" $?
-! grep -q '/Users/' "$REPO_ROOT/web/src/ui/flow/hero-data.json"; check "regenerated hero-data.json has no '/Users/'" $?
+# Bake every breakdown into the library again: each bundle must come out the same.
+mkdir -p "$WORK/before"; cp "$BUNDLES"/*.json "$WORK/before/"
+for f in "$BUNDLES"/*.json; do
+    slug="$(basename "$f" .json)"
+    score="$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["score"])' "$f")"
+    rm -rf "$LIB/files/breakdowns/$slug"
+    "$PYTHON" "$REPO_ROOT/scripts/breakdown.py" "$REPO_ROOT/$score" --library "$LIB" --slug "$slug" >"$WORK/bake.log" 2>&1 || { echo "breakdown.py $score failed"; tail -8 "$WORK/bake.log"; exit 1; }
+    cmp -s "$WORK/before/$slug.json" "$f"; check "rebaking $slug from the library reproduces the committed bundle" $?
+done
 
 for k in $KEYS; do [ -s "$LIB/files/$k" ]; check "library holds files/$k" $?; done
 # Ordinary library files: not dot-named, so `apricity sync` sees them.
-[ -z "$(cd "$LIB/files" && find hero -name '.*')" ]; check "hero files are plain non-dot library files" $?
+[ -z "$(cd "$LIB/files" && find breakdowns -name '.*')" ]; check "breakdown files are plain non-dot library files" $?
 "$APRICITY" sync status --library "$LIB" --remote-dir "$WORK/remote" >"$WORK/status.txt" 2>&1
 for k in $KEYS; do grep -q "files/$k" "$WORK/status.txt"; check "sync plans to push files/$k" $?; done
 
@@ -104,12 +111,12 @@ for k in $KEYS; do
     [ "$CODE" = "206" ] && [ "$(wc -c <"$WORK/one.bin" | tr -d ' ')" = "1" ]
     check "the sound probe (Range: bytes=0-0) -> $CODE, 1 byte" $?
 done
-CODE="$(curl -s -o /dev/null -w '%{http_code}' "$BASE/files/hero%2Fnot-there.mp3")"
+CODE="$(curl -s -o /dev/null -w '%{http_code}' "$BASE/files/breakdowns%2Fnot-there.mp3")"
 [ "$CODE" = "404" ]; check "a key the library lacks is 404 (the silent fallback; got $CODE)" $?
 CODE="$(curl -s -o /dev/null -w '%{http_code}' "$BASE/")"
 [ "$CODE" = "200" ]; check "the web app is served at / (got $CODE)" $?
 
 kill "$PID" 2>/dev/null && wait "$PID" 2>/dev/null; PID=""
 echo ""
-if [ "$failed" -eq 0 ]; then echo "hero smoke: all checks passed"; else echo "hero smoke: $failed failed"; fi
+if [ "$failed" -eq 0 ]; then echo "breakdown smoke: all checks passed"; else echo "breakdown smoke: $failed failed"; fi
 [ "$failed" -eq 0 ]

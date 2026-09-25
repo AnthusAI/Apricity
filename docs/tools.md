@@ -129,6 +129,27 @@ Or `npm --prefix web run build` once and use http://localhost:5181 alone.
 The server only listens on 127.0.0.1 and only writes the clips and markers saved with samples, scores (in `examples/` and
 `scores/`) and uploads (in `samples/uploads/`).
 
+## Breakdowns
+
+A **breakdown** is the animated "how it was made" story of a score, with its sound, its code and
+where every sound comes from: the home page opens with one, the home page's gallery shows the rest,
+and a docs page embeds one with a fenced code block whose language is `breakdown` and whose text is
+the breakdown's name (e.g. `chop-shop`). To make one
+from any score, or refresh it after editing the score:
+
+```sh
+analysis/.venv/bin/python scripts/breakdown.py examples/chop-shop.apr --library ~/Apricity-Library
+target/release/apricity sync push --library ~/Apricity-Library --bucket <bucket>   # its sound, to the cloud
+git add web/src/breakdowns/chop-shop.json                                          # the bundle; the app shows it
+```
+
+Everything in it comes from the score and the library: which sources to show (each kit or clip the
+score plays), their titles and credits (the library's recordings), the captions, and the title and
+blurb (the score's opening comment, `# Title — what it shows`). To change any of it, add a sidecar
+next to the score, `<score>.breakdown.yaml` (see `examples/hero.breakdown.yaml`), with `title`,
+`blurb`, and `sources` (which tracks, in what order, and any title or credit to use instead).
+`scripts/breakdown-smoke.sh` checks that every bundle rebakes the same and its sound is served.
+
 ## Tests
 
 ```sh

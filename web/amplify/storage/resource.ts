@@ -35,10 +35,11 @@ export const storage = defineStorage({
   isDefault: true,
   access: (allow) => ({
     "files/*": readAll(allow),
-    // The home page hero demo plays these; they are public, so signed-out visitors hear it too. A more specific path
-    // REPLACES the broader grant for every role it does not list (Amplify writes an explicit deny), so the signed-in
-    // roles must be repeated here or a signed-in user would lose access to what a guest can hear.
-    "files/hero/*": [allow.guest.to(["read"]), ...readAll(allow)],
+    // Breakdowns (the home page hero and the gallery, baked by scripts/breakdown.py) play these; they are public, so
+    // signed-out visitors hear them too. A more specific path REPLACES the broader grant for every role it does not
+    // list (Amplify writes an explicit deny), so the signed-in roles must be repeated here or a signed-in user would
+    // lose access to what a guest can hear.
+    "files/breakdowns/*": [allow.guest.to(["read"]), ...readAll(allow)],
     ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, readAll(allow)])),
     "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
   }),

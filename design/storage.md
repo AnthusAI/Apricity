@@ -391,10 +391,12 @@ key for key, using library-relative paths (`files/audio/<clipId>/…`, `files/an
 Nothing analyses in the cloud. Local `apricity serve` serves the library's `files/` folder at
 `/files/<key>`; the web app's cloud mode adds the `files/` prefix, so app paths are identical in both.
 
-- **Hero audio:** the landing hero's four MP3s are ordinary library files under `hero/` (`files/hero/*.mp3`,
-  key `hero/<name>.mp3`), written by `scripts/hero-data.py --library <dir>` from `examples/hero.apr`: the library's Thunderer horn stem and Salamander Drumkit one-shots (`apricity sources fetch salamander-drumkit`, then `apricity migrate`), and
-  never committed. The app reads them through `web/src/data/files.ts`; where the library lacks them the hero
-  plays silent and its sound button says so. `scripts/hero-smoke.sh` checks the path end to end.
+- **Breakdown audio:** every breakdown (the landing hero, the gallery, docs embeds) is baked from a score by
+  `scripts/breakdown.py <score> --library <dir>`: its bundle goes to `web/src/breakdowns/<slug>.json`
+  (committed), its MP3s into the library under `breakdowns/<slug>/` (`files/breakdowns/<slug>/*.mp3`,
+  never committed; guest-readable in the bucket). The app reads them through `web/src/data/files.ts`;
+  where the library lacks them a breakdown plays silent and its sound button says so.
+  `scripts/breakdown-smoke.sh` checks the path end to end.
 - **Never synced (machine-local):** any path with a dot-prefixed segment (`.virtuus/`, the sync state
   `.apricity-sync.json`, transfer scratch, `.DS_Store`) and `apricity-library.json` (this machine's
   API key and identity). Everything else syncs.

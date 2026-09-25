@@ -1,10 +1,14 @@
-// Flow renderer: pure layout and timing, plus the baked hero data's promises.
+// Flow renderer: pure layout and timing, plus the promises every baked breakdown bundle keeps.
 // Run: npx tsx --test web/test/flow.test.ts
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 import { beatX, layout, secX } from "../src/ui/flow/layout.ts";
 import { pulse, seg } from "../src/ui/flow/tween.ts";
+
+const BUNDLES = new URL("../src/breakdowns/", import.meta.url);
+const bundle = (slug: string) => JSON.parse(readFileSync(new URL(`${slug}.json`, BUNDLES), "utf8"));
+const slugs = readdirSync(BUNDLES).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
 
 test("seg and pulse", () => {
   assert.equal(seg(0, 1, 3), 0);
@@ -30,8 +34,8 @@ test("layout: sources stack from the top, lanes sit at the bottom", () => {
   assert.equal(hidden.sources[0].chops.h, 0, "a source not shown yet takes no room");
 });
 
-test("hero data: the horns, then a drum kit, every tile mapped to a chop", () => {
-  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+test("hero bundle: the horns, then a drum kit", () => {
+  const d = bundle("hero");
   assert.equal(d.sources.length, 2);
   assert.deepEqual(d.sources.map((s: { chops: unknown[] }) => s.chops.length), [4, 9]);
   assert.deepEqual(d.sources.map((s: { kind: string }) => s.kind), ["loop", "kit"]);
@@ -42,16 +46,27 @@ test("hero data: the horns, then a drum kit, every tile mapped to a chop", () =>
   assert.ok(horns.some((t: { semitones: number }) => t.semitones !== 0), "the horns are transposed to the chords");
 });
 
-test("hero data: library keys only, no machine paths", async () => {
+test("every breakdown bundle: well formed, library keys only, no machine paths", async () => {
   const { audioKeys, isLibraryKey } = await import("../src/ui/flow/hero-audio.ts");
-  const text = readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8");
-  assert.ok(!/\/Users\/|\/home\/|\/private\/|\/var\/|[A-Za-z]:\\/.test(text), "no absolute path anywhere in the baked data");
-  const d = JSON.parse(text);
-  for (const s of d.sources) assert.ok(isLibraryKey(s.path), `${s.path} is a library key`);
-  assert.deepEqual(audioKeys(d.audio), ["hero/horns-source.mp3", "hero/drums-source.mp3", "hero/h-track.mp3", "hero/drums-track.mp3"]);
-  for (const k of audioKeys(d.audio)) assert.ok(isLibraryKey(k) && k.startsWith("hero/") && k.endsWith(".mp3"), k);
-  assert.equal(d.audio.sources.length, d.sources.length, "one source window per source");
-  assert.equal(d.audio.tracks.length, d.sources.length, "one track render per source");
+  assert.ok(slugs.includes("hero") && slugs.length >= 3, `bundles: ${slugs}`);
+  for (const slug of slugs) {
+    const text = readFileSync(new URL(`${slug}.json`, BUNDLES), "utf8");
+    assert.ok(!/\/Users\/|\/home\/|\/private\/|\/var\/|[A-Za-z]:\\/.test(text), `${slug}: no absolute path anywhere in the baked data`);
+    const d = JSON.parse(text);
+    assert.equal(d.slug, slug);
+    assert.ok(d.title && d.code && d.score.startsWith("examples/"), `${slug}: title, code and score path`);
+    for (const s of d.sources) {
+      assert.ok(isLibraryKey(s.path), `${s.path} is a library key`);
+      assert.ok(["loop", "kit", "clip"].includes(s.kind), s.kind);
+      assert.equal(Buffer.from(s.peaks, "base64").length, 1200);
+    }
+    for (const t of d.tiles) assert.ok(t.chop >= 0 && t.chop < d.sources[t.source].chops.length, `${slug}: every note maps to a chop`);
+    for (const k of audioKeys(d.audio)) assert.ok(isLibraryKey(k) && k.startsWith(`breakdowns/${slug}/`) && k.endsWith(".mp3"), k);
+    assert.equal(d.audio.sources.length, d.sources.length, `${slug}: one source window per source`);
+    assert.equal(d.audio.tracks.length, d.sources.length, `${slug}: one track render per source`);
+    assert.equal(d.provenance.length, d.sources.length, `${slug}: provenance for every source`);
+    for (const p of d.provenance) assert.ok(p.recordings.length && p.recordings.every((r: { title: string }) => r.title), `${slug}: every source names its recordings`);
+  }
 });
 
 test("library keys: relative paths only", async () => {
@@ -79,7 +94,7 @@ test("silent fallback: what the sound button shows when the library has no sound
 
 test("sound: an unreachable library is reported as a status, never thrown", async () => {
   const { soundStatus } = await import("../src/ui/flow/sound.ts");
-  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+  const d = bundle("hero");
   const seen: string[] = [];
   const at = async ({ path }: { path: string }) => ({ url: `http://localhost/files/${path}` });
   const real = globalThis.fetch;
@@ -90,7 +105,7 @@ test("sound: an unreachable library is reported as a status, never thrown", asyn
   try {
     assert.equal(await soundStatus(d.audio, at), 404);
     assert.equal(seen.length, 1, "stops at the first missing file: one failed request");
-    assert.equal(seen[0], "http://localhost/files/hero/horns-source.mp3");
+    assert.equal(seen[0], "http://localhost/files/breakdowns/hero/h-source.mp3");
     globalThis.fetch = (async () => {
       throw new TypeError("network down");
     }) as typeof fetch;
@@ -106,7 +121,7 @@ test("sound: an unreachable library is reported as a status, never thrown", asyn
 
 test("hero story cues: each step is heard, in order", async () => {
   const { Story } = await import("../src/ui/flow/story.ts");
-  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+  const d = bundle("hero");
   const cues = new Story(d).cues();
   assert.deepEqual(cues.map((c) => c.t), [...cues.map((c) => c.t)].sort((a, b) => a - b), "sorted by time");
   d.sources.forEach((s: { window: number[] }, n: number) =>
@@ -157,7 +172,7 @@ test("lineage: recordings, kit rows and lanes from a compiled timeline", async (
 
 test("hero metronome: on the horns' grid, from the start until the drums are heard", async () => {
   const { Story } = await import("../src/ui/flow/story.ts");
-  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+  const d = bundle("hero");
   const story = new Story(d);
   const m = story.metronome();
   const cues = story.cues();
@@ -183,4 +198,61 @@ test("hero sound is remembered across a reload, and storage failures are harmles
   assert.doesNotThrow(() => rememberSound(true, blocked));
   const armed = soundView("armed");
   assert.ok(armed.pressed && !armed.disabled && /click/.test(armed.label), "after a reload: on, waiting for a click");
+});
+
+test("story clock: the hero keeps its timing; any number of sources get their turn", async () => {
+  const { plan } = await import("../src/ui/flow/story.ts");
+  const hero = plan(bundle("hero"));
+  assert.deepEqual(hero.chapters.map((c) => c.label), ["Listen", "Clip", "Slice", "Warp", "Kit", "Play"]);
+  assert.equal(hero.sessions.at(-1)!.from, hero.chapters.at(-1)!.t);
+  for (const slug of slugs) {
+    const d = bundle(slug);
+    const p = plan(d);
+    assert.equal(p.ph.length, d.sources.length, `${slug}: a turn for every source`);
+    for (let n = 1; n < p.ph.length; n++) assert.ok(p.ph[n].appear[0] >= p.ph[n - 1].fill[1], `${slug}: source ${n} comes after the one before`);
+    assert.deepEqual(p.chapters.map((c) => c.t), [...p.chapters.map((c) => c.t)].sort((a, b) => a - b), `${slug}: chapters in order`);
+    assert.equal(new Set(p.chapters.map((c) => c.label)).size, p.chapters.length, `${slug}: no two chapters share a name`);
+    assert.ok(p.loop > p.sessions.at(-1)!.from && p.still < p.loop, `${slug}: the finale plays inside the loop`);
+    assert.deepEqual(p.sessions.at(-1)!.sources, d.sources.map((_: unknown, n: number) => n), `${slug}: the finale plays every source`);
+  }
+  const blues = plan(bundle("march-blues"));
+  assert.deepEqual(blues.chapters.slice(0, 3).map((c) => c.label), ["Listen", "Clip", "Warp"], "a clip is not sliced");
+});
+
+test("story metronome: off when a kit comes first, to the finale when there is none", async () => {
+  const { Story } = await import("../src/ui/flow/story.ts");
+  const hero = bundle("hero");
+  const swapped = { ...hero, sources: [hero.sources[1], hero.sources[0]], tiles: hero.tiles.map((t: { source: number }) => ({ ...t, source: 1 - t.source })) };
+  const m = new Story(swapped).metronome();
+  assert.ok(m.until <= 2.5 + 1e-9, "the kit is heard at once: no clicks before it");
+  const blues = new Story(bundle("march-blues"));
+  assert.equal(blues.metronome().until, blues.plan.sessions.at(-1)!.from, "no kit: clicks until the finale");
+});
+
+test("deep links: #score=<path>[&play]", async () => {
+  const { parseRoute, routeFor } = await import("../src/route.ts");
+  assert.deepEqual(parseRoute("#score=examples/chop-shop.apr&play"), { score: "examples/chop-shop.apr", play: true });
+  assert.deepEqual(parseRoute("#score=examples/hero.apr"), { score: "examples/hero.apr", play: false });
+  assert.deepEqual(parseRoute(routeFor("examples/my piece.apr", true)), { score: "examples/my piece.apr", play: true });
+  assert.equal(routeFor("examples/chop-shop.apr", true), "#score=examples/chop-shop.apr&play");
+  for (const bad of ["", "#", "#play", "#score=", "#score=/etc/passwd", "#score=../x.apr"]) assert.equal(parseRoute(bad).score, undefined, bad);
+});
+
+test("every breakdown draws and captions its whole story without throwing", async () => {
+  const { Story } = await import("../src/ui/flow/story.ts");
+  const noop = () => {};
+  const g = new Proxy({} as Record<string | symbol, unknown>, {
+    get: (t, k) => (k in t ? t[k] : k === "measureText" ? () => ({ width: 10 }) : k === "createLinearGradient" || k === "createRadialGradient" ? () => ({ addColorStop: noop }) : noop),
+    set: (t, k, v) => ((t[k] = v), true),
+  }) as unknown as CanvasRenderingContext2D;
+  const th = { ink: "#000", inkSoft: "#777", card: "#fff", line: "#ddd", night: "#fff", sun: "#f90", sun2: "#fc9", clips: ["#a0a", "#fa0", "#0aa", "#aa0"], clipInk: "#000", mono: "monospace", sans: "sans" };
+  for (const slug of slugs) {
+    const s = new Story(bundle(slug));
+    for (let t = 0; t < s.loop; t += 0.37) {
+      s.draw(g, 800, 380, t, th, false);
+      const c = s.caption(t);
+      assert.ok(c.title && c.text, `${slug} at ${t.toFixed(2)}s has a caption`);
+    }
+    s.draw(g, 400, 340, s.still, th, true);
+  }
 });

@@ -493,6 +493,10 @@ fn migrate_recordings(
                     rec.insert(to.into(), json!(v));
                 }
             }
+            // `recorded` is a string in the model, but sources.json writes a bare year.
+            if let Some(y) = m.get("recorded").and_then(Value::as_i64) {
+                rec.insert("recorded".into(), json!(y.to_string()));
+            }
             if let Some(c) = m.get("composed").and_then(Value::as_i64) {
                 rec.insert("composed".into(), json!(c));
             }

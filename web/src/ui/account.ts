@@ -64,6 +64,8 @@ export class AccountControl {
       if (e.target === this.dlg) this.dlg.close(); // click on the backdrop
     });
     document.addEventListener("apricity:auth-changed", () => void this.refresh());
+    // Something that needs the library asked the reader to sign in (e.g. a breakdown's "Open in Score").
+    document.addEventListener("apricity:sign-in", () => void (this.account ? null : this.open("signin")));
     void this.refresh();
   }
 

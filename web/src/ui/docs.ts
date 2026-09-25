@@ -3,6 +3,10 @@
 // `apricity` code blocks.
 
 import { marked } from "marked";
+import { breakdown } from "../breakdowns";
+import { routeFor } from "../route";
+import { highlightApr } from "./apr-highlight";
+import { Breakdown } from "./breakdown/breakdown";
 import { el } from "./dom";
 
 const raw = import.meta.glob("../../../docs/*.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
@@ -36,56 +40,6 @@ const pages: Page[] = Object.entries(raw)
     return { file, title, md, headings };
   })
   .sort((a, b) => (ORDER.indexOf(a.file) + 1 || 99) - (ORDER.indexOf(b.file) + 1 || 99));
-
-// ---- `apricity` code blocks: the same colors as the score editor.
-const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "clip", "kit", "chords", "track", "group", "return", "master"]);
-const OPTIONS = new Set([
-  "beats", "seconds", "pick", "root", "ratio", "warp", "slice", "by", "into", "transients", "phrases", "bar", "repitch", "complex", "texture",
-  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing",
-  "reverse", "filter", "lp", "hp", "lowpass", "highpass", "gate", "stutter", "half", "double", "speed",
-  // mix lines and bus options
-  "group", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",
-  "predelay", "damp", "mix", "feedback", "pingpong",
-]);
-const BLOCK_LINES = new Set(["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send", "loudness"]);
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-function highlightApr(code: string) {
-  return code
-    .split("\n")
-    .map((line) => {
-      // A comment starts at a '#' outside quotes.
-      let hash = -1;
-      for (let i = 0, q = false; i < line.length; i++) {
-        if (line[i] === '"') q = !q;
-        else if (line[i] === "#" && !q) {
-          hash = i;
-          break;
-        }
-      }
-      const body = hash >= 0 ? line.slice(0, hash) : line;
-      const comment = hash >= 0 ? `<span class="t-comment">${esc(line.slice(hash))}</span>` : "";
-      let first = true;
-      let statement = "";
-      const words = (body.match(/"[^"]*"?|\s+|[^\s"]+/g) ?? []).map((w) => {
-        if (!w.trim()) return w;
-        if (first) {
-          first = false;
-          statement = w;
-          // Indented lines: a drum kit's pads, or a mix line under a track / master.
-          const cls = /^[ \t]/.test(line) ? (BLOCK_LINES.has(w) ? "t-keyword" : "") : STATEMENTS.has(w) ? "t-keyword" : "";
-          return `<span class="${cls}">${esc(w)}</span>`;
-        }
-        if (/^".*"?$/.test(w)) return `<span class="t-string">${esc(w)}</span>`;
-        if (statement === "chords") return /^[|.%[\]()]+$/.test(w) ? `<span class="t-punct">${esc(w)}</span>` : `<span class="t-chord">${esc(w)}</span>`;
-        if (OPTIONS.has(w)) return `<span class="t-option">${esc(w)}</span>`;
-        if (/^([+-]?\d|[qQ]\d)/.test(w)) return `<span class="t-number">${esc(w)}</span>`;
-        return esc(w);
-      });
-      return words.join("") + comment;
-    })
-    .join("\n");
-}
 
 export class DocsView {
   root: HTMLElement;
@@ -121,6 +75,12 @@ export class DocsView {
     this.article.innerHTML = marked.parse(page.md, { async: false }) as string;
     for (const h of this.article.querySelectorAll("h1, h2, h3, h4")) h.id = slug(h.textContent ?? "");
     for (const code of this.article.querySelectorAll("pre code.language-apr")) code.innerHTML = highlightApr(code.textContent ?? "");
+    // ```breakdown <slug>``` embeds that breakdown (web/src/breakdowns/<slug>.json).
+    for (const code of this.article.querySelectorAll("pre code.language-breakdown")) {
+      const slug = (code.textContent ?? "").trim();
+      const b = breakdown(slug);
+      code.parentElement!.replaceWith(b ? new Breakdown(b, { variant: "card", open: (path) => (location.hash = routeFor(path, true)) }).root : el("p", { className: "hint" }, `No breakdown named “${slug}”.`));
+    }
     for (const a of this.article.querySelectorAll<HTMLAnchorElement>("a[href]")) {
       const href = a.getAttribute("href")!;
       if (/^https?:/.test(href)) {

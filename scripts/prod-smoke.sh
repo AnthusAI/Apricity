@@ -68,7 +68,14 @@ s3get() { # key -> exit status of a ranged GET as the guest
         aws s3api get-object --bucket "$BUCKET" --key "$1" --range bytes=0-0 --region "$REGION" "$WORK/obj" >"$WORK/s3.out" 2>"$WORK/s3.err"
 }
 
-for k in files/hero/horns-source.mp3 files/hero/drums-source.mp3 files/hero/h-track.mp3 files/hero/drums-track.mp3; do
+# Every breakdown's audio is public, straight from the committed bundles.
+BREAKDOWN_KEYS="$(python3 -c '
+import json, sys
+for f in sys.argv[1:]:
+    a = json.load(open(f))["audio"]
+    print("\n".join("files/" + k for k in dict.fromkeys(a["sources"] + [t["key"] for t in a["tracks"]])))
+' "$(dirname "$0")"/../web/src/breakdowns/*.json)"
+for k in $BREAKDOWN_KEYS; do
     s3get "$k"; check "guest can read $k" $?
 done
 # Nothing else is public: a record and an audio file must be denied.

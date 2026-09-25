@@ -1,6 +1,7 @@
 // The Flow model: source clips → the slices cut from them → their chops → where each chop lands
-// in the composition. The landing page's hero story is drawn from it (baked by
-// scripts/hero-data.py, which also writes its sound into the library); the Score tab's Flow view will fill it from a live compiled timeline.
+// in the composition. Breakdowns (the landing hero, the gallery, docs embeds) are drawn from it, baked by
+// scripts/breakdown.py, which also writes their sound into the library; the Score tab's Flow view fills it
+// from a live compiled timeline.
 
 export interface FlowChord {
   start: number; // score beats
@@ -11,7 +12,7 @@ export interface FlowChord {
 
 export interface FlowSource {
   id: string;
-  kind?: "loop" | "kit"; // a sliced recording, or a kit of one-shots laid end to end (one pad per chop)
+  kind?: "loop" | "kit" | "clip"; // a sliced recording, a kit of one-shots laid end to end (one pad per chop), or a clip played whole
   title: string;
   credit: string;
   path: string;
@@ -45,8 +46,36 @@ export interface FlowAudio {
   tracks: { key: string; gain_db: number }[]; // per source: its track rendered alone (a library key), and the gain back to mix level
 }
 
+/** One recording a breakdown's source uses (from the library's Recording records). */
+export interface FlowRecording {
+  title: string;
+  part: string | null; // a stem's name ("horns"), or null for the whole recording
+  parts?: string[];
+  composed: number | null;
+  recorded: string | null;
+  performer: string | null;
+  credit: string | null;
+  rights: string | null;
+  licence: string;
+  source_page: string | null;
+}
+
+export interface FlowProvenance {
+  source: string; // a source id
+  title: string;
+  kind: "loop" | "kit" | "clip";
+  tracks: string[];
+  recordings: FlowRecording[];
+}
+
 export interface FlowData {
-  score: string;
+  score: string; // the score's path, e.g. examples/chop-shop.apr
+  slug?: string; // a breakdown bundle's name (web/src/breakdowns/<slug>.json)
+  title?: string;
+  blurb?: string; // what it shows, from the score's opening comment
+  code?: string; // the score's text
+  provenance?: FlowProvenance[];
+  captions?: Record<string, { title: string; text: string }>;
   audio?: FlowAudio;
   tempo: number;
   meter: number;

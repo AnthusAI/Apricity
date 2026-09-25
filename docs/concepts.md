@@ -145,6 +145,14 @@ Each pad is level-matched on its own, so pads from different recordings sit toge
 Kits and clips share one set of names. A track can play a whole kit (with a step pattern, below),
 or one pad (`b.3`, `drums.kick`); a single pad behaves exactly like a clip.
 
+Here is `examples/chop-shop.apr` taken apart: a drum break sliced into eighths, a drum kit gathered
+from two recordings, and a sliced horn riff that follows the chords. (In the app this is an animated
+breakdown you can play; switch to its Score tab to read the score.)
+
+```breakdown
+chop-shop
+```
+
 ## Scores
 
 A **score** describes a piece:
