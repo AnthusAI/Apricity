@@ -1,6 +1,5 @@
 /// Score reference resolution: extract and catalog clips and slices referenced in a score.
 /// Implements features/data/domain/score_refs.feature and design/storage.md §1, §5.
-
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -94,7 +93,8 @@ pub fn catalog_refs(text: &str, folder: &str, file: &str) -> Result<Vec<CatalogR
     });
 
     // Assign id_suffix with deduplication
-    let mut suffix_counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut suffix_counts: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
     for ref_mut in &mut catalog_refs {
         let base_suffix = if let Some(kit_pad) = &ref_mut.kit_pad {
             format!("{}_{}", ref_mut.alias, kit_pad)
@@ -199,7 +199,10 @@ track beat
         let result = catalog_refs(text, "scores", "test.apr").unwrap();
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].source, "marine-band/stems/Thunderer/drums.wav");
-        assert_eq!(result[0].catalog_path, Some("marine-band/stems/Thunderer/drums.wav".to_string()));
+        assert_eq!(
+            result[0].catalog_path,
+            Some("marine-band/stems/Thunderer/drums.wav".to_string())
+        );
         assert_eq!(result[0].clip_id, None);
     }
 
@@ -218,7 +221,10 @@ track beat
         // folder="examples", samples="../samples", source="marine-band/x.wav"
         // normalize(examples/../samples/marine-band/x.wav) = samples/marine-band/x.wav
         // Strip "samples/" prefix → "marine-band/x.wav"
-        assert_eq!(result[0].catalog_path, Some("marine-band/x.wav".to_string()));
+        assert_eq!(
+            result[0].catalog_path,
+            Some("marine-band/x.wav".to_string())
+        );
     }
 
     #[test]
@@ -229,7 +235,7 @@ key C
 bars 1
 clip band = marine-band/Thunderer.mp3
 kit drums
-  crash = band  slice hit-3
+  crash = band hit-3
 track drums  steps "crash . . ."
 "#;
         let result = catalog_refs(text, "scores", "test.apr").unwrap();
@@ -253,7 +259,7 @@ track drums  steps "crash . . ."
 
     #[test]
     fn test_duplicate_numbering_collision() {
-        // Real collision: clip brk + clip brk_b + chopped kit b on brk
+        // Real collision: clip brk + clip brk_b + sliced kit b on brk
         // Sorted: (brk, None), (brk, b), (brk_b, None)
         // Suffixes: brk, brk_b, brk_b → collision! Second brk_b becomes brk_b_2
         let text = r#"
@@ -262,7 +268,7 @@ key C
 bars 1
 clip brk = marine-band/drums.wav
 clip brk_b = marine-band/bass.wav
-kit b = chop brk by beats 0.5
+kit b = slice brk by beats 0.5
 track brk
 "#;
         let result = catalog_refs(text, "scores", "test.apr").unwrap();
@@ -290,7 +296,7 @@ track brk
 tempo 90
 key C
 bars 1
-clip beat = @clp_abc slice @slc_xyz
+clip beat = @clp_abc @slc_xyz
 track beat
 "#;
         let result = catalog_refs(text, "scores", "test.apr").unwrap();
@@ -324,7 +330,10 @@ track beat
         let result = catalog_refs(text, "examples", "test.apr").unwrap();
         assert_eq!(result.len(), 1);
         // Should be unresolved (doesn't start with samples/)
-        assert_eq!(result[0].catalog_path, Some("elsewhere/marine-band/x.wav".to_string()));
+        assert_eq!(
+            result[0].catalog_path,
+            Some("elsewhere/marine-band/x.wav".to_string())
+        );
     }
 
     #[test]
@@ -347,7 +356,10 @@ track beat
         let result = catalog_refs(text, "examples", "test.apr").unwrap();
         assert_eq!(result.len(), 1);
         // Escapes root, keeps leading ..
-        assert_eq!(result[0].catalog_path, Some("../x/marine-band/x.wav".to_string()));
+        assert_eq!(
+            result[0].catalog_path,
+            Some("../x/marine-band/x.wav".to_string())
+        );
     }
 
     #[test]
