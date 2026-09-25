@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-5328b468-c4c8-4afc-bf8d-efdc92a68f86",
+  "title": "Homepage hero: open with the full horns + Salamander drums groove",
+  "description": "User request 2026-09-25. New examples/hero.apr: Thunderer horns sliced, four-on-the-floor stabs varying each bar, Salamander kit from bar 1 with per-bar variation, no build-up. Story opens with the full mix, then horns Listen/Clip/Slice/Warp, then Kit, then back to the groove. Replaces the Thunderer break. Bake via scripts/hero-data.py, sync hero files to S3, add Salamander CC BY-SA credit. Web UI changed at the user's direct request (normally the web/docs session).",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6c78690d-63fd-420a-b573-685fe05a423e",
+      "author": "home",
+      "text": "Shipped b422a9e: examples/hero.apr, hero story opens on the full groove, Salamander kit story, credit. Hero audio + 14 Salamander clips synced to S3. Tests: web flow 68/0, cargo apricity-score/cli pass, hero-smoke pass. Pending: prod verification after Amplify build.",
+      "created_at": "2026-09-25T13:54:58.616354Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-25T13:27:01.285637Z",
+  "updated_at": "2026-09-25T13:54:58.616378Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
