@@ -77,6 +77,7 @@ export interface FileRef {
 }
 export interface SampleRecord {
   id: string;
+  createdAt?: string | null;
   recordingId: string;
   path: string;
   aliases?: string[] | null;
@@ -129,14 +130,57 @@ export interface MarkerRecord {
   source?: string | null;
   note?: string | null;
 }
+export type ScoreKind = "song" | "beat" | "chords" | "melody";
+export const SCORE_KINDS: ScoreKind[] = ["song", "beat", "chords", "melody"];
+
 export interface ScoreRecord {
   id: string;
   title: string;
   folder: string;
   format?: "apr" | "yaml" | null;
+  kind?: ScoreKind | null;
   text: string;
   legacyPath?: string | null;
+  owner?: string | null;
+  createdAt?: string | null;
   updatedAt?: string | null;
+}
+
+/** A score as the lists show it. A score with no kind is a song. */
+export interface ScoreItem {
+  id: string;
+  path: string;
+  title: string;
+  kind: ScoreKind;
+  owner: string | null;
+  createdAt: string | null;
+  modified: number;
+}
+
+export function toScoreItem(s: ScoreRecord): ScoreItem {
+  return {
+    id: s.id,
+    path: scorePath(s),
+    title: s.title,
+    kind: s.kind ?? "song",
+    owner: s.owner ?? null,
+    createdAt: s.createdAt ?? null,
+    modified: s.updatedAt ? Date.parse(s.updatedAt) / 1000 : 0,
+  };
+}
+
+/** A clip as the Clips list shows it: where it was cut from, and who cut it. */
+export interface ClipItem {
+  id: string;
+  name: string;
+  sampleId: string;
+  samplePath: string;
+  sampleTitle: string;
+  start: number;
+  end: number;
+  source: "user" | "ml" | "curated";
+  owner: string | null;
+  createdAt: string | null;
 }
 export interface JobRecord {
   id: string;
@@ -201,6 +245,8 @@ export function toSummary(sample: SampleRecord, recordings: Map<string, Recordin
     title = `${base} · ${sample.stem}`;
   }
   return {
+    id: sample.id,
+    createdAt: sample.createdAt ?? null,
     path: samplePath(sample),
     title,
     group: sample.collection.split("/")[0],
@@ -238,6 +284,7 @@ export function clipAnnotations(clips: ClipRecord[]): SavedClip[] {
     if (s.tags) out.tags = tags;
     if (s.retired) out.retired = true;
     if (s.candidateId) out.candidate = s.candidateId;
+    if (s.owner) out.owner = s.owner;
     return out;
   });
 }
@@ -435,10 +482,37 @@ export class Catalog {
     return this.scoreList;
   }
 
-  async scores(): Promise<{ scores: { path: string; modified: number }[] }> {
+  async scores(): Promise<{ scores: ScoreItem[] }> {
     const list = await this.listScores();
-    const scores = list.map((s) => ({ path: scorePath(s), modified: s.updatedAt ? Date.parse(s.updatedAt) / 1000 : 0 }));
+    const scores = list.map(toScoreItem);
     return { scores: scores.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)) };
+  }
+
+  /** Every clip saved with a sample (not retired), with its sample's path and title. */
+  async clips(): Promise<ClipItem[]> {
+    const i = await this.load();
+    const byId = new Map(i.samples.map((c) => [c.id, c]));
+    const titles = new Map(i.summaries.map((x) => [x.path, x.title]));
+    const recs = await listAll<ClipRecord & { createdAt?: string | null }>((nextToken) =>
+      this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId", "name", "start", "end", "source", "owner", "retired", "createdAt"] }),
+    );
+    const out: ClipItem[] = [];
+    for (const r of recs) {
+      const smp = byId.get(r.sampleId);
+      if (!smp || r.retired) continue;
+      const path = samplePath(smp);
+      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, owner: r.owner ?? null, createdAt: r.createdAt ?? null });
+    }
+    return out;
+  }
+
+  /** Change what a score is (song, beat, chords, melody). Only its owner (or a curator) may. */
+  async setScoreKind(path: string, kind: ScoreKind) {
+    const found = (await this.listScores()).find((s) => scorePath(s) === path);
+    if (!found) throw new Error(`${path}: no such score`);
+    const r = await this.models.Score.update({ id: found.id, kind });
+    if (r.errors?.length) fail(r.errors, true);
+    this.scoreList = null;
   }
 
   async score(path: string): Promise<string> {
@@ -454,7 +528,7 @@ export class Catalog {
    * Save a score's text. A new path first gets its Score record (id, title and folder from the
    * path), then `save` (data/domain.ts saveScore) updates the text and its ScoreRefs.
    */
-  async saveScore(path: string, text: string, save: (id: string, text: string) => Promise<{ errors?: GqlError[] }>) {
+  async saveScore(path: string, text: string, save: (id: string, text: string) => Promise<{ errors?: GqlError[] }>, kind?: ScoreKind) {
     const k = scoreKey(path);
     const existing = (await this.listScores()).find((s) => scorePath(s) === path);
     const id = existing?.id ?? k.id;
@@ -462,7 +536,7 @@ export class Catalog {
       const got = await this.models.Score.get({ id });
       if (got.errors?.length) fail(got.errors);
       if (!got.data) {
-        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text });
+        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}) });
         if (r.errors?.length) fail(r.errors, true);
       }
     }

@@ -7,6 +7,8 @@ import { Landing } from "./ui/landing";
 import { bootstrap, mode } from "./data/client";
 import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
+import { currentAccount } from "./data/auth";
+import type { ScoreKind } from "./data/catalog";
 import { parseRoute, routeFor } from "./route";
 
 // Configure the data layer first: /amplify_outputs.json says whether files come from `apricity serve` or the bucket.
@@ -30,39 +32,60 @@ await bootstrap();
 // Sign in / out lives in the bottom-left pill; it only appears against the cloud backend.
 new AccountControl(document.querySelector<HTMLElement>("#account")!, realDeps(() => mode() === "cloud"));
 
-const library = new Library(document.querySelector("#library")!);
 const score = new ScoreView(document.querySelector("#score")!);
+const clips = new Library(document.querySelector("#clips")!, "clips");
+const samples = new Library(document.querySelector("#samples")!, "samples");
 const docs = new DocsView(document.querySelector("#docs")!);
-(window as any).apricity = { player, library, score, docs }; // handy from the console
+(window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
 // ---- tabs (remembered per browser)
+// Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
+const KIND_OF_TAB: Record<string, ScoreKind> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
+const TAB_OF_KIND: Record<ScoreKind, string> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
+const TABS = ["home", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tabs button")];
 const brand = document.querySelector<HTMLButtonElement>(".brand.link")!;
+// Lists load the first time their tab is shown (Clips lists every clip in the library).
+const loaded = new Set<string>();
 function showTab(name: string) {
+  if (!TABS.includes(name)) name = "scores";
+  const kind = KIND_OF_TAB[name];
+  const view = kind ? "score" : name;
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
-  for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== name;
+  for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
   document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home";
+  if (kind) score.setKind(kind);
+  else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
+    loaded.add(name);
+    void (name === "clips" ? clips : samples).refresh();
+  }
   try {
     localStorage.setItem("apricity.tab", name);
   } catch {}
 }
 tabs.forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab!)));
 brand.addEventListener("click", () => showTab("home"));
-// First visit: the landing page. After that, wherever you were.
-let initial = "home";
+// First visit: the landing page (signed in: the top scores of the week). After that, wherever you were.
+let initial: string | null = null;
 try {
-  initial = localStorage.getItem("apricity.tab") ?? initial;
+  initial = localStorage.getItem("apricity.tab");
 } catch {}
-/** Open a score in the Score tab, and play it once it has compiled. Signed out, the Score tab says to
- *  sign in and the sign-in dialog opens; nothing waits forever. */
+if (!initial) initial = (await currentAccount().catch(() => null)) ? "scores" : "home";
+
+// Signing in takes you to the top scores of the week.
+let wasSignedIn = !!(await currentAccount().catch(() => null));
+document.addEventListener("apricity:auth-changed", async () => {
+  const now = !!(await currentAccount().catch(() => null));
+  if (now && !wasSignedIn) (score.topOfWeek(), showTab("scores"));
+  wasSignedIn = now;
+});
+
+/** Open a score in the tab for its kind, and play it once it has compiled; nothing waits forever. */
 async function openScore(path: string, play: boolean) {
   await score.open(path);
-  showTab("score");
-  if (score.path !== path) {
-    document.dispatchEvent(new CustomEvent("apricity:sign-in"));
-    return;
-  }
+  if (score.path !== path) return; // not found: the status line says why
+  showTab(TAB_OF_KIND[await score.kindOf(path)]);
   if (!play) return;
   for (let i = 0; i < 100 && !(score.timeline && score.path === path); i++) await new Promise((r) => setTimeout(r, 100));
   if (score.timeline && score.path === path && !player.transport.playing) playBtn.click();
@@ -79,8 +102,8 @@ async function followRoute() {
 window.addEventListener("hashchange", () => void followRoute());
 
 new Landing(document.querySelector("#home")!, {
-  library: () => showTab("library"),
-  score: () => showTab("score"),
+  library: () => showTab("samples"),
+  score: () => showTab("scores"),
   docs: () => showTab("docs"),
   hear: () => openScore("examples/chop-shop.apr", true),
   open: (path) => (location.hash = routeFor(path, true)),
@@ -109,7 +132,7 @@ bar.append(pill, meta, pos, meter, playBtn);
 playBtn.addEventListener("click", async () => {
   if (player.transport.playing) return player.pause();
   if (!score.timeline) {
-    showTab("score");
+    showTab(TAB_OF_KIND[score.kind]);
     return;
   }
   playBtn.disabled = true;

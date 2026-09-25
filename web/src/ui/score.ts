@@ -9,11 +9,13 @@ import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { Compartment } from "@codemirror/state";
 import { aprLanguage } from "./apr-lang";
 import { tags as t } from "@lezer/highlight";
-import { api, compile, type Timeline } from "../apricity";
-import { SignedOut } from "../data/catalog";
+import { api, compile, me, ratings, type Timeline } from "../apricity";
+import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
+import { RankedList } from "./ranked-list";
+import { StarRating } from "./stars";
+import { KIND_LABEL, TEMPLATES } from "./templates";
 import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
-import { emptyKind, emptyText } from "./account-state";
 import { currentAccount } from "../data/auth";
 import { FlowView } from "./flow/view";
 
@@ -31,27 +33,22 @@ const highlight = HighlightStyle.define([
   { tag: t.invalid, color: "var(--bad)", textDecoration: "underline wavy" },
 ]);
 
-const NEW_SCORE = `# A new Apricity score. Every edit recompiles; press play (or Space) to hear it.
-tempo 100
-key F mixolydian
-samples ../samples
 
-clip groove = marine-band/stems/Thunderer/drums.wav  pick 2bars  warp beats
-clip horns  = marine-band/stems/Thunderer/other.wav  pick 1bar
-
-chords I7 IV7 I7 . | IV7 . I7 . | V7 IV7 I7 V7
-
-track groove  transpose 0
-track horns   follow
-`;
+const signIn = () => document.dispatchEvent(new CustomEvent("apricity:sign-in"));
 
 export class ScoreView {
   root: HTMLElement;
   path: string | null = null;
   timeline: Timeline | null = null;
+  /** Which kind of score the tab shows: Scores (songs), Beats, Chords or Melodies. */
+  kind: ScoreKind = "song";
   private view: EditorView;
   private language = new Compartment();
-  private listEl = el("div", { className: "list" });
+  private items: ScoreItem[] = [];
+  private who: Me | null = null;
+  private list: RankedList<ScoreItem>;
+  private stars = new StarRating((n) => this.rate(n), signIn);
+  private kindSel = el("select", { className: "kind", ariaLabel: "What this score is" });
   private nameEl = el("span", { className: "name" }, "—");
   private saveBtn = el("button", { className: "btn", type: "button", disabled: true }, "Save");
   private statusEl = el("span", { className: "status" });
@@ -78,8 +75,24 @@ export class ScoreView {
       ],
     });
     this.saveBtn.addEventListener("click", () => this.save());
-    const newBtn = el("button", { className: "btn", type: "button" }, "New score");
-    newBtn.addEventListener("click", () => this.create());
+    for (const k of SCORE_KINDS) this.kindSel.append(el("option", { value: k, textContent: k === "song" ? "Song" : k[0].toUpperCase() + k.slice(1) }));
+    this.kindSel.addEventListener("change", () => this.changeKind(this.kindSel.value as ScoreKind));
+    this.list = new RankedList<ScoreItem>({
+      name: "scores",
+      load: async () => {
+        const [{ scores }, who] = await Promise.all([api.scores(), me().catch(() => null)]);
+        this.items = scores;
+        this.who = who;
+        return scores.filter((x) => x.kind === this.kind);
+      },
+      tallies: async () => (await ratings()).tallies("score"),
+      row: (x) => ({ title: x.title, sub: owns(this.who, x.owner) ? `yours · ${x.path}` : x.path }),
+      text: (x) => `${x.title} ${x.path}`,
+      owner: (x) => x.owner,
+      me: async () => this.who,
+      open: (x) => this.open(x.path),
+      create: { label: "New score", run: () => this.create() },
+    });
     this.chordsEl.addEventListener("click", (e) => {
       if (!this.timeline) return;
       const r = this.chordsEl.getBoundingClientRect();
@@ -87,26 +100,14 @@ export class ScoreView {
       player.seekBeat(Math.floor(beat / this.timeline.meter) * this.timeline.meter);
     });
     root.append(
-      el("aside", { className: "sidebar" }, this.listEl, el("div", { className: "search" }, newBtn)),
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, el("span", { style: "flex:1" }), this.statusEl, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
+      this.list.el,
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
       this.sideEl,
       this.flowPanel(),
     );
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     document.addEventListener("apricity:auth-changed", () => this.loadList());
-    this.loadList();
-  }
-
-  /** A signed-out visitor (or a failed load) sees why the list is empty, not an error in the console. */
-  private async unavailable(e: unknown) {
-    let inn = false;
-    try {
-      inn = !!(await currentAccount());
-    } catch {}
-    const refused = inn && (e instanceof SignedOut || /not authori[sz]ed|unauthori[sz]ed|forbidden|denied|access/i.test((e as Error)?.message ?? ""));
-    const kind = emptyKind({ signedIn: inn, refused, empty: false });
-    const msg = kind ? emptyText("score", kind) : `Couldn't load scores: ${(e as Error).message}`;
-    this.listEl.replaceChildren(el("div", { className: "group" }, "Scores"), el("div", { className: "empty" }, msg));
+    this.list.rename(KIND_LABEL[this.kind].many, `New ${KIND_LABEL[this.kind].one}`);
   }
 
   /** The Flow panel under the editor: open or closed, and how tall, remembered. */
@@ -151,30 +152,100 @@ export class ScoreView {
     return b;
   }
 
+  /** The list's top of the week (where signing in lands). */
+  topOfWeek() {
+    this.list.setWindow("week");
+  }
+
+  /** Show another kind of score (the Scores, Beats, Chords and Melodies tabs share this view). */
+  setKind(kind: ScoreKind) {
+    if (kind === this.kind && this.items.length) return;
+    this.kind = kind;
+    const label = KIND_LABEL[kind];
+    this.list.rename(label.many, `New ${label.one}`);
+    this.loadList();
+  }
+
   async loadList(select?: string) {
-    let scores: { path: string; modified: number }[];
-    try {
-      ({ scores } = await api.scores());
-    } catch (e) {
-      await this.unavailable(e);
+    const shown = await this.list.refresh();
+    const current = this.items.find((x) => x.path === (select ?? this.path));
+    if (current && current.kind === this.kind) {
+      this.list.current = current.id;
+      this.list.render();
+      if (current.path !== this.path) this.open(current.path);
       return;
     }
-    this.listEl.replaceChildren(
-      el("div", { className: "group" }, "Scores"),
-      ...(scores.length ? [] : [el("div", { className: "empty" }, emptyText("score", "empty"))]),
-      ...scores.map((s) => {
-        const row = el("button", { className: "row", type: "button" }, el("span", { className: "t" }, s.path.split("/").pop()!), el("span", { className: "sub" }, s.path));
-        row.setAttribute("aria-current", String(s.path === this.path));
-        row.addEventListener("click", () => this.open(s.path));
-        return row;
-      }),
-    );
-    const target = select ?? this.path ?? scores[0]?.path;
-    if (target && target !== this.path) this.open(target);
+    // Another kind's score is open (or none): open this list's top item.
+    const top = this.list.top();
+    if (top && top.path !== this.path) this.open(top.path);
+    else if (!shown.length && !this.dirty()) this.clear();
+  }
+
+  /** Nothing open (an empty list). */
+  private clear() {
+    this.path = null;
+    this.saved = "";
+    this.timeline = null;
+    this.nameEl.textContent = "—";
+    this.view.dispatch({ changes: { from: 0, to: this.view.state.doc.length, insert: "" } });
+    this.renderSide(null, [], "");
+    this.header();
+  }
+
+  /** The open score's record, if it is in the list. */
+  private item(path = this.path): ScoreItem | undefined {
+    return this.items.find((x) => x.path === path);
+  }
+
+  /** Title, kind, stars and the Save button for the open score and whoever is looking. */
+  private async header() {
+    const it = this.item();
+    const mine = !!it && (owns(this.who, it.owner) || !!this.who?.curator);
+    this.nameEl.textContent = it ? it.title : this.path ?? "—";
+    this.nameEl.title = this.path ?? "";
+    this.kindSel.hidden = !it;
+    this.kindSel.value = it?.kind ?? this.kind;
+    this.kindSel.disabled = !mine;
+    this.kindSel.title = mine ? "What this score is: it decides the tab it is listed under" : "Only its author can change what it is";
+    this.stars.el.hidden = !it;
+    this.changedDirty();
+    if (!it) return;
+    const standing = this.list.standingOf(it.id);
+    let mineStars: number | null = null;
+    try {
+      mineStars = await (await ratings()).mineFor("score", it.id);
+    } catch {}
+    if (this.item()?.id !== it.id) return;
+    this.stars.set({ mine: mineStars, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
+  }
+
+  private async rate(stars: number | null) {
+    const it = this.item();
+    if (!it) return;
+    await (await ratings()).rate("score", it.id, stars);
+  }
+
+  private async changeKind(kind: ScoreKind) {
+    if (!this.path) return;
+    try {
+      await api.setScoreKind(this.path, kind);
+      this.statusEl.textContent = `now listed under ${KIND_LABEL[kind].many[0].toUpperCase() + KIND_LABEL[kind].many.slice(1)}`;
+    } catch (e) {
+      this.statusEl.textContent = `couldn't change it: ${(e as Error).message}`;
+    }
+    await this.list.refresh();
+    this.header();
+  }
+
+  /** The kind of a score (after the list has loaded); a song when unknown. */
+  async kindOf(path: string): Promise<ScoreKind> {
+    if (!this.items.length) await this.list.refresh();
+    return this.item(path)?.kind ?? "song";
   }
 
   async open(path: string) {
     if (this.dirty() && !confirm(`Discard unsaved changes to ${this.path}?`)) return;
+    if (!this.items.length) await this.list.refresh();
     let text: string;
     try {
       text = await api.score(path);
@@ -184,28 +255,47 @@ export class ScoreView {
     }
     this.path = path;
     this.saved = text;
-    this.nameEl.textContent = path;
     this.view.dispatch({
       changes: { from: 0, to: this.view.state.doc.length, insert: text },
       effects: this.language.reconfigure(path.endsWith(".apr") ? aprLanguage : yaml()),
     });
-    this.loadList(path);
+    const it = this.item(path);
+    if (it) {
+      this.list.current = it.id;
+      this.list.render();
+    }
+    this.header();
   }
 
-  private async create() {
-    const name = prompt("Name for the new score (letters, digits, - and _):", "my-piece")?.trim();
+  /** Where a new score of yours goes: your own folder, so two people's "my-beat" never collide. */
+  private async folder(): Promise<string | null> {
+    const a = await currentAccount().catch(() => null);
+    if (a) return `scores/${a.username}`;
+    return this.who ? "scores" : null; // locally there is one person; a guest has no folder
+  }
+
+  private async create(text?: string, suggested?: string) {
+    const folder = await this.folder();
+    if (!folder) return signIn();
+    const one = KIND_LABEL[this.kind].one;
+    const name = prompt(`Name for the new ${one} (letters, digits, - and _):`, suggested ?? `my-${one}`)?.trim();
     if (!name) return;
     const safe = name.replace(/[^A-Za-z0-9_-]+/g, "-");
-    const path = `scores/${safe}.apr`;
+    const path = `${folder}/${safe}.apr`;
+    if (this.items.some((x) => x.path === path)) {
+      this.statusEl.textContent = `you already have ${safe}; pick another name`;
+      return;
+    }
     try {
-      await api.saveScore(path, NEW_SCORE);
+      await api.saveScore(path, text ?? TEMPLATES[this.kind], this.kind);
     } catch (e) {
       this.statusEl.textContent = `couldn't create ${path}: ${(e as Error).message}`;
       return;
     }
     this.saved = "";
+    this.path = null; // nothing unsaved to warn about: open the new one
     await this.loadList(path);
-    this.open(path);
+    await this.open(path);
   }
 
   private dirty() {
@@ -214,7 +304,14 @@ export class ScoreView {
 
   private async save() {
     if (!this.path) return;
+    if (!this.who) return signIn();
+    const it = this.item();
     const text = this.view.state.doc.toString();
+    if (it && !owns(this.who, it.owner) && !this.who.curator) {
+      // Someone else's score: yours is a copy, under your name.
+      this.saved = text; // the edits move to the copy
+      return this.create(text, it.title);
+    }
     try {
       await api.saveScore(this.path, text);
     } catch (e) {
@@ -227,8 +324,10 @@ export class ScoreView {
 
   private changedDirty() {
     const d = this.dirty();
+    const it = this.item();
+    const theirs = !!it && !!this.who && !owns(this.who, it.owner) && !this.who.curator;
     this.saveBtn.disabled = !d;
-    this.saveBtn.textContent = d ? "Save •" : "Saved";
+    this.saveBtn.textContent = !d ? "Saved" : !this.who ? "Sign in to save" : theirs ? "Save a copy •" : "Save •";
   }
 
   private changed() {

@@ -10,8 +10,12 @@
     <header class="topbar">
       <button class="brand link" type="button" data-tab="home" title="Home"><span class="logo" aria-hidden="true"></span>Apricity</button>
       <nav class="tabs" role="tablist">
-        <button role="tab" data-tab="library" aria-selected="true">Library</button>
-        <button role="tab" data-tab="score" aria-selected="false">Score</button>
+        <button role="tab" data-tab="scores" aria-selected="true">Scores</button>
+        <button role="tab" data-tab="beats" aria-selected="false">Beats</button>
+        <button role="tab" data-tab="chords" aria-selected="false">Chords</button>
+        <button role="tab" data-tab="melodies" aria-selected="false">Melodies</button>
+        <button role="tab" data-tab="clips" aria-selected="false">Clips</button>
+        <button role="tab" data-tab="samples" aria-selected="false">Samples</button>
         <button role="tab" data-tab="docs" aria-selected="false">Docs</button>
       </nav>
       <div class="transport" id="transport"></div>
@@ -19,8 +23,10 @@
     <div class="account" id="account" hidden></div>
     <main>
       <section id="home" class="view" data-view="home" hidden></section>
-      <section id="library" class="view" data-view="library"></section>
-      <section id="score" class="view" data-view="score" hidden></section>
+      <!-- Scores, Beats, Chords and Melodies are one view: a score of that kind. -->
+      <section id="score" class="view" data-view="score"></section>
+      <section id="clips" class="view library" data-view="clips" hidden></section>
+      <section id="samples" class="view library" data-view="samples" hidden></section>
       <section id="docs" class="view" data-view="docs" hidden></section>
     </main>
     <script type="module" src="/src/main.ts"></script>

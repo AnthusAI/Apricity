@@ -1,42 +1,83 @@
-// Library: every analyzed sample, its analysis, and a waveform editor for the clips saved with it.
+// Samples and Clips: every analyzed sample (or every clip saved with one), ranked by stars, and a waveform editor for
+// the clips saved with a sample. The two tabs are one view: opening a clip opens its sample with that clip selected.
 
-import { api, audioUrl, manifest, type SampleSummary, type SavedClip } from "../apricity";
-import { SignedOut } from "../data/catalog";
+import { api, audioUrl, manifest, me, ratings, type SampleSummary, type SavedClip } from "../apricity";
+import { owns, SignedOut, type ClipItem, type Me } from "../data/catalog";
 import { mode } from "../data/client";
 import { player } from "../audio/player";
 import { el } from "./dom";
-import { emptyKind, emptyText } from "./account-state";
-import { currentAccount } from "../data/auth";
-
-const REFUSED = /not authori[sz]ed|unauthori[sz]ed|forbidden|denied|access/i;
-async function signedIn(): Promise<boolean> {
-  try {
-    return !!(await currentAccount());
-  } catch {
-    return false;
-  }
-}
+import { RankedList } from "./ranked-list";
+import { StarRating } from "./stars";
 import { computePeaks, Waveform } from "./waveform";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
 const keyLabel = (k: string) => k.replace(/b/g, "♭");
 const GROUPS: Record<string, string> = { "marine-band": "U.S. Marine Band", "citizen-dj": "Library of Congress · Citizen DJ", uploads: "Your uploads" };
+const signIn = () => document.dispatchEvent(new CustomEvent("apricity:sign-in"));
+
+export type LibraryMode = "samples" | "clips";
 
 export class Library {
   root: HTMLElement;
   samples: SampleSummary[] = [];
+  clips: ClipItem[] = [];
   current: string | null = null;
-  private listEl = el("div", { className: "list" });
+  /** In the Clips tab: the clip that is open (selected on its sample's waveform). */
+  private currentClip: ClipItem | null = null;
   private detailEl = el("div", { className: "detail" });
-  private filter = "";
+  private jobsEl = el("div", { className: "jobs" });
   private decoded = new Map<string, Promise<AudioBuffer>>();
   private audition: AudioBufferSourceNode | null = null;
   private jobsTimer = 0;
+  private who: Me | null = null;
+  private list: RankedList<SampleSummary> | RankedList<ClipItem>;
+  private stars = new StarRating((n) => this.rate(n), signIn);
 
-  constructor(root: HTMLElement) {
+  constructor(
+    root: HTMLElement,
+    readonly mode: LibraryMode = "samples",
+  ) {
     this.root = root;
-    const search = el("input", { type: "search", placeholder: "Filter by title, key, BPM…", ariaLabel: "Filter samples" });
-    search.addEventListener("input", () => ((this.filter = search.value.toLowerCase()), this.renderList()));
+    const loadSamples = async () => {
+      const [r, who] = await Promise.all([api.samples(), me().catch(() => null)]);
+      this.who = who;
+      this.samples = r.samples;
+      this.jobs = r.jobs;
+      this.renderJobs();
+      return r.samples;
+    };
+    if (mode === "samples") {
+      this.list = new RankedList<SampleSummary>({
+        name: "samples",
+        load: loadSamples,
+        tallies: async () => (await ratings()).tallies("sample"),
+        row: (c) => ({
+          title: c.title + (c.excerpt_start ? ` @${c.excerpt_start.replace(/^00:/, "")}` : ""),
+          sub: `${GROUPS[c.group] ?? c.group} · ${keyLabel(c.key)} · ${c.bpm ? Math.round(c.bpm) + " BPM" : "no beat"} · ${fmt(c.duration)}${c.clips ? ` · ${c.clips} clip${c.clips > 1 ? "s" : ""}` : ""}`,
+        }),
+        text: (c) => [c.title, c.key, c.camelot, String(Math.round(c.bpm ?? 0)), c.group, GROUPS[c.group] ?? ""].join(" "),
+        me: async () => this.who,
+        open: (c) => this.show(c.path),
+      });
+    } else {
+      this.list = new RankedList<ClipItem>({
+        name: "clips",
+        load: async () => {
+          await loadSamples();
+          this.clips = await api.clips();
+          return this.clips;
+        },
+        tallies: async () => (await ratings()).tallies("clip"),
+        row: (c) => ({
+          title: c.name,
+          sub: `${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${owns(this.who, c.owner) ? "yours" : c.source === "ml" ? "found by analysis" : "made by someone"}`,
+        }),
+        text: (c) => `${c.name} ${c.sampleTitle} ${c.samplePath}`,
+        owner: (c) => c.owner,
+        me: async () => this.who,
+        open: (c) => ((this.currentClip = c), this.show(c.samplePath)),
+      });
+    }
     const drop = el("div", { className: "drop" }, "Drop audio here to add and analyze it");
     const pick = el("input", { type: "file", accept: "audio/*", multiple: true, hidden: true });
     drop.addEventListener("click", () => pick.click());
@@ -48,44 +89,75 @@ export class Library {
       drop.classList.remove("over");
       this.upload([...(e.dataTransfer?.files ?? [])]);
     });
-    // Uploads need the local analysis server; in the cloud there's nothing to drop onto.
-    drop.hidden = mode() === "cloud";
-    root.append(el("aside", { className: "sidebar" }, el("div", { className: "search" }, search), this.listEl, drop, pick), this.detailEl);
+    // Uploads need the local analysis server; in the cloud there's nothing to drop onto. Clips are made on a sample.
+    drop.hidden = mode === "clips" || this.cloud();
+    this.list.el.append(this.jobsEl, drop, pick);
+    root.append(this.list.el, this.detailEl);
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
-    this.refresh();
   }
 
+  private cloud() {
+    return mode() === "cloud";
+  }
+
+  /** Load (or reload) the list; opens `select`, or what was open, or the top of the list. */
   async refresh(select?: string) {
-    let r: Awaited<ReturnType<typeof api.samples>>;
-    try {
-      r = await api.samples();
-    } catch (e) {
-      clearTimeout(this.jobsTimer);
-      this.samples = [];
-      this.jobs = [];
-      const inn = await signedIn();
-      const kind = emptyKind({ signedIn: inn, refused: inn && (e instanceof SignedOut || REFUSED.test((e as Error)?.message ?? "")), empty: false });
-      const msg = kind ? emptyText("library", kind) : `Couldn't load the library: ${(e as Error).message}`;
-      this.listEl.replaceChildren(el("div", { className: "empty" }, msg));
-      this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
-      return;
-    }
-    this.samples = r.samples;
-    if (!r.samples.length && !r.jobs.length) {
-      const msg = emptyText("library", "empty");
-      this.listEl.replaceChildren(el("div", { className: "empty" }, msg));
-      this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
-      return;
-    }
-    const running = r.jobs.filter((j) => j.state === "analyzing" || j.state === "queued");
+    const items = await this.list.refresh();
+    const running = this.jobs.filter((j) => j.state === "analyzing" || j.state === "queued");
     clearTimeout(this.jobsTimer);
     if (running.length) this.jobsTimer = window.setTimeout(() => this.refresh(), 3000);
-    this.jobs = r.jobs;
-    this.renderList();
-    const target = select ?? this.current ?? this.samples[0]?.path;
+    if (!items.length) {
+      this.detailEl.replaceChildren(el("div", { className: "empty" }, this.mode === "clips" ? "No clips yet. Open a sample and drag across its waveform to make one." : "The library is empty."));
+      return;
+    }
+    if (this.mode === "clips") {
+      const clip = (this.currentClip && this.clips.find((c) => c.id === this.currentClip!.id)) ?? (this.list as RankedList<ClipItem>).top();
+      if (clip && (clip.id !== this.currentClip?.id || !this.current)) {
+        this.list.current = clip.id;
+        this.list.render();
+        this.currentClip = clip;
+        this.show(clip.samplePath);
+      }
+      return;
+    }
+    const target = select ?? this.current ?? (this.list as RankedList<SampleSummary>).top()?.path;
     if (target && target !== this.current) this.show(target);
   }
   private jobs: { path: string; state: string; error?: string }[] = [];
+
+  /** Samples being analyzed (local uploads). */
+  private renderJobs() {
+    this.jobsEl.replaceChildren(
+      ...this.jobs
+        .filter((j) => j.state !== "done")
+        .map((job) => el("div", { className: "row" }, el("span", { className: "t" }, job.path.split("/").pop()!), el("span", { className: `pill ${job.state === "failed" ? "bad" : ""}` }, job.state === "failed" ? "failed" : "analyzing…"), el("span", { className: "sub" }, job.error ?? "beats, key, notes — about a minute"))),
+    );
+  }
+
+  /** What the stars in the detail header rate: the open clip in the Clips tab, the sample otherwise. */
+  private target(): { type: "sample" | "clip"; id: string } | null {
+    if (this.mode === "clips") return this.currentClip ? { type: "clip", id: this.currentClip.id } : null;
+    const c = this.samples.find((x) => x.path === this.current);
+    return c ? { type: "sample", id: c.id } : null;
+  }
+
+  private async rate(stars: number | null) {
+    const t = this.target();
+    if (t) await (await ratings()).rate(t.type, t.id, stars);
+  }
+
+  private async paintStars() {
+    const t = this.target();
+    if (!t) return;
+    const standing = this.list.standingOf(t.id);
+    let mine: number | null = null;
+    try {
+      mine = await (await ratings()).mineFor(t.type, t.id);
+    } catch {}
+    const now = this.target();
+    if (now?.id !== t.id) return;
+    this.stars.set({ mine, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
+  }
 
   private async upload(files: File[]) {
     for (const f of files) {
@@ -96,34 +168,6 @@ export class Library {
       }
     }
     this.refresh();
-  }
-
-  private renderList() {
-    const q = this.filter;
-    const match = (c: SampleSummary) => !q || [c.title, c.key, c.camelot, String(Math.round(c.bpm ?? 0)), c.group].join(" ").toLowerCase().includes(q);
-    const groups = new Map<string, SampleSummary[]>();
-    for (const c of this.samples.filter(match)) groups.set(c.group, [...(groups.get(c.group) ?? []), c]);
-    const kids: Node[] = [];
-    for (const job of this.jobs.filter((j) => j.state !== "done")) {
-      kids.push(el("div", { className: "row" }, el("span", { className: "t" }, job.path.split("/").pop()!), el("span", { className: `pill ${job.state === "failed" ? "bad" : ""}` }, job.state === "failed" ? "failed" : "analyzing…"), el("span", { className: "sub" }, job.error ?? "beats, key, notes — about a minute")));
-    }
-    for (const [g, list] of groups) {
-      kids.push(el("div", { className: "group" }, GROUPS[g] ?? g));
-      for (const c of list) {
-        const row = el(
-          "button",
-          { className: "row", type: "button" },
-          el("span", { className: "t", title: c.title }, c.title + (c.excerpt_start ? ` @${c.excerpt_start.replace(/^00:/, "")}` : "")),
-          el("span", { className: "k" }, `${keyLabel(c.key)} · ${c.camelot ?? ""}`),
-          el("span", { className: "sub" }, `${c.bpm ? Math.round(c.bpm) + " BPM" : "no beat"} · ${fmt(c.duration)}${c.clips ? ` · ${c.clips} clip${c.clips > 1 ? "s" : ""}` : ""}`),
-        );
-        row.setAttribute("aria-current", String(c.path === this.current));
-        row.addEventListener("click", () => this.show(c.path));
-        kids.push(row);
-      }
-    }
-    if (!kids.length) kids.push(el("div", { className: "empty" }, "No samples match."));
-    this.listEl.replaceChildren(...kids);
   }
 
   private decode(path: string) {
@@ -141,7 +185,11 @@ export class Library {
 
   async show(path: string) {
     this.current = path;
-    this.renderList();
+    if (this.mode === "samples") {
+      const c = this.samples.find((x) => x.path === path);
+      if (c) this.list.current = c.id;
+    } else if (this.currentClip) this.list.current = this.currentClip.id;
+    this.list.render();
     this.stopAudition();
     const c = this.samples.find((x) => x.path === path);
     let m: Awaited<ReturnType<typeof manifest>>, buf: AudioBuffer;
@@ -153,19 +201,22 @@ export class Library {
     } catch (e) {
       this.decoded.delete(path);
       if (this.current !== path) return;
-      const msg = e instanceof SignedOut ? "Sign in to see the library." : `Couldn't load ${path}: ${(e as Error).message}`;
+      const msg = e instanceof SignedOut ? "Sign in to see this sample." : `Couldn't load ${path}: ${(e as Error).message}`;
       this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
       return;
     }
     if (this.current !== path) return;
 
     const channels = Array.from({ length: buf.numberOfChannels }, (_, i) => buf.getChannelData(i));
+    const clips = structuredClone((m.annotations?.clips ?? []).filter((x) => !x.retired));
+    // In the Clips tab, the open clip is selected.
+    const picked = this.mode === "clips" && this.currentClip ? clips.findIndex((x) => x.id === this.currentClip!.id) : -1;
     const wave = new Waveform({
       duration: buf.duration,
       peaks: computePeaks(channels),
       manifest: m,
-      clips: structuredClone((m.annotations?.clips ?? []).filter((x) => !x.retired)),
-      selected: null,
+      clips,
+      selected: picked >= 0 ? picked : null,
       selection: null,
       playhead: null,
     });
@@ -187,7 +238,7 @@ export class Library {
     const markDirty = () => {
       dirty = true;
       save.disabled = false;
-      save.textContent = "Save clips •";
+      save.textContent = this.cloud() && !this.who ? "Sign in to save clips" : "Save clips •";
     };
     const renderTable = () => {
       const s = wave.state;
@@ -219,10 +270,18 @@ export class Library {
         });
         return tr;
       };
-      const mine = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source !== "ml");
+      // Yours (and new ones), then other people's, then the automatic ones (collapsed).
+      const isMine = (sl: SavedClip) => !this.cloud() || !sl.owner || !sl.id || owns(this.who, sl.owner) || !!this.who?.curator;
+      const mine = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source !== "ml" && isMine(sl));
+      const others = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source !== "ml" && !isMine(sl));
       const auto = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source === "ml");
       const head = el("thead", {}, el("tr", {}, ...["Name", "", "Start", "End", "Length", ""].map((h) => el("th", {}, h))));
-      const body = el("tbody", {}, ...(mine.length ? mine.map(([sl, i]) => row(sl, i)) : [el("tr", {}, el("td", { colSpan: 6, className: "hint" }, "No clips of your own yet. Drag across the waveform to select a region, then make it a clip."))]));
+      const body = el(
+        "tbody",
+        {},
+        ...(mine.length ? mine.map(([sl, i]) => row(sl, i)) : [el("tr", {}, el("td", { colSpan: 6, className: "hint" }, "No clips of your own yet. Drag across the waveform to select a region, then make it a clip."))]),
+        ...(others.length ? [el("tr", {}, el("td", { colSpan: 6, className: "hint" }, "Other people's clips (editing one saves your own copy):")), ...others.map(([sl, i]) => row(sl, i))] : []),
+      );
       const autoBody = el("tbody", {});
       if (auto.length) {
         const toggle = el("button", { className: "btn", type: "button" }, `${showAuto ? "Hide" : "Show"} auto markup (${auto.length})`);
@@ -258,6 +317,7 @@ export class Library {
       this.startAudition(buf, r ? r[0] : 0, r ? r[1] : null, wave, play);
     });
     save.addEventListener("click", async () => {
+      if (this.cloud() && !this.who) return signIn();
       errors.textContent = "";
       const clips = wave.state.clips.map((s) => ({ ...s, start: +s.start.toFixed(3), end: +s.end.toFixed(3) }));
       try {
@@ -283,9 +343,10 @@ export class Library {
     const k = m.tonal.key;
     const stat = (label: string, value: string) => el("div", { className: "stat" }, el("b", {}, label), el("span", {}, value));
     const keysOverTime = c.keys_over_time.map(keyLabel).join(" → ");
+    const clip = this.mode === "clips" ? this.currentClip : null;
     this.detailEl.replaceChildren(
-      el("h1", {}, c.title),
-      el("div", { className: "credit" }, [c.credit, c.rights].filter(Boolean).join(" ") || path),
+      el("div", { className: "title-row" }, el("h1", {}, clip ? clip.name : c.title), this.stars.el),
+      el("div", { className: "credit" }, clip ? `A clip of ${c.title} · ${fmt(clip.start)}–${fmt(clip.end)}` : [c.credit, c.rights].filter(Boolean).join(" ") || path),
       el(
         "div",
         { className: "stats" },
@@ -304,6 +365,7 @@ export class Library {
       table,
     );
     renderTable();
+    this.paintStars();
     requestAnimationFrame(() => wave.draw());
     window.onbeforeunload = () => (dirty ? true : null);
   }

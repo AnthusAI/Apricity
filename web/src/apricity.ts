@@ -1,10 +1,14 @@
 // Page-side Apricity: compiling scores (wasm) and reading the library through the data layer.
 
 import { instantiate, type Apricity } from "./wasm/shim.js";
-import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut } from "./data/catalog.js";
+import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut, type Me, type ScoreKind } from "./data/catalog.js";
+import type { Ratings } from "./data/ratings.js";
 
 /** A sample in the library: an analyzed audio file. */
 export interface SampleSummary {
+  /** The Sample record's id (what ratings name). */
+  id: string;
+  createdAt?: string | null;
   path: string;
   title: string;
   group: string;
@@ -35,6 +39,7 @@ export interface SavedClip {
   id?: string; // its Clip record, when it has one
   retired?: boolean; // no longer proposed, kept for the scores that use it
   candidate?: string;
+  owner?: string; // who made it (cloud records)
 }
 export interface Marker {
   name: string;
@@ -148,15 +153,13 @@ function catalog(): Catalog {
 /** Wire the catalog to the data layer; main.ts's bootstrap() must have run. */
 export async function connectCatalog() {
   if (catalogInstance) return catalogInstance;
-  const [{ client }, files, auth] = await Promise.all([import("./data/client.js"), import("./data/files.js"), import("./data/auth.js")]);
+  const [{ client }, files] = await Promise.all([import("./data/client.js"), import("./data/files.js")]);
   catalogInstance = new Catalog({
     client,
     readText: async (key) => (await files.downloadData({ path: key })).text(),
     url: async (key) => (await files.getUrl({ path: key })).url,
-    me: async () => {
-      const a = await auth.currentAccount();
-      return a ? { owners: [a.username, `${a.sub}::${a.username}`], curator: a.groups.includes("curators") } : null;
-    },
+    // Locally every record is editable (null); in the cloud, the signed-in person.
+    me: async () => ((await import("./data/client.js")).mode() === "local" ? null : me()),
   });
   // Sign-in or sign-out changes what may be read: forget what was loaded.
   document.addEventListener("apricity:auth-changed", () => (catalogInstance?.reset(), manifestCache.clear()));
@@ -165,14 +168,41 @@ export async function connectCatalog() {
 
 const ready = () => connectCatalog();
 
+let ratingsInstance: Promise<Ratings> | null = null;
+/** Star ratings (your own, and everyone's tallies). */
+export function ratings(): Promise<Ratings> {
+  ratingsInstance ??= (async () => {
+    const [{ client, mode }, auth, { Ratings }] = await Promise.all([import("./data/client.js"), import("./data/auth.js"), import("./data/ratings.js")]);
+    const r = new Ratings({
+      client,
+      mode,
+      // Locally everyone is the library's one identity; in the cloud, the Cognito username (what AppSync stores).
+      who: async () => (mode() === "local" ? "local" : ((await auth.currentAccount())?.username ?? null)),
+    });
+    document.addEventListener("apricity:auth-changed", () => r.reset());
+    return r;
+  })();
+  return ratingsInstance;
+}
+
+/** Who is signed in, as records name their owner; null for a guest. Locally, the library's one identity. */
+export async function me(): Promise<Me | null> {
+  const { mode } = await import("./data/client.js");
+  if (mode() === "local") return { owners: ["local"], curator: true };
+  const a = await (await import("./data/auth.js")).currentAccount();
+  return a ? { owners: [a.username, `${a.sub}::${a.username}`], curator: a.groups.includes("curators") } : null;
+}
+
 export const api = {
   samples: async () => (await ready()).samples(),
   scores: async () => (await ready()).scores(),
+  clips: async () => (await ready()).clips(),
   score: async (path: string) => (await ready()).score(path),
-  saveScore: async (path: string, text: string) => {
+  saveScore: async (path: string, text: string, kind?: ScoreKind) => {
     const { saveScore } = await import("./data/domain.js");
-    return (await ready()).saveScore(path, text, saveScore);
+    return (await ready()).saveScore(path, text, saveScore, kind);
   },
+  setScoreKind: async (path: string, kind: ScoreKind) => (await ready()).setScoreKind(path, kind),
   /** Saves the clips (as Clip records); markers and tags are not edited here. */
   saveAnnotations: async (path: string, ann: Manifest["annotations"]) => {
     const r = await (await ready()).saveClips(path, ann?.clips ?? []);

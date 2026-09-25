@@ -64,6 +64,8 @@ test("key labels and keys over time", () => {
 
 test("a sample record becomes the summary the Library list shows", () => {
   assert.deepEqual(toSummary(source, recs, sampleMap, counts), {
+    id: "smp_src",
+    createdAt: null,
     path: "samples/marine-band/Thunderer.mp3",
     title: "The Thunderer",
     group: "marine-band",
@@ -203,6 +205,7 @@ function stubClient(state: { signedIn: boolean; samples: SampleRecord[]; clips: 
         ...list("Score", () => state.scores),
         get: ({ id }: { id: string }) => guard("Score.get", () => ({ data: state.scores.find((s) => s.id === id) ?? null })),
         create: (s: any) => guard("Score.create", () => (state.scores.push(s), { data: s })),
+        update: (u: any) => guard("Score.update", () => (Object.assign(state.scores.find((s) => s.id === u.id)!, u), { data: u })),
       },
     },
   };
@@ -220,7 +223,7 @@ test("signed out: the views get SignedOut (their empty state), and reload after 
   cat.reset();
   const { samples } = await cat.samples();
   assert.deepEqual(samples.map((s) => s.path), ["samples/marine-band/Thunderer.mp3", "samples/marine-band/stems/Thunderer/drums.wav"]);
-  assert.deepEqual((await cat.scores()).scores, [{ path: "examples/a.apr", modified: 0 }]);
+  assert.deepEqual((await cat.scores()).scores, [{ id: "scr_examples_a_apr", path: "examples/a.apr", title: "a", kind: "song", owner: null, createdAt: null, modified: 0 }]);
   assert.equal(await cat.score("examples/a.apr"), "tempo 90");
 });
 
@@ -244,4 +247,22 @@ test("manifests, audio urls and saves go through the records", async () => {
   assert.deepEqual(state.scores.map((s) => [s.id, s.title, s.folder, s.format]), [["scr_scores_new-one_apr", "new-one", "scores", "apr"]]);
   assert.deepEqual(saved, [["scr_scores_new-one_apr", "tempo 100"]]);
   await assert.rejects(cat.saveScore("scores/new-one.apr", "x", async () => ({ errors: [{ message: "Not Authorized to access updateScore", errorType: "Unauthorized" }] })), (e: Error) => !(e instanceof SignedOut) && /updateScore/.test(e.message), "a refused write says why, not 'sign in'");
+});
+
+test("the Clips list: every live clip with its sample, and score kinds", async () => {
+  const state = {
+    signedIn: true,
+    samples: [source, stem],
+    clips: [clip("s1", "loop-1", 0, 2, { owner: "google_1", createdAt: "2026-09-25T00:00:00Z" } as any), clip("s2", "gone", 2, 4, { retired: true }), clip("s3", "orphan", 0, 1, { sampleId: "smp_missing" })],
+    scores: [{ id: "scr_examples_a_apr", title: "a", folder: "examples", format: "apr", text: "tempo 90", kind: "beat", owner: "google_1" }] as any[],
+  };
+  const cat = new Catalog({ client: () => stubClient(state), readText: async () => analysisJson, url: async (k) => `/files/${k}` });
+  assert.deepEqual(await cat.clips(), [
+    { id: "s1", name: "loop-1", sampleId: "smp_drums", samplePath: "samples/marine-band/stems/Thunderer/drums.wav", sampleTitle: "The Thunderer · drums", start: 0, end: 2, source: "ml", owner: "google_1", createdAt: "2026-09-25T00:00:00Z" },
+  ]);
+  assert.equal((await cat.scores()).scores[0].kind, "beat");
+  await cat.setScoreKind("examples/a.apr", "chords");
+  assert.equal(state.scores[0].kind, "chords");
+  assert.equal((await cat.scores()).scores[0].kind, "chords", "the list is reloaded after a change");
+  await assert.rejects(cat.setScoreKind("examples/nope.apr", "beat"), /no such score/);
 });
