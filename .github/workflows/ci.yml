@@ -25,12 +25,6 @@ jobs:
           submodules: recursive
       - name: Install system libraries
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
-      - name: Let cargo fetch the private Virtuus repository (needs the VIRTUUS_DEPLOY_KEY secret)
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VIRTUUS_DEPLOY_KEY }}
-      - name: Use the git CLI for cargo git dependencies
-        run: echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> "$GITHUB_ENV"
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Test the workspace (the web crate builds for wasm and is covered by the web job)
