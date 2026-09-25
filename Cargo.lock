@@ -2886,6 +2886,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "virtuus"
 version = "0.5.0"
+source = "git+ssh://git@github.com/AnthusAI/Virtuus.git?branch=develop#9ebdb63a313029f7ddf529989f19a8dd5cbcd5ec"
 dependencies = [
  "libc",
  "serde",
@@ -2896,6 +2897,7 @@ dependencies = [
 [[package]]
 name = "virtuus-amplify"
 version = "0.1.0"
+source = "git+ssh://git@github.com/AnthusAI/Virtuus.git?branch=develop#9ebdb63a313029f7ddf529989f19a8dd5cbcd5ec"
 dependencies = [
  "base64 0.22.1",
  "chrono",
