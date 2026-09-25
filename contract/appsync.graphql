@@ -20,7 +20,7 @@ enum VerdictValue {
   later
 }
 
-type Recording {
+type Recording @aws_iam @aws_cognito_user_pools {
   id: ID!
   title: String!
   collection: String!
@@ -37,7 +37,7 @@ type Recording {
   updatedAt: AWSDateTime!
 }
 
-type Sample {
+type Sample @aws_iam @aws_cognito_user_pools {
   id: ID!
   recordingId: ID!
   recording: Recording
@@ -75,7 +75,7 @@ type Sample {
   updatedAt: AWSDateTime!
 }
 
-type Clip {
+type Clip @aws_iam @aws_cognito_user_pools {
   id: ID!
   sampleId: ID!
   sample: Sample
@@ -94,7 +94,7 @@ type Clip {
   updatedAt: AWSDateTime!
 }
 
-type Marker {
+type Marker @aws_iam @aws_cognito_user_pools {
   id: ID!
   sampleId: ID!
   sample: Sample
@@ -107,7 +107,7 @@ type Marker {
   updatedAt: AWSDateTime!
 }
 
-type Candidate {
+type Candidate @aws_iam @aws_cognito_user_pools {
   id: ID!
   sampleId: ID!
   sample: Sample
@@ -163,7 +163,7 @@ type CrateItem {
   updatedAt: AWSDateTime!
 }
 
-type Score {
+type Score @aws_iam @aws_cognito_user_pools {
   id: ID!
   title: String!
   folder: String!
@@ -177,7 +177,7 @@ type Score {
   updatedAt: AWSDateTime!
 }
 
-type ScoreRef {
+type ScoreRef @aws_iam @aws_cognito_user_pools {
   id: ID!
   scoreId: ID!
   score: Score
@@ -193,7 +193,7 @@ type ScoreRef {
   updatedAt: AWSDateTime!
 }
 
-type Job {
+type Job @aws_iam @aws_cognito_user_pools {
   id: ID!
   kind: String!
   sampleId: ID
@@ -203,14 +203,14 @@ type Job {
   updatedAt: AWSDateTime!
 }
 
-type FileRef {
+type FileRef @aws_iam @aws_cognito_user_pools {
   key: String!
   sha256: String!
   size: Int
   contentType: String
 }
 
-type Proposer {
+type Proposer @aws_iam @aws_cognito_user_pools {
   by: String!
   score: Float!
   why: String!
@@ -218,7 +218,7 @@ type Proposer {
   at: AWSDateTime!
 }
 
-type CandidateContext {
+type CandidateContext @aws_iam @aws_cognito_user_pools {
   seconds: Float
   bpm: Float
   beats: Float
@@ -414,7 +414,7 @@ input FileRefInput {
   contentType: String
 }
 
-type ModelRecordingConnection {
+type ModelRecordingConnection @aws_iam @aws_cognito_user_pools {
   items: [Recording]!
   nextToken: String
 }
@@ -438,49 +438,49 @@ input ModelRecordingFilterInput {
 }
 
 type Query {
-  getRecording(id: ID!): Recording
-  listRecordings(id: ID, filter: ModelRecordingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRecordingConnection
-  getSample(id: ID!): Sample
-  listSamples(id: ID, filter: ModelSampleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSampleConnection
-  getClip(id: ID!): Clip
-  listClips(id: ID, filter: ModelClipFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelClipConnection
-  getMarker(id: ID!): Marker
-  listMarkers(id: ID, filter: ModelMarkerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelMarkerConnection
-  getCandidate(id: ID!): Candidate
-  listCandidates(id: ID, filter: ModelCandidateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCandidateConnection
   getVerdict(candidateId: ID!, judge: String!): Verdict
   listVerdicts(candidateId: ID, judge: ModelStringKeyConditionInput, filter: ModelVerdictFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelVerdictConnection
   getCrate(id: ID!): Crate
   listCrates(id: ID, filter: ModelCrateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCrateConnection
   getCrateItem(id: ID!): CrateItem
   listCrateItems(id: ID, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCrateItemConnection
-  getScore(id: ID!): Score
-  listScores(id: ID, filter: ModelScoreFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreConnection
-  getScoreRef(id: ID!): ScoreRef
-  listScoreRefs(id: ID, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreRefConnection
-  getJob(id: ID!): Job
-  listJobs(id: ID, filter: ModelJobFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelJobConnection
-  recordingsByCollection(collection: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelRecordingFilterInput, limit: Int, nextToken: String): ModelRecordingConnection
-  samplesByRecording(recordingId: ID!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
-  samplesByPath(path: String!, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
-  samplesByCollection(collection: String!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
-  samplesByParent(parentSampleId: ID!, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
-  clipsBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  clipsBySampleAndName(sampleId: ID!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  clipsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  markersBySample(sampleId: ID!, seconds: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelMarkerFilterInput, limit: Int, nextToken: String): ModelMarkerConnection
-  candidatesBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
-  candidatesByRecording(recordingId: ID!, baseScore: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
-  candidatesByKind(kind: Kind!, baseScore: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
   verdictsByJudge(judge: String!, judgedAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelVerdictFilterInput, limit: Int, nextToken: String): ModelVerdictConnection
   cratesByOwner(owner: String!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateFilterInput, limit: Int, nextToken: String): ModelCrateConnection
   crateItemsByCrate(crateId: ID!, position: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
   crateItemsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
-  scoresByFolder(folder: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection
-  refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
-  refsBySample(sampleId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
-  refsByClip(clipId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
-  jobsByState(state: JobState!, sortDirection: ModelSortDirection, filter: ModelJobFilterInput, limit: Int, nextToken: String): ModelJobConnection
+  getRecording(id: ID!): Recording @aws_iam @aws_cognito_user_pools
+  listRecordings(id: ID, filter: ModelRecordingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRecordingConnection @aws_iam @aws_cognito_user_pools
+  recordingsByCollection(collection: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelRecordingFilterInput, limit: Int, nextToken: String): ModelRecordingConnection @aws_iam @aws_cognito_user_pools
+  getSample(id: ID!): Sample @aws_iam @aws_cognito_user_pools
+  listSamples(id: ID, filter: ModelSampleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSampleConnection @aws_iam @aws_cognito_user_pools
+  samplesByRecording(recordingId: ID!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection @aws_iam @aws_cognito_user_pools
+  samplesByPath(path: String!, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection @aws_iam @aws_cognito_user_pools
+  samplesByCollection(collection: String!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection @aws_iam @aws_cognito_user_pools
+  samplesByParent(parentSampleId: ID!, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection @aws_iam @aws_cognito_user_pools
+  getClip(id: ID!): Clip @aws_iam @aws_cognito_user_pools
+  listClips(id: ID, filter: ModelClipFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelClipConnection @aws_iam @aws_cognito_user_pools
+  clipsBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
+  clipsBySampleAndName(sampleId: ID!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
+  clipsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
+  getMarker(id: ID!): Marker @aws_iam @aws_cognito_user_pools
+  listMarkers(id: ID, filter: ModelMarkerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelMarkerConnection @aws_iam @aws_cognito_user_pools
+  markersBySample(sampleId: ID!, seconds: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelMarkerFilterInput, limit: Int, nextToken: String): ModelMarkerConnection @aws_iam @aws_cognito_user_pools
+  getCandidate(id: ID!): Candidate @aws_iam @aws_cognito_user_pools
+  listCandidates(id: ID, filter: ModelCandidateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCandidateConnection @aws_iam @aws_cognito_user_pools
+  candidatesBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection @aws_iam @aws_cognito_user_pools
+  candidatesByRecording(recordingId: ID!, baseScore: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection @aws_iam @aws_cognito_user_pools
+  candidatesByKind(kind: Kind!, baseScore: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection @aws_iam @aws_cognito_user_pools
+  getScore(id: ID!): Score @aws_iam @aws_cognito_user_pools
+  listScores(id: ID, filter: ModelScoreFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreConnection @aws_iam @aws_cognito_user_pools
+  scoresByFolder(folder: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection @aws_iam @aws_cognito_user_pools
+  getScoreRef(id: ID!): ScoreRef @aws_iam @aws_cognito_user_pools
+  listScoreRefs(id: ID, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  refsBySample(sampleId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  refsByClip(clipId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  getJob(id: ID!): Job @aws_iam @aws_cognito_user_pools
+  listJobs(id: ID, filter: ModelJobFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelJobConnection @aws_iam @aws_cognito_user_pools
+  jobsByState(state: JobState!, sortDirection: ModelSortDirection, filter: ModelJobFilterInput, limit: Int, nextToken: String): ModelJobConnection @aws_iam @aws_cognito_user_pools
 }
 
 input ModelRecordingConditionInput {
@@ -586,21 +586,6 @@ input ModelSubscriptionRecordingFilterInput {
 }
 
 type Subscription {
-  onCreateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["createRecording"])
-  onUpdateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["updateRecording"])
-  onDeleteRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["deleteRecording"])
-  onCreateSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["createSample"])
-  onUpdateSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["updateSample"])
-  onDeleteSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["deleteSample"])
-  onCreateClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["createClip"])
-  onUpdateClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["updateClip"])
-  onDeleteClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["deleteClip"])
-  onCreateMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["createMarker"])
-  onUpdateMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["updateMarker"])
-  onDeleteMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["deleteMarker"])
-  onCreateCandidate(filter: ModelSubscriptionCandidateFilterInput): Candidate @aws_subscribe(mutations: ["createCandidate"])
-  onUpdateCandidate(filter: ModelSubscriptionCandidateFilterInput): Candidate @aws_subscribe(mutations: ["updateCandidate"])
-  onDeleteCandidate(filter: ModelSubscriptionCandidateFilterInput): Candidate @aws_subscribe(mutations: ["deleteCandidate"])
   onCreateVerdict(filter: ModelSubscriptionVerdictFilterInput, judge: String): Verdict @aws_subscribe(mutations: ["createVerdict"])
   onUpdateVerdict(filter: ModelSubscriptionVerdictFilterInput, judge: String): Verdict @aws_subscribe(mutations: ["updateVerdict"])
   onDeleteVerdict(filter: ModelSubscriptionVerdictFilterInput, judge: String): Verdict @aws_subscribe(mutations: ["deleteVerdict"])
@@ -610,18 +595,33 @@ type Subscription {
   onCreateCrateItem(filter: ModelSubscriptionCrateItemFilterInput, owner: String): CrateItem @aws_subscribe(mutations: ["createCrateItem"])
   onUpdateCrateItem(filter: ModelSubscriptionCrateItemFilterInput, owner: String): CrateItem @aws_subscribe(mutations: ["updateCrateItem"])
   onDeleteCrateItem(filter: ModelSubscriptionCrateItemFilterInput, owner: String): CrateItem @aws_subscribe(mutations: ["deleteCrateItem"])
-  onCreateScore(filter: ModelSubscriptionScoreFilterInput, owner: String): Score @aws_subscribe(mutations: ["createScore"])
-  onUpdateScore(filter: ModelSubscriptionScoreFilterInput, owner: String): Score @aws_subscribe(mutations: ["updateScore"])
-  onDeleteScore(filter: ModelSubscriptionScoreFilterInput, owner: String): Score @aws_subscribe(mutations: ["deleteScore"])
-  onCreateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["createScoreRef"])
-  onUpdateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["updateScoreRef"])
-  onDeleteScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["deleteScoreRef"])
-  onCreateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["createJob"])
-  onUpdateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["updateJob"])
-  onDeleteJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["deleteJob"])
+  onCreateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["createRecording"]) @aws_iam @aws_cognito_user_pools
+  onUpdateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["updateRecording"]) @aws_iam @aws_cognito_user_pools
+  onDeleteRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["deleteRecording"]) @aws_iam @aws_cognito_user_pools
+  onCreateSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["createSample"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["updateSample"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["deleteSample"]) @aws_iam @aws_cognito_user_pools
+  onCreateClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["createClip"]) @aws_iam @aws_cognito_user_pools
+  onUpdateClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["updateClip"]) @aws_iam @aws_cognito_user_pools
+  onDeleteClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["deleteClip"]) @aws_iam @aws_cognito_user_pools
+  onCreateMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["createMarker"]) @aws_iam @aws_cognito_user_pools
+  onUpdateMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["updateMarker"]) @aws_iam @aws_cognito_user_pools
+  onDeleteMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["deleteMarker"]) @aws_iam @aws_cognito_user_pools
+  onCreateCandidate(filter: ModelSubscriptionCandidateFilterInput): Candidate @aws_subscribe(mutations: ["createCandidate"]) @aws_iam @aws_cognito_user_pools
+  onUpdateCandidate(filter: ModelSubscriptionCandidateFilterInput): Candidate @aws_subscribe(mutations: ["updateCandidate"]) @aws_iam @aws_cognito_user_pools
+  onDeleteCandidate(filter: ModelSubscriptionCandidateFilterInput): Candidate @aws_subscribe(mutations: ["deleteCandidate"]) @aws_iam @aws_cognito_user_pools
+  onCreateScore(filter: ModelSubscriptionScoreFilterInput, owner: String): Score @aws_subscribe(mutations: ["createScore"]) @aws_iam @aws_cognito_user_pools
+  onUpdateScore(filter: ModelSubscriptionScoreFilterInput, owner: String): Score @aws_subscribe(mutations: ["updateScore"]) @aws_iam @aws_cognito_user_pools
+  onDeleteScore(filter: ModelSubscriptionScoreFilterInput, owner: String): Score @aws_subscribe(mutations: ["deleteScore"]) @aws_iam @aws_cognito_user_pools
+  onCreateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["createScoreRef"]) @aws_iam @aws_cognito_user_pools
+  onUpdateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["updateScoreRef"]) @aws_iam @aws_cognito_user_pools
+  onDeleteScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["deleteScoreRef"]) @aws_iam @aws_cognito_user_pools
+  onCreateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["createJob"]) @aws_iam @aws_cognito_user_pools
+  onUpdateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["updateJob"]) @aws_iam @aws_cognito_user_pools
+  onDeleteJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["deleteJob"]) @aws_iam @aws_cognito_user_pools
 }
 
-type ModelSampleConnection {
+type ModelSampleConnection @aws_iam @aws_cognito_user_pools {
   items: [Sample]!
   nextToken: String
 }
@@ -807,7 +807,7 @@ input ModelSubscriptionSampleFilterInput {
   or: [ModelSubscriptionSampleFilterInput]
 }
 
-type ModelClipConnection {
+type ModelClipConnection @aws_iam @aws_cognito_user_pools {
   items: [Clip]!
   nextToken: String
 }
@@ -919,7 +919,7 @@ input ModelSubscriptionClipFilterInput {
   owner: ModelStringInput
 }
 
-type ModelMarkerConnection {
+type ModelMarkerConnection @aws_iam @aws_cognito_user_pools {
   items: [Marker]!
   nextToken: String
 }
@@ -1007,7 +1007,7 @@ input ProposerInput {
   at: AWSDateTime!
 }
 
-type ModelCandidateConnection {
+type ModelCandidateConnection @aws_iam @aws_cognito_user_pools {
   items: [Candidate]!
   nextToken: String
 }
@@ -1093,7 +1093,7 @@ input ModelSubscriptionCandidateFilterInput {
   or: [ModelSubscriptionCandidateFilterInput]
 }
 
-type ModelVerdictConnection {
+type ModelVerdictConnection @aws_iam @aws_cognito_user_pools {
   items: [Verdict]!
   nextToken: String
 }
@@ -1312,7 +1312,7 @@ input ModelSubscriptionCrateItemFilterInput {
   owner: ModelStringInput
 }
 
-type ModelScoreConnection {
+type ModelScoreConnection @aws_iam @aws_cognito_user_pools {
   items: [Score]!
   nextToken: String
 }
@@ -1394,7 +1394,7 @@ input ModelSubscriptionScoreFilterInput {
   owner: ModelStringInput
 }
 
-type ModelScoreRefConnection {
+type ModelScoreRefConnection @aws_iam @aws_cognito_user_pools {
   items: [ScoreRef]!
   nextToken: String
 }
@@ -1481,7 +1481,7 @@ input ModelSubscriptionScoreRefFilterInput {
   owner: ModelStringInput
 }
 
-type ModelJobConnection {
+type ModelJobConnection @aws_iam @aws_cognito_user_pools {
   items: [Job]!
   nextToken: String
 }

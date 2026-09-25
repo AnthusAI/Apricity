@@ -1,12 +1,13 @@
 #!/bin/bash
-# Read-only smoke test of the deployed site, as a signed-out visitor.
+# Read-only smoke test of the deployed site, as a signed-out visitor. (The one write it tries must be refused.)
 # Usage: scripts/prod-smoke.sh [--url https://apricity.anth.us] [--region us-east-1]
 # Needs: curl, python3, and the AWS CLI (any profile: it only calls the unauthenticated Cognito identity API
 # and then uses the temporary guest credentials, never your own).
 #
-# Checks: TLS + 200, the cross-origin isolation headers, the wasm module, amplify_outputs.json,
-# an unauthenticated GraphQL call is rejected, the hero audio is readable by a guest (ranged), and
-# the rest of the bucket (records, audio) is NOT.
+# Checks: TLS + 200, the cross-origin isolation headers, the wasm module, amplify_outputs.json, an unsigned
+# GraphQL call is rejected, and the site is public: a guest (identity-pool credentials) lists samples and scores
+# over GraphQL but cannot create or rate, and reads the breakdown audio, a sample's audio and public records from
+# the bucket, but not private records (verdicts, crates, ratings).
 
 set -u
 URL="https://apricity.anth.us"
@@ -78,8 +79,27 @@ for f in sys.argv[1:]:
 for k in $BREAKDOWN_KEYS; do
     s3get "$k"; check "guest can read $k" $?
 done
-# Nothing else is public: a record and an audio file must be denied.
-for k in Recording/rec_denied_probe.json files/audio/denied_probe.wav; do
+
+# --- GraphQL as a guest: signed with the identity pool's unauthenticated role
+gql() { # query -> response body in $WORK/gql.json
+    python3 -c 'import json,sys; print(json.dumps({"query": sys.argv[1]}))' "$1" >"$WORK/gql.req"
+    curl -sS -o "$WORK/gql.json" --aws-sigv4 "aws:amz:$REGION:appsync" --user "$AK:$SK" -H "x-amz-security-token: $ST" \
+        -H 'Content-Type: application/json' --data-binary @"$WORK/gql.req" "$APIURL" 2>>"$WORK/curl.err"
+}
+field() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(eval(sys.argv[2]))' "$WORK/gql.json" "$1" 2>/dev/null; }
+gql 'query { listSamples(limit: 5) { items { id audio { key } } } }'
+[ "$(field 'len(d["data"]["listSamples"]["items"])')" -gt 0 ] 2>/dev/null; check "a guest lists samples" $?
+SAMPLE_ID=$(field 'd["data"]["listSamples"]["items"][0]["id"]')
+AUDIO_KEY=$(field 'd["data"]["listSamples"]["items"][0]["audio"]["key"]')
+gql 'query { listScores(limit: 5) { items { id title } } }'
+[ "$(field 'len(d["data"]["listScores"]["items"])')" -gt 0 ] 2>/dev/null; check "a guest lists scores" $?
+gql 'mutation { createScore(input: {title: "smoke", folder: "smoke", format: apr, text: "tempo 90"}) { id } }'
+field '"Unauthorized" in json.dumps(d.get("errors", ""))' | grep -q True; check "a guest cannot create a score" $?
+
+# --- the bucket as a guest: public data reads, private records do not
+if [ -n "$AUDIO_KEY" ]; then s3get "files/$AUDIO_KEY"; check "guest can read a sample's audio (files/$AUDIO_KEY)" $?; fi
+if [ -n "$SAMPLE_ID" ]; then s3get "Sample/$SAMPLE_ID.json"; check "guest can read the record Sample/$SAMPLE_ID.json" $?; fi
+for k in Verdict/denied_probe.json Crate/denied_probe.json; do
     s3get "$k"; rc=$?
     [ $rc -ne 0 ] && grep -q "AccessDenied\|Forbidden" "$WORK/s3.err"; check "guest is denied $k" $?
 done

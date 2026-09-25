@@ -64,6 +64,7 @@ async function generate(outDir: string) {
     const os = await import("os");
     const cdk = await import("aws-cdk-lib");
     const cognito = await import("aws-cdk-lib/aws-cognito");
+    const iam = await import("aws-cdk-lib/aws-iam");
     const { AmplifyGraphqlApi, AmplifyGraphqlDefinition } = await import("@aws-amplify/graphql-api-construct");
 
     const tempOutDir = fs.mkdtempSync(path.join(os.tmpdir(), "apricity-contract-"));
@@ -78,6 +79,12 @@ async function generate(outDir: string) {
         authorizationModes: {
           defaultAuthorizationMode: "AMAZON_COGNITO_USER_POOLS",
           userPoolConfig: { userPool: pool },
+          // Guests read through the identity pool (allow.guest()).
+          identityPoolConfig: {
+            identityPoolId: "us-east-1:00000000-0000-0000-0000-000000000000",
+            authenticatedUserRole: new iam.Role(stack, "AuthRole", { assumedBy: new iam.AccountPrincipal("000000000000") }),
+            unauthenticatedUserRole: new iam.Role(stack, "UnauthRole", { assumedBy: new iam.AccountPrincipal("000000000000") }),
+          },
           apiKeyConfig: { expires: cdk.Duration.days(365) },
         },
       } as any);
@@ -165,7 +172,13 @@ async function generate(outDir: string) {
             sortArgument: kf.length > 1 ? kf[1] : undefined,
           });
       } else if (a.type === "auth") {
-        m.authRules = a.properties.rules || [];
+        // A rule without a provider uses the default one: the user pool (allow.authenticated()). Guest access
+        // (allow.guest(), provider identityPool) is written with the contract's name for identity-pool IAM access, iam.
+        m.authRules = (a.properties.rules || []).map((r: any) => {
+          const rule = { provider: "userPools", ...r };
+          if (rule.provider === "identityPool") rule.provider = "iam";
+          return rule;
+        });
         for (const r of m.authRules) {
           if (r.ownerField && !m.ownerFields.includes(r.ownerField)) m.ownerFields.push(r.ownerField);
         }
@@ -198,7 +211,8 @@ async function generate(outDir: string) {
       if (o.includes("write") || o.includes("delete")) wr.add(g);
     }
     if (at.includes("allow.guest")) rd.add("guest");
-    if (at.includes("readAll(allow)")) {
+    if (at.includes("readAll(allow)") || at.includes("readSignedIn(allow)")) {
+      if (at.includes("readAll(allow)")) rd.add("guest");
       for (const g of ["authenticated", "members", "curators", "admins"]) rd.add(g);
       wr.add("admins");
     }
@@ -212,15 +226,18 @@ async function generate(outDir: string) {
     contract.storage.paths.push({ path: p, readable: [...rd], writable: [...wr] });
   }
 
-  // Library-layout paths use the shared `readAll(allow)` rule: every signed-in user reads, only admins write.
-  // A `"files/*": readAll(allow)` entry is one path; `recordFolders` expands to one `<Model>/*` folder per model.
-  const readAllRule = { readable: ["authenticated", "members", "curators", "admins"], writable: ["admins"] };
+  // Library-layout paths use the shared rules: `readAll(allow)` (anyone reads, guests included) or
+  // `readSignedIn(allow)` (signed-in only); only admins write. A `"files/*": readAll(allow)` entry is one path;
+  // `recordFolders` expands to one `<Model>/*` folder per model, the PRIVATE ones signed-in only.
+  const signedInRule = { readable: ["authenticated", "members", "curators", "admins"], writable: ["admins"] };
+  const readAllRule = { readable: ["guest", ...signedInRule.readable], writable: ["admins"] };
   for (const m of ss.matchAll(/"([^"]+)":\s*readAll\(allow\)/g)) {
     contract.storage.paths.push({ path: m[1], ...readAllRule });
   }
   if (/recordFolders\.map\(/.test(ss)) {
+    const priv = new Set([...(ss.match(/PRIVATE = new Set\(\[([^\]]*)\]/)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]));
     for (const model of Object.keys(contract.models)) {
-      contract.storage.paths.push({ path: `${model}/*`, ...readAllRule });
+      contract.storage.paths.push({ path: `${model}/*`, ...(priv.has(model) ? signedInRule : readAllRule) });
     }
   }
 

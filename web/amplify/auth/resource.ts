@@ -36,7 +36,7 @@ function resolveCognitoDomainPrefix(): string | undefined {
 // Google federates through it), but no email/password sign-up exists once Google is on. Google needs the branch
 // secrets GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, which exist once the owner has created a Google OAuth client;
 // until APRICITY_GOOGLE_AUTH=true is set for the branch, the pool falls back to email sign-in only so the site can
-// deploy (still restricted by the pre-sign-up allow-list). Switching the login methods replaces the user pool, so
+// deploy. Switching the login methods replaces the user pool, so
 // do it before anyone has signed up.
 function googleAuthEnabled(): boolean {
   return typeof process !== "undefined" && process.env.APRICITY_GOOGLE_AUTH === "true";

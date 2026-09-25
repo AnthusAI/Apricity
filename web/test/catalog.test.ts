@@ -141,6 +141,31 @@ test("edited clips: validated, then planned as clip creates, updates and deletes
   assert.deepEqual(planClips("smp_drums", existing, []).delete, ["s1", "s2"], "retired clips stay for the scores using them");
 });
 
+test("planClips only changes your own clips", () => {
+  const theirs: ClipRecord = { id: "t1", sampleId: "smp_drums", name: "break", start: 0, end: 2, source: "user", owner: "u2::bob" };
+  const ml: ClipRecord = { id: "m1", sampleId: "smp_drums", name: "loop-1", start: 2, end: 4, source: "ml", owner: "u0::importer" };
+  const yours: ClipRecord = { id: "y1", sampleId: "smp_drums", name: "fill", start: 4, end: 5, source: "user", owner: "u1::ann" };
+  const mine = (r: ClipRecord) => r.owner === "u1::ann";
+  // Nothing changed: nothing to do, and other people's clips are never deleted by leaving them out.
+  assert.deepEqual(planClips("smp_drums", [theirs, ml, yours], [], mine), { create: [], update: [], delete: ["y1"] });
+  // Editing someone else's clip, or an automatic one, saves your own copy.
+  assert.deepEqual(
+    planClips("smp_drums", [theirs, ml, yours], [
+      { id: "t1", name: "break-2", start: 0, end: 2, source: "user" },
+      { id: "m1", name: "loop-1", start: 2, end: 3.5, source: "ml" },
+      { id: "y1", name: "fill", start: 4, end: 5, source: "user" },
+    ], mine),
+    {
+      create: [
+        { sampleId: "smp_drums", name: "break-2", start: 0, end: 2, source: "user" },
+        { sampleId: "smp_drums", name: "loop-1", start: 2, end: 3.5, source: "user" },
+      ],
+      update: [],
+      delete: [],
+    },
+  );
+});
+
 test("listAll follows nextToken and surfaces errors", async () => {
   const pages: Record<string, { data: number[]; nextToken: string | null }> = { start: { data: [1, 2], nextToken: "b" }, b: { data: [], nextToken: "c" }, c: { data: [3], nextToken: null } };
   const seen: (string | null)[] = [];

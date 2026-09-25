@@ -23,6 +23,7 @@ interface AmplifyOutputs {
 
 let cachedMode: "local" | "cloud" = "cloud";
 let cachedClient: any = null;
+let signedIn: Promise<boolean> | null = null;
 
 /**
  * Bootstrap the data layer: fetch /amplify_outputs.json, configure Amplify,
@@ -41,6 +42,9 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
 
     // Determine mode
     cachedMode = outputs.custom?.apricity?.mode ?? "cloud";
+    // Who is signed in decides how the cloud API is called; forget it whenever that changes. (Registered here, before
+    // any view listens for the same event, so a view that reloads on it already reads with the new session.)
+    if (typeof document !== "undefined") document.addEventListener("apricity:auth-changed", () => (signedIn = null));
     return cachedMode;
   } catch (error) {
     console.error("Failed to bootstrap data layer:", error);
@@ -56,13 +60,44 @@ export function mode(): "local" | "cloud" {
   return cachedMode;
 }
 
+/** Whether someone is signed in (cached until the next `apricity:auth-changed`). */
+function isSignedIn(): Promise<boolean> {
+  signedIn ??= import("aws-amplify/auth")
+    .then((a) => a.fetchAuthSession())
+    .then((s) => !!s.tokens?.idToken)
+    .catch(() => false);
+  return signedIn;
+}
+
 /**
- * Get the Amplify data client, lazily instantiated.
- * The authMode is determined by the Amplify.configure() call during bootstrap.
+ * Pick the client for each call by who is calling: the site is public, so a guest reads through the identity pool
+ * (its unauthenticated role) and a signed-in person through the user pool, which is what owner rules and group rules
+ * see. Every `client().models.<Model>.<operation>(...)` resolves the session first.
+ */
+export function authAware(userPool: any, guest: any, signed: () => Promise<boolean>): any {
+  const models = new Proxy(
+    {},
+    {
+      get: (_, model: string) =>
+        new Proxy(
+          {},
+          { get: (_, op: string) => async (...args: unknown[]) => ((await signed()) ? userPool : guest).models[model][op](...args) },
+        ),
+    },
+  );
+  return { models };
+}
+
+/**
+ * Get the Amplify data client, lazily instantiated. Locally (`apricity serve`) it is the API-key client Amplify was
+ * configured with; in the cloud it picks the user pool or the identity pool per call (authAware).
  */
 export function client(): any {
   if (!cachedClient) {
-    cachedClient = generateClient();
+    cachedClient =
+      cachedMode === "local"
+        ? generateClient()
+        : authAware(generateClient({ authMode: "userPool" }), generateClient({ authMode: "identityPool" }), isSignedIn);
   }
   return cachedClient;
 }

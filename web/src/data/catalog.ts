@@ -118,6 +118,8 @@ export interface ClipRecord {
   evidence?: unknown;
   candidateId?: string | null;
   retired?: boolean | null;
+  /** Who made it (`<sub>::<username>`); the importer for the automatic ones. */
+  owner?: string | null;
 }
 export interface MarkerRecord {
   id: string;
@@ -283,29 +285,48 @@ export interface ClipPlan {
   delete: string[];
 }
 
-/** Edited clips vs the sample's clip records: what to create, update and delete (by clip id). */
-export function planClips(sampleId: string, existing: ClipRecord[], edited: SavedClip[]): ClipPlan {
+/**
+ * Edited clips vs the sample's clip records: what to create, update and delete (by clip id).
+ *
+ * `mine` says which records this person may change (their own; every one for a curator, or locally). Everyone sees
+ * everyone's clips on a sample, but a save only touches your own: editing someone else's clip (or an automatic one)
+ * saves your copy of it, and leaving one out of the list does not delete it.
+ */
+export function planClips(sampleId: string, existing: ClipRecord[], edited: SavedClip[], mine: (r: ClipRecord) => boolean = () => true): ClipPlan {
   const byId = new Map(existing.map((s) => [s.id, s]));
   const kept = new Set<string>();
   const plan: ClipPlan = { create: [], update: [], delete: [] };
   for (const c of edited) {
     const old = c.id ? byId.get(c.id) : undefined;
+    if (old) kept.add(old.id);
+    const changed = !old || old.name !== c.name || old.start !== c.start || old.end !== c.end;
+    if (old && !mine(old)) {
+      // Not yours: unchanged it stays theirs; changed, it becomes a new clip of yours.
+      if (changed) plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source: "user", ...(c.tags ? { tags: c.tags } : {}) });
+      continue;
+    }
     const source = c.source === "ml" ? "ml" : old?.source === "curated" ? "curated" : "user";
     if (!old) {
       plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source, ...(c.tags ? { tags: c.tags } : {}) });
       continue;
     }
-    kept.add(old.id);
-    if (old.name !== c.name || old.start !== c.start || old.end !== c.end || old.source !== source) {
+    if (changed || old.source !== source) {
       plan.update.push({ id: old.id, name: c.name, start: c.start, end: c.end, source });
     }
   }
   // Retired clips never reach the editor; they stay for the scores that still use them.
-  for (const s of existing) if (!kept.has(s.id) && !s.retired) plan.delete.push(s.id);
+  for (const s of existing) if (!kept.has(s.id) && !s.retired && mine(s)) plan.delete.push(s.id);
   return plan;
 }
 
 // ------------------------------------------------------------------ the catalog
+
+/** A signed-in person as records name them. AppSync stores the owner as `<username>` or `<sub>::<username>`. */
+export interface Me {
+  owners: string[];
+  curator: boolean;
+}
+export const owns = (me: Me | null, owner: string | null | undefined): boolean => !!me && !!owner && me.owners.includes(owner);
 
 export interface CatalogDeps {
   /** The generated Amplify data client (`client()` from data/client.ts). */
@@ -314,6 +335,8 @@ export interface CatalogDeps {
   readText: (key: string) => Promise<string>;
   /** A URL for a library file (files.ts getUrl). */
   url: (key: string) => Promise<string>;
+  /** Who is saving: the owner values their records carry, and whether they curate (may change anyone's). Null locally. */
+  me?: () => Promise<Me | null>;
 }
 
 interface Index {
@@ -457,7 +480,8 @@ export class Catalog {
     if (problems.length) throw Object.assign(new Error(problems.join("\n")), { errors: problems });
     const m = this.models;
     const existing = await listAll<ClipRecord>((nextToken) => m.Clip.clipsBySample({ sampleId: c.id }, { limit: 1000, nextToken }));
-    const plan = planClips(c.id, existing, clips);
+    const who = (await this.deps.me?.()) ?? null;
+    const plan = planClips(c.id, existing, clips, (r) => !who || who.curator || owns(who, r.owner));
     const check = (r: { errors?: GqlError[] }) => r.errors?.length && fail(r.errors, true);
     for (const id of plan.delete) check(await m.Clip.delete({ id }));
     for (const u of plan.update) check(await m.Clip.update(u));

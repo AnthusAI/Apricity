@@ -148,11 +148,15 @@ function catalog(): Catalog {
 /** Wire the catalog to the data layer; main.ts's bootstrap() must have run. */
 export async function connectCatalog() {
   if (catalogInstance) return catalogInstance;
-  const [{ client }, files] = await Promise.all([import("./data/client.js"), import("./data/files.js")]);
+  const [{ client }, files, auth] = await Promise.all([import("./data/client.js"), import("./data/files.js"), import("./data/auth.js")]);
   catalogInstance = new Catalog({
     client,
     readText: async (key) => (await files.downloadData({ path: key })).text(),
     url: async (key) => (await files.getUrl({ path: key })).url,
+    me: async () => {
+      const a = await auth.currentAccount();
+      return a ? { owners: [a.username, `${a.sub}::${a.username}`], curator: a.groups.includes("curators") } : null;
+    },
   });
   // Sign-in or sign-out changes what may be read: forget what was loaded.
   document.addEventListener("apricity:auth-changed", () => (catalogInstance?.reset(), manifestCache.clear()));

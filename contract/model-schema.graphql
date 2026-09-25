@@ -20,7 +20,8 @@ enum VerdictValue {
   later
 }
 
-type Recording @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+type Recording @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
@@ -37,7 +38,8 @@ type Recording @model @auth(rules: [{allow: groups, operations: [read], groups: 
   samples: [Sample] @hasMany(references: ["recordingId"])
 }
 
-type Sample @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+type Sample @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
@@ -75,8 +77,9 @@ type Sample @model @auth(rules: [{allow: groups, operations: [read], groups: ["m
   candidates: [Candidate] @hasMany(references: ["sampleId"])
 }
 
-type Clip @model @auth(rules: [{allow: owner, ownerField: "owner"},
-  {allow: groups, operations: [read], groups: ["members"]},
+type Clip @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
+  {allow: owner, ownerField: "owner"},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
@@ -95,8 +98,9 @@ type Clip @model @auth(rules: [{allow: owner, ownerField: "owner"},
   owner: String
 }
 
-type Marker @model @auth(rules: [{allow: owner, ownerField: "owner"},
-  {allow: groups, operations: [read], groups: ["members"]},
+type Marker @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
+  {allow: owner, ownerField: "owner"},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
@@ -109,7 +113,8 @@ type Marker @model @auth(rules: [{allow: owner, ownerField: "owner"},
   owner: String
 }
 
-type Candidate @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+type Candidate @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
@@ -165,8 +170,10 @@ type CrateItem @model @auth(rules: [{allow: owner, ownerField: "owner"},
   owner: String
 }
 
-type Score @model @auth(rules: [{allow: owner, ownerField: "owner"},
-  {allow: groups, operations: [read], groups: ["members"]}])
+type Score @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
+  {allow: owner, ownerField: "owner"},
+  {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
   title: String!
@@ -179,8 +186,10 @@ type Score @model @auth(rules: [{allow: owner, ownerField: "owner"},
   refs: [ScoreRef] @hasMany(references: ["scoreId"])
 }
 
-type ScoreRef @model @auth(rules: [{allow: owner, ownerField: "owner"},
-  {allow: groups, operations: [read], groups: ["members"]}])
+type ScoreRef @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
+  {allow: owner, ownerField: "owner"},
+  {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
   scoreId: ID! @index(queryField: "refsByScore")
@@ -195,7 +204,8 @@ type ScoreRef @model @auth(rules: [{allow: owner, ownerField: "owner"},
   owner: String
 }
 
-type Job @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+type Job @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey

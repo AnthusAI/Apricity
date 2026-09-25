@@ -14,33 +14,33 @@ import contract from "../../../contract/apricity.contract.json";
  *
  * Machine-local scratch (`.virtuus/`, the sync state, `apricity-library.json`) is never synced.
  *
- * Access: every signed-in user (members, curators, admins) can read and play back. Only the
- * `admins` group writes the library layout. `apricity sync` uses the caller's own AWS
+ * Access: the site is public, so anyone can read and play back, guests included. Private records (verdicts,
+ * crates, ratings) are readable only when signed in. Only the `admins` group writes the library layout. `apricity sync` uses the caller's own AWS
  * credentials (the bucket owner's), so these rules govern browser access. User uploads stay
  * owner-only under `uploads/{entity_id}/`.
  */
 // Users in a Cognito group get THAT group's AWS role, not the generic authenticated one, so every group that may read
 // needs its own rule here: members and curators read, admins read and write.
-const readAll = (allow: any) => [
+const readSignedIn = (allow: any) => [
   allow.authenticated.to(["read"]),
   allow.groups(["members", "curators"]).to(["read"]),
   allow.groups(["admins"]).to(["read", "write", "delete"]),
 ];
+// Everything public: guests (signed-out visitors) read too.
+const readAll = (allow: any) => [allow.guest.to(["read"]), ...readSignedIn(allow)];
 
-// One record folder per model in the data contract (Recording/, Sample/, Clip/, ...).
+// One record folder per model in the data contract (Recording/, Sample/, Clip/, ...). Private ones need sign-in.
 const recordFolders = Object.keys((contract as { models: Record<string, unknown> }).models);
+const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating"]);
 
 export const storage = defineStorage({
   name: "apricityFiles",
   isDefault: true,
   access: (allow) => ({
+    // Audio, analysis, documents and the breakdowns' sound. (No narrower `files/...` path: a more specific path
+    // REPLACES the broader grant, with an explicit deny for every role it does not list.)
     "files/*": readAll(allow),
-    // Breakdowns (the home page hero and the gallery, baked by scripts/breakdown.py) play these; they are public, so
-    // signed-out visitors hear them too. A more specific path REPLACES the broader grant for every role it does not
-    // list (Amplify writes an explicit deny), so the signed-in roles must be repeated here or a signed-in user would
-    // lose access to what a guest can hear.
-    "files/breakdowns/*": [allow.guest.to(["read"]), ...readAll(allow)],
-    ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, readAll(allow)])),
+    ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, PRIVATE.has(model) ? readSignedIn(allow) : readAll(allow)])),
     "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
   }),
 });

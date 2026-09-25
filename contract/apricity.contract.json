@@ -1,5 +1,5 @@
 {
-  "version": "c4cd652220fd3708",
+  "version": "2a9947fd87eb3b63",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -129,19 +129,22 @@
       ],
       "authRules": [
         {
-          "groupClaim": "cognito:groups",
-          "provider": "userPools",
-          "allow": "groups",
+          "provider": "iam",
+          "allow": "public",
           "operations": [
             "read"
-          ],
-          "groups": [
-            "members"
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "groups": [
             "curators"
@@ -474,19 +477,22 @@
       ],
       "authRules": [
         {
-          "groupClaim": "cognito:groups",
-          "provider": "userPools",
-          "allow": "groups",
+          "provider": "iam",
+          "allow": "public",
           "operations": [
             "read"
-          ],
-          "groups": [
-            "members"
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "groups": [
             "curators"
@@ -656,6 +662,20 @@
       ],
       "authRules": [
         {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
           "provider": "userPools",
           "ownerField": "owner",
           "allow": "owner",
@@ -668,19 +688,8 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
-          "allow": "groups",
-          "operations": [
-            "read"
-          ],
-          "groups": [
-            "members"
-          ]
-        },
-        {
           "groupClaim": "cognito:groups",
-          "provider": "userPools",
           "allow": "groups",
           "groups": [
             "curators"
@@ -795,6 +804,20 @@
       ],
       "authRules": [
         {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
           "provider": "userPools",
           "ownerField": "owner",
           "allow": "owner",
@@ -807,19 +830,8 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
-          "allow": "groups",
-          "operations": [
-            "read"
-          ],
-          "groups": [
-            "members"
-          ]
-        },
-        {
           "groupClaim": "cognito:groups",
-          "provider": "userPools",
           "allow": "groups",
           "groups": [
             "curators"
@@ -994,19 +1006,22 @@
       ],
       "authRules": [
         {
-          "groupClaim": "cognito:groups",
-          "provider": "userPools",
-          "allow": "groups",
+          "provider": "iam",
+          "allow": "public",
           "operations": [
             "read"
-          ],
-          "groups": [
-            "members"
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "groups": [
             "curators"
@@ -1139,8 +1154,8 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "operations": [
             "read"
@@ -1245,8 +1260,8 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "operations": [
             "read"
@@ -1383,8 +1398,8 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "operations": [
             "read"
@@ -1505,6 +1520,20 @@
       ],
       "authRules": [
         {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
           "provider": "userPools",
           "ownerField": "owner",
           "allow": "owner",
@@ -1517,14 +1546,17 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
-          "operations": [
-            "read"
-          ],
           "groups": [
-            "members"
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
           ]
         }
       ],
@@ -1663,6 +1695,20 @@
       ],
       "authRules": [
         {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
           "provider": "userPools",
           "ownerField": "owner",
           "allow": "owner",
@@ -1675,14 +1721,17 @@
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
-          "operations": [
-            "read"
-          ],
           "groups": [
-            "members"
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
           ]
         }
       ],
@@ -1757,19 +1806,22 @@
       "relationships": [],
       "authRules": [
         {
-          "groupClaim": "cognito:groups",
-          "provider": "userPools",
-          "allow": "groups",
+          "provider": "iam",
+          "allow": "public",
           "operations": [
             "read"
-          ],
-          "groups": [
-            "members"
           ]
         },
         {
-          "groupClaim": "cognito:groups",
           "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
           "allow": "groups",
           "groups": [
             "curators"
@@ -1937,19 +1989,22 @@
   "authRules": {
     "Recording": [
       {
-        "groupClaim": "cognito:groups",
-        "provider": "userPools",
-        "allow": "groups",
+        "provider": "iam",
+        "allow": "public",
         "operations": [
           "read"
-        ],
-        "groups": [
-          "members"
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "groups": [
           "curators"
@@ -1964,19 +2019,22 @@
     ],
     "Sample": [
       {
-        "groupClaim": "cognito:groups",
-        "provider": "userPools",
-        "allow": "groups",
+        "provider": "iam",
+        "allow": "public",
         "operations": [
           "read"
-        ],
-        "groups": [
-          "members"
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "groups": [
           "curators"
@@ -1991,6 +2049,20 @@
     ],
     "Clip": [
       {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
         "provider": "userPools",
         "ownerField": "owner",
         "allow": "owner",
@@ -2003,19 +2075,8 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
-        "allow": "groups",
-        "operations": [
-          "read"
-        ],
-        "groups": [
-          "members"
-        ]
-      },
-      {
         "groupClaim": "cognito:groups",
-        "provider": "userPools",
         "allow": "groups",
         "groups": [
           "curators"
@@ -2030,6 +2091,20 @@
     ],
     "Marker": [
       {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
         "provider": "userPools",
         "ownerField": "owner",
         "allow": "owner",
@@ -2042,19 +2117,8 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
-        "allow": "groups",
-        "operations": [
-          "read"
-        ],
-        "groups": [
-          "members"
-        ]
-      },
-      {
         "groupClaim": "cognito:groups",
-        "provider": "userPools",
         "allow": "groups",
         "groups": [
           "curators"
@@ -2069,19 +2133,22 @@
     ],
     "Candidate": [
       {
-        "groupClaim": "cognito:groups",
-        "provider": "userPools",
-        "allow": "groups",
+        "provider": "iam",
+        "allow": "public",
         "operations": [
           "read"
-        ],
-        "groups": [
-          "members"
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "groups": [
           "curators"
@@ -2108,8 +2175,8 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "operations": [
           "read"
@@ -2133,8 +2200,8 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "operations": [
           "read"
@@ -2158,8 +2225,8 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "operations": [
           "read"
@@ -2171,6 +2238,20 @@
     ],
     "Score": [
       {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
         "provider": "userPools",
         "ownerField": "owner",
         "allow": "owner",
@@ -2183,19 +2264,36 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
-        "operations": [
-          "read"
-        ],
         "groups": [
-          "members"
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
         ]
       }
     ],
     "ScoreRef": [
       {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
         "provider": "userPools",
         "ownerField": "owner",
         "allow": "owner",
@@ -2208,32 +2306,38 @@
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
-        "operations": [
-          "read"
-        ],
         "groups": [
-          "members"
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
         ]
       }
     ],
     "Job": [
       {
-        "groupClaim": "cognito:groups",
-        "provider": "userPools",
-        "allow": "groups",
+        "provider": "iam",
+        "allow": "public",
         "operations": [
           "read"
-        ],
-        "groups": [
-          "members"
         ]
       },
       {
-        "groupClaim": "cognito:groups",
         "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
         "allow": "groups",
         "groups": [
           "curators"
@@ -2250,7 +2354,16 @@
   "storage": {
     "paths": [
       {
-        "path": "files/breakdowns/*",
+        "path": "uploads/{entity_id}/*",
+        "readable": [
+          "owner"
+        ],
+        "writable": [
+          "owner"
+        ]
+      },
+      {
+        "path": "files/*",
         "readable": [
           "guest",
           "authenticated",
@@ -2263,29 +2376,9 @@
         ]
       },
       {
-        "path": "uploads/{entity_id}/*",
-        "readable": [
-          "owner"
-        ],
-        "writable": [
-          "owner"
-        ]
-      },
-      {
-        "path": "files/*",
-        "readable": [
-          "authenticated",
-          "members",
-          "curators",
-          "admins"
-        ],
-        "writable": [
-          "admins"
-        ]
-      },
-      {
         "path": "Recording/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2298,6 +2391,7 @@
       {
         "path": "Sample/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2310,6 +2404,7 @@
       {
         "path": "Clip/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2322,6 +2417,7 @@
       {
         "path": "Marker/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2334,6 +2430,7 @@
       {
         "path": "Candidate/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2382,6 +2479,7 @@
       {
         "path": "Score/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2394,6 +2492,7 @@
       {
         "path": "ScoreRef/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",
@@ -2406,6 +2505,7 @@
       {
         "path": "Job/*",
         "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",

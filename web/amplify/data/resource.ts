@@ -1,10 +1,16 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
 
-const catalog = (allow: any) => [
-  allow.group("members").to(["read"]),
-  allow.group("curators"),
-];
+// The site is public: anyone reads, guests included (the identity pool's unauthenticated role). Signing in is for
+// rating and making things.
+const everyone = (allow: any) => [allow.guest().to(["read"]), allow.authenticated().to(["read"])];
 
+// The library itself: curators write.
+const catalog = (allow: any) => [...everyone(allow), allow.group("curators")];
+
+// What people make (clips, markers, scores): public to read, the owner writes, curators can fix anything.
+const made = (allow: any) => [...everyone(allow), allow.owner(), allow.group("curators")];
+
+// Private to its owner (crates).
 const personal = (allow: any) => [allow.owner(), allow.group("members").to(["read"])];
 
 const schema = a.schema({
@@ -122,7 +128,7 @@ const schema = a.schema({
       i("sampleId").sortKeys(["name"]).queryField("clipsBySampleAndName"),
       i("candidateId").queryField("clipsByCandidate"),
     ])
-    .authorization((allow) => [...personal(allow), allow.group("curators")]),
+    .authorization(made),
 
   Marker: a
     .model({
@@ -138,7 +144,7 @@ const schema = a.schema({
     .secondaryIndexes((i) => [
       i("sampleId").sortKeys(["seconds"]).queryField("markersBySample"),
     ])
-    .authorization((allow) => [...personal(allow), allow.group("curators")]),
+    .authorization(made),
 
   Candidate: a
     .model({
@@ -232,7 +238,7 @@ const schema = a.schema({
     .secondaryIndexes((i) => [
       i("folder").sortKeys(["title"]).queryField("scoresByFolder"),
     ])
-    .authorization(personal),
+    .authorization(made),
 
   ScoreRef: a
     .model({
@@ -253,7 +259,7 @@ const schema = a.schema({
       i("sampleId").sortKeys(["scoreId"]).queryField("refsBySample"),
       i("clipId").queryField("refsByClip"),
     ])
-    .authorization(personal),
+    .authorization(made),
 
   Job: a
     .model({

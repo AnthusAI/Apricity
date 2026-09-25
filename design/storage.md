@@ -159,8 +159,17 @@ const schema = a.schema({
 
 ### §1.1 Authorization
 
-Google sign-in lets any Google account sign up, so `allow.authenticated()` would be close to
-public. Reads go to the **`members`** group, catalog writes to **`curators`**, plus **`admins`**.
+**The site is public** (decided 2026-09-25): anyone reads, guests included, and any Google account may sign
+in to rate and to make things. Data rules (`web/amplify/data/resource.ts`): the library (Recording, Sample,
+Candidate, Job) is read by guests (`allow.guest()`, the identity pool's unauthenticated role) and signed-in
+users, and written by **`curators`**; what people make (Clip, Marker, Score, ScoreRef) is public to read,
+written by its owner (curators can fix anything); Crate, CrateItem and Verdict stay private to their owner.
+The web client reads through the identity pool when signed out and the user pool when signed in
+(`data/client.ts` `authAware`). A save only changes your own clips: editing someone else's saves your copy
+(`planClips`). The contract writes guest rules with provider `iam` (the identity pool's IAM access).
+Storage: `files/*` and the public record folders are guest-readable; private record folders need sign-in.
+
+The original plan, kept for the Google setup it describes:
 Copy Papyrus's `amplify/auth/resource.ts` (`/Users/home/Projects/Papyrus/amplify/auth/resource.ts`):
 `secret('GOOGLE_CLIENT_ID')`/`secret('GOOGLE_CLIENT_SECRET')`, callback URLs including
 `http://localhost:5173/`, a domain prefix. A `preSignUp` trigger checks an email allow-list; a
@@ -466,8 +475,8 @@ Sign-in exists only against the cloud backend; local mode (`apricity serve`) sho
 
 1. **Sign up.** The header's "Sign in" opens a dialog: email and password, "Create account" (Cognito emails a
    confirmation code, then the dialog confirms it and signs in), and "Sign in with Google" only when the loaded
-   `amplify_outputs.json` has `auth.oauth`. Only addresses in `APRICITY_ALLOWED_EMAILS` pass the pre-sign-up
-   trigger; anyone else sees "not allowed to sign up". After any sign-in or sign-out the page dispatches
+   `amplify_outputs.json` has `auth.oauth`. Any Google account may sign up (the email allow-list was removed
+   when the site went public); while sign-in is Google only, the pre-sign-up trigger refuses email sign-ups. After any sign-in or sign-out the page dispatches
    `apricity:auth-changed`, which the Library and Score views listen for.
 2. **Groups.** The post-confirmation trigger adds every new user to `members` (read access). Nothing adds anyone to
    `admins` or `curators`, so the **first admin is added by hand after signing up**. Records other than Verdict
