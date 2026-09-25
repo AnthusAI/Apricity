@@ -10,9 +10,17 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8d8be3d6-e12f-41b5-aafb-b785a0c9b263",
+      "author": "home",
+      "text": "Library synced: apricity sync push of ~/Apricity-Library (Recording/Clip/Slice/Marker/Candidate/Score/ScoreRef records + files/audio + files/hero) to the bucket: 1953 files, 448688938 bytes, status shows 1953 in sync, 0 conflicts. sync needed aws-config feature credentials-login for 'aws login' sessions (added). Hero verified live as a signed-out guest: cognito guest identity, S3 ranged 206 then 200 for all four files, sound plays. NOT done: scripts/prod-smoke.sh; loader to DynamoDB (368367); Library/Score screens on the cloud data layer.",
+      "created_at": "2026-09-25T04:15:15.487762Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:28:48.396842Z",
-  "updated_at": "2026-09-25T02:28:48.396861Z",
+  "updated_at": "2026-09-25T04:15:15.487781Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

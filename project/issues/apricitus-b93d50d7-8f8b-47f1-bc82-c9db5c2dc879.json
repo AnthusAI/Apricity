@@ -3,7 +3,7 @@
   "title": "Amplify Hosting app: amplify.yml, monorepo build, production branch",
   "description": "Create the Amplify Hosting app connected to AnthusAI/Apricity and a production branch. Write amplify.yml for the web/ app (appRoot, npm ci, build, artifacts web/dist) and the Gen2 backend build (npx ampx pipeline-deploy). Settle first: web/dist needs the wasm module (npm run wasm uses cargo for wasm32-wasip1); decide between building it in the Amplify build image or publishing a prebuilt artifact, WITHOUT committing audio or large binaries. Hero and library audio are NOT in the build: they come from the S3 bucket via apricity sync. Depends on the USER task and on apricitus-f2fe8394 sandbox results.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -31,11 +31,18 @@
       "text": "Amplify app d2n7w4kwqyfwn4 (us-east-1, default profile) connected to AnthusAI/Apricity, branch main = PRODUCTION, AMPLIFY_MONOREPO_APP_ROOT=web. Builds 1 and 2 reached the backend CloudFormation deploy (so npm ci and ampx pipeline-deploy start fine) and FAILED only at auth/AmplifySecretFetcherResource: ParameterNotFound for secret GOOGLE_CLIENT_ID. The wasm/rustup/frontend steps run after the backend and are still UNTESTED on Amplify's Linux image.",
       "created_at": "2026-09-25T03:27:51.635721Z",
       "comment_type": "default"
+    },
+    {
+      "id": "93ac2beb-d040-4f1a-9ec6-86ef4425faaa",
+      "author": "home",
+      "text": "DONE 2026-09-25: Amplify app d2n7w4kwqyfwn4 builds and deploys main end to end on Amplify's Linux image (backend CloudFormation, wasm via scripts/amplify-wasm.sh, vite, amplify_outputs.json copied into dist). Fixes found along the way: customHttp.yml needs the monorepo 'applications' form (headers are only in customHttp.yml now), amplify_outputs.json must be copied into dist, Google auth optional until APRICITY_GOOGLE_AUTH=true, allow-list is env APRICITY_ALLOWED_EMAILS (set to rap@endymion.com only). Live: https://apricity.anth.us serves COOP/COEP/CORP and application/wasm.",
+      "created_at": "2026-09-25T04:15:15.365013Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.286227Z",
-  "updated_at": "2026-09-25T03:27:51.635745Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T04:15:15.405256Z",
+  "closed_at": "2026-09-25T04:15:15.405206Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

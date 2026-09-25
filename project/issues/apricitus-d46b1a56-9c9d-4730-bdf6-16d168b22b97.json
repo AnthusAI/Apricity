@@ -3,7 +3,7 @@
   "title": "Custom domain apricity.anth.us: Amplify domain association, Route 53, TLS",
   "description": "Associate apricity.anth.us with the Amplify app: ACM certificate validation records and the alias to the CloudFront distribution, in Route 53 (zone from the USER task). Verify with dig and curl -I https://apricity.anth.us (200, valid cert, and the COOP/COEP/CORP headers the wasm app needs, set through Amplify custom headers). Record the exact DNS records in design/storage.md so it is reproducible. Depends on the Amplify Hosting app task.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Domain association created 2026-09-24: anth.us -> subdomain apricity -> branch main. Route 53 (zone Z02552332GG6AM25SFP73) now has the ACM validation CNAME and apricity.anth.us CNAME -> d1lk18gx81atqg.cloudfront.net (created by Amplify). Status AWAITING_APP_CNAME; needs a successful deploy of main. The other app's anth.us association (Anth.us app, www) is unaffected (AVAILABLE).",
       "created_at": "2026-09-25T03:27:51.701042Z",
       "comment_type": "default"
+    },
+    {
+      "id": "55889b65-1d73-4f6e-9ee2-afdc547be5fc",
+      "author": "home",
+      "text": "DONE: apricity.anth.us is AVAILABLE (Amplify domain association, ACM cert, Route 53 CNAMEs created by Amplify in zone Z02552332GG6AM25SFP73); https://apricity.anth.us returns 200 over TLS.",
+      "created_at": "2026-09-25T04:15:15.433637Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.312185Z",
-  "updated_at": "2026-09-25T03:27:51.701059Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T04:15:15.460465Z",
+  "closed_at": "2026-09-25T04:15:15.460432Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

@@ -10,9 +10,17 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "69dd292a-1dc4-40b8-a688-852c1f5dff46",
+      "author": "home",
+      "text": "Hero part done (bootstrap() called at startup; guest read on files/hero/*). STILL OPEN: Library and Score screens still call the local Python server (/api/samples, /api/scores, /api/score, /api/annotations, /api/upload in web/src/apricity.ts) and 404 on the deployed site; they need the cloud data layer + sign-in.",
+      "created_at": "2026-09-25T04:15:15.514582Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:28:48.367182Z",
-  "updated_at": "2026-09-25T02:28:48.367204Z",
+  "updated_at": "2026-09-25T04:15:15.514600Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
