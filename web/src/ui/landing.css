@@ -43,6 +43,8 @@
 .landing .wordmark {
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   font-weight: 500; font-size: clamp(56px, 11vw, 132px); line-height: 0.95; letter-spacing: -0.02em; margin: 0 0 22px;
+  /* The gradient only paints inside the box, so give the descender of the "p" room; the negative margin keeps the layout where it was. */
+  padding-bottom: 0.2em; margin-bottom: calc(22px - 0.2em);
   background: linear-gradient(100deg, var(--ember) 0%, var(--sun) 38%, var(--sun-2) 60%, var(--sun) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text; background-clip: text; color: transparent;
