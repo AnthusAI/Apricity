@@ -23,8 +23,19 @@ export interface PreSignUpDecision {
 export function decidePreSignUp(
   triggerSource: string,
   email: string | undefined,
-  allowedList: string
+  allowedList: string,
+  googleOnly = false
 ): PreSignUpDecision {
+  // Google-only: a native (email + password) sign-up is refused; only external-provider sign-ups pass on.
+  if (googleOnly && triggerSource === "PreSignUp_SignUp") {
+    return {
+      allow: false,
+      autoConfirm: false,
+      autoVerifyEmail: false,
+      reason: "Sign in with Google",
+    };
+  }
+
   // Missing email is always rejected
   if (!email) {
     return {

@@ -9,6 +9,8 @@ export const preSignUp = defineFunction({
   environment: {
     // Comma-separated allowed sign-up emails, from the branch environment variable APRICITY_ALLOWED_EMAILS at deploy
     // time. It is a list of addresses, not a credential, so it is a plain environment variable. Empty allows nobody.
+    // "true" while sign-in is Google only: native email sign-ups are refused.
+    GOOGLE_ONLY: process.env.APRICITY_GOOGLE_AUTH === "true" ? "true" : "false",
     ALLOWED_EMAILS: process.env.APRICITY_ALLOWED_EMAILS ?? "",
   },
 });

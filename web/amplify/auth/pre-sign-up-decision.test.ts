@@ -140,4 +140,23 @@ describe("decidePreSignUp", () => {
       assert.strictEqual(result.allow, false);
     });
   });
+
+  describe("google only", () => {
+    it("refuses a native email sign-up even for an allowed address", () => {
+      const r = decidePreSignUp("PreSignUp_SignUp", "alice@example.com", allowedList, true);
+      assert.strictEqual(r.allow, false);
+    });
+    it("still admits an allowed address arriving through Google", () => {
+      const r = decidePreSignUp("PreSignUp_ExternalProvider", "alice@example.com", allowedList, true);
+      assert.strictEqual(r.allow, true);
+    });
+    it("still refuses an address that is not allowed through Google", () => {
+      const r = decidePreSignUp("PreSignUp_ExternalProvider", "mallory@example.com", allowedList, true);
+      assert.strictEqual(r.allow, false);
+    });
+    it("keeps native sign-ups working when Google-only is off", () => {
+      const r = decidePreSignUp("PreSignUp_SignUp", "alice@example.com", allowedList, false);
+      assert.strictEqual(r.allow, true);
+    });
+  });
 });

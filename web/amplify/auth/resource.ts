@@ -49,8 +49,11 @@ const oauthUrls = {
 };
 
 export const auth = defineAuth({
+  // Amplify requires email or phone on the pool even for Google sign-in. Email stays on the pool as an attribute;
+  // native email sign-ups are refused by the pre-sign-up trigger while APRICITY_GOOGLE_AUTH=true, so Google is the only way in.
   loginWith: googleAuthEnabled()
     ? {
+        email: true,
         externalProviders: {
           google: {
             clientId: secret("GOOGLE_CLIENT_ID"),

@@ -254,12 +254,12 @@ export function googleAvailable(): boolean {
 }
 
 /**
- * True unless the pool was built without email sign-in (Google-only): then the dialog offers only Google and
- * never shows the password or create-account forms.
+ * Email + password forms are offered only when Google is not configured. With Google on the pool still carries an
+ * email attribute (Amplify requires one), but native sign-ups are refused server-side, so the dialog shows Google only.
  */
 export function emailLoginAvailable(): boolean {
   if (mode() === "local") return false;
-  return (Amplify.getConfig() as any)?.Auth?.Cognito?.loginWith?.email !== false;
+  return !googleAvailable();
 }
 
 /** Email + group info for the signed-in user; null when signed out (never throws). */
