@@ -10,9 +10,22 @@
   "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "28ffc026-2eb3-433b-bb5c-e27ac682d7d9",
+      "author": "home",
+      "text": "Built and verified locally 2026-09-25: harp renders (F mixolydian palette, fits, ranks), select+press, Suggest, Fill, audition (one bar then stop), Record (tap in bar 7 -> bar 7), quality menu, phone width. Not yet on production.",
+      "created_at": "2026-09-25T20:18:06.972837Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-25T15:50:35.295155Z",
-  "updated_at": "2026-09-25T15:50:35.295177Z",
+  "updated_at": "2026-09-25T20:18:06.972859Z",
   "closed_at": null,
   "agent": {
     "platform": "claude-code",
