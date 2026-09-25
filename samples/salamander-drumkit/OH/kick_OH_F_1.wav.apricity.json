@@ -1,0 +1,92 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "kick_OH_F_1.wav",
+  "sha256": "fc1a6388402144f1888a3febce1207799795fbbc3d87f41ce84be31f4adc70ae",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 0.472
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-24T21:30:10+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [
+   0.0
+  ],
+  "downbeats": [],
+  "meter": null,
+  "warp_markers": [
+   {
+    "seconds": 0.0,
+    "beat": 0.0
+   }
+  ],
+  "beat_loudness": [],
+  "loudness": [
+   -16.7
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "F",
+   "mode": "minor",
+   "strength": 0.5882,
+   "camelot": "4A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "Bb",
+    "mode": "minor",
+    "strength": 0.5627,
+    "camelot": "3A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Db",
+    "mode": "major",
+    "strength": 0.5452,
+    "camelot": "3B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "F",
+    "mode": "major",
+    "strength": 0.4049,
+    "camelot": "7B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 440.51,
+  "tuning_cents": 2.0,
+  "pitch_class_profile": [
+   0.4409,
+   0.3686,
+   0.1885,
+   0.2578,
+   0.1596,
+   1.0,
+   0.3127,
+   0.2674,
+   0.3836,
+   0.2755,
+   0.2796,
+   0.3507
+  ],
+  "segments": [],
+  "beat_chroma": []
+ },
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}

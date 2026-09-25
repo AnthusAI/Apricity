@@ -1,0 +1,126 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "china1_OH_FF_1.wav",
+  "sha256": "fd1ff6a1b422be899cadabf5106c597c28db6dc230bdf04794c4a330ab89569a",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 7.908
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-24T21:30:17+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [],
+  "downbeats": [],
+  "meter": null,
+  "warp_markers": [],
+  "beat_loudness": [],
+  "loudness": [
+   -24.1,
+   -36.5,
+   -46.2,
+   -52.8,
+   -57.8,
+   -61.1,
+   -64.0,
+   -66.4,
+   -68.5,
+   -70.4,
+   -71.7,
+   -73.1,
+   -74.5,
+   -75.6,
+   -77.7,
+   -86.7
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Ab",
+   "mode": "minor",
+   "strength": 0.4194,
+   "camelot": "1A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "E",
+    "mode": "major",
+    "strength": 0.3559,
+    "camelot": "12B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Gb",
+    "mode": "major",
+    "strength": 0.2614,
+    "camelot": "2B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Eb",
+    "mode": "minor",
+    "strength": 0.2491,
+    "camelot": "2A",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 453.68,
+  "tuning_cents": 53.0,
+  "pitch_class_profile": [
+   0.1119,
+   0.32,
+   0.2285,
+   0.1934,
+   0.488,
+   0.8085,
+   0.0927,
+   0.1747,
+   0.7702,
+   0.1758,
+   0.5273,
+   1.0
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 7.895,
+    "key": {
+     "tonic": "Ab",
+     "mode": "minor",
+     "strength": 0.4194,
+     "camelot": "1A",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.1119,
+     0.32,
+     0.2285,
+     0.1934,
+     0.488,
+     0.8085,
+     0.0927,
+     0.1747,
+     0.7702,
+     0.1758,
+     0.5273,
+     1.0
+    ]
+   }
+  ],
+  "beat_chroma": []
+ },
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}
