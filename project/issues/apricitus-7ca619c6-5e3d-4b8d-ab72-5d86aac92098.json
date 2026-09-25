@@ -15,9 +15,17 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "5cf158b0-c79b-46df-aa47-283c85d2096b",
+      "author": "home",
+      "text": "Delivered in Virtuus PR #24 (merged into develop, 9ebdb63): virtuus-amplify + virtuus-appsync, 100% coverage on all three crates, CI green.",
+      "created_at": "2026-09-25T00:27:07.530365Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-24T04:45:39.230660Z",
-  "updated_at": "2026-09-24T04:45:51.564743Z",
+  "updated_at": "2026-09-25T00:27:07.530385Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
