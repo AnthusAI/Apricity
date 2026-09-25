@@ -1,4 +1,4 @@
-# Vocabulary: aligned with Ableton Live (design, 2026-09-24)
+# Vocabulary: aligned with the usual DAW words (design, 2026-09-24)
 
 Status: **decided by the user 2026-09-24; built the same day** (language, compiler, manifests, analysis, web, docs). The storage rename (task 3) was built 2026-09-25 (see "Storage model" below). Every user-facing word means one thing,
 and the same thing it means in Live, so Live users can read Apricity at a glance. Internal names

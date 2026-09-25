@@ -2,10 +2,10 @@
 
 A mashup machine: a declarative, harmony-aware engine for making music out of samples. Analyze samples (beats,
 warp maps, key, notes), then describe a piece as a score, and Apricity warps every clip to one tempo and
-transposes each so that together they sound the chords you ask for. It speaks Ableton Live's language:
+transposes each so that together they sound the chords you ask for. It speaks a DAW's language:
 samples, clips, slices, kits and pads, group and return tracks ([Coming from Live](docs/concepts.md#coming-from-live)).
 
-Status: **Phase 5 in progress**: the Apricity text language, automatic markup (sections, loops, one-shots), sampler-style kits (slices and pads), step patterns and flips are in. So is the mixer: effects (EQ, compression with sidechain, drive, lo-fi, noise gate, width, reverb, delay), volume, pan, sends, group and return tracks, and a loudness-targeted master ([design/mixer.md](design/mixer.md)). The vocabulary follows Ableton Live ([design/vocabulary.md](design/vocabulary.md)). In progress: the curation loop ([design/framework.md](design/framework.md)); then the Swift app.
+Status: **Phase 5 in progress**: the Apricity text language, automatic markup (sections, loops, one-shots), sampler-style kits (slices and pads), step patterns and flips are in. So is the mixer: effects (EQ, compression with sidechain, drive, lo-fi, noise gate, width, reverb, delay), volume, pan, sends, group and return tracks, and a loudness-targeted master ([design/mixer.md](design/mixer.md)). The vocabulary follows the usual DAW words ([design/vocabulary.md](design/vocabulary.md)). In progress: the curation loop ([design/framework.md](design/framework.md)); then the Swift app.
 
 ## Documentation
 

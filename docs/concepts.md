@@ -15,7 +15,7 @@ engine plays the result.
 
 ## Coming from Live
 
-Apricity uses Ableton Live's words wherever it can, and each word means one thing.
+Apricity uses a DAW's words wherever it can, and each word means one thing.
 
 | Apricity | In Live | Means |
 |---|---|---|

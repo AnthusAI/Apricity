@@ -2,7 +2,7 @@
 
 Words that mean something specific in Apricity. Musical terms are explained as Apricity uses them.
 
-Apricity uses Ableton Live's words wherever it can; see [Coming from Live](concepts.md#coming-from-live). Terms marked *(in progress)* belong to the curation loop, which is partly built.
+Apricity uses a DAW's words wherever it can; see [Coming from Live](concepts.md#coming-from-live). Terms marked *(in progress)* belong to the curation loop, which is partly built.
 
 ### Analysis
 

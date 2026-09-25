@@ -6,7 +6,7 @@ together, they sound the chords you asked for.
 
 | Page | Read it when… |
 |---|---|
-| [Concepts](concepts.md) | you want the mental model: samples, clips, kits, beats, the harmony solver, how a score becomes sound, and the words it shares with Ableton Live |
+| [Concepts](concepts.md) | you want the mental model: samples, clips, kits, beats, the harmony solver, how a score becomes sound, and the words it shares with DAWs |
 | [The Apricity language](language.md) | you're writing a `.apr` score (the compact text format) |
 | [YAML scores](yaml.md) | you'd rather write (or generate) scores as YAML/JSON |
 | [Chords and keys](chords.md) | you want to know every chord and key you can write |

@@ -42,7 +42,7 @@ mod opt {
     pub const ENGINE_FINER: i32 = 0x2000_0000;
 }
 
-/// Rough analogue of Ableton's warp modes.
+/// Rough analogue of a DAW's warp modes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum WarpMode {
     /// Drums and percussive loops: crisp transients (R2 engine, percussive detector).

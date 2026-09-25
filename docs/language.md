@@ -2,8 +2,8 @@
 
 `.apr` files are Apricity's compact way to write a score. Everything here has a YAML equivalent
 ([YAML scores](yaml.md)); both compile to the same thing, and `apricity fmt` converts between them.
-For what the words mean musically, see [Concepts](concepts.md). The words are Ableton Live's
-wherever Live has one: a sample, a clip, a slice, a pad, a group track, a return track.
+For what the words mean musically, see [Concepts](concepts.md). The words are a DAW's
+wherever a DAW has one: a sample, a clip, a slice, a pad, a group track, a return track.
 
 - [A complete example](#a-complete-example)
 - [How a file is read](#how-a-file-is-read)
