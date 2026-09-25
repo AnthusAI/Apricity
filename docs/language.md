@@ -70,6 +70,9 @@ track bugle   at 15 19 23  volume -5        # call and response
 | `time <n>/4` | | Time signature: *n* beats to a bar (1–16), each a quarter note, e.g. `time 3/4`. Only x/4 for now. | `4/4` |
 | `samples <folder>` | | Folder that sample paths are relative to, itself relative to the score file. | the score's folder |
 | `bars <n>` | | Length in bars, for a piece **without** chords. With chords, the chords set the length (and a `bars` that disagrees is an error). | |
+| `swing <percent> [1/<n>]` | | Swing for every step track that doesn't set its own. See [groove](#groove). | `50` (straight) |
+| `humanize [<ms>ms] [<percent>%]` | | Small differences in timing and velocity from note to note, for every track that doesn't set its own. See [groove](#groove). | none |
+| `seed <n>` | | Which take of the humanize variation. | `1` |
 | `apricity <version>` | | Format version. Only `0.1` exists. | `0.1` |
 | `clip <name> = <sample> [saved clip] [options]` | | Defines a clip. See [clip options](#clip-options). | |
 | `kit <name> = slice <clip> …` / `kit <name>` + pads | | Defines a kit. See [kits](#kits). | |
@@ -213,7 +216,10 @@ Then any options. Each time a track sounds is a **note**: each repeat of a loop,
 | `at <positions…>` | `at 3 7 11`, `at 3:1 3:3` | One note at each position: a bar number, or `bar:beat` (both start at 1). Each note plays the whole sound. | |
 | `steps "<pattern>"` | `steps "1 . 3 ."` | A step sequence. See [step patterns](#step-patterns). | |
 | `grid <n>` | `grid 8`, `grid 1/8` | Step size for `steps` as a note value, 1–64: 16 = sixteenths, 8 = eighths, 4 = beats. | `16` |
-| `swing <percent>` | `swing 58`, `swing 58%` | Delay every other step: 50 = straight, 56–62 classic, 66 ≈ triplets; 50–75. | `50` |
+| `swing <percent> [1/<n>]` | `swing 58`, `swing 58%`, `swing 60 1/8` | Delay every other step: 50 = straight, 56–62 classic, 66 ≈ triplets; 50–75. `1/8` swings eighths even when the steps are sixteenths. See [groove](#groove). | the score's, else `50` |
+| `velocity <1–127>` | `velocity 90` | Velocity of every note that doesn't give its own; 100 = the pad's matched level. | `100` |
+| `humanize [<ms>ms] [<percent>%]` | `humanize 12ms 20%` | Move each note by up to ±12 ms and vary its velocity by up to ±20%. See [groove](#groove). | the score's, else none |
+| `seed <n>` | `seed 3` | Which take of the humanize variation. | the score's, else `1` |
 | `half` / `double` / `speed <x>` | `half`, `speed 0.75` | Play at half, double or any speed against the beat (0.125–8), keeping pitch. | `1` |
 | `reverse` | `reverse` | Each note plays backwards. | |
 | `filter lp <Hz>` / `filter hp <Hz>` | `filter lp 800`, `filter hp 250` | 12 dB/octave low-pass or high-pass filter, 20–20000 Hz. (`lowpass`, `highpass` also work.) | |
@@ -242,12 +248,39 @@ track clap   steps "x . . . x . [x x] ."
 | `.` or `~` | silence for one step |
 | `_` | hold the previous sound one more step |
 | `[a b …]` | split one step evenly among them; brackets nest |
+| `…@<1–127>` | a note's velocity: `snare@40` (a ghost note), `kick@110`; 100 = as written |
+| `…!` | an accent: velocity 127 (`snare!`) |
 | `\|` | nothing — just for reading |
 
 Each step is a sixteenth note unless `grid` says otherwise. A note lasts its written length (its step
 plus any `_` holds) but never longer than the slice or pad itself. The pattern starts at the track's
 first bar and repeats to fill its bars. With `swing`, every second step is delayed; notes inside a
 split step are not.
+
+## Groove
+
+Three things make a pattern feel played rather than programmed, as in Live's groove pool:
+
+```apr
+swing 58 1/8                 # every step track swings its eighths
+humanize 8ms 12%             # every note a little early or late, a little softer or louder
+
+track drums  steps "kick . snare@40 . snare! . . snare@40 | …"   # ghost notes and an accent
+track hat    steps "x x x x"  velocity 80  humanize 4ms 25%      # this track's own feel
+```
+
+- **Swing** delays the notes on the offbeats of its base, counted from the bar line: with `1/8`, the
+  "and" of each beat; by default, every second step. 58 means the offbeat sits at 58% of the pair.
+  Notes between the base's slots (sixteenths under `swing … 1/8`) stay where they are. A track's
+  `swing` overrides the score's; `swing 50` is straight.
+- **Velocity** is how hard a note is played, 1–127 as in Live. 100 plays a pad at its matched level
+  (every pad is level-matched on its own); other velocities change that level by
+  40·log₁₀(velocity / 100) dB: 127 is about +4 dB, 70 about −6 dB, 40 about −16 dB. Give it per note
+  (`snare@40`, `kick!`) or for a whole track (`velocity 90`).
+- **Humanize** moves every note by up to the timing (in milliseconds) and varies its velocity by up
+  to the percentage, each note differently. It is not random on every play: the same score always
+  plays the same take, so saving while it loops doesn't change the feel, and renders are
+  repeatable. `seed 2` (or any other number) is another take.
 
 ## Mixing
 
@@ -407,6 +440,9 @@ statement   = "tempo" NUMBER
             | "key" key-text
             | "samples" WORD
             | "bars" NUMBER
+            | "swing" PERCENT [ "1/" INTEGER ]
+            | "humanize" HUMANIZE
+            | "seed" INTEGER
             | "apricity" NUMBER
             | "clip" NAME "=" WORD [ SAVED ] { clip-option }
             | "kit" NAME "=" "slice" NAME slice-by
@@ -417,6 +453,7 @@ statement   = "tempo" NUMBER
             | "return" NAME [ "volume" NUMBER ] EOL { INDENT effect EOL }
             | "master" EOL { INDENT ( effect | "loudness" LUFS ) EOL } ;
 
+HUMANIZE    = ( NUMBER "ms" [ PERCENT ] ) | ( PERCENT [ NUMBER "ms" ] ) ;
 SAVED       = NAME ;                        (* a saved clip, e.g. loop-1; any word but an option *)
 slice-by    = "by" ( "beats" NUMBER | "bars" NUMBER | "transients" | "phrases" ) | "into" INTEGER ;
 pad         = NAME "=" ( NAME [ SAVED | "beats" RANGE | "seconds" RANGE ] | NAME "." INTEGER ) ;
@@ -427,7 +464,8 @@ clip-option = "beats" RANGE | "seconds" RANGE | "pick" DURATION
 track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER )
             | "role" ( "any" | "chord" | "root" | "third" | "fifth" | "seventh" )
             | "loop" | "every" DURATION | "at" POSITION { POSITION } | "steps" QUOTED
-            | "grid" INTEGER | "swing" PERCENT | "half" | "double" | "speed" NUMBER
+            | "grid" INTEGER | "swing" PERCENT [ "1/" INTEGER ] | "half" | "double" | "speed" NUMBER
+            | "velocity" INTEGER | "humanize" HUMANIZE | "seed" INTEGER
             | "reverse" | "filter" ( "lp" | "hp" ) NUMBER | "gate" PERCENT | "stutter" INTEGER
             | "bars" BARS | "volume" NUMBER | "group" NAME ;
 

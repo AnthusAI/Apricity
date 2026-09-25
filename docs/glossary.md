@@ -175,6 +175,10 @@ Tracks summed and processed together, as in Live: `group beat` defines one (its 
 The part of the compiler that chooses transpositions for `auto` tracks so that
 together they sound each chord. See [Concepts](concepts.md#transposition-and-the-harmony-solver).
 
+### Humanize
+
+Small differences in timing and velocity from note to note, as a player makes (`humanize 12ms 20%`). The same score always plays the same take; `seed` picks another. See [groove](language.md#groove).
+
 ### Key
 
 The score's home key: a tonic and a [mode](#mode). Roman numerals are read in it; notes
@@ -365,7 +369,7 @@ bar line.
 
 ### Swing
 
-Delaying every other step for a loose, human feel (`swing 58`). 50 is straight, 56–62 the classic sampler range, 66 a triplet feel.
+Delaying every other step for a loose, human feel (`swing 58`). 50 is straight, 56–62 the classic sampler range, 66 a triplet feel. `swing 58 1/8` swings the eighths under sixteenth steps; a `swing` line on its own sets it for every step track. See [groove](language.md#groove).
 
 ### Time signature
 
@@ -399,6 +403,10 @@ In a march, the contrasting section, usually in a new key a fourth higher.
 ### Tuning
 
 Where a recording's A sits relative to 440 Hz, in hertz and cents.
+
+### Velocity
+
+How hard a note is played, 1–127 as in Live (`snare@40`, `kick!` for 127, `velocity 90` for a track). 100 plays a pad at its matched level; the others change it by 40·log₁₀(velocity / 100) dB. See [groove](language.md#groove).
 
 ### Verdict
 

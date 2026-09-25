@@ -3,12 +3,12 @@
 import { StreamLanguage, type StringStream } from "@codemirror/language";
 
 // Keep in step with crates/apricity-score/src/dsl.rs (STATEMENTS, CLIP/TRACK options, TRACK/BUS/MASTER_LINES).
-const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "clip", "kit", "chords", "track", "group", "return", "master"]);
+const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "swing", "humanize", "seed", "clip", "kit", "chords", "track", "group", "return", "master"]);
 const OPTIONS = new Set([
   // clips and kits
   "beats", "seconds", "pick", "root", "ratio", "warp", "slice", "by", "into", "transients", "phrases", "bar", "repitch", "complex", "texture",
   // tracks
-  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing",
+  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing", "velocity", "humanize", "seed",
   "reverse", "filter", "lp", "hp", "lowpass", "highpass", "gate", "stutter", "half", "double", "speed",
   // mix lines and bus options
   "group", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",

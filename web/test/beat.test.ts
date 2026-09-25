@@ -134,6 +134,21 @@ describe("writing a beat", () => {
   });
 });
 
+describe("groove the grid doesn't show yet", () => {
+  const withGroove = (line: string) => SALAMANDER.replace(/^track drums  steps .*$/m, line);
+  it("velocities keep a beat read-only, so an edit can't drop them", () => {
+    const b = readBeat(view(withGroove('track drums  steps "kick . snare@40 . kick! . snare . | kick . snare . . . snare ."')))!;
+    assert.equal(b.editable, false);
+    assert.match(b.why!, /velocities/);
+  });
+  it("so do humanize and a track velocity", () => {
+    for (const opt of ["humanize 8ms", "velocity 90", "seed 2", "swing 58 1/8"]) {
+      const b = readBeat(view(withGroove(`track drums  steps "kick . snare . kick . snare . | kick . snare . . . snare ."  ${opt}`)))!;
+      assert.equal(b.editable, false, opt);
+    }
+  });
+});
+
 describe("templates", () => {
   it("every kind's starter score parses", () => {
     for (const [kind, text] of Object.entries(TEMPLATES)) assert.equal(view(text).errors, undefined, `${kind}: ${view(text).errors}`);

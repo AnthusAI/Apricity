@@ -63,6 +63,10 @@ tracks:
 | `kits` | map of name → [kit](#kits) | | Sliced kits and drum kits. Names are shared with clips. | `kit` lines |
 | `progression` | list of [chords](#progression) | one of these two | The chords in order. Sets the piece's length. | `chords` lines |
 | `bars` | whole number | | Length in bars for a piece without a progression. | `bars` |
+| `swing` | number, 50–75 | | Swing for every step track that doesn't set its own. | `swing 58` |
+| `swing_base` | 2 · 4 · 8 · 16 · 32 | | The note value swing works on. | `swing 58 1/8` |
+| `humanize` | `{timing_ms: n, velocity: n}` | | Humanize for every track that doesn't set its own; either field may be left out. | `humanize 12ms 20%` |
+| `seed` | whole number | | Which take of the humanize variation. Default `1`. | `seed 3` |
 | `tracks` | list of [tracks](#tracks) | **yes** | What plays. | `track` lines |
 | `groups` | map of name → [group track](#mixing) | | Tracks summed and processed together. | `group` blocks |
 | `returns` | map of name → [return track](#mixing) | | Shared effects that tracks send to. | `return` blocks |
@@ -153,7 +157,11 @@ tracks:
 | `role` | `any` · `chord` · `root` · `third` · `fifth` · `seventh` | Where the clip's root should land. Default `any`. | `role third` |
 | `pattern` | `loop` · `{ every: <duration> }` · `{ at: [positions] }` · `{ steps: "<pattern>" }` | When it plays. Default `loop`. | `loop`, `every 1bar`, `at 3 7:2`, `steps "1 . 3 ."` |
 | `grid` | whole number, 1–64 | Step size for `steps` as a note value. Default `16`. | `grid 8` |
-| `swing` | number, 50–75 | Delay every other step. Default `50` (straight). | `swing 58` |
+| `swing` | number, 50–75 | Delay every other step. Default: the score's, else `50` (straight). | `swing 58` |
+| `swing_base` | 2 · 4 · 8 · 16 · 32 | The note value swing works on. Default: the step size. | `swing 58 1/8` |
+| `velocity` | whole number, 1–127 | Velocity of notes that don't give their own (`snare@40`, `kick!` in the steps). Default `100`. | `velocity 90` |
+| `humanize` | `{timing_ms: n, velocity: n}` | Move each note by up to ±n ms and vary its velocity by up to ±n %. | `humanize 12ms 20%` |
+| `seed` | whole number | Which take of the humanize variation. | `seed 3` |
 | `speed` | number, 0.125–8 | Playback speed against the beat. | `half` (0.5), `double` (2), `speed 0.75` |
 | `reverse` | `true` · `false` | Each note plays backwards. | `reverse` |
 | `filter` | `{lowpass: Hz}` · `{highpass: Hz}` | 12 dB/octave filter, 20–20000 Hz. | `filter lp 800` |

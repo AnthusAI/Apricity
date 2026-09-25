@@ -28,6 +28,18 @@ pub struct Score {
     /// Length in bars when there is no progression (otherwise the progression sets it).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bars: Option<u32>,
+    /// Swing for every step track that doesn't set its own, in percent (50 = straight).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub swing: Option<f64>,
+    /// The note value swing works on (8 swings eighths, even under sixteenth steps); default: the step size.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub swing_base: Option<u32>,
+    /// Humanize for every track that doesn't set its own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub humanize: Option<Humanize>,
+    /// Which take of the humanize variation (any whole number; default 1).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seed: Option<u64>,
     pub tracks: Vec<TrackSpec>,
     /// Group tracks: tracks (and other groups) summed and processed together.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -522,6 +534,18 @@ pub struct TrackSpec {
     /// Swing in percent: 50 is straight; 56–62 is the classic sampler range; up to 75.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub swing: Option<f64>,
+    /// The note value swing works on (8 = eighths); default: the step size.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub swing_base: Option<u32>,
+    /// Velocity of every note that doesn't give its own, 1–127 (100 = as level-matched).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub velocity: Option<u32>,
+    /// Small differences in timing and velocity from note to note.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub humanize: Option<Humanize>,
+    /// Which take of the humanize variation (any whole number; default: the score's, else 1).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seed: Option<u64>,
     /// Play each note backwards.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub reverse: bool,
@@ -735,6 +759,18 @@ pub enum Sound {
     This,
 }
 
+/// Humanize, like Live's groove "random": each note moves by up to ±`timing_ms` milliseconds and
+/// its velocity by up to ±`velocity` percent, differently for every note but the same on every
+/// compile (a take, chosen by `seed`).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Humanize {
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub timing_ms: f64,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub velocity: f64,
+}
+
 /// One note in a step pattern: when (in steps from the pattern start), how long (in steps),
 /// and what it plays, or `None` for silence.
 #[derive(Debug, Clone, PartialEq)]
@@ -742,14 +778,30 @@ pub struct Step {
     pub at: f64,
     pub len: f64,
     pub sound: Option<Sound>,
-    /// Whether this note falls on an odd whole step (the ones swing delays).
+    /// Whether this note falls on an odd whole step.
     pub offbeat: bool,
+    /// Its velocity, 1–127, when written (`snare@40`, `kick!` = 127).
+    pub vel: Option<u32>,
+}
+
+/// A step's velocity suffix: `snare@40` is velocity 40, `kick!` is an accent (127).
+fn split_velocity(t: &str) -> Result<(&str, Option<u32>), String> {
+    if let Some(base) = t.strip_suffix('!') {
+        return Ok((base, Some(127)));
+    }
+    match t.rsplit_once('@') {
+        None => Ok((t, None)),
+        Some((base, v)) => match v.parse::<u32>() {
+            Ok(n) if (1..=127).contains(&n) => Ok((base, Some(n))),
+            _ => Err(format!("`{t}`: velocity is a whole number 1–127 after `@` (100 = as written), e.g. snare@40")),
+        },
+    }
 }
 
 /// Parse a step pattern. Returns the notes and the pattern's length in steps.
 /// Grammar: tokens separated by spaces; `n` = pad n (slice n); a name = that pad; `x` = the track's own
 /// sound; `.` or `~` = rest; `_` = hold the previous sound one more step; `[a b c]` = one step split
-/// evenly; `|` is ignored (for reading).
+/// evenly; `|` is ignored (for reading). A note can carry a velocity: `snare@40`, or `kick!` (127).
 pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
     fn tokens(s: &str) -> Vec<String> {
         let mut out = Vec::new();
@@ -804,8 +856,11 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
         for (k, &idx) in items.iter().enumerate() {
             let pos = at + width * k as f64 / n;
             let w = width / n;
-            let t = &toks[idx];
-            match t.as_str() {
+            let (t, vel) = split_velocity(&toks[idx])?;
+            if vel.is_some() && matches!(t, "." | "~" | "_" | "[") {
+                return Err(format!("`{}`: only a note takes a velocity (a rest or a hold doesn't)", toks[idx]));
+            }
+            match t {
                 "[" => {
                     let mut j = idx + 1;
                     group(toks, &mut j, pos, w, false, out)?;
@@ -813,21 +868,21 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
                         return Err("a `[` is never closed".into());
                     }
                 }
-                "." | "~" => out.push(Step { at: pos, len: w, sound: None, offbeat: whole && k % 2 == 1 }),
+                "." | "~" => out.push(Step { at: pos, len: w, sound: None, offbeat: whole && k % 2 == 1, vel }),
                 "_" => match out.last_mut() {
                     Some(prev) => prev.len += w,
                     None => return Err("`_` holds the previous sound, but nothing has played yet".into()),
                 },
-                "x" | "X" => out.push(Step { at: pos, len: w, sound: Some(Sound::This), offbeat: whole && k % 2 == 1 }),
+                "x" | "X" => out.push(Step { at: pos, len: w, sound: Some(Sound::This), offbeat: whole && k % 2 == 1, vel }),
                 n if n.chars().all(|c| c.is_ascii_digit()) => {
                     let chop: usize = n.parse().map_err(|_| format!("`{n}` is too big for a chop number"))?;
                     if chop == 0 {
                         return Err("chops are numbered from 1".into());
                     }
-                    out.push(Step { at: pos, len: w, sound: Some(Sound::Index(chop)), offbeat: whole && k % 2 == 1 });
+                    out.push(Step { at: pos, len: w, sound: Some(Sound::Index(chop)), offbeat: whole && k % 2 == 1, vel });
                 }
                 n if n.chars().next().is_some_and(|c| c.is_alphabetic()) && n.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') => {
-                    out.push(Step { at: pos, len: w, sound: Some(Sound::Name(n.to_string())), offbeat: whole && k % 2 == 1 })
+                    out.push(Step { at: pos, len: w, sound: Some(Sound::Name(n.to_string())), offbeat: whole && k % 2 == 1, vel })
                 }
                 n => return Err(format!("`{n}` isn't a chop number, a pad name, `x`, `.`, `_` or `[ ]`")),
             }

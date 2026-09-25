@@ -2,7 +2,7 @@
 //! split notes at chord changes, and attach warp maps.
 
 use crate::manifest::Clip;
-use crate::score::{parse_bars, parse_duration, parse_position, parse_steps, Effect, FilterSpec, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
+use crate::score::{parse_bars, parse_duration, parse_position, parse_steps, Effect, FilterSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
 use apricity_theory::{rank_keys, solve, Chord, Fit, Key, PitchClass, Voice, Weights};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -343,6 +343,9 @@ pub struct Event {
     /// Which of its track's `pieces` this plays (the pad, or slice), for tracing a sound to its source.
     #[serde(default)]
     pub piece: usize,
+    /// Its velocity (1–127), when not 100; already counted in `gain_db`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub velocity: Option<f64>,
 }
 
 /// One sound a track can play: its clip's region, one slice, or one pad, and where it is recorded.
@@ -1004,14 +1007,17 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         Err(format!("no clip or kit named {name:?}{}", did_you_mean(name, all.iter())))
     };
 
-    // ---- tracks → notes (start beat, duration, which piece, clip-beat offset)
+    // ---- tracks → notes (start beat, duration, which piece, clip-beat offset, velocity)
     struct Hit {
         track: usize,
         start: f64,
         dur: f64,
         piece: usize,
         clip_from: f64,
+        /// 1–127; 100 plays the pad at its matched level.
+        vel: f64,
     }
+    check_groove("", score.swing, score.swing_base, None, score.humanize, &mut errors);
     let mut srcs: Vec<Option<TrackSrc>> = Vec::new();
     let mut hits = Vec::new();
     let mut track_names = Vec::new();
@@ -1052,11 +1058,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         if tr.stutter.is_some_and(|n| n == 0 || n > 64) {
             errors.push(format!("{at}.stutter: must be 1–64 repeats"));
         }
-        if let Some(sw) = tr.swing {
-            if !(50.0..=75.0).contains(&sw) {
-                errors.push(format!("{at}.swing: {sw} is outside 50–75 (50 = straight)"));
-            }
-        }
+        check_groove(&format!("{at}."), tr.swing, tr.swing_base, tr.velocity, tr.humanize, &mut errors);
         if let Some(f) = tr.filter {
             let hz = match f {
                 FilterSpec::Lowpass(h) | FilterSpec::Highpass(h) => h,
@@ -1094,11 +1096,12 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         let (s0, s1) = span;
         let first_hit = hits.len();
         let piece_len = |p: &Piece| (p.to - p.from) / (clips[&p.clip].ratio * speed); // score beats
-        let mut push = |start: f64, max_len: f64, piece: usize| {
+        let track_vel = tr.velocity.unwrap_or(100) as f64;
+        let mut push = |start: f64, max_len: f64, piece: usize, vel: f64| {
             let p = &src.pieces[piece];
             let dur = piece_len(p).min(max_len).min(s1 - start);
             if dur > 1e-6 {
-                hits.push(Hit { track: i, start, dur, piece, clip_from: p.from });
+                hits.push(Hit { track: i, start, dur, piece, clip_from: p.from, vel });
             }
         };
         let single = src.kit.is_none();
@@ -1150,15 +1153,21 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                         errors.push(format!("{at}.pattern.steps: {e}"));
                     } else {
                         let step_beats = 4.0 / grid.max(1) as f64;
-                        let swing = (tr.swing.unwrap_or(50.0) - 50.0) / 50.0 * step_beats;
+                        // Swing delays the notes on the offbeats of its base (the step size unless
+                        // given, e.g. 1/8), counted from the bar line, so a pattern of any length keeps its feel.
+                        let base = 4.0 / tr.swing_base.or(score.swing_base).unwrap_or(grid).max(1) as f64;
+                        let delay = (tr.swing.or(score.swing).unwrap_or(50.0) - 50.0) / 50.0 * base;
                         let plen = n_steps * step_beats;
                         let mut rep = s0;
                         while rep < s1 - 1e-9 {
                             for (st, w) in steps.iter().zip(&which) {
                                 let Some(k) = *w else { continue };
-                                let start = rep + st.at * step_beats + if st.offbeat { swing } else { 0.0 };
+                                let on = rep + st.at * step_beats;
+                                let slot = on / base;
+                                let offbeat = (slot - slot.round()).abs() < 1e-6 && (slot.round() as i64).rem_euclid(2) == 1;
+                                let start = on + if offbeat { delay } else { 0.0 };
                                 if start < s1 - 1e-9 {
-                                    push(start, st.len * step_beats, k);
+                                    push(start, st.len * step_beats, k, st.vel.map_or(track_vel, |v| v as f64));
                                 }
                             }
                             rep += plen;
@@ -1170,7 +1179,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 let len = piece_len(&src.pieces[0]);
                 let mut p = s0;
                 while p < s1 - 1e-9 {
-                    push(p, len, 0);
+                    push(p, len, 0, track_vel);
                     p += len;
                 }
             }
@@ -1178,7 +1187,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 Ok(step) => {
                     let mut p = s0;
                     while p < s1 - 1e-9 {
-                        push(p, step, 0);
+                        push(p, step, 0, track_vel);
                         p += step;
                     }
                 }
@@ -1187,13 +1196,23 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             Pattern::At(list) if single => {
                 for (j, pos) in list.iter().enumerate() {
                     match position(pos, meter, score.tempo) {
-                        Ok(p) if p >= s0 && p < s1 => push(p, f64::INFINITY, 0),
+                        Ok(p) if p >= s0 && p < s1 => push(p, f64::INFINITY, 0, track_vel),
                         Ok(_) => errors.push(format!("{at}.pattern.at[{j}]: {pos:?} is outside the bars this track plays")),
                         Err(e) => errors.push(format!("{at}.pattern.at[{j}]: {e}")),
                     }
                 }
             }
             _ => {} // a whole kit without steps: reported above
+        }
+        // Humanize: each note a little early or late, a little softer or louder, the same on every compile.
+        if let Some(h) = tr.humanize.or(score.humanize) {
+            let seed = tr.seed.or(score.seed).unwrap_or(1);
+            let beats_per_ms = score.tempo / 60_000.0;
+            for (n, hit) in hits[first_hit..].iter_mut().enumerate() {
+                let (dt, dv) = (wobble(seed, &track_names[i], n, 1), wobble(seed, &track_names[i], n, 2));
+                hit.start = (hit.start + dt * h.timing_ms * beats_per_ms).max(0.0);
+                hit.vel = (hit.vel * (1.0 + dv * h.velocity / 100.0)).clamp(1.0, 127.0);
+            }
         }
         // Gate and stutter apply to whatever the pattern produced.
         let gate = tr.gate.unwrap_or(1.0).clamp(0.0, 1.0);
@@ -1204,7 +1223,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 let part = h.dur / stutter as f64;
                 for k in 0..stutter {
                     if part * gate > 1e-6 {
-                        hits.push(Hit { track: h.track, start: h.start + part * k as f64, dur: part * gate, piece: h.piece, clip_from: h.clip_from });
+                        hits.push(Hit { track: h.track, start: h.start + part * k as f64, dur: part * gate, piece: h.piece, clip_from: h.clip_from, vel: h.vel });
                     }
                 }
             }
@@ -1410,7 +1429,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 warp,
                 semitones: if unwarped { 0 } else { shifts[si][h.track] },
                 tuning_cents: if unwarped { 0.0 } else { -rc.clip.manifest.tonal.tuning_cents },
-                gain_db: tr.volume + piece_levels[h.track][h.piece],
+                gain_db: tr.volume + piece_levels[h.track][h.piece] + velocity_db(h.vel),
+                velocity: ((h.vel - 100.0).abs() > 0.05).then(|| (h.vel * 10.0).round() / 10.0),
                 mode: rc.mode,
                 reverse: tr.reverse,
                 filter: tr.filter,
@@ -1422,6 +1442,51 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
 
     let master = MasterSpec { loudness: Some(master.loudness.unwrap_or(DEFAULT_LOUDNESS)), ..master };
     Ok(Timeline { tempo: score.tempo, meter, key: key.to_string(), length_beats: length, sources, events, harmony, tracks: infos, warnings, buses, master })
+}
+
+/// A velocity as a level change: 100 is the pad's matched level, 127 about +4 dB, 40 about −16 dB.
+pub fn velocity_db(vel: f64) -> f64 {
+    40.0 * (vel.clamp(1.0, 127.0) / 100.0).log10()
+}
+
+/// A number in −1…1 for note `n` of a track: its humanize wobble, the same on every compile.
+fn wobble(seed: u64, track: &str, n: usize, salt: u64) -> f64 {
+    // FNV-1a over the inputs, then a splitmix64 finish.
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in track.bytes().chain(n.to_le_bytes()).chain(seed.to_le_bytes()).chain(salt.to_le_bytes()) {
+        h = (h ^ b as u64).wrapping_mul(0x0100_0000_01b3);
+    }
+    h = (h ^ (h >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+    h = (h ^ (h >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+    h ^= h >> 31;
+    (h >> 11) as f64 / (1u64 << 53) as f64 * 2.0 - 1.0
+}
+
+/// Range checks for swing, velocity and humanize (on the score when `at` is empty, else a track).
+fn check_groove(at: &str, swing: Option<f64>, base: Option<u32>, velocity: Option<u32>, humanize: Option<Humanize>, errors: &mut Vec<String>) {
+    if let Some(sw) = swing {
+        if !(50.0..=75.0).contains(&sw) {
+            errors.push(format!("{at}swing: {sw} is outside 50–75 (50 = straight)"));
+        }
+    }
+    if let Some(b) = base {
+        if ![2, 4, 8, 16, 32].contains(&b) {
+            errors.push(format!("{at}swing: swing works on 1/2, 1/4, 1/8, 1/16 or 1/32, not 1/{b}"));
+        }
+    }
+    if let Some(v) = velocity {
+        if !(1..=127).contains(&v) {
+            errors.push(format!("{at}velocity: {v} is outside 1–127 (100 = as written)"));
+        }
+    }
+    if let Some(h) = humanize {
+        if !(0.0..=100.0).contains(&h.timing_ms) {
+            errors.push(format!("{at}humanize: timing {}ms is outside 0–100ms", h.timing_ms));
+        }
+        if !(0.0..=100.0).contains(&h.velocity) {
+            errors.push(format!("{at}humanize: velocity {}% is outside 0–100%", h.velocity));
+        }
+    }
 }
 
 fn did_you_mean<'a>(word: &str, options: impl Iterator<Item = &'a String>) -> String {

@@ -21,7 +21,7 @@
 
 use crate::score::{
     ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
-    Transpose, WarpModeSpec,
+    Transpose, WarpModeSpec, Humanize,
 };
 use apricity_theory::Role;
 use std::collections::BTreeMap;
@@ -153,7 +153,7 @@ fn words(line: &str) -> Vec<Tok<'_>> {
     out
 }
 
-const STATEMENTS: &[&str] = &["apricity", "tempo", "time", "key", "samples", "bars", "clip", "kit", "chords", "track", "group", "return", "master"];
+const STATEMENTS: &[&str] = &["apricity", "tempo", "time", "key", "samples", "bars", "swing", "humanize", "seed", "clip", "kit", "chords", "track", "group", "return", "master"];
 const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send"];
 const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width"];
 const MASTER_LINES: &[&str] = &["eq", "comp", "limit", "width", "loudness"];
@@ -449,7 +449,7 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
 }
 const CLIP_OPTIONS: &[&str] = &["beats", "seconds", "pick", "root", "ratio", "warp", "speed"];
 const TRACK_OPTIONS: &[&str] = &[
-    "as", "role", "follow", "transpose", "every", "at", "steps", "bars", "volume", "loop", "grid", "swing", "reverse", "filter", "gate", "stutter", "half", "double", "speed", "group",
+    "as", "role", "follow", "transpose", "every", "at", "steps", "bars", "volume", "loop", "grid", "swing", "velocity", "humanize", "seed", "reverse", "filter", "gate", "stutter", "half", "double", "speed", "group",
 ];
 
 fn suggest(word: &str, options: &[&str]) -> String {
@@ -511,6 +511,45 @@ impl<'a> Line<'a> {
     }
 }
 
+/// `swing 58` or `swing 58 1/8`: the percentage, and the note value it works on.
+fn swing(l: &mut Line) -> Result<(f64, Option<u32>), ParseError> {
+    let v = l.next("a swing percentage like 56")?;
+    let pct = v.text.trim_end_matches('%').parse().map_err(|_| l.err(v.col, format!("swing is a percentage like 56, not `{}`", v.text)))?;
+    let mut base = None;
+    if let Some(b) = l.peek().filter(|b| b.text.starts_with("1/")) {
+        l.pos += 1;
+        base = Some(b.text[2..].parse().map_err(|_| l.err(b.col, format!("swing works on a note value like 1/8 or 1/16, not `{}`", b.text)))?);
+    }
+    Ok((pct, base))
+}
+
+/// `humanize 12ms 20%`: timing (ms) and velocity (%), either or both, in any order.
+fn humanize(l: &mut Line) -> Result<Humanize, ParseError> {
+    let mut h = Humanize::default();
+    let mut any = false;
+    while let Some(t) = l.peek() {
+        let bad = || l.err(t.col, format!("humanize takes a timing like 12ms and a velocity like 20%, not `{}`", t.text));
+        if let Some(ms) = t.text.strip_suffix("ms") {
+            h.timing_ms = ms.parse().map_err(|_| bad())?;
+        } else if let Some(pct) = t.text.strip_suffix('%') {
+            h.velocity = pct.parse().map_err(|_| bad())?;
+        } else {
+            break;
+        }
+        l.pos += 1;
+        any = true;
+    }
+    if !any {
+        return Err(l.err(l.end_col(), "humanize takes a timing like 12ms, a velocity like 20%, or both"));
+    }
+    Ok(h)
+}
+
+fn seed(l: &mut Line) -> Result<u64, ParseError> {
+    let t = l.next("a seed (a whole number)")?;
+    t.text.parse().map_err(|_| l.err(t.col, format!("seed is a whole number, not `{}`", t.text)))
+}
+
 fn range(l: &Line, t: Tok, what: &str) -> Result<[f64; 2], ParseError> {
     let (a, b) = t.text.split_once("..").ok_or_else(|| l.err(t.col, format!("{what} takes a range like 32..48, got `{}`", t.text)))?;
     let p = |s: &str| s.parse::<f64>().map_err(|_| l.err(t.col, format!("{what} range has a non-number: `{}`", t.text)));
@@ -530,6 +569,10 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
         progression: Vec::new(),
         master: None,
         bars: None,
+        swing: None,
+        swing_base: None,
+        humanize: None,
+        seed: None,
         tracks: Vec::new(),
         groups: BTreeMap::new(),
         returns: BTreeMap::new(),
@@ -683,6 +726,9 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                     let t = l.next("a number of bars")?;
                     score.bars = Some(t.text.parse().map_err(|_| l.err(t.col, format!("bars is a whole number, got `{}`", t.text)))?);
                 }
+                "swing" => (score.swing, score.swing_base) = swing(&mut l).map(|(p, b)| (Some(p), b))?,
+                "humanize" => score.humanize = Some(humanize(&mut l)?),
+                "seed" => score.seed = Some(seed(&mut l)?),
                 "clip" => {
                     let name = l.next("a clip name")?;
                     if !name.text.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-') {
@@ -853,6 +899,10 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                         volume: 0.0,
                         grid: None,
                         swing: None,
+                        swing_base: None,
+                        velocity: None,
+                        humanize: None,
+                        seed: None,
                         reverse: false,
                         filter: None,
                         gate: None,
@@ -906,10 +956,13 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                                 let g = l.next("a note value like 16 or 8")?;
                                 t.grid = Some(g.text.trim_start_matches("1/").parse().map_err(|_| l.err(g.col, format!("grid is a note value like 16 (sixteenths) or 8, not `{}`", g.text)))?);
                             }
-                            "swing" => {
-                                let v = l.next("a swing percentage like 56")?;
-                                t.swing = Some(v.text.trim_end_matches('%').parse().map_err(|_| l.err(v.col, format!("swing is a percentage like 56, not `{}`", v.text)))?);
+                            "swing" => (t.swing, t.swing_base) = swing(&mut l).map(|(p, b)| (Some(p), b))?,
+                            "velocity" => {
+                                let v = l.next("a velocity 1–127")?;
+                                t.velocity = Some(v.text.parse().map_err(|_| l.err(v.col, format!("velocity is a whole number 1–127, not `{}`", v.text)))?);
                             }
+                            "humanize" => t.humanize = Some(humanize(&mut l)?),
+                            "seed" => t.seed = Some(seed(&mut l)?),
                             "gate" => {
                                 let v = l.next("a gate like 50%")?;
                                 let x: f64 = v.text.trim_end_matches('%').parse().map_err(|_| l.err(v.col, format!("gate is a percentage like 50%, not `{}`", v.text)))?;
@@ -1101,6 +1154,17 @@ fn emit(item: &Item, scale: f64, out: &mut Vec<(String, f64, usize)>) {
 
 // ------------------------------------------------------------------ formatting
 
+fn humanize_text(h: &Humanize) -> String {
+    let mut parts = Vec::new();
+    if h.timing_ms != 0.0 {
+        parts.push(format!("{}ms", num(h.timing_ms)));
+    }
+    if h.velocity != 0.0 {
+        parts.push(format!("{}%", num(h.velocity)));
+    }
+    parts.join(" ")
+}
+
 fn num(x: f64) -> String {
     if x.fract() == 0.0 { format!("{}", x as i64) } else { format!("{x}") }
 }
@@ -1241,6 +1305,15 @@ pub fn format(s: &Score) -> String {
     if let Some(b) = s.bars {
         out += &format!("bars {b}\n");
     }
+    if let Some(sw) = s.swing {
+        out += &format!("swing {}{}\n", num(sw), s.swing_base.map_or(String::new(), |b| format!(" 1/{b}")));
+    }
+    if let Some(h) = s.humanize {
+        out += &format!("humanize {}\n", humanize_text(&h));
+    }
+    if let Some(n) = s.seed {
+        out += &format!("seed {n}\n");
+    }
     out += "\n";
     let w = s.clips.keys().map(|k| k.len()).max().unwrap_or(0);
     for (name, c) in &s.clips {
@@ -1353,7 +1426,16 @@ pub fn format(s: &Score) -> String {
             out += &format!("  grid {g}");
         }
         if let Some(sw) = t.swing {
-            out += &format!("  swing {}", num(sw));
+            out += &format!("  swing {}{}", num(sw), t.swing_base.map_or(String::new(), |b| format!(" 1/{b}")));
+        }
+        if let Some(v) = t.velocity {
+            out += &format!("  velocity {v}");
+        }
+        if let Some(h) = t.humanize {
+            out += &format!("  humanize {}", humanize_text(&h));
+        }
+        if let Some(n) = t.seed {
+            out += &format!("  seed {n}");
         }
         match t.speed {
             None => {}
@@ -1641,6 +1723,26 @@ track v  at 1\n\ngroup music\n  comp 4:1 -30dB attack 5ms release 250ms sidechai
         for (line, want) in [(5, "write drive in dB"), (6, "lofi needs something to do"), (7, "unknown lofi part `crunchy`"), (8, "write width as a percentage"), (10, "doesn't go on the master"), (11, "doesn't go on the master")] {
             assert!(t.iter().any(|x| x.starts_with(&format!("line {line} ")) && x.contains(want)), "line {line}: {want}\n{t:#?}");
         }
+    }
+
+    #[test]
+    fn groove_parses_formats_and_round_trips_through_yaml() {
+        let src = "tempo 100\nkey C\nswing 58 1/8\nhumanize 10ms 15%\nseed 3\n\nclip k = x/k.wav  pick 1bar\n\nchords I\n\ntrack k  steps \"x x@40 x! .\"  swing 60 1/16  velocity 90  humanize 5ms  seed 2\n";
+        let (s, _) = parse(src).unwrap();
+        assert_eq!((s.swing, s.swing_base, s.seed), (Some(58.0), Some(8), Some(3)));
+        assert_eq!(s.humanize, Some(Humanize { timing_ms: 10.0, velocity: 15.0 }));
+        let t = &s.tracks[0];
+        assert_eq!((t.swing, t.swing_base, t.velocity, t.seed), (Some(60.0), Some(16), Some(90), Some(2)));
+        assert_eq!(t.humanize, Some(Humanize { timing_ms: 5.0, velocity: 0.0 }));
+        let again = format(&s);
+        assert!(again.contains("swing 58 1/8\nhumanize 10ms 15%\nseed 3\n") && again.contains("swing 60 1/16  velocity 90  humanize 5ms  seed 2"), "{again}");
+        assert_eq!(parse(&again).unwrap().0, s, "\n{again}");
+        let yaml = serde_yaml::to_string(&s).unwrap();
+        assert_eq!(serde_yaml::from_str::<Score>(&yaml).unwrap(), s, "\n{yaml}");
+        let e = parse("tempo 90\nkey C\nhumanize\ntrack a  humanize fast\n").unwrap_err();
+        let t: Vec<String> = e.iter().map(|e| e.to_string()).collect();
+        assert!(t.iter().any(|x| x.starts_with("line 3 ") && x.contains("humanize takes a timing like 12ms")), "{t:#?}");
+        assert!(t.iter().any(|x| x.starts_with("line 4 ") && x.contains("humanize takes a timing like 12ms")), "{t:#?}");
     }
 
     #[test]

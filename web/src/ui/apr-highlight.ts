@@ -2,10 +2,10 @@
 // with web/src/ui/apr-lang.ts; keep the word lists in step with it and crates/apricity-score/src/dsl.rs).
 
 // ---- `apricity` code blocks: the same colors as the score editor.
-const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "clip", "kit", "chords", "track", "group", "return", "master"]);
+const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "swing", "humanize", "seed", "clip", "kit", "chords", "track", "group", "return", "master"]);
 const OPTIONS = new Set([
   "beats", "seconds", "pick", "root", "ratio", "warp", "slice", "by", "into", "transients", "phrases", "bar", "repitch", "complex", "texture",
-  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing",
+  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing", "velocity", "humanize", "seed",
   "reverse", "filter", "lp", "hp", "lowpass", "highpass", "gate", "stutter", "half", "double", "speed",
   // mix lines and bus options
   "group", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",

@@ -213,6 +213,8 @@ Besides transposition, a track can be flipped with:
 | Flip | What it does |
 |---|---|
 | `swing 58` | Delays every other step, for the loose feel of a hardware sampler. 50 is straight; 56–62 is the classic range; 66 is a triplet feel; up to 75. Notes inside a split step `[ ]` aren't swung. |
+| `snare@40`, `kick!`, `velocity 90` | How hard each note is played, 1–127 as in Live: 100 is the pad's matched level, `@40` a ghost note (about −16 dB), `!` an accent (127, about +4 dB). |
+| `humanize 12ms 20%` | Each note a little early or late and a little softer or louder, differently for every note but the same take every time you play it (`seed` picks another). |
 | `half`, `double`, `speed 0.75` | Plays the sound at half, double or any speed against the beat (0.125–8), keeping its pitch: `half` turns a loop into a half-time groove. |
 | `reverse` | Each note plays backwards. |
 | `filter lp 800`, `filter hp 250` | A 12 dB/octave low-pass (darker, muffled) or high-pass (thinner, no bass) filter, 20–20000 Hz. |

@@ -280,6 +280,95 @@ tracks: [ { clip: k, pattern: { steps: "1 2 3 4" }, swing: 75 } ]
     assert_eq!(starts[..4], [0.0, 0.375, 0.5, 0.875]);
 }
 
+const GROOVE: &str = r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 2
+clips: { horn: { source: horn.wav, beats: [0, 16] } }
+kits: { k: { clip: horn, slice: { beats: 1 } } }
+"#;
+
+fn groove(extra: &str, tracks: &str) -> apricity_score::Timeline {
+    run(&format!("{GROOVE}{extra}\ntracks: [ {tracks} ]\n")).unwrap()
+}
+
+fn starts(tl: &apricity_score::Timeline, track: &str) -> Vec<f64> {
+    hits_of(tl, track).iter().map(|h| h.0).collect()
+}
+
+#[test]
+fn score_swing_is_the_default_and_a_track_overrides_it() {
+    let tl = groove("swing: 75", r#"{ clip: k, pattern: { steps: "1 2 3 4" } }, { clip: k, name: straight, pattern: { steps: "1 2 3 4" }, swing: 50 }"#);
+    assert_eq!(starts(&tl, "k")[..4], [0.0, 0.375, 0.5, 0.875]);
+    assert_eq!(starts(&tl, "straight")[..4], [0.0, 0.25, 0.5, 0.75]);
+}
+
+#[test]
+fn swing_on_eighths_leaves_the_sixteenths_between_them() {
+    // Base 1/8, swing 60: the offbeat eighth (beat 0.5) lands at 60% of the beat; the sixteenths
+    // at 0.25 and 0.75 aren't on the eighth grid, so they stay.
+    let tl = groove("", r#"{ clip: k, pattern: { steps: "1 2 3 4" }, swing: 60, swing_base: 8 }"#);
+    assert_eq!(starts(&tl, "k")[..4], [0.0, 0.25, 0.6, 0.75]);
+}
+
+#[test]
+fn an_odd_length_pattern_keeps_its_swing_in_every_bar() {
+    // Three steps repeating: step 1 lands on even and odd sixteenths in turn; only the odd ones swing.
+    let tl = groove("swing: 75", r#"{ clip: k, pattern: { steps: "1 2 3" } }"#);
+    for s in starts(&tl, "k") {
+        let slot = (s / 0.25).floor();
+        let late = s - slot * 0.25;
+        assert!(if slot as i64 % 2 == 1 { (late - 0.125).abs() < 1e-9 } else { late.abs() < 1e-9 }, "{s} swung on the wrong step");
+    }
+}
+
+#[test]
+fn velocity_is_a_level_change_after_level_matching() {
+    let tl = groove("", r#"{ clip: k, pattern: { steps: "1 1@40 1! 1" } }, { clip: k, name: soft, pattern: { steps: "1" }, velocity: 50 }"#);
+    let gains: Vec<f64> = tl.events.iter().filter(|e| e.track == "k").take(4).map(|e| e.gain_db).collect();
+    let base = gains[0];
+    assert!((gains[1] - base - 40.0 * (0.4f64).log10()).abs() < 1e-9, "@40 is about −16 dB: {gains:?}");
+    assert!((gains[2] - base - 40.0 * (1.27f64).log10()).abs() < 1e-9, "! is 127, about +4 dB: {gains:?}");
+    assert_eq!(gains[3], base);
+    let k: Vec<Option<f64>> = tl.events.iter().filter(|e| e.track == "k").take(4).map(|e| e.velocity).collect();
+    assert_eq!(k, vec![None, Some(40.0), Some(127.0), None]);
+    let soft = tl.events.iter().find(|e| e.track == "soft").unwrap();
+    assert!((soft.gain_db - base - 40.0 * (0.5f64).log10()).abs() < 1e-9, "a track's velocity is its notes' default");
+}
+
+#[test]
+fn humanize_is_bounded_repeatable_and_a_new_seed_is_a_new_take() {
+    let tracks = r#"{ clip: k, pattern: { steps: "1 1 1 1" }, humanize: { timing_ms: 20, velocity: 25 } }"#;
+    let a = groove("", tracks);
+    let straight = groove("", r#"{ clip: k, pattern: { steps: "1 1 1 1" } }"#);
+    let b = groove("", tracks);
+    let other = groove("seed: 7", tracks);
+    let (sa, s0) = (starts(&a, "k"), starts(&straight, "k"));
+    assert_eq!(sa, starts(&b, "k"), "the same score gives the same take");
+    assert_ne!(sa, starts(&other, "k"), "another seed, another take");
+    assert!(sa.iter().zip(&s0).any(|(x, y)| x != y), "notes do move");
+    for (x, y) in sa.iter().zip(&s0) {
+        assert!((x - y).abs() <= 0.020 + 1e-3 && *x >= 0.0, "within ±20 ms at 60 BPM, never before the start: {x} vs {y}");
+    }
+    let g0 = straight.events[0].gain_db;
+    for e in &a.events {
+        let v = e.velocity.unwrap_or(100.0);
+        assert!((75.0..=125.0).contains(&v), "velocity within ±25%: {v}");
+        assert!((e.gain_db - g0 - 40.0 * (v / 100.0).log10()).abs() < 0.02, "{} vs {g0} at velocity {v}", e.gain_db);
+    }
+}
+
+#[test]
+fn groove_mistakes_are_reported() {
+    let errs = run(&format!("{GROOVE}swing: 80\nhumanize: {{ timing_ms: 500 }}\ntracks: [ {{ clip: k, pattern: {{ steps: \"1\" }}, velocity: 200, swing: 58, swing_base: 3 }} ]\n")).unwrap_err();
+    for want in ["swing: 80 is outside 50–75", "humanize: timing 500ms is outside 0–100ms", "tracks[0].velocity: 200 is outside 1–127", "tracks[0].swing: swing works on 1/2, 1/4, 1/8, 1/16 or 1/32, not 1/3"] {
+        assert!(errs.iter().any(|e| e.contains(want)), "missing {want:?} in {errs:?}");
+    }
+    let bad = run(&format!("{GROOVE}tracks: [ {{ clip: k, pattern: {{ steps: \"1@0 .@50\" }} }} ]\n")).unwrap_err();
+    assert!(bad.iter().any(|e| e.contains("velocity is a whole number 1–127")), "{bad:?}");
+}
+
 #[test]
 fn slice_pads_stutter_gate_and_half_time() {
     let tl = run(r#"

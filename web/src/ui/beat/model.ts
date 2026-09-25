@@ -32,7 +32,7 @@ export interface TrackView {
   swing: number;
   volume: number;
   other: boolean;
-  steps?: { at: number; len: number; sound: string | number | null }[];
+  steps?: { at: number; len: number; sound: string | number | null; vel?: number | null }[];
   nSteps?: number;
   error?: string;
 }
@@ -102,6 +102,8 @@ export function readBeat(v: StepsView, kitName?: string, slices = 0): Beat | nul
     if (!t.steps || !t.nSteps) continue;
     // Hits per pad per whole step (the pattern repeats over the grid).
     const hits = new Map<string, { at: number; len: number }[]>();
+    // Velocities (`snare@40`, `kick!`) aren't on the grid yet: leave such a track as written.
+    if (t.steps.some((s) => s.vel != null)) problems.push(`track ${t.sound} uses velocities (@ or !), which the grid doesn't show yet`);
     for (const s of t.steps) {
       if (s.sound === null) continue;
       const pad = t.pad ?? String(s.sound);

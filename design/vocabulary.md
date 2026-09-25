@@ -32,7 +32,7 @@ touched.
 Kept on purpose:
 - **Score**, not Live's "Set": "set" is too vague a word alone. A score is the written piece
   (`.apr` or YAML).
-- **Swing**, **reverse**, **half/double**, **stems** and **tempo** already match Live.
+- **Swing**, **velocity** (1–127), **humanize**, **reverse**, **half/double**, **stems** and **tempo** already match Live.
 - **Chords**, **key**, **follow**, **automatic markup** and **Flow** are Apricity's own.
 
 Not used: **pack** (a downloaded kit is a saved kit, as in Live).

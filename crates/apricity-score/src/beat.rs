@@ -44,6 +44,10 @@ fn has_other(t: &TrackSpec) -> bool {
         || t.gate.is_some()
         || t.stutter.is_some()
         || t.speed.is_some()
+        || t.swing_base.is_some()
+        || t.velocity.is_some()
+        || t.humanize.is_some()
+        || t.seed.is_some()
         || !t.effects.is_empty()
         || t.pan.is_some()
         || t.group.is_some()
@@ -106,7 +110,16 @@ pub fn beat_view(text: &str) -> Result<Value, Vec<String>> {
         if let Pattern::Steps(src) = &t.pattern {
             match parse_steps(src) {
                 Ok((steps, n)) => {
-                    v["steps"] = steps.iter().map(|s| json!({ "at": s.at, "len": s.len, "sound": sound(&s.sound) })).collect();
+                    v["steps"] = steps
+                        .iter()
+                        .map(|s| {
+                            let mut o = json!({ "at": s.at, "len": s.len, "sound": sound(&s.sound) });
+                            if let Some(v) = s.vel {
+                                o["vel"] = json!(v);
+                            }
+                            o
+                        })
+                        .collect();
                     v["nSteps"] = json!(n);
                 }
                 Err(e) => v["error"] = json!(e),
