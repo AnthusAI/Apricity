@@ -3,17 +3,25 @@
   "title": "Purge audio assets from git history",
   "description": "Inventory every audio file ever committed (all extensions, all branches; known: web/public/hero/*.mp3). Run git filter-repo to remove them as though never committed; .gitignore web/public/hero and audio extensions. Do AFTER T22 (ae24ae) with a clean tree. Coordinate develop branch + worktree + other sessions (hashes change). Never force-push without explicit user go-ahead; hero MP3s were probably pushed to origin (public AnthusAI/Apricity), so GitHub caches/forks may retain them.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "50e836d6-73bf-427c-862a-61eb6b0795f9",
+      "author": "home",
+      "text": "Done. Local history purged with git filter-repo (only the 4 hero MP3s, one commit f8d2357). With user approval (2026-09-24) force-pushed master, develop, main, claude/apricity-drum-sound-fonts-df8c79 and tag v0.1.0 to origin, each with --force-with-lease pinned to the expected old commit. Verified from a fresh mirror clone: 0 audio paths on all branches and the tag. REMAINING: GitHub-managed refs/pull/1/head and refs/pull/2/head still contain the old commit; they cannot be changed by push and need a GitHub Support request (cached views/forks likewise). Backup bundle of the pre-purge repo is in the session scratchpad. .gitignore now blocks audio.",
+      "created_at": "2026-09-25T03:10:08.090334Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:01:24.417170Z",
-  "updated_at": "2026-09-25T02:01:24.417375Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T03:10:08.120109Z",
+  "closed_at": "2026-09-25T03:10:08.120071Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
