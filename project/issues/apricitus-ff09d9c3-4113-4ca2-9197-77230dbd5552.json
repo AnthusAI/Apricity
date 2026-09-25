@@ -31,10 +31,17 @@
       "text": "CORRECTION to the earlier instructions (per Papyrus docs/google-oauth-setup.md): Google's Authorized JavaScript origin is the COGNITO hosted-UI origin https://apricity-anthus.auth.us-east-1.amazoncognito.com (NOT https://apricity.anth.us), and the Authorized redirect URI is https://apricity-anthus.auth.us-east-1.amazoncognito.com/oauth2/idpresponse. https://apricity.anth.us is only in the app's APRICITY_OAUTH_REDIRECT_URLS (where Cognito returns the user). Also: Google Cloud Console is currently blocked for the owner's account until 2-step verification is enabled on the Google account (Google enforces 2SV since 2026-09-16); the owner must do that.",
       "created_at": "2026-09-25T10:43:39.799758Z",
       "comment_type": "default"
+    },
+    {
+      "id": "af2b2f53-4f77-4ee2-a91e-2223b38e6dd9",
+      "author": "home",
+      "text": "2026-09-25: Google-only auth is LIVE (Amplify job 17). Secrets stored by the owner in SSM /amplify/shared/d2n7w4kwqyfwn4/GOOGLE_CLIENT_ID|SECRET. Findings: Amplify requires email or phone on the pool even with Google, so email stays as an attribute and the pre-sign-up trigger refuses native sign-ups when APRICITY_GOOGLE_AUTH=true; defineAuth does not support domainPrefix in this version, so the Cognito domain is the generated 017d1deb91f43f32da66.auth.us-east-1.amazoncognito.com (added to the Google client's origins and redirect URIs alongside the apricity-anthus ones). Remaining: owner signs in with Google once; then add groups admins+curators; then Import library from bucket.",
+      "created_at": "2026-09-25T12:28:32.124712Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.338842Z",
-  "updated_at": "2026-09-25T10:43:39.799785Z",
+  "updated_at": "2026-09-25T12:28:32.124759Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
