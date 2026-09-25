@@ -17,10 +17,24 @@
       "text": "Now the blocker for cloud Library/Score. Records are in the bucket (Model/<key>.json, pushed 2026-09-25) but DynamoDB tables are empty. Records are readable only by signed-in users, so end-to-end verification needs the sign-in task first (agents cannot create accounts); item shape (a.json as string, __typename, createdAt/updatedAt) must be checked against a real AppSync read.",
       "created_at": "2026-09-25T04:16:57.520137Z",
       "comment_type": "default"
+    },
+    {
+      "id": "6a44f0ec-1223-4e65-a6ae-f88a002f38a6",
+      "author": "home",
+      "text": "Browser-side admin import built (web/src/data/import-library.ts) + tests; needs admins+curators group membership, real run needs the owner.",
+      "created_at": "2026-09-25T04:25:25.093710Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "0a865ed6-911f-4483-8c2e-c38b7ee1282b",
+      "author": "home",
+      "text": "Reviewed and committed 2026-09-25: tsc, test:flow (57 pass), contract:check, auth tests, build pass; Library and Score tabs verified in the browser against a migrated library via apricity serve. Cloud mode is unit-tested only until someone signs in.",
+      "created_at": "2026-09-25T04:36:52.451857Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:35:23.032464Z",
-  "updated_at": "2026-09-25T04:16:57.520154Z",
+  "updated_at": "2026-09-25T04:36:52.451881Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

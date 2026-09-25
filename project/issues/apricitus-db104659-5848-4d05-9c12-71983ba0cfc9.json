@@ -10,9 +10,24 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "be3258e1-a343-49f6-8786-f52a62511fc5",
+      "author": "home",
+      "text": "Sign-in dialog built (web/src/ui/account.ts, auth.ts wrappers, header wiring); unit-tested with stubbed Cognito; real sign-in needs the owner.",
+      "created_at": "2026-09-25T04:25:25.053103Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "01187a62-a673-4390-9aa4-3047af18e6be",
+      "author": "home",
+      "text": "Reviewed and committed 2026-09-25: tsc, test:flow (57 pass), contract:check, auth tests, build pass; Library and Score tabs verified in the browser against a migrated library via apricity serve. Cloud mode is unit-tested only until someone signs in.",
+      "created_at": "2026-09-25T04:36:52.418096Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T04:16:57.492064Z",
-  "updated_at": "2026-09-25T04:16:57.492087Z",
+  "updated_at": "2026-09-25T04:36:52.418118Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,

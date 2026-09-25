@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-95b45377-5ea0-4288-8819-0c11349883e7",
+  "title": "Local saves blocked: virtuus list-field validation and getCurrentUser in local mode",
+  "description": "Found while porting Library/Score to the data layer (574eb9). (1) virtuus-amplify rejects list fields on create/update ('Field tags must be a string'; validation near lib.rs ~2761 ignores isArray), so updating a Slice with tags and domain.saveScore (writes lastErrors: []) fail against apricity serve. Fix upstream in ~/Projects/Virtuus (specs first). (2) web/src/data/auth.ts getCurrentUser() returns null in local mode, so domain.saveScore stops with 'No authenticated user'; local mode should use custom.apricity.identity from amplify_outputs.json. Cloud saves go through real AppSync and are unaffected.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T04:36:52.229247Z",
+  "updated_at": "2026-09-25T04:36:52.229284Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

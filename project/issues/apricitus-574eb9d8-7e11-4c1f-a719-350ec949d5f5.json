@@ -24,10 +24,24 @@
       "text": "Library/Score screens: web/src/apricity.ts api layer (samples, scores, score, saveScore, annotations, upload) is still the Python server's /api/*; port it onto data/domain.ts + storage after sign-in and the loader exist. Until then the deployed Library and Score tabs 404 in the console.",
       "created_at": "2026-09-25T04:16:57.546583Z",
       "comment_type": "default"
+    },
+    {
+      "id": "33220451-5569-479b-903c-be84b3532c6e",
+      "author": "home",
+      "text": "Library/Score port done (uncommitted, for review): new web/src/data/catalog.ts (records+attachments -> SampleSummary/Manifest, paging, SignedOut), apricity.ts api/manifest/audioUrl on it, library.ts/score.ts empty states + apricity:auth-changed reload, player.ts and flow/peaks.ts audio via files.ts getUrl, tests web/test/catalog.test.ts (+ opt-in catalog.live.test.ts, APRICITY_SERVE_URL) in test:flow, design/storage.md §4.1. Verified locally against apricity serve on a migrated copy: 45 samples match the old /api/samples summaries field-for-field (14 Salamander/voice files absent because migrate does not import them; announcer group is now uploads), chop-shop.apr compiles and renders in the browser from the library. BLOCKERS for saving locally: (1) Virtuus virtuus-amplify validation rejects scalar array fields (tags, lastErrors, aliases) on create/update ('Field tags must be a string', lib.rs ~2761 ignores isArray), so Slice updates and saveScore fail; (2) auth.ts getCurrentUser returns null in local mode ('No authenticated user'), so domain.saveScore bails. Upload: clear message, drop zone hidden in cloud. Cloud mode only unit-tested.",
+      "created_at": "2026-09-25T04:32:04.403339Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "86168b01-72a6-41c5-929a-5fac82c02454",
+      "author": "home",
+      "text": "Reviewed and committed 2026-09-25: tsc, test:flow (57 pass), contract:check, auth tests, build pass; Library and Score tabs verified in the browser against a migrated library via apricity serve. Cloud mode is unit-tested only until someone signs in.",
+      "created_at": "2026-09-25T04:36:52.386701Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.367182Z",
-  "updated_at": "2026-09-25T04:16:57.546608Z",
+  "updated_at": "2026-09-25T04:36:52.386721Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
