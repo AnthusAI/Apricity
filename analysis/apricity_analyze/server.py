@@ -244,7 +244,10 @@ def app_files(rel: str):
 def main():
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=5181, log_level="warning")
+    import os
+
+    # 5181 unless the launcher assigns another port (PORT); the web dev server proxies to APRICITY_API_PORT.
+    uvicorn.run(app, host="127.0.0.1", port=int(os.environ.get("PORT") or 5181), log_level="warning")
 
 
 if __name__ == "__main__":

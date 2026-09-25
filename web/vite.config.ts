@@ -1,10 +1,10 @@
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
 
-// The API and files come from the Python server (apricity_analyze.server on :5181).
+// The API and files come from the Python server (apricity_analyze.server on :5181, or APRICITY_API_PORT).
 // Cross-origin isolation keeps SharedArrayBuffer and precise timers available to the audio code.
 const isolation = { "Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "require-corp" };
-const api = "http://127.0.0.1:5181";
+const api = `http://127.0.0.1:${process.env.APRICITY_API_PORT || 5181}`;
 
 export default defineConfig({
   server: {
