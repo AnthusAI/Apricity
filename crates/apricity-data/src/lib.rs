@@ -30,7 +30,7 @@ pub use library::Library;
 #[cfg(feature = "storage")]
 pub use loader::make;
 #[cfg(feature = "storage")]
-pub use migration::{MigrationError, MigrationReport, migrate};
+pub use migration::{MigrationError, MigrationReport, migrate, migrate_with_sources};
 pub use position::{
     generate_key_between, generate_key_between_with_alphabets, generate_n_keys_between,
     generate_n_keys_between_with_alphabets,

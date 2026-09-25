@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-"""Bake the landing page's hero story from real material: examples/chop-shop.apr.
+"""Bake the landing page's hero story from real material: examples/hero.apr.
 
-Writes web/src/ui/flow/hero-data.json with, for the break (track `b`) and the horns (track `h`):
-the waveform around each slice (min/max peaks, as bytes), the beats the analysis found, the
-transients in the audio, the slice, its chops, and every place a chop lands in the compiled score
-(with its transposition).
+Writes web/src/ui/flow/hero-data.json with, for the horns (track `h`): the waveform around their
+slice (min/max peaks, as bytes), the beats the analysis found, the transients in the audio, the
+slice, its chops, and every place a chop lands in the compiled score (with its transposition). For
+the drum kit (the Salamander one-shots on the `drums.*` tracks), the pads laid end to end as one
+strip, each pad a "chop", and every hit in the score mapped back to its pad.
 
 It also writes the story's sound INTO A LIBRARY (the folder `apricity migrate` makes), as ordinary
 library files under the fixed key prefix `hero/` (design/storage.md section 3.3: the library's
 `files/` folder holds exactly the S3 keys):
 
-    files/hero/brk-source.mp3   the drums stem window as recorded, levelled to about -18 dBFS RMS
-    files/hero/horns-source.mp3 the horns (other) stem window, likewise
-    files/hero/b-track.mp3      track b of examples/chop-shop.apr rendered alone by the real engine
-    files/hero/h-track.mp3      track h likewise
+    files/hero/horns-source.mp3  the horns (other) stem window as recorded, levelled to about -18 dBFS RMS
+    files/hero/drums-source.mp3  the kit's pads end to end, as recorded, likewise
+    files/hero/h-track.mp3       track h of examples/hero.apr rendered alone by the real engine
+    files/hero/drums-track.mp3   every drums.* track, rendered together
 
 The tracks carry the gain (gain_db in hero-data.json) that puts each back at its level in the full
 mix. Being plain non-dot files they are picked up by `apricity sync push`, are served at
@@ -44,16 +45,20 @@ import numpy as np
 import soundfile as sf
 
 ROOT = Path(__file__).resolve().parent.parent
-SCORE = ROOT / "examples/chop-shop.apr"
+SCORE = ROOT / "examples/hero.apr"
 OUT = ROOT / "web/src/ui/flow/hero-data.json"
 HERO_PREFIX = "hero"  # library key prefix of the hero audio: files/hero/<name>.mp3
-NEEDS_LIBRARY = "the library lacks the Thunderer stems the hero is cut from: run apricity migrate / fetch"
+NEEDS_LIBRARY = "the library lacks the Thunderer stems or the Salamander kit the hero is cut from: run apricity sources fetch salamander-drumkit, then apricity migrate"
 COLUMNS = 600  # peak columns across each source window
 
-# The two stories the hero tells, in order: which track, and how its slice was cut.
+PAD_SECONDS = 0.45  # each kit pad's stretch in the strip the story shows and plays
+PAD_ORDER = ["kick", "snare", "ghost", "stick", "hat", "open", "tom", "floor", "crash"]
+
+# The two stories the hero tells, in order: a sliced loop (its track, and how its slice was cut),
+# then a kit of one-shots (the tracks that play its pads).
 STORIES = [
-    {"track": "b", "name": "brk", "title": "The Thunderer — drums", "credit": "Sousa, 1889 · US Marine Band · drum stem", "slice": "break", "chop_beats": 0.5, "key": False},
-    {"track": "h", "name": "horns", "title": "The Thunderer — horns", "credit": "Sousa, 1889 · US Marine Band · horn stem", "slice": "riff", "chop_beats": 1.0, "key": True},
+    {"kind": "loop", "lane": "h", "tracks": ["h"], "name": "horns", "title": "The Thunderer — horns", "credit": "Sousa, 1889 · US Marine Band · horn stem", "slice": "riff", "chop_beats": 1.0, "key": True},
+    {"kind": "kit", "lane": "drums", "tracks": ["drums.kick", "drums", "drums.hat", "drums.open", "drums.crash"], "name": "drums", "title": "Salamander Drumkit — drums", "credit": "Alexander Holm · CC BY-SA 3.0 · one-shots, overhead mic", "slice": "kit"},
 ]
 
 
@@ -130,7 +135,7 @@ def score_text() -> str:
 
 
 def compile_score(tmp: Path):
-    score = tmp / "chop-shop.apr"
+    score = tmp / "hero.apr"
     score.write_text(score_text())
     out = subprocess.run([str(EXE), "compile", str(score)], capture_output=True, text=True)
     if out.returncode != 0:
@@ -146,7 +151,7 @@ def render_tracks(tracks: list[str], tmp: Path):
     """Render the score with only `tracks`, return (wav, master make-up dB)."""
     text = score_text()
     keep = [ln for ln in text.splitlines() if not (m := re.match(r"track\s+(\S+)", ln)) or m.group(1) in tracks]
-    score = tmp / f"{'-'.join(tracks)}.apr"
+    score = tmp / f"{'-'.join(tracks)[:80]}.apr"
     score.write_text("\n".join(keep) + "\n")
     wav = score.with_suffix(".wav")
     out = subprocess.run([str(EXE), "render", str(score), "-o", str(wav)], capture_output=True, text=True, check=True)
@@ -227,36 +232,98 @@ def main():
         bake(library, AUDIO, Path(t))
 
 
+def kit_strip(tl, story, tmp: Path):
+    """A kit of one-shots, told like a recording: its pads end to end, PAD_SECONDS each."""
+    kit = next(t for t in tl["tracks"] if t["name"] == story["lane"])
+    by_name = {p["name"]: p for p in kit["pieces"]}
+    used = {name for t in story["tracks"] for name in hits_of(tl, t, kit)}
+    pads = [n for n in PAD_ORDER if n in used] + sorted(used - set(PAD_ORDER))
+    sr, strip = 48000, []
+    for name in pads:
+        path = Path(tl["sources"][by_name[name]["source"]]["path"])
+        x, r = sf.read(str(path), frames=int(PAD_SECONDS * sf.info(str(path)).samplerate), always_2d=True)
+        x = x.mean(axis=1)
+        if r != sr:
+            x = np.interp(np.arange(int(len(x) * sr / r)) * r / sr, np.arange(len(x)), x)
+        x = np.pad(x, (0, max(0, int(PAD_SECONDS * sr) - len(x))))[: int(PAD_SECONDS * sr)]
+        fade = int(0.03 * sr)
+        x[-fade:] *= np.linspace(1, 0, fade)
+        strip.append(x)
+    wav = tmp / "kit-strip.wav"
+    sf.write(str(wav), np.concatenate(strip), sr)
+    return wav, pads, kit
+
+
+def hits_of(tl, track: str, kit) -> list[str]:
+    """The pad each note of a kit track plays: `drums` names its pad per note, `drums.hat` is one pad."""
+    evs = [e for e in tl["events"] if e["track"] == track]
+    if "." in track:
+        return [track.split(".", 1)[1]] * len(evs)
+    return [kit["pieces"][e["piece"]]["name"] for e in evs]
+
+
 def bake(library: Path, AUDIO: Path, tmp: Path):
     link_samples(library, tmp)
     tl = compile_score(tmp)
     sources = []
     tiles = []
+    strips = {}
     for n, story in enumerate(STORIES):
-        track = next(t for t in tl["tracks"] if t["name"] == story["track"])
-        evs = [e for e in tl["events"] if e["track"] == story["track"]]
+        if story["kind"] == "kit":
+            wav, pads, kit = kit_strip(tl, story, tmp)
+            total = round(len(pads) * PAD_SECONDS, 4)
+            chops = [[round(i * PAD_SECONDS, 4), round((i + 1) * PAD_SECONDS, 4)] for i in range(len(pads))]
+            strips[story["name"]] = wav
+            first = next(p for p in kit["pieces"] if p["name"] == pads[0])
+            sources.append({
+                "id": story["name"],
+                "kind": "kit",
+                "title": story["title"],
+                "credit": story["credit"],
+                "path": KEYS[Path(tl["sources"][first["source"]]["path"]).relative_to(SAMPLES).as_posix()],
+                "window": [0, total],
+                "peaks": peaks(wav, 0, total),
+                "beats": [],
+                "downbeats": [],
+                "transients": [c[0] for c in chops],
+                "bpm": tl["tempo"],
+                "meter": tl["meter"],
+                "key": None,
+                "tuning_cents": 0,
+                "slice": {"name": story["slice"], "from": 0, "to": total, "machine": story["slice"]},
+                "chop_beats": 0,
+                "chops": chops,
+                "pads": pads,
+                "lane": story["lane"],
+            })
+            for track in story["tracks"]:
+                evs = [e for e in tl["events"] if e["track"] == track]
+                for e, pad in zip(evs, hits_of(tl, track, kit)):
+                    tiles.append({"source": n, "chop": pads.index(pad), "start": round(e["start_beat"], 4), "dur": round(e["dur_beats"], 4), "semitones": 0, "cont": False})
+            continue
+        track = next(t for t in tl["tracks"] if t["name"] == story["lane"])
+        evs = [e for e in tl["events"] if e["track"] in story["tracks"]]
         src = tl["sources"][evs[0]["source"]]
         audio = Path(src["path"])
         rel = audio.relative_to(SAMPLES).as_posix()
         m = json.loads(Path(str(audio) + ".apricity.json").read_text())
         beats = m["rhythm"]["beats"]
 
-        # The slice the score chops, and its chops (equal steps in clip beats).
+        # The region the score slices (a saved loop, or the clip's `beats a..b`), and its chops.
         first = min(e["src_start"] for e in evs)
-        slice_ = next(s for s in m["annotations"]["clips"] if s["start"] <= first + 1e-6 < s["end"] and s["name"].startswith("loop"))
-        b0, b1 = sec_to_beat(beats, slice_["start"]), sec_to_beat(beats, slice_["end"])
-        count = track["chops"]
-        step = (b1 - b0) / count
-        chops = [[round(beat_to_sec(beats, b0 + i * step), 4), round(beat_to_sec(beats, b0 + (i + 1) * step), 4)] for i in range(count)]
-        chops[0][0], chops[-1][1] = slice_["start"], slice_["end"]
+        loop = next((s for s in m["annotations"]["clips"] if s["start"] <= first + 1e-6 < s["end"] and s["name"].startswith("loop")), None)
+        pieces = track["pieces"]
+        slice_ = {"name": loop["name"] if loop else "beats", "start": pieces[0]["src_start"], "end": pieces[-1]["src_end"], "tags": (loop or {}).get("tags", [])}
+        chops = [[round(p["src_start"], 4), round(p["src_end"], 4)] for p in pieces]
 
         # A window of context around the slice: one slice-length either side.
         span = slice_["end"] - slice_["start"]
         w0, w1 = slice_["start"] - span, slice_["end"] + span
         in_w = lambda s: w0 <= s <= w1
-        loop_key = next((t for t in slice_.get("tags", []) if t[:1].isupper()), None) if story["key"] else None
+        loop_key = track.get("region_key") if story["key"] else None
         sources.append({
             "id": story["name"],
+            "kind": "loop",
             "title": story["title"],
             "credit": story["credit"],
             "path": KEYS[rel],  # the library key of the recording, never a machine path
@@ -272,7 +339,7 @@ def bake(library: Path, AUDIO: Path, tmp: Path):
             "slice": {"name": story["slice"], "from": slice_["start"], "to": slice_["end"], "machine": slice_["name"]},
             "chop_beats": story["chop_beats"],
             "chops": chops,
-            "lane": story["track"],
+            "lane": story["lane"],
         })
 
         # Every event, mapped back to the chop it plays. Events split at a chord change start
@@ -280,7 +347,7 @@ def bake(library: Path, AUDIO: Path, tmp: Path):
         for e in evs:
             s = e["src_start"]
             i = next((k for k, (a, b) in enumerate(chops) if a - 0.01 <= s < b - 0.005), None)
-            assert i is not None, f"event at {s}s is in no chop of {story['track']}"
+            assert i is not None, f"event at {s}s is in no chop of {story['lane']}"
             tiles.append({
                 "source": n,
                 "chop": i,
@@ -299,19 +366,23 @@ def bake(library: Path, AUDIO: Path, tmp: Path):
     # The sound: each source window, and each track alone, rendered by the engine.
     AUDIO.mkdir(parents=True, exist_ok=True)
     audio = {"sources": [], "tracks": []}
+    tracks_of = {st["name"]: st["tracks"] for st in STORIES}
     for src in sources:
         name = f"{src['id']}-source.mp3"
-        source_audio(SAMPLES / next(k for k, v in KEYS.items() if v == src["path"]), *src["window"], AUDIO / name, tmp)
+        if src["kind"] == "kit":
+            source_audio(strips[src["id"]], *src["window"], AUDIO / name, tmp)
+        else:
+            source_audio(SAMPLES / next(k for k, v in KEYS.items() if v == src["path"]), *src["window"], AUDIO / name, tmp)
         audio["sources"].append(f"{HERO_PREFIX}/{name}")
-    _, full = render_tracks([s["lane"] for s in sources], tmp)
+    _, full = render_tracks([t for src in sources for t in tracks_of[src["id"]]], tmp)
     for src in sources:
-        wav, makeup = render_tracks([src["lane"]], tmp)
+        wav, makeup = render_tracks(tracks_of[src["id"]], tmp)
         name = f"{src['lane']}-track.mp3"
         mp3(wav, AUDIO / name)
         audio["tracks"].append({"key": f"{HERO_PREFIX}/{name}", "gain_db": round(full - makeup, 2)})
 
     data = {
-        "score": "examples/chop-shop.apr",
+        "score": "examples/hero.apr",
         "audio": audio,
         "tempo": tl["tempo"],
         "meter": tl["meter"],

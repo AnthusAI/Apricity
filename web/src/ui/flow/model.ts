@@ -11,6 +11,7 @@ export interface FlowChord {
 
 export interface FlowSource {
   id: string;
+  kind?: "loop" | "kit"; // a sliced recording, or a kit of one-shots laid end to end (one pad per chop)
   title: string;
   credit: string;
   path: string;
@@ -27,6 +28,7 @@ export interface FlowSource {
   chop_beats: number;
   chops: [number, number][]; // seconds
   lane: string; // the score track its chops play on
+  pads?: string[]; // a kit's pad names, one per chop
 }
 
 export interface FlowTile {

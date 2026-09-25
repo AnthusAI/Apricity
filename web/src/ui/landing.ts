@@ -121,7 +121,7 @@ export class Landing {
           { className: "band credits" },
           el("p", {
             innerHTML:
-              'Recordings from the <a href="https://citizen-dj.labs.loc.gov/" target="_blank" rel="noopener">Library of Congress Citizen DJ</a> project and “The President’s Own” <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/" target="_blank" rel="noopener">United States Marine Band</a>, all in the public domain. Time-stretching by Rubber Band; analysis by Essentia, Beat This! and Basic Pitch; stems by Demucs. Apricity is free software under the GPL.',
+              'Recordings from the <a href="https://citizen-dj.labs.loc.gov/" target="_blank" rel="noopener">Library of Congress Citizen DJ</a> project and “The President’s Own” <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/" target="_blank" rel="noopener">United States Marine Band</a>, all in the public domain. Drums from the <a href="https://archive.org/details/SalamanderDrumkit" target="_blank" rel="noopener">Salamander Drumkit</a> by Alexander Holm (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>). Time-stretching by Rubber Band; analysis by Essentia, Beat This! and Basic Pitch; stems by Demucs. Apricity is free software under the GPL.',
           }),
         ),
       ),
@@ -139,7 +139,7 @@ export class Landing {
     this.stage.setAttribute("role", "img");
     this.stage.setAttribute(
       "aria-label",
-      "Animation: two stems of Sousa's The Thunderer are analyzed, cut into clips, sliced onto pads, and placed into a new composition, warped to one tempo and transposed to follow its chords.",
+      "Animation: a groove of horn stabs and drums plays; then the horn stem of Sousa's The Thunderer is analyzed, cut into a clip, sliced onto pads and placed into the composition, warped to one tempo and transposed to follow its chords, and drum one-shots from the Salamander Drumkit are laid onto pads and played by step patterns.",
     );
     const nav = el("nav", { className: "chapters", ariaLabel: "Story chapters" });
     this.chapters = CHAPTERS.map((c, i) => {
@@ -158,13 +158,13 @@ export class Landing {
       "ol",
       { className: "sr-only" },
       ...[
-        "Listen: a recording is analyzed for its beats, tempo, key and tuning.",
+        "Groove: the finished piece plays, full from the first bar, a different rhythm every bar.",
+        "Listen: a horn recording is analyzed for its beats, tempo, key and tuning.",
         "Clip: you mark the part you want as a clip; the selection snaps to the beat.",
         "Slice: the clip is sliced into equal pieces, one on each pad of a kit.",
-        "Warp: a step pattern plays the pads in the composition, stretched to its tempo.",
-        "Again: a second recording goes through the same steps.",
-        "Tune: its slices are transposed to follow the chords.",
-        "Play: the finished piece plays, each sound lit back to where it came from.",
+        "Warp: a step pattern plays the pads, stretched to the piece's tempo and transposed to follow its chords.",
+        "Kit: drum one-shots go onto pads of their own and play as recorded, from step patterns.",
+        "Play: the finished piece plays again, each sound lit back to where it came from.",
       ].map((t) => el("li", {}, t)),
     );
     this.soundButton("checking");

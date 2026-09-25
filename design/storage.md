@@ -392,7 +392,7 @@ Nothing analyses in the cloud. Local `apricity serve` serves the library's `file
 `/files/<key>`; the web app's cloud mode adds the `files/` prefix, so app paths are identical in both.
 
 - **Hero audio:** the landing hero's four MP3s are ordinary library files under `hero/` (`files/hero/*.mp3`,
-  key `hero/<name>.mp3`), written by `scripts/hero-data.py --library <dir>` from the library's own stems and
+  key `hero/<name>.mp3`), written by `scripts/hero-data.py --library <dir>` from `examples/hero.apr`: the library's Thunderer horn stem and Salamander Drumkit one-shots (`apricity sources fetch salamander-drumkit`, then `apricity migrate`), and
   never committed. The app reads them through `web/src/data/files.ts`; where the library lacks them the hero
   plays silent and its sound button says so. `scripts/hero-smoke.sh` checks the path end to end.
 - **Never synced (machine-local):** any path with a dot-prefixed segment (`.virtuus/`, the sync state

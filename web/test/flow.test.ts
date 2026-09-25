@@ -30,13 +30,15 @@ test("layout: sources stack from the top, lanes sit at the bottom", () => {
   assert.equal(hidden.sources[0].chops.h, 0, "a source not shown yet takes no room");
 });
 
-test("hero data: two real sources, every tile mapped to a chop", () => {
+test("hero data: the horns, then a drum kit, every tile mapped to a chop", () => {
   const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
   assert.equal(d.sources.length, 2);
-  assert.deepEqual(d.sources.map((s: { chops: unknown[] }) => s.chops.length), [8, 4]);
+  assert.deepEqual(d.sources.map((s: { chops: unknown[] }) => s.chops.length), [4, 9]);
+  assert.deepEqual(d.sources.map((s: { kind: string }) => s.kind), ["loop", "kit"]);
+  assert.equal(d.sources[1].pads.length, d.sources[1].chops.length, "one named pad per kit chop");
   for (const s of d.sources) assert.equal(Buffer.from(s.peaks, "base64").length, 1200);
   for (const t of d.tiles) assert.ok(t.chop >= 0 && t.chop < d.sources[t.source].chops.length);
-  const horns = d.tiles.filter((t: { source: number }) => t.source === 1);
+  const horns = d.tiles.filter((t: { source: number }) => t.source === 0);
   assert.ok(horns.some((t: { semitones: number }) => t.semitones !== 0), "the horns are transposed to the chords");
 });
 
@@ -46,7 +48,7 @@ test("hero data: library keys only, no machine paths", async () => {
   assert.ok(!/\/Users\/|\/home\/|\/private\/|\/var\/|[A-Za-z]:\\/.test(text), "no absolute path anywhere in the baked data");
   const d = JSON.parse(text);
   for (const s of d.sources) assert.ok(isLibraryKey(s.path), `${s.path} is a library key`);
-  assert.deepEqual(audioKeys(d.audio), ["hero/brk-source.mp3", "hero/horns-source.mp3", "hero/b-track.mp3", "hero/h-track.mp3"]);
+  assert.deepEqual(audioKeys(d.audio), ["hero/horns-source.mp3", "hero/drums-source.mp3", "hero/h-track.mp3", "hero/drums-track.mp3"]);
   for (const k of audioKeys(d.audio)) assert.ok(isLibraryKey(k) && k.startsWith("hero/") && k.endsWith(".mp3"), k);
   assert.equal(d.audio.sources.length, d.sources.length, "one source window per source");
   assert.equal(d.audio.tracks.length, d.sources.length, "one track render per source");
@@ -88,7 +90,7 @@ test("sound: an unreachable library is reported as a status, never thrown", asyn
   try {
     assert.equal(await soundStatus(d.audio, at), 404);
     assert.equal(seen.length, 1, "stops at the first missing file: one failed request");
-    assert.equal(seen[0], "http://localhost/files/hero/brk-source.mp3");
+    assert.equal(seen[0], "http://localhost/files/hero/horns-source.mp3");
     globalThis.fetch = (async () => {
       throw new TypeError("network down");
     }) as typeof fetch;
@@ -107,12 +109,16 @@ test("hero story cues: each step is heard, in order", async () => {
   const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
   const cues = new Story(d).cues();
   assert.deepEqual(cues.map((c) => c.t), [...cues.map((c) => c.t)].sort((a, b) => a - b), "sorted by time");
-  const listen = cues.filter((c) => c.kind === "source" && c.offset === 0);
-  assert.deepEqual(listen.map((c) => c.dur), d.sources.map((s: { window: number[] }) => s.window[1] - s.window[0]), "each recording is heard whole while it's analyzed");
+  d.sources.forEach((s: { window: number[] }, n: number) =>
+    assert.ok(cues.some((c) => c.kind === "source" && c.index === n && c.offset === 0 && c.dur === s.window[1] - s.window[0]), `source ${n} is heard whole while it's analyzed`),
+  );
   const chops = cues.filter((c) => c.kind === "source" && c.dur < 1);
-  assert.equal(chops.length, 8 + 4, "every chop is heard as it's cut");
+  assert.equal(chops.length, 4 + 9, "every chop and pad is heard as it's cut");
   const loops = cues.filter((c) => c.loop);
-  assert.equal(loops.length, 3, "the drums alone, then both tracks together");
+  assert.equal(loops.length, 5, "the whole groove, the horns alone, then the whole groove again");
+  const opening = cues.filter((c) => c.t === 0);
+  assert.deepEqual(opening.map((c) => c.index).sort(), [0, 1], "the very first sound is every track together");
+  assert.ok(opening.every((c) => c.kind === "track" && c.loop && c.dur >= (d.beats * 60) / d.tempo - 1), "a full pass of the piece");
   for (const c of cues.filter((c) => c.kind === "track" && !c.loop)) assert.ok(c.offset + c.dur <= (d.beats * 60) / d.tempo + 1e-6, "landings stay inside the render");
 });
 

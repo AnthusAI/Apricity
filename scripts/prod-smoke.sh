@@ -68,7 +68,7 @@ s3get() { # key -> exit status of a ranged GET as the guest
         aws s3api get-object --bucket "$BUCKET" --key "$1" --range bytes=0-0 --region "$REGION" "$WORK/obj" >"$WORK/s3.out" 2>"$WORK/s3.err"
 }
 
-for k in files/hero/brk-source.mp3 files/hero/horns-source.mp3 files/hero/b-track.mp3 files/hero/h-track.mp3; do
+for k in files/hero/horns-source.mp3 files/hero/drums-source.mp3 files/hero/h-track.mp3 files/hero/drums-track.mp3; do
     s3get "$k"; check "guest can read $k" $?
 done
 # Nothing else is public: a record and an audio file must be denied.

@@ -131,7 +131,7 @@ YAML follows the same words:
   - rows are samples, kits (pads holding slices or clips) and tracks;
   - the info line uses the new words ("slice 3 on pad b.3, from Thunderer/drums at 2:28.24");
   - the editor highlights the new keywords.
-- **Landing hero:** the chapters become Listen · Clip · Slice · Warp · Again · Tune · Play, and the captions are updated.
+- **Landing hero:** the chapters are Groove · Listen · Clip · Slice · Warp · Kit · Play (the story opens on the finished `examples/hero.apr` groove), and the captions use the new words.
 - **Docs:** concepts, language, YAML, glossary and tools are rewritten in the new words, with a short
   "Coming from Live" table in concepts.
 

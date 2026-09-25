@@ -24,6 +24,20 @@
       ],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "library",
+      "runtimeExecutable": "target/release/apricity",
+      "runtimeArgs": [
+        "serve",
+        "--library",
+        "/Users/home/Apricity-Library",
+        "--port",
+        "5190",
+        "--web",
+        "web/dist"
+      ],
+      "port": 5190
     }
   ]
 }

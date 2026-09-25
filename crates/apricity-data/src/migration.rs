@@ -252,6 +252,7 @@ fn recording_key(rel: &str) -> (String, String) {
         ["marine-band", "scores", file] | ["marine-band", file] => {
             (format!("rec_{}", stem_of(file)), "marine-band".into())
         }
+        ["salamander-drumkit", ..] => ("rec_salamander-drumkit".into(), "salamander-drumkit".into()),
         ["citizen-dj", coll, file] => {
             let item = loc_item(file).unwrap_or_else(|| stem_of(file));
             (format!("rec_{coll}_{item}"), format!("citizen-dj/{coll}"))
@@ -296,6 +297,18 @@ pub fn migrate(
     library_path: impl AsRef<Path>,
     use_link: bool,
 ) -> Result<MigrationReport> {
+    migrate_with_sources(repo_root, engine, library_path, use_link, &[])
+}
+
+/// [`migrate`], with more `sources.json`-shaped entries (path, title, credit, rights,
+/// source_page, url) than `samples/sources.json` holds: the predefined download sources.
+pub fn migrate_with_sources(
+    repo_root: impl AsRef<Path>,
+    engine: &mut Engine,
+    library_path: impl AsRef<Path>,
+    use_link: bool,
+    extra_sources: &[Value],
+) -> Result<MigrationReport> {
     let repo = repo_root.as_ref();
     let mut report = MigrationReport::default();
     let mut ctx = Ctx {
@@ -309,7 +322,8 @@ pub fn migrate(
     let mut files = FsFiles::new(library_path.as_ref().join("files"));
     let samples = repo.join("samples");
 
-    let sources = load_sources(&samples)?;
+    let mut sources = load_sources(&samples)?;
+    sources.extend(extra_sources.iter().cloned());
     let mut plans = discover_clips(&samples)?;
     assign_ids(&mut plans)?;
 
@@ -1036,4 +1050,19 @@ fn walk(dir: &Path, visit: &mut dyn FnMut(&Path)) -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod recording_key_tests {
+    use super::recording_key;
+
+    #[test]
+    fn every_salamander_sample_belongs_to_one_recording() {
+        for rel in ["salamander-drumkit/OH/kick_OH_F_1.wav", "salamander-drumkit/ALL.sfz"] {
+            assert_eq!(
+                recording_key(rel),
+                ("rec_salamander-drumkit".to_string(), "salamander-drumkit".to_string())
+            );
+        }
+    }
 }
