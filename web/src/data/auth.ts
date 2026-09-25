@@ -253,6 +253,15 @@ export function googleAvailable(): boolean {
   return Array.isArray(providers) ? providers.some((p) => String(p).toLowerCase() === "google") : true;
 }
 
+/**
+ * True unless the pool was built without email sign-in (Google-only): then the dialog offers only Google and
+ * never shows the password or create-account forms.
+ */
+export function emailLoginAvailable(): boolean {
+  if (mode() === "local") return false;
+  return (Amplify.getConfig() as any)?.Auth?.Cognito?.loginWith?.email !== false;
+}
+
 /** Email + group info for the signed-in user; null when signed out (never throws). */
 export async function currentAccount(): Promise<Account | null> {
   if (mode() === "local") return null;

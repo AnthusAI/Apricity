@@ -11,6 +11,7 @@ export interface AccountDeps {
   cloud: () => boolean;
   currentAccount: () => Promise<Account | null>;
   googleAvailable: () => boolean;
+  emailLoginAvailable: () => boolean;
   signInWithPassword: (email: string, password: string) => Promise<AuthStep>;
   signUpWithPassword: (email: string, password: string) => Promise<AuthStep>;
   confirmSignUpCode: (email: string, code: string) => Promise<void>;
@@ -27,6 +28,7 @@ export function realDeps(isCloud: () => boolean): AccountDeps {
     cloud: isCloud,
     currentAccount: auth.currentAccount,
     googleAvailable: auth.googleAvailable,
+    emailLoginAvailable: auth.emailLoginAvailable,
     signInWithPassword: auth.signInWithPassword,
     signUpWithPassword: auth.signUpWithPassword,
     confirmSignUpCode: auth.confirmSignUpCode,
@@ -146,10 +148,10 @@ export class AccountControl {
     return el("button", { className: "acct-link", type: "button", onclick }, text);
   }
 
-  private google(): HTMLElement[] {
+  private google(withDivider = true): HTMLElement[] {
     if (!this.deps.googleAvailable()) return [];
     return [
-      el("div", { className: "acct-or" }, "or"),
+      ...(withDivider ? [el("div", { className: "acct-or" }, "or")] : []),
       el(
         "button",
         {
@@ -169,7 +171,19 @@ export class AccountControl {
   }
 
   private render() {
-    if (this.view === "signin") {
+    if (this.view === "signin" && !this.deps.emailLoginAvailable() && this.deps.googleAvailable()) {
+      // Google-only pool: no password or create-account forms at all.
+      this.dlg.replaceChildren(
+        el(
+          "div",
+          { className: "acct-form" },
+          el("h2", { id: "acct-title" }, "Sign in"),
+          el("p", { className: "acct-error", role: "alert" }),
+          ...this.google(false),
+          el("div", { className: "acct-actions" }, el("button", { className: "btn", type: "button", onclick: () => this.dlg.close() }, "Cancel")),
+        ),
+      );
+    } else if (this.view === "signin") {
       this.dlg.replaceChildren(
         this.form(
           "Sign in",

@@ -32,9 +32,12 @@ function resolveCognitoDomainPrefix(): string | undefined {
   return undefined;
 }
 
-// Google sign-in needs the branch secrets GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, which only exist once the
-// owner has created a Google OAuth client. Until APRICITY_GOOGLE_AUTH=true is set for the branch, the app uses
-// email sign-in only (still restricted by the pre-sign-up allow-list).
+// Sign-in is Google only. Cognito is still the identity store underneath (Amplify's auth is always a user pool;
+// Google federates through it), but no email/password sign-up exists once Google is on. Google needs the branch
+// secrets GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, which exist once the owner has created a Google OAuth client;
+// until APRICITY_GOOGLE_AUTH=true is set for the branch, the pool falls back to email sign-in only so the site can
+// deploy (still restricted by the pre-sign-up allow-list). Switching the login methods replaces the user pool, so
+// do it before anyone has signed up.
 function googleAuthEnabled(): boolean {
   return typeof process !== "undefined" && process.env.APRICITY_GOOGLE_AUTH === "true";
 }
@@ -46,24 +49,21 @@ const oauthUrls = {
 };
 
 export const auth = defineAuth({
-  loginWith: {
-    email: true,
-    ...(googleAuthEnabled()
-      ? {
-          externalProviders: {
-            google: {
-              clientId: secret("GOOGLE_CLIENT_ID"),
-              clientSecret: secret("GOOGLE_CLIENT_SECRET"),
-              scopes: ["email", "profile", "openid"],
-              attributeMapping: {
-                email: "email",
-              },
+  loginWith: googleAuthEnabled()
+    ? {
+        externalProviders: {
+          google: {
+            clientId: secret("GOOGLE_CLIENT_ID"),
+            clientSecret: secret("GOOGLE_CLIENT_SECRET"),
+            scopes: ["email", "profile", "openid"],
+            attributeMapping: {
+              email: "email",
             },
-            ...oauthUrls,
           },
-        }
-      : {}),
-  },
+          ...oauthUrls,
+        },
+      }
+    : { email: true },
   groups: ["members", "curators", "admins"],
   triggers: {
     preSignUp,
