@@ -15,9 +15,38 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2c7951bd-4e80-42f4-9f4c-e334387ebbd4",
+      "author": "home",
+      "text": "Migration module complete: apricity-data::migrate function, apricity-cli migrate command, comprehensive tests (idempotence, counts, empty repo), scripts/check-migration.sh. Ready for Verify.",
+      "created_at": "2026-09-25T00:49:49.935286Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "0119af9a-c09e-46c8-be7b-e835d7c580f3",
+      "author": "home",
+      "text": "Root cause of check-migration.sh 'WAVs differ': not float precision. (1) the script's 'if ! cd $REPO && apricity render' parses as '(! cd) && render', so the from-files render never ran and cmp compared a missing file; (2) compiled Timelines from files vs library are identical except the audio path. Rewrote the script, migration.rs (real ids, recordings per piece, stems, aliases, analysis sha, candidates via candidate_id, markers, ScoreRefs, verdicts/crates from library/*.json) and the loader (annotations.clips key, aliases, paging). Scratch tests removed. Writing tests next.",
+      "created_at": "2026-09-25T01:39:00.414736Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "c9335b6c-90d9-489c-8edd-643872ddbfbb",
+      "author": "home",
+      "text": "Ready for review. check-migration.sh: 8 identical, 0 failed (release binary). migrate twice with --link: run 2 reports 0 changes. cargo test -p apricity-data -p apricity-cli all pass (migration.rs 15 tests, migrate_cli.rs 3). Clippy clean for my code; pre-existing warnings remain in domain.rs, library.rs, rank.rs, position.rs, score_refs.rs, markup.rs, tests/domain.rs, tests/loader_integration.rs and other crates (apricity-dsp, apricity-score fail -D warnings). Upstream issue: Virtuus validate_record treats array fields (tags, aliases, ...) as strings, so migration writes array-bearing records through Table::put.",
+      "created_at": "2026-09-25T01:43:26.162002Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "9dd88b80-266a-4d52-b122-75903414a938",
+      "author": "home",
+      "text": "Reviewed by storage-lead: cargo test -p apricity-data -p apricity-cli passes; check-migration.sh 8 identical; second migrate run 0 changes. Follow-ups: Virtuus validate_record treats array fields as strings (migration writes via Table::put); save_score_impl swallows ScoreRef errors.",
+      "created_at": "2026-09-25T01:44:06.999252Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-24T04:45:39.004984Z",
-  "updated_at": "2026-09-24T04:45:51.179754Z",
+  "updated_at": "2026-09-25T01:44:06.999272Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
