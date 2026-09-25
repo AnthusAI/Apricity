@@ -1,6 +1,6 @@
 // The Flow model: source clips → the slices cut from them → their chops → where each chop lands
 // in the composition. The landing page's hero story is drawn from it (baked by
-// scripts/hero-data.py); the Score tab's Flow view will fill it from a live compiled timeline.
+// scripts/hero-data.py, which also writes its sound into the library); the Score tab's Flow view will fill it from a live compiled timeline.
 
 export interface FlowChord {
   start: number; // score beats
@@ -39,8 +39,8 @@ export interface FlowTile {
 }
 
 export interface FlowAudio {
-  sources: string[]; // per source: its window, as recorded (URLs relative to the app's base)
-  tracks: { url: string; gain_db: number }[]; // per source: its track rendered alone, and the gain back to mix level
+  sources: string[]; // per source: its window as recorded, a library key (files/<key>)
+  tracks: { key: string; gain_db: number }[]; // per source: its track rendered alone (a library key), and the gain back to mix level
 }
 
 export interface FlowData {

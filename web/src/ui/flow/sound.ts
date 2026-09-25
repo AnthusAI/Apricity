@@ -2,10 +2,34 @@
 // in step with the pictures. While it's on, the audio clock is the story's clock, so the two can't
 // drift: the page asks now() for the story time instead of counting frames.
 
+import { getUrl } from "../../data/files";
+import { audioKeys as audioKeysOf, isAudioStatus, isLibraryKey } from "./hero-audio";
 import type { FlowAudio } from "./model";
 import type { Cue } from "./story";
 
 const LOOKAHEAD = 1.2; // seconds of cues scheduled ahead, so a late timer never drops one
+
+type UrlOf = (o: { path: string }) => Promise<{ url: string }>;
+
+/** The bytes of a library key, from wherever the library is served (files.ts maps it to /files/<key> or the bucket). */
+export async function fetchKey(key: string, range?: string, resolve: UrlOf = getUrl): Promise<ArrayBuffer> {
+  if (!isLibraryKey(key)) throw new Error(`not a library key: ${key}`);
+  const { url } = await resolve({ path: key });
+  const res = await fetch(url, range ? { headers: { Range: range } } : undefined);
+  if (!isAudioStatus(res.status)) throw new Error(`${key}: ${res.status}`);
+  return res.arrayBuffer();
+}
+
+/** Is the sound in the library? Asks for one byte of every key; never throws. */
+export async function soundStatus(audio: FlowAudio, resolve: UrlOf = getUrl): Promise<number | null> {
+  try {
+    for (const key of audioKeysOf(audio)) await fetchKey(key, "bytes=0-0", resolve);
+    return 200;
+  } catch (e) {
+    const m = /: (\d{3})$/.exec(String((e as Error)?.message));
+    return m ? Number(m[1]) : null;
+  }
+}
 
 export class StorySound {
   private ctx: AudioContext | null = null;
@@ -25,7 +49,6 @@ export class StorySound {
     private cues: Cue[],
     private loop: number, // story length, seconds
     private trackLoop: number, // length of one pass of a track render, seconds
-    private base = import.meta.env.BASE_URL,
   ) {}
 
   /** Start (loading the sounds the first time), joining the story at `storyT`. Must follow a click. */
@@ -36,8 +59,15 @@ export class StorySound {
       this.out = ctx.createGain();
       this.out.gain.value = 0.85;
       this.out.connect(ctx.destination);
-      const load = async (url: string) => ctx.decodeAudioData(await (await fetch(this.base + url)).arrayBuffer());
-      [this.sources, this.tracks] = await Promise.all([Promise.all(this.audio.sources.map(load)), Promise.all(this.audio.tracks.map((t) => load(t.url)))]);
+      const load = async (key: string) => ctx.decodeAudioData(await fetchKey(key));
+      try {
+        [this.sources, this.tracks] = await Promise.all([Promise.all(this.audio.sources.map(load)), Promise.all(this.audio.tracks.map((t) => load(t.key)))]);
+      } catch (e) {
+        // Leave nothing half-built: the next try starts again.
+        this.ctx = null;
+        void ctx.close();
+        throw e;
+      }
       this.gains = this.audio.tracks.map((t) => 10 ** (t.gain_db / 20));
     }
     await this.ctx.resume();

@@ -6,7 +6,8 @@ import { el } from "./dom";
 import heroData from "./flow/hero-data.json";
 import type { FlowData } from "./flow/model";
 import { readTheme } from "./flow/paint";
-import { StorySound } from "./flow/sound";
+import { soundView, stateAfterProbe, type SoundState } from "./flow/hero-audio";
+import { soundStatus, StorySound } from "./flow/sound";
 import { CHAPTERS, LOOP, STILL, Story, chapterAt } from "./flow/story";
 
 const DEMO = `tempo 100
@@ -61,6 +62,7 @@ export class Landing {
     ? new StorySound((heroData as FlowData).audio!, this.story.cues(), LOOP, (heroData.beats * 60) / heroData.tempo)
     : null;
   private soundBtn = el("button", { type: "button", className: "sound" });
+  private soundState: SoundState = "checking"; // until the library is asked whether it has the sound
 
   constructor(root: HTMLElement, go: LandingActions) {
     this.root = root;
@@ -125,6 +127,7 @@ export class Landing {
       ),
     );
     this.loadStats(stats);
+    void this.probeSound();
     new IntersectionObserver(([e]) => {
       this.visible = e.isIntersecting;
       this.sound?.hold(!this.visible);
@@ -164,7 +167,7 @@ export class Landing {
         "Play: the finished piece plays, each sound lit back to where it came from.",
       ].map((t) => el("li", {}, t)),
     );
-    this.soundButton(false);
+    this.soundButton("checking");
     this.soundBtn.addEventListener("click", () => this.toggleSound());
     const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [this.soundBtn] : []), this.info, nav), steps);
     // Hovering the picture holds it still, to look closer (not while listening: the music goes on).
@@ -174,32 +177,44 @@ export class Landing {
     return fig;
   }
 
-  private soundButton(on: boolean, loading = false) {
+  /** The sound is in the library, or it isn't: the story plays either way, silent when it isn't. */
+  private async probeSound() {
+    if (!this.sound) return;
+    this.soundButton(stateAfterProbe(await soundStatus((heroData as FlowData).audio!)));
+  }
+
+  private soundButton(state: SoundState) {
+    this.soundState = state;
+    const on = state === "on";
+    const v = soundView(state);
     const icon = on
       ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
       : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13.5 8l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-    this.soundBtn.innerHTML = `${icon}<span>${loading ? "Loading…" : on ? "Sound on" : "Turn on sound"}</span>`;
-    this.soundBtn.setAttribute("aria-pressed", String(on));
+    this.soundBtn.innerHTML = `${icon}<span>${v.label}</span>`;
+    this.soundBtn.setAttribute("aria-pressed", String(v.pressed));
+    this.soundBtn.title = v.hint;
+    this.soundBtn.setAttribute("aria-label", v.hint);
     this.soundBtn.classList.toggle("on", on);
-    this.soundBtn.disabled = loading;
+    this.soundBtn.disabled = v.disabled;
   }
 
   private async toggleSound() {
-    if (!this.sound) return;
+    if (!this.sound || this.soundState === "missing" || this.soundState === "checking") return;
     if (this.sound.on) {
       this.storyT = this.sound.now();
       this.sound.disable();
-      this.soundButton(false);
+      this.soundButton("ready");
       return;
     }
-    this.soundButton(false, true);
+    this.soundButton("loading");
     try {
       await this.sound.enable(this.storyT);
       this.paused = false;
-      this.soundButton(true);
+      this.soundButton("on");
       if (!this.raf && this.visible) this.loop();
     } catch {
-      this.soundButton(false);
+      // The library answered the probe but the sound could not be played: silent, and says so.
+      this.soundButton("missing");
     }
   }
 

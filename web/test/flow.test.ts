@@ -40,6 +40,68 @@ test("hero data: two real sources, every tile mapped to a chop", () => {
   assert.ok(horns.some((t: { semitones: number }) => t.semitones !== 0), "the horns are transposed to the chords");
 });
 
+test("hero data: library keys only, no machine paths", async () => {
+  const { audioKeys, isLibraryKey } = await import("../src/ui/flow/hero-audio.ts");
+  const text = readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8");
+  assert.ok(!/\/Users\/|\/home\/|\/private\/|\/var\/|[A-Za-z]:\\/.test(text), "no absolute path anywhere in the baked data");
+  const d = JSON.parse(text);
+  for (const s of d.sources) assert.ok(isLibraryKey(s.path), `${s.path} is a library key`);
+  assert.deepEqual(audioKeys(d.audio), ["hero/brk-source.mp3", "hero/horns-source.mp3", "hero/b-track.mp3", "hero/h-track.mp3"]);
+  for (const k of audioKeys(d.audio)) assert.ok(isLibraryKey(k) && k.startsWith("hero/") && k.endsWith(".mp3"), k);
+  assert.equal(d.audio.sources.length, d.sources.length, "one source window per source");
+  assert.equal(d.audio.tracks.length, d.sources.length, "one track render per source");
+});
+
+test("library keys: relative paths only", async () => {
+  const { isLibraryKey } = await import("../src/ui/flow/hero-audio.ts");
+  for (const ok of ["hero/b-track.mp3", "audio/clp_1/drums.wav", "a.mp3"]) assert.ok(isLibraryKey(ok), ok);
+  for (const bad of ["", "/Users/x/a.mp3", "/hero/a.mp3", "../a.mp3", "hero/../a.mp3", "hero//a.mp3", "./a.mp3", "C:\\a.mp3", "https://x/a.mp3", "hero\\a.mp3", "hero/"]) assert.ok(!isLibraryKey(bad), bad);
+});
+
+test("silent fallback: what the sound button shows when the library has no sound", async () => {
+  const { isAudioStatus, soundView, stateAfterProbe, MISSING_HINT } = await import("../src/ui/flow/hero-audio.ts");
+  assert.ok(isAudioStatus(200) && isAudioStatus(206));
+  for (const s of [404, 403, 500, 416, 0]) assert.ok(!isAudioStatus(s), String(s));
+  assert.equal(stateAfterProbe(200), "ready");
+  assert.equal(stateAfterProbe(206), "ready");
+  assert.equal(stateAfterProbe(404), "missing", "no library file");
+  assert.equal(stateAfterProbe(null), "missing", "no library or no network");
+  const m = soundView("missing");
+  assert.ok(m.disabled && !m.pressed, "cannot be clicked");
+  assert.equal(m.hint, "Sound needs the audio library: run apricity migrate / fetch");
+  assert.equal(m.hint, MISSING_HINT);
+  assert.match(m.label, /audio library/);
+  assert.ok(soundView("checking").disabled && soundView("loading").disabled);
+  assert.ok(!soundView("ready").disabled && !soundView("on").disabled && soundView("on").pressed);
+});
+
+test("sound: an unreachable library is reported as a status, never thrown", async () => {
+  const { soundStatus } = await import("../src/ui/flow/sound.ts");
+  const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));
+  const seen: string[] = [];
+  const at = async ({ path }: { path: string }) => ({ url: `http://localhost/files/${path}` });
+  const real = globalThis.fetch;
+  globalThis.fetch = (async (url: string) => {
+    seen.push(String(url));
+    return new Response("", { status: 404 });
+  }) as typeof fetch;
+  try {
+    assert.equal(await soundStatus(d.audio, at), 404);
+    assert.equal(seen.length, 1, "stops at the first missing file: one failed request");
+    assert.equal(seen[0], "http://localhost/files/hero/brk-source.mp3");
+    globalThis.fetch = (async () => {
+      throw new TypeError("network down");
+    }) as typeof fetch;
+    assert.equal(await soundStatus(d.audio, at), null);
+    const noUrl = async () => {
+      throw new Error("not signed in");
+    };
+    assert.equal(await soundStatus(d.audio, noUrl), null, "no way to reach the library");
+  } finally {
+    globalThis.fetch = real;
+  }
+});
+
 test("hero story cues: each step is heard, in order", async () => {
   const { Story } = await import("../src/ui/flow/story.ts");
   const d = JSON.parse(readFileSync(new URL("../src/ui/flow/hero-data.json", import.meta.url), "utf8"));

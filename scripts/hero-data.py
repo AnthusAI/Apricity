@@ -6,17 +6,35 @@ the waveform around each slice (min/max peaks, as bytes), the beats the analysis
 transients in the audio, the slice, its chops, and every place a chop lands in the compiled score
 (with its transposition).
 
-It also writes the story's sound to web/public/hero/: each source window as heard, and each track
-rendered alone by the real engine (warped and tuned), with the gain that puts it back at its level
-in the full mix. The samples are git-ignored; these outputs are committed, so the landing page
-needs no server.
+It also writes the story's sound INTO A LIBRARY (the folder `apricity migrate` makes), as ordinary
+library files under the fixed key prefix `hero/` (design/storage.md section 3.3: the library's
+`files/` folder holds exactly the S3 keys):
 
-    PATH=~/.rustup/toolchains/stable-aarch64-apple-darwin/bin:$PATH cargo build -p apricity-cli
-    analysis/.venv/bin/python scripts/hero-data.py
+    files/hero/brk-source.mp3   the drums stem window as recorded, levelled to about -18 dBFS RMS
+    files/hero/horns-source.mp3 the horns (other) stem window, likewise
+    files/hero/b-track.mp3      track b of examples/chop-shop.apr rendered alone by the real engine
+    files/hero/h-track.mp3      track h likewise
+
+The tracks carry the gain (gain_db in hero-data.json) that puts each back at its level in the full
+mix. Being plain non-dot files they are picked up by `apricity sync push`, are served at
+/files/hero/<name>.mp3 by `apricity serve --library`, and live in the bucket at files/hero/<name>.mp3.
+The web app fetches them through web/src/data/files.ts, so the same key works locally and in the cloud.
+The MP3s are never committed (*.mp3 is git-ignored); a fresh clone plays the hero silently until the
+library has them. Everything is derived from the library's own stems and manifests: the script builds
+a temporary samples folder of symlinks into the library, so no absolute path from any machine reaches
+hero-data.json, which holds only library-relative keys.
+
+    PATH=~/.cargo/bin:$PATH cargo build -p apricity-cli
+    target/debug/apricity migrate --from . --to ~/Apricity.library --link   # or a fetched library
+    analysis/.venv/bin/python scripts/hero-data.py --library ~/Apricity.library
 """
+
+import argparse
+import sys
 
 import base64
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -28,8 +46,8 @@ import soundfile as sf
 ROOT = Path(__file__).resolve().parent.parent
 SCORE = ROOT / "examples/chop-shop.apr"
 OUT = ROOT / "web/src/ui/flow/hero-data.json"
-AUDIO = ROOT / "web/public/hero"  # served at /hero/
-EXE = ROOT / "target/debug/apricity"
+HERO_PREFIX = "hero"  # library key prefix of the hero audio: files/hero/<name>.mp3
+NEEDS_LIBRARY = "the library lacks the Thunderer stems the hero is cut from: run apricity migrate / fetch"
 COLUMNS = 600  # peak columns across each source window
 
 # The two stories the hero tells, in order: which track, and how its slice was cut.
@@ -39,8 +57,84 @@ STORIES = [
 ]
 
 
-def compile_score():
-    out = subprocess.run([str(EXE), "compile", str(SCORE)], capture_output=True, text=True, check=True)
+def find_exe() -> Path:
+    """$APRICITY, else the newer of target/release and target/debug (as the smoke scripts do)."""
+    if os.environ.get("APRICITY"):
+        return Path(os.environ["APRICITY"])
+    found = [p for p in (ROOT / "target/release/apricity", ROOT / "target/debug/apricity") if p.exists()]
+    if not found:
+        sys.exit("apricity binary not found: cargo build -p apricity-cli")
+    return max(found, key=lambda p: p.stat().st_mtime)
+
+
+EXE = None  # set in main()
+SAMPLES = None  # temporary samples folder of symlinks into the library
+KEYS = {}  # samples-relative clip path -> the library key of its audio
+
+
+def records(library: Path, model: str) -> dict[str, list[dict]]:
+    """A model's records, grouped by the clip they belong to."""
+    out: dict[str, list[dict]] = {}
+    for f in (library / model).glob("*.json") if (library / model).is_dir() else []:
+        r = json.loads(f.read_text())
+        out.setdefault(r.get("clipId"), []).append(r)
+    return out
+
+
+def annotations(slices: list[dict], markers: list[dict]) -> dict:
+    """The manifest's `annotations`, as crates/apricity-data/src/loader.rs builds them from the
+    library's Slice and Marker records."""
+    clips = []
+    for s in sorted(slices, key=lambda s: (s["start"], s["name"])):
+        c = {"name": s["name"], "start": s["start"], "end": s["end"], "source": s["source"]}
+        for a, b in (("tags", "tags"), ("candidateId", "candidate"), ("retired", "retired")):
+            if a in s:
+                c[b] = s[a]
+        if isinstance(s.get("evidence"), str):
+            c["evidence"] = json.loads(s["evidence"])
+        clips.append(c)
+    marks = []
+    for m in sorted(markers, key=lambda m: (m["seconds"], m["name"])):
+        marks.append({k: m[k] for k in ("name", "seconds", "source", "note") if k in m})
+    return {"clips": clips, "markers": marks}
+
+
+def link_samples(library: Path, tmp: Path):
+    """Lay the library's clips out as a samples folder the engine reads: <path> (a symlink into
+    files/) and <path>.apricity.json (the clip's analysis plus its annotations from the library's
+    records). Nothing large is copied."""
+    global SAMPLES
+    SAMPLES = tmp / "samples"
+    slices, markers = records(library, "Slice"), records(library, "Marker")
+    for rec in sorted((library / "Clip").glob("*.json")):
+        c = json.loads(rec.read_text())
+        audio, analysis = (c.get("audio") or {}).get("key"), (c.get("analysis") or {}).get("key")
+        if not (c.get("path") and audio and analysis):
+            continue
+        a, m = library / "files" / audio, library / "files" / analysis
+        if not (a.is_file() and m.is_file()):
+            continue  # not downloaded
+        dest = SAMPLES / c["path"]
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.symlink_to(a.resolve())
+        manifest = json.loads(m.read_text())
+        manifest["annotations"] = annotations(slices.get(c["id"], []), markers.get(c["id"], []))
+        Path(str(dest) + ".apricity.json").write_text(json.dumps(manifest))
+        KEYS[c["path"]] = audio
+    if not SAMPLES.is_dir():
+        sys.exit(NEEDS_LIBRARY)
+
+
+def score_text() -> str:
+    return SCORE.read_text().replace("samples ../samples", f"samples {SAMPLES}")
+
+
+def compile_score(tmp: Path):
+    score = tmp / "chop-shop.apr"
+    score.write_text(score_text())
+    out = subprocess.run([str(EXE), "compile", str(score)], capture_output=True, text=True)
+    if out.returncode != 0:
+        sys.exit(f"{NEEDS_LIBRARY}\n{out.stderr.strip()}")
     return json.loads(out.stdout)
 
 
@@ -50,7 +144,7 @@ def mp3(wav: Path, out: Path, mono=False, kbps=96):
 
 def render_tracks(tracks: list[str], tmp: Path):
     """Render the score with only `tracks`, return (wav, master make-up dB)."""
-    text = SCORE.read_text().replace("samples ../samples", f"samples {ROOT / 'samples'}")
+    text = score_text()
     keep = [ln for ln in text.splitlines() if not (m := re.match(r"track\s+(\S+)", ln)) or m.group(1) in tracks]
     score = tmp / f"{'-'.join(tracks)}.apr"
     score.write_text("\n".join(keep) + "\n")
@@ -120,14 +214,30 @@ def sec_to_beat(beats: list[float], s: float) -> float:
 
 
 def main():
-    tl = compile_score()
+    global EXE
+    ap = argparse.ArgumentParser(description="Bake the hero story: hero-data.json, and its audio into a library.")
+    ap.add_argument("--library", required=True, type=Path, help="library folder made by apricity migrate (or a fetched one)")
+    args = ap.parse_args()
+    library = args.library.resolve()
+    if not (library / "apricity-library.json").is_file():
+        sys.exit(f"{library} is not an Apricity library (no apricity-library.json)")
+    AUDIO = library / "files" / HERO_PREFIX
+    EXE = find_exe()
+    with tempfile.TemporaryDirectory() as t:
+        bake(library, AUDIO, Path(t))
+
+
+def bake(library: Path, AUDIO: Path, tmp: Path):
+    link_samples(library, tmp)
+    tl = compile_score(tmp)
     sources = []
     tiles = []
     for n, story in enumerate(STORIES):
         track = next(t for t in tl["tracks"] if t["name"] == story["track"])
         evs = [e for e in tl["events"] if e["track"] == story["track"]]
         src = tl["sources"][evs[0]["source"]]
-        audio = ROOT / src["path"]
+        audio = Path(src["path"])
+        rel = audio.relative_to(SAMPLES).as_posix()
         m = json.loads(Path(str(audio) + ".apricity.json").read_text())
         beats = m["rhythm"]["beats"]
 
@@ -149,7 +259,7 @@ def main():
             "id": story["name"],
             "title": story["title"],
             "credit": story["credit"],
-            "path": src["path"],
+            "path": KEYS[rel],  # the library key of the recording, never a machine path
             "window": [round(w0, 4), round(w1, 4)],
             "peaks": peaks(audio, w0, w1),
             "beats": [round(b, 4) for b in beats if in_w(b)],
@@ -189,18 +299,16 @@ def main():
     # The sound: each source window, and each track alone, rendered by the engine.
     AUDIO.mkdir(parents=True, exist_ok=True)
     audio = {"sources": [], "tracks": []}
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp = Path(tmp)
-        for src in sources:
-            name = f"{src['id']}-source.mp3"
-            source_audio(ROOT / src["path"], *src["window"], AUDIO / name, tmp)
-            audio["sources"].append(f"hero/{name}")
-        _, full = render_tracks([s["lane"] for s in sources], tmp)
-        for src in sources:
-            wav, makeup = render_tracks([src["lane"]], tmp)
-            name = f"{src['lane']}-track.mp3"
-            mp3(wav, AUDIO / name)
-            audio["tracks"].append({"url": f"hero/{name}", "gain_db": round(full - makeup, 2)})
+    for src in sources:
+        name = f"{src['id']}-source.mp3"
+        source_audio(SAMPLES / next(k for k, v in KEYS.items() if v == src["path"]), *src["window"], AUDIO / name, tmp)
+        audio["sources"].append(f"{HERO_PREFIX}/{name}")
+    _, full = render_tracks([s["lane"] for s in sources], tmp)
+    for src in sources:
+        wav, makeup = render_tracks([src["lane"]], tmp)
+        name = f"{src['lane']}-track.mp3"
+        mp3(wav, AUDIO / name)
+        audio["tracks"].append({"key": f"{HERO_PREFIX}/{name}", "gain_db": round(full - makeup, 2)})
 
     data = {
         "score": "examples/chop-shop.apr",
@@ -216,7 +324,7 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, separators=(",", ":")) + "\n")
     kb = sum(f.stat().st_size for f in AUDIO.glob("*.mp3")) / 1024
-    print(f"wrote {AUDIO.relative_to(ROOT)}/ ({kb:.0f} KB of audio)")
+    print(f"wrote {AUDIO}/ ({kb:.0f} KB of audio; library keys {HERO_PREFIX}/*.mp3)")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.1f} KB): "
           + ", ".join(f"{s['id']}: {len(s["chops"])} slices, {sum(t['source'] == i for t in tiles)} tiles" for i, s in enumerate(sources)))
 
