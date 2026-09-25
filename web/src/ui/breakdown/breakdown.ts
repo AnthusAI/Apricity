@@ -161,8 +161,11 @@ export class Breakdown {
 
   private async probeSound() {
     if (!this.sound) return;
-    const state = stateAfterProbe(await soundStatus(this.data.audio!));
+    const status = await soundStatus(this.data.audio!);
+    const state = stateAfterProbe(status);
     this.soundButton(state);
+    // Say why, so a missing sound can be told apart from a denied one (403) or no connection.
+    if (state === "missing") this.soundBtn.title = `${soundView(state).hint} (${status ?? "no connection"})`;
     if (state === "ready" && this.opts.remember && soundRemembered()) this.resumeRemembered();
   }
 

@@ -62,6 +62,13 @@ export class StorySound {
       this.out = ctx.createGain();
       this.out.gain.value = 0.85;
       this.out.connect(ctx.destination);
+      // iOS only lets a page start audio inside the tap itself, and loading the sounds takes longer
+      // than that: unlock it now (resume, and play one silent sample), before anything is awaited.
+      void ctx.resume();
+      const unlock = ctx.createBufferSource();
+      unlock.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      unlock.connect(ctx.destination);
+      unlock.start(0);
       const load = async (key: string) => ctx.decodeAudioData(await fetchKey(key));
       try {
         [this.sources, this.tracks] = await Promise.all([Promise.all(this.audio.sources.map(load)), Promise.all(this.audio.tracks.map((t) => load(t.key)))]);
