@@ -24,7 +24,10 @@
         "dev"
       ],
       "port": 5173,
-      "autoPort": true
+      "autoPort": true,
+      "env": {
+        "APRICITY_API_PORT": "5190"
+      }
     },
     {
       "name": "library",

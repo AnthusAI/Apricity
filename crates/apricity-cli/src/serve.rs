@@ -141,8 +141,20 @@ async fn isolation_headers(mut resp: Response) -> Response {
     resp
 }
 
-async fn amplify_outputs(State(s): State<Shared>) -> axum::Json<Value> {
-    axum::Json((*s.outputs).clone())
+/// The outputs, with the GraphQL endpoint on the host the page was loaded from: a page on
+/// `localhost` then talks to `localhost`, and a dev server that proxies here (Vite keeps the Host
+/// header) gets its own address, so the browser never makes a cross-origin call.
+async fn amplify_outputs(State(s): State<Shared>, headers: HeaderMap) -> axum::Json<Value> {
+    let mut outputs = (*s.outputs).clone();
+    let host = headers.get(header::HOST).and_then(|h| h.to_str().ok());
+    if let Some(host) = host.filter(|h| {
+        !h.is_empty()
+            && h.chars()
+                .all(|c| c.is_ascii_alphanumeric() || ".-:[]".contains(c))
+    }) {
+        outputs["data"]["url"] = json!(format!("http://{host}/graphql"));
+    }
+    axum::Json(outputs)
 }
 
 fn text(status: StatusCode, msg: &str) -> Response {
@@ -546,6 +558,38 @@ mod tests {
         assert_eq!(status, StatusCode::OK);
         assert_eq!(v["data"]["listClips"]["items"][0]["id"], "c1");
         assert_eq!(v["data"]["listClips"]["items"][0]["title"], "A");
+    }
+
+    #[tokio::test]
+    async fn amplify_outputs_point_graphql_at_the_host_the_page_came_from() {
+        let f = fixture(false);
+        let (_, _, body) = send(
+            &f.app,
+            req(
+                "GET",
+                "/amplify_outputs.json",
+                &[("host", "localhost:5173")],
+                b"",
+            ),
+        )
+        .await;
+        let v: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(v["data"]["url"], "http://localhost:5173/graphql");
+        let (_, _, body) = send(
+            &f.app,
+            req(
+                "GET",
+                "/amplify_outputs.json",
+                &[("host", "evil.example/x?")],
+                b"",
+            ),
+        )
+        .await;
+        let v: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(
+            v["data"]["url"], "http://127.0.0.1:5181/graphql",
+            "a malformed Host is ignored"
+        );
     }
 
     #[tokio::test]
