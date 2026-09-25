@@ -17,10 +17,17 @@
       "text": "Hero part done (bootstrap() called at startup; guest read on files/hero/*). STILL OPEN: Library and Score screens still call the local Python server (/api/samples, /api/scores, /api/score, /api/annotations, /api/upload in web/src/apricity.ts) and 404 on the deployed site; they need the cloud data layer + sign-in.",
       "created_at": "2026-09-25T04:15:15.514582Z",
       "comment_type": "default"
+    },
+    {
+      "id": "820b8847-c746-4107-abf4-5695985ad9d7",
+      "author": "home",
+      "text": "Library/Score screens: web/src/apricity.ts api layer (samples, scores, score, saveScore, annotations, upload) is still the Python server's /api/*; port it onto data/domain.ts + storage after sign-in and the loader exist. Until then the deployed Library and Score tabs 404 in the console.",
+      "created_at": "2026-09-25T04:16:57.546583Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.367182Z",
-  "updated_at": "2026-09-25T04:15:15.514600Z",
+  "updated_at": "2026-09-25T04:16:57.546608Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
