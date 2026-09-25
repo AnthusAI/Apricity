@@ -3,7 +3,7 @@
   "title": "S3-backed Files + apricity sync (library <-> bucket, same layout)",
   "description": "S3 key layout exactly mirrors the library folder layout (stems, slices, clips, all metadata Virtuus writes). Add an S3 implementation of the Files trait beside FsFiles (Range works natively on S3); Amplify Storage bucket + access rules in the backend definition and in amplify_outputs.json. apricity sync push|pull --library <dir> using hash manifests, transferring only differences, both directions. Goal: analyze on a local Mac, push to the cloud hub, others play back and browse the metadata; no cloud analysis yet. Depends on ae24ae.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,25 @@
       "text": "Started: specs in features/sync/, Files trait ranged read/stat/list, serve.rs on the trait, sync engine (sync.rs), S3Files (s3.rs) with in-process fake S3 written; running tests.",
       "created_at": "2026-09-25T02:16:30.306748Z",
       "comment_type": "default"
+    },
+    {
+      "id": "1b118c42-ed18-4635-b348-aa7566871c5f",
+      "author": "home",
+      "text": "Implemented, uncommitted, ready for review. Files trait (read_range/stat/list), serve on the trait, sync engine, S3Files (tested vs in-process fake S3), apricity sync CLI (--remote-dir too), amplify storage rules, design/storage.md 3.4, scripts/sync-smoke.sh. cargo test -p apricity-cli -p apricity-data pass; serve-smoke and sync-smoke all ok. Real AWS not exercised. Note: records live at <Model>/<key>.json in the library root (design 3.3 said tables/); sync mirrors that.",
+      "created_at": "2026-09-25T02:32:32.135501Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "69c6e945-268b-4104-941b-dc643c9bcbf7",
+      "author": "home",
+      "text": "Reviewed: cargo test -p apricity-cli -p apricity-data pass; serve-smoke and sync-smoke re-run by reviewer, all checks pass. UNVERIFIED: real AWS, Amplify deploy, generated IAM. Cloud browsing of metadata needs a bucket-to-DynamoDB loader (design §3.4).",
+      "created_at": "2026-09-25T02:35:22.989090Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:01:24.436105Z",
-  "updated_at": "2026-09-25T02:16:30.306777Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T02:35:23.014010Z",
+  "closed_at": "2026-09-25T02:35:23.013975Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
