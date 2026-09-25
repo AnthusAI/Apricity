@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "Virginia-two-step_jukebox-126684_001_00-01-20.wav",
   "sha256": "fa43ee1c666bd552fe28f1cdc3d559465d9e4a06f208859801fcf7ffabd4f38a",
@@ -1942,7 +1942,32 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.04,
+    "source": "ml",
+    "note": "26beats, F"
+   },
+   {
+    "name": "section B",
+    "seconds": 11.5,
+    "source": "ml",
+    "note": "20beats, Bb"
+   },
+   {
+    "name": "section B",
+    "seconds": 20.46,
+    "source": "ml",
+    "note": "22beats, Bb"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.04,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.04,
@@ -2021,38 +2046,13 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.04,
     "end": 0.48,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.04,
-    "source": "ml",
-    "note": "26beats, F"
-   },
-   {
-    "name": "section B",
-    "seconds": 11.5,
-    "source": "ml",
-    "note": "20beats, Bb"
-   },
-   {
-    "name": "section B",
-    "seconds": 20.46,
-    "source": "ml",
-    "note": "22beats, Bb"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.04,
-    "source": "ml"
    }
   ]
  }

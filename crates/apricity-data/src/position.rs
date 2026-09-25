@@ -1,7 +1,6 @@
 /// Fractional indexing: generate sortable string keys that position items between any two keys.
 /// Based on https://github.com/rocicorp/fractional-indexing (MIT license)
 /// Reference: https://observablehq.com/@dgreensp/implementing-fractional-indexing
-
 use std::collections::HashMap;
 
 const BASE_62_DIGITS: &str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -131,7 +130,12 @@ fn is_smallest_integer(int_part: &str, digits: &str, int_digits: &str) -> bool {
 }
 
 /// Validate an order key
-fn validate_order_key(key: &str, digits: &str, int_digits: &str, int_lookup: &[u8]) -> Result<(), String> {
+fn validate_order_key(
+    key: &str,
+    digits: &str,
+    int_digits: &str,
+    int_lookup: &[u8],
+) -> Result<(), String> {
     let int_part = get_integer_part(key, int_digits, int_lookup)?;
 
     if is_smallest_integer(int_part, digits, int_digits) {
@@ -370,10 +374,7 @@ fn midpoint(a: &str, b: Option<&str>, digits: &str, lookup: &[u8]) -> Result<Str
 }
 
 /// Generate a single key between two bounds
-pub fn generate_key_between(
-    a: Option<&str>,
-    b: Option<&str>,
-) -> Result<String, String> {
+pub fn generate_key_between(a: Option<&str>, b: Option<&str>) -> Result<String, String> {
     generate_key_between_with_alphabets(a, b, None, None)
 }
 
@@ -490,12 +491,16 @@ pub fn generate_n_keys_between_with_alphabets(
         return Ok(Vec::new());
     }
     if n == 1 {
-        return Ok(vec![generate_key_between_with_alphabets(a, b, digits, int_digits)?]);
+        return Ok(vec![generate_key_between_with_alphabets(
+            a, b, digits, int_digits,
+        )?]);
     }
 
     match (a, b) {
         (_, None) => {
-            let mut result = vec![generate_key_between_with_alphabets(a, b, digits, int_digits)?];
+            let mut result = vec![generate_key_between_with_alphabets(
+                a, b, digits, int_digits,
+            )?];
             for _ in 1..n {
                 let c = result.last().unwrap().clone();
                 let next = generate_key_between_with_alphabets(Some(&c), None, digits, int_digits)?;
@@ -504,7 +509,9 @@ pub fn generate_n_keys_between_with_alphabets(
             Ok(result)
         }
         (None, Some(_)) => {
-            let mut result = vec![generate_key_between_with_alphabets(a, b, digits, int_digits)?];
+            let mut result = vec![generate_key_between_with_alphabets(
+                a, b, digits, int_digits,
+            )?];
             for _ in 1..n {
                 let c = result.last().unwrap().clone();
                 let next = generate_key_between_with_alphabets(None, Some(&c), digits, int_digits)?;
@@ -516,9 +523,16 @@ pub fn generate_n_keys_between_with_alphabets(
         (Some(_), Some(_)) => {
             let mid = n / 2;
             let c = generate_key_between_with_alphabets(a, b, digits, int_digits)?;
-            let mut result = generate_n_keys_between_with_alphabets(a, Some(&c), mid, digits, int_digits)?;
+            let mut result =
+                generate_n_keys_between_with_alphabets(a, Some(&c), mid, digits, int_digits)?;
             result.push(c);
-            let mut rest = generate_n_keys_between_with_alphabets(Some(&result.last().unwrap()), b, n - mid - 1, digits, int_digits)?;
+            let mut rest = generate_n_keys_between_with_alphabets(
+                Some(&result.last().unwrap()),
+                b,
+                n - mid - 1,
+                digits,
+                int_digits,
+            )?;
             result.append(&mut rest);
             Ok(result)
         }
@@ -542,25 +556,101 @@ mod tests {
         }
 
         let cases = vec![
-            TestCase { a: None, b: None, expected: "a0" },
-            TestCase { a: None, b: Some("a0"), expected: "Zz" },
-            TestCase { a: None, b: Some("Zz"), expected: "Zy" },
-            TestCase { a: Some("a0"), b: None, expected: "a1" },
-            TestCase { a: Some("a1"), b: None, expected: "a2" },
-            TestCase { a: Some("a0"), b: Some("a1"), expected: "a0V" },
-            TestCase { a: Some("a1"), b: Some("a2"), expected: "a1V" },
-            TestCase { a: Some("a0V"), b: Some("a1"), expected: "a0l" },
-            TestCase { a: Some("Zz"), b: Some("a0"), expected: "ZzV" },
-            TestCase { a: Some("Zz"), b: Some("a1"), expected: "a0" },
-            TestCase { a: None, b: Some("Y00"), expected: "Xzzz" },
-            TestCase { a: Some("bzz"), b: None, expected: "c000" },
-            TestCase { a: Some("a0"), b: Some("a0V"), expected: "a0G" },
-            TestCase { a: Some("a0"), b: Some("a0G"), expected: "a08" },
-            TestCase { a: Some("b125"), b: Some("b129"), expected: "b127" },
-            TestCase { a: Some("a0"), b: Some("a1V"), expected: "a1" },
-            TestCase { a: Some("Zz"), b: Some("a01"), expected: "a0" },
-            TestCase { a: None, b: Some("a0V"), expected: "a0" },
-            TestCase { a: None, b: Some("b999"), expected: "b99" },
+            TestCase {
+                a: None,
+                b: None,
+                expected: "a0",
+            },
+            TestCase {
+                a: None,
+                b: Some("a0"),
+                expected: "Zz",
+            },
+            TestCase {
+                a: None,
+                b: Some("Zz"),
+                expected: "Zy",
+            },
+            TestCase {
+                a: Some("a0"),
+                b: None,
+                expected: "a1",
+            },
+            TestCase {
+                a: Some("a1"),
+                b: None,
+                expected: "a2",
+            },
+            TestCase {
+                a: Some("a0"),
+                b: Some("a1"),
+                expected: "a0V",
+            },
+            TestCase {
+                a: Some("a1"),
+                b: Some("a2"),
+                expected: "a1V",
+            },
+            TestCase {
+                a: Some("a0V"),
+                b: Some("a1"),
+                expected: "a0l",
+            },
+            TestCase {
+                a: Some("Zz"),
+                b: Some("a0"),
+                expected: "ZzV",
+            },
+            TestCase {
+                a: Some("Zz"),
+                b: Some("a1"),
+                expected: "a0",
+            },
+            TestCase {
+                a: None,
+                b: Some("Y00"),
+                expected: "Xzzz",
+            },
+            TestCase {
+                a: Some("bzz"),
+                b: None,
+                expected: "c000",
+            },
+            TestCase {
+                a: Some("a0"),
+                b: Some("a0V"),
+                expected: "a0G",
+            },
+            TestCase {
+                a: Some("a0"),
+                b: Some("a0G"),
+                expected: "a08",
+            },
+            TestCase {
+                a: Some("b125"),
+                b: Some("b129"),
+                expected: "b127",
+            },
+            TestCase {
+                a: Some("a0"),
+                b: Some("a1V"),
+                expected: "a1",
+            },
+            TestCase {
+                a: Some("Zz"),
+                b: Some("a01"),
+                expected: "a0",
+            },
+            TestCase {
+                a: None,
+                b: Some("a0V"),
+                expected: "a0",
+            },
+            TestCase {
+                a: None,
+                b: Some("b999"),
+                expected: "b99",
+            },
         ];
 
         for (i, case) in cases.iter().enumerate() {
@@ -633,7 +723,9 @@ mod tests {
         .unwrap();
         assert_eq!(
             keys,
-            vec!["55", "56", "57", "58", "59", "600", "601", "602", "603", "604"]
+            vec![
+                "55", "56", "57", "58", "59", "600", "601", "602", "603", "604"
+            ]
         );
     }
 
@@ -642,7 +734,12 @@ mod tests {
         let mut prev = generate_key_between(None, None).unwrap();
         for _ in 1..100 {
             let next = generate_key_between(Some(&prev), None).unwrap();
-            assert!(prev < next, "keys not strictly increasing: {} >= {}", prev, next);
+            assert!(
+                prev < next,
+                "keys not strictly increasing: {} >= {}",
+                prev,
+                next
+            );
             prev = next;
         }
     }
@@ -650,7 +747,13 @@ mod tests {
     #[test]
     fn test_key_between_a0_and_a1() {
         let key = generate_key_between(Some("a0"), Some("a1")).unwrap();
-        assert!(key.as_str() > "a0" && key.as_str() < "a1", "key not between bounds: {} not in ({}, {})", key, "a0", "a1");
+        assert!(
+            key.as_str() > "a0" && key.as_str() < "a1",
+            "key not between bounds: {} not in ({}, {})",
+            key,
+            "a0",
+            "a1"
+        );
         assert_eq!(key, "a0V");
     }
 

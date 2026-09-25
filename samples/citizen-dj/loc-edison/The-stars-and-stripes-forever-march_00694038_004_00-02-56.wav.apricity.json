@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
   "sha256": "9ee27b22cbdceda794589bebcbdc696ae26145b8e4d0d525ba166eadf1992bbd",
@@ -1570,7 +1570,41 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.22,
+    "source": "ml",
+    "note": "23beats, Gm"
+   },
+   {
+    "name": "section B",
+    "seconds": 11.22,
+    "source": "ml",
+    "note": "32beats, F"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.22,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 15.04,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 19.3,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 25.88,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.22,
@@ -1638,7 +1672,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.22,
     "end": 0.7,
     "source": "ml",
@@ -1647,7 +1681,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 15.04,
     "end": 15.52,
     "source": "ml",
@@ -1656,7 +1690,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 19.3,
     "end": 19.78,
     "source": "ml",
@@ -1665,47 +1699,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 25.88,
     "end": 26.36,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.22,
-    "source": "ml",
-    "note": "23beats, Gm"
-   },
-   {
-    "name": "section B",
-    "seconds": 11.22,
-    "source": "ml",
-    "note": "32beats, F"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.22,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 15.04,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 19.3,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 25.88,
-    "source": "ml"
    }
   ]
  }

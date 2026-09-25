@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "Washington-Post-march_jukebox-118166_001_00-00-00.wav",
   "sha256": "602f8e5962bb9faa106ba9f40757f647678e2c55418e874cf7d0a9cc68a4266b",
@@ -444,9 +444,21 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
    {
-    "name": "hit-1",
+    "name": "transient",
+    "seconds": 0.1,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 5.78,
+    "source": "ml"
+   }
+  ],
+  "clips": [
+   {
+    "name": "shot-1",
     "start": 0.1,
     "end": 0.54,
     "source": "ml",
@@ -455,25 +467,13 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 5.78,
     "end": 6.165,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "hit",
-    "seconds": 0.1,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 5.78,
-    "source": "ml"
    }
   ]
  }

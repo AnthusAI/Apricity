@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-e4999ed0-97ab-4601-8ba7-9f585f131b54",
+  "title": "Vocabulary: analysis + manifests (annotations.clips, transient markers, shot-N, manifest v2, /api/samples)",
+  "description": "See design/vocabulary.md.\n- Markup writes clips / transient / shot-N; manifest version 2 (readers accept 1).\n- A migration script for the manifests; server /api/samples.\n- Owner: engine session.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9c905694-cf46-4c85-9f39-af8caa18386e",
+  "labels": [
+    "vocabulary"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6a144a70-1fb8-4737-ab89-1673c79fd485",
+      "author": "home",
+      "text": "Done.\n\n- **Manifest v2:** annotations.clips, `transient` markers, `shot-N` clips. Schema moved to schema/sample-manifest.schema.json (const 2).\n- **Python:** analyze.upgrade_annotations reads v1. markup writes clips/transient/shot-N. The server has /api/samples (with /api/clips kept as a hidden alias; it returns {samples}) and saves clips. curation reads and writes clips and exports `.apr` with the saved-clip syntax; its crate/kind words are left for the storage task.\n- All 45 manifests migrated (scripts/migrate-vocabulary.py --manifests); Python tests 140/140.",
+      "created_at": "2026-09-24T17:08:19.274017Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Web/Docs Session"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T16:41:48.107624Z",
+  "updated_at": "2026-09-24T17:12:57.734720Z",
+  "closed_at": "2026-09-24T17:12:57.734671Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

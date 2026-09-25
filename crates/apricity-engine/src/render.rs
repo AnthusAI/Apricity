@@ -168,7 +168,7 @@ impl Renderer {
                 }
             })
             .collect();
-        let buses = tl.buses.iter().map(|b| BusDef { name: b.name.clone(), effects: b.effects.clone(), gain: 10f32.powf(b.gain_db as f32 / 20.0), out: b.out.clone() }).collect();
+        let buses = tl.buses.iter().map(|b| BusDef { name: b.name.clone(), effects: b.effects.clone(), gain: 10f32.powf(b.gain_db as f32 / 20.0), out: b.out.clone(), wet: if b.kind == "return" { 1.0 } else { master::INSERT_WET } }).collect();
         let mut mix = Mix { sample_rate: self.sample_rate, frames_per_beat: fpb, beats_per_bar: tl.meter, length, tracks, buses, master: master::params(&tl.master.effects, true) };
         let (mut arr, bus_report) = mix.build(&HashMap::new());
         self.bus_report = bus_report;
@@ -230,7 +230,7 @@ pub fn render_event(e: &Event, src: &Audio, frames_per_beat: f64, out_sr: u32, o
     if b <= a || out_len == 0 {
         return [vec![0.0; out_len], vec![0.0; out_len]];
     }
-    if e.mode == WarpModeSpec::Off {
+    if e.mode == WarpModeSpec::Repitch {
         // Unwarped: varispeed straight from the source (speed, pitch and any rate change in one
         // band-limited read), no Rubber Band.
         let start = e.src_start * sr_in;
@@ -256,7 +256,7 @@ pub fn render_event(e: &Event, src: &Audio, frames_per_beat: f64, out_sr: u32, o
         mode: match e.mode {
             WarpModeSpec::Beats => WarpMode::Beats,
             WarpModeSpec::Complex => WarpMode::Complex,
-            WarpModeSpec::Texture | WarpModeSpec::Off => WarpMode::Texture,
+            WarpModeSpec::Texture | WarpModeSpec::Repitch => WarpMode::Texture,
         },
         preserve_formants: false,
     };

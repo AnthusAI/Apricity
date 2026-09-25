@@ -1,0 +1,21 @@
+[semantic_release]
+tag_format = "v{version}"
+allow_zero_version = true
+major_on_zero = false
+commit_message = "chore(release): {version} [skip ci]"
+
+[semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "style", "test", "build", "ci", "chore"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+
+[semantic_release.changelog]
+mode = "update"
+changelog_file = "CHANGELOG.md"
+
+[semantic_release.publish]
+upload_dist_to_vcs_release = false

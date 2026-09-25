@@ -1,0 +1,3666 @@
+[
+  {
+    "id": "loc-edison",
+    "title": "Library of Congress Citizen DJ: Edison recordings",
+    "credit": "Citizen DJ Project, Library of Congress, Motion Picture, Broadcasting, and Recorded Sound Division.",
+    "rights": "Public domain (Edison recordings 1890-1929; assets transferred to the National Park Service).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-edison/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_001_00-01-15.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:01:15",
+        "sha256": "e4bf34fc99dd97ea56d19bca0a94541392f53c4c7689029cae100d02dc7146c1",
+        "size": 5795756
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_002_00-01-55.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:01:55",
+        "sha256": "cc37de96d3e9ab47b41489bdc9b3394a239b0b4849a21c50bd73495204a7bb11",
+        "size": 5795756
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_003_00-02-25.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_003_00-02-25.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:02:25",
+        "sha256": "46a40dd91375f8bb6ae8b339146cc741fa5611424508def0caac6abea3a51607",
+        "size": 5809196
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-stars-and-stripes-forever-march_00694038_004_00-02-56.wav",
+        "fetch": "http",
+        "title": "The stars and stripes forever march",
+        "excerpt_start": "00:02:56",
+        "sha256": "9ee27b22cbdceda794589bebcbdc696ae26145b8e4d0d525ba166eadf1992bbd",
+        "size": 5095724
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_001_00-00-31.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_001_00-00-31.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:00:31",
+        "sha256": "84e9fca2d49797cc0e80e947dde065b1ff2ef86ccaf38a5722e4006c61d2a094",
+        "size": 5818028
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_002_00-01-02.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:01:02",
+        "sha256": "0489a6588ef499d8a7a54f22188b15b4b339b56dc4b154315ee3015f40af1ba9",
+        "size": 5791340
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_003_00-02-40.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:02:40",
+        "sha256": "0d39d3960932334dcb88ba2846045b33ddee2f700773568c653ef6884cbec937",
+        "size": 5871404
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-US-Field-Artillery-march_00694042_004_00-03-11.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-US-Field-Artillery-march_00694042_004_00-03-11.wav",
+        "fetch": "http",
+        "title": "The US Field Artillery march",
+        "excerpt_start": "00:03:11",
+        "sha256": "a6d30de4096ae915c50af05f5a4e9b8ea15391e3b31512076ccc74c2e75190ba",
+        "size": 5782508
+      },
+      {
+        "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_001_00-01-05.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_001_00-01-05.wav",
+        "fetch": "http",
+        "title": "True to the flag march",
+        "excerpt_start": "00:01:05",
+        "sha256": "ecc23694027be2706f3df70ace57ccf15e1de8e626514f58042839239e87628a",
+        "size": 2795372
+      },
+      {
+        "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_002_00-02-43.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_002_00-02-43.wav",
+        "fetch": "http",
+        "title": "True to the flag march",
+        "excerpt_start": "00:02:43",
+        "sha256": "49491538623f2bce46b88c73182b46f794b07d53880dfdb434bdda71fd81a318",
+        "size": 1422188
+      },
+      {
+        "path": "citizen-dj/loc-edison/True-to-the-flag-march_00694039_003_00-02-51.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/True-to-the-flag-march_00694039_003_00-02-51.wav",
+        "fetch": "http",
+        "title": "True to the flag march",
+        "excerpt_start": "00:02:51",
+        "sha256": "f04af9411d74d210303a5397c855d7a460e4554e5bf710e608a1e4ba3dde550a",
+        "size": 3316844
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:01:10",
+        "sha256": "bda7f9bde46baaff2e5e64d8d9e70926e25e65d1ea7671a8cecfad582de3483f",
+        "size": 927404
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_002_00-02-43.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_002_00-02-43.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:02:43",
+        "sha256": "626a824ba721e44a3e2d1f8dcd1a2dee3c60bcee554dc996c4d8f6b40f95d087",
+        "size": 2764268
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_003_00-03-28.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_003_00-03-28.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:03:28",
+        "sha256": "d71dd217cd460274a57c192d374bf2a56ccae5826bd37677f418bad74603f646",
+        "size": 4993196
+      },
+      {
+        "path": "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-edison/The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
+        "fetch": "http",
+        "title": "The band festival at Plum Center",
+        "excerpt_start": "00:03:55",
+        "sha256": "69c9486190a555362969929b1f6c683c6d48da4d7610e1e797aa18541b7aab38",
+        "size": 815852
+      }
+    ]
+  },
+  {
+    "id": "loc-jukebox-classical",
+    "title": "Library of Congress Citizen DJ: Jukebox (classical)",
+    "credit": "Citizen DJ Project, Library of Congress, National Jukebox.",
+    "rights": "Public domain (published before 1923; Music Modernization Act).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-jukebox-classical/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-jukebox-classical/Washington-Post-march_jukebox-118166_001_00-00-00.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-classical/Washington-Post-march_jukebox-118166_001_00-00-00.wav",
+        "fetch": "http",
+        "title": "Washington Post march",
+        "excerpt_start": "00:00:00",
+        "sha256": "602f8e5962bb9faa106ba9f40757f647678e2c55418e874cf7d0a9cc68a4266b",
+        "size": 1183724
+      }
+    ]
+  },
+  {
+    "id": "loc-jukebox-popular",
+    "title": "Library of Congress Citizen DJ: Jukebox (popular)",
+    "credit": "Citizen DJ Project, Library of Congress, National Jukebox.",
+    "rights": "Public domain (published before 1923; Music Modernization Act).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-jukebox-popular/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
+        "fetch": "http",
+        "title": "Army bugle calls",
+        "excerpt_start": "00:00:56",
+        "sha256": "03ca871769ca4644bb11a4c81374f55c47cf38c585b397c83ecabadcc043c3d0",
+        "size": 1210604
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-422387_001_00-01-23.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Army-bugle-calls_jukebox-422387_001_00-01-23.wav",
+        "fetch": "http",
+        "title": "Army bugle calls",
+        "excerpt_start": "00:01:23",
+        "sha256": "b194c4aab32ca700201c00f2b07bf2216a6aff37005d759f5438bfb9828fb26b",
+        "size": 996332
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Blue-white-march_jukebox-17457_001_00-00-00.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Blue-white-march_jukebox-17457_001_00-00-00.wav",
+        "fetch": "http",
+        "title": "Blue white march",
+        "excerpt_start": "00:00:00",
+        "sha256": "68a6ae4ac88bc56fed8c62d8a89184a0137382abe9ee07e4f1c563aa8b51f6d6",
+        "size": 5777900
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Minor-march_jukebox-126102_001_00-01-02.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Minor-march_jukebox-126102_001_00-01-02.wav",
+        "fetch": "http",
+        "title": "Minor march",
+        "excerpt_start": "00:01:02",
+        "sha256": "2752a7604099110b2e7f7df48d72066f03e45b0cac83cf2765a9730cf8d1801b",
+        "size": 5902700
+      },
+      {
+        "path": "citizen-dj/loc-jukebox-popular/Virginia-two-step_jukebox-126684_001_00-01-20.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-jukebox-popular/Virginia-two-step_jukebox-126684_001_00-01-20.wav",
+        "fetch": "http",
+        "title": "Virginia two step",
+        "excerpt_start": "00:01:20",
+        "sha256": "fa43ee1c666bd552fe28f1cdc3d559465d9e4a06f208859801fcf7ffabd4f38a",
+        "size": 5780012
+      }
+    ]
+  },
+  {
+    "id": "loc-tony-schwartz",
+    "title": "Library of Congress Citizen DJ: Tony Schwartz",
+    "credit": "Citizen DJ Project, Tony Schwartz Collection at the Library of Congress, Motion Picture, Broadcasting and Recorded Sound Division.",
+    "rights": "Free to use and reuse per the Library of Congress (Citizen DJ selection).",
+    "source_page": "https://citizen-dj.labs.loc.gov/loc-tony-schwartz/use/",
+    "files": [
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:01:11",
+        "sha256": "feede98db3c204af9dc9b5bf64020ebd0d14b177dfa4380fda0e517591e5d693",
+        "size": 5780204
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_002_00-01-50.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_002_00-01-50.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:01:50",
+        "sha256": "53c0c722066c174bb6a1f499dfd40f639dbb6efbaa117c5316752ad6a4c2cba8",
+        "size": 4763564
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_003_00-02-57.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_003_00-02-57.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:02:57",
+        "sha256": "6e35e1ae85f78061b4a2e5dd8b57ce0046433482f2984586d7648ed839ddcb24",
+        "size": 1275116
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_004_00-03-10.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_004_00-03-10.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:03:10",
+        "sha256": "f21752a4eeab4213cafebe2c8b508fa420df0e7286b92e8a4891cc0dd85a7422",
+        "size": 3666860
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_005_00-03-29.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_005_00-03-29.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:03:29",
+        "sha256": "43328ac9c09b2b265fb4d47f5bfa6f0ae52d1edb898a35668116b7086a4391b6",
+        "size": 847148
+      },
+      {
+        "path": "citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_006_00-03-34.wav",
+        "url": "https://s3.amazonaws.com/citizen-dj-assets.labs.loc.gov/audio/samplepacks/loc-tony-schwartz/St-Patricks-parade_144941_006_00-03-34.wav",
+        "fetch": "http",
+        "title": "St Patricks parade",
+        "excerpt_start": "00:03:34",
+        "sha256": "0078de15cebef6d148e3c18adcc4d2a039ee8486bf3df6f9841f865977787573",
+        "size": 2802092
+      }
+    ]
+  },
+  {
+    "id": "marine-band",
+    "title": "Marine Band: Complete Marches of John Philip Sousa (manual download)",
+    "credit": "\"The President's Own\" United States Marine Band, The Complete Marches of John Philip Sousa, Vol. 3.",
+    "rights": "Public domain (composition pre-1923; recording is a work of the U.S. Government).",
+    "source_page": "https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/The-Stars-and-Stripes-Forever-March/",
+    "files": [
+      {
+        "path": "marine-band/StarsAndStripesForever.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Sousa%27s_%22The_Stars_and_Stripes_Forever%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Stars and Stripes Forever"
+      },
+      {
+        "path": "marine-band/scores/StarsAndStripesForever.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/53_StarsAndStripesForever.pdf",
+        "fetch": "manual",
+        "title": "The Stars and Stripes Forever"
+      },
+      {
+        "path": "marine-band/WashingtonPost.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Sousa%27s_%22The_Washington_Post%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Washington Post"
+      },
+      {
+        "path": "marine-band/scores/WashingtonPost.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/38_WashingtonPost.pdf",
+        "fetch": "manual",
+        "title": "The Washington Post"
+      },
+      {
+        "path": "marine-band/LibertyBell.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/1/12/Sousa%27s_%22The_Liberty_Bell%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Liberty Bell"
+      },
+      {
+        "path": "marine-band/scores/LibertyBell.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/48_LibertyBell.pdf",
+        "fetch": "manual",
+        "title": "The Liberty Bell"
+      },
+      {
+        "path": "marine-band/Thunderer.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Sousa%27s_%22The_Thunderer%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The Thunderer"
+      },
+      {
+        "path": "marine-band/scores/Thunderer.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/37_Thunderer.pdf",
+        "fetch": "manual",
+        "title": "The Thunderer"
+      },
+      {
+        "path": "marine-band/ElCapitan.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/94/Sousa%27s_%22El_Capitan%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "El Capitan"
+      },
+      {
+        "path": "marine-band/scores/ElCapitan.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/52_ElCapitan.pdf",
+        "fetch": "manual",
+        "title": "El Capitan"
+      },
+      {
+        "path": "marine-band/KingCotton.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/Sousa%27s_%22King_Cotton%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "King Cotton"
+      },
+      {
+        "path": "marine-band/scores/KingCotton.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/51_KingCotton.pdf",
+        "fetch": "manual",
+        "title": "King Cotton"
+      },
+      {
+        "path": "marine-band/HighSchoolCadets.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/90/Sousa%27s_%22The_High_School_Cadets%22_-_United_States_Marine_Band_%282017%29.mp3",
+        "fetch": "manual",
+        "title": "The High School Cadets"
+      },
+      {
+        "path": "marine-band/scores/HighSchoolCadets.pdf",
+        "url": "https://www.marineband.marines.mil/Portals/175/Docs/Audio/Complete%20Marches%20of%20JPS/Volume%203/Scores/40_HighSchoolCadets.pdf",
+        "fetch": "manual",
+        "title": "The High School Cadets"
+      },
+      {
+        "path": "marine-band/SemperFidelis.mp3",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Sousa%27s_%22Semper_Fidelis%22_-_United_States_Marine_Band_%282016%29.mp3",
+        "fetch": "manual",
+        "title": "Semper Fidelis"
+      }
+    ]
+  },
+  {
+    "id": "salamander-drumkit",
+    "title": "Salamander Drumkit",
+    "credit": "Alexander Holm, Salamander Drumkit (Internet Archive).",
+    "rights": "CC BY-SA 3.0, Alexander Holm; share-alike applies if you modify the samples. https://creativecommons.org/licenses/by-sa/3.0/",
+    "source_page": "https://archive.org/details/SalamanderDrumkit",
+    "archive": {
+      "url": "https://archive.org/download/SalamanderDrumkit/salamanderDrumkit.tar.bz2",
+      "size": 387611727,
+      "sha256": "34e746ec1721bb530b1caf5b17443ae3cde45a2cce1a80e2637e4c11d6f1e3f5",
+      "format": "tar.bz2",
+      "into": "salamander-drumkit"
+    },
+    "files": [
+      {
+        "path": "salamander-drumkit/ALL.sfz",
+        "fetch": "archive",
+        "sha256": "d03938af27c6580b5d7558da18ae2dbe38e7e17f5383228df7ba378ba0355b35",
+        "size": 42180
+      },
+      {
+        "path": "salamander-drumkit/OH/bellchime_F_1.wav",
+        "fetch": "archive",
+        "sha256": "606ede336137017ff9971ceffd02fdfcb67bc9d34cb205e2d8500f0c0f908a2f",
+        "size": 2622734
+      },
+      {
+        "path": "salamander-drumkit/OH/bellchime_F_2.wav",
+        "fetch": "archive",
+        "sha256": "98a0af3ad927ad5b5bbec2f357f1309d6e1b367d6bb1f1637defe42103c54d06",
+        "size": 2648258
+      },
+      {
+        "path": "salamander-drumkit/OH/bellchime_F_3.wav",
+        "fetch": "archive",
+        "sha256": "7c0e5528649984e358cab8ea8c76562a97b8abe9e698b78568ab36bafda70cf2",
+        "size": 2648942
+      },
+      {
+        "path": "salamander-drumkit/OH/china1Choke_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "025144f347d59ad2505ff36454bffd5c34ab9a1df4a91d7ce9cf9c94313a829b",
+        "size": 543338
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "fd1ff6a1b422be899cadabf5106c597c28db6dc230bdf04794c4a330ab89569a",
+        "size": 2277566
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "2c94739fcc0e07b958727b4778fbc0722ec8c38af4b5ab26f698de4dce36310c",
+        "size": 2277896
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "867c09804850afb3367aff57b2c0f43cd792720a46d44f1bd9a0b671885ade69",
+        "size": 2277236
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "f75ec8ea7781f167e8837147189b4d50da55d4bb0d5e4bc45296b95aa4c6d9b5",
+        "size": 2283578
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "1c9cf5e2286cc3f86f9e14da7455e550344be108abcc33c77487bd031e71bb81",
+        "size": 2263214
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "86207f13baaca080b170f5c86246fe8ced5a1ea093acc4884bdb3a6017dca711",
+        "size": 2272358
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "8bc6c62e7f6c1dc31c7818babc564ec1bc8cf4e3bfe7f8d9b9f2117675dc1fdd",
+        "size": 2277770
+      },
+      {
+        "path": "salamander-drumkit/OH/china1_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "6a70f25f8706b99001eb0c39d2e9bd64d64e98246ba8bd435e167f11804c44d7",
+        "size": 2278238
+      },
+      {
+        "path": "salamander-drumkit/OH/china2Choke_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "68c7b80951d303e1c222deff448f256eb73f9e5d73707d09c2b55601919153ab",
+        "size": 513434
+      },
+      {
+        "path": "salamander-drumkit/OH/china2_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "e29b9945e9f7ecbf89e78d591b1f194f633b8c5020c1a9f628cb0eb6d2e7249f",
+        "size": 2241872
+      },
+      {
+        "path": "salamander-drumkit/OH/china2_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "a155c81e417182c2e7e92da78bbc8dc754cf0993434c6560c9dc6322bc0f343b",
+        "size": 2231750
+      },
+      {
+        "path": "salamander-drumkit/OH/china2_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "b26e46528ab78d8dc99c708acf5bdee452e6d8514e731af7174caa63fcc0e6ca",
+        "size": 2251364
+      },
+      {
+        "path": "salamander-drumkit/OH/china2_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "94581d4e566e7e2930e4bf87b995c75d1c00bd3eb6c0dc5b0076706db56df00c",
+        "size": 2248820
+      },
+      {
+        "path": "salamander-drumkit/OH/china2_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "70f226e4a5593801f5254b86f7670725ab4a903de40fc8b24d4804af9321607d",
+        "size": 2248004
+      },
+      {
+        "path": "salamander-drumkit/OH/china2_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "14cefcb03335b17ff849375305668b70dcb46c558b59dd1d64ca2dab9e9c70d7",
+        "size": 2262998
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "8f224b9b39fca536b22f814bdae10cfc15622675403b4b6a62b80d2bcb1eda99",
+        "size": 327050
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "11b4ee6fc825778ee1f95ebb0a45ff3df3332ecb92405683176ae0287e0faa7c",
+        "size": 322130
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "70ece8ccc65648741754232276cbdfc5db952607c75f4c7771956accb977fca1",
+        "size": 320486
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "8cb1e995a4505b9a07ae37e95e268d9c2fe770c16f15e9d878c570fd3511b3c0",
+        "size": 321536
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "bfa0f014ca3980be22b7fd399b83432f0dee834369f22572571ce1e89ac05ae0",
+        "size": 323348
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "b595908707541daa700a8d252c5afbb6c0dcdc6387c549ad1731aed928f818ef",
+        "size": 323936
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "06649828701bc9a56b520d5ced9548f640b93aea600040050ec4fd31311d7c40",
+        "size": 321200
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "19a15c97b327a60f4e84a4eaea1aa6f73cf36140e07cf2c900378de09f00b9eb",
+        "size": 323432
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_FF_9.wav",
+        "fetch": "archive",
+        "sha256": "a690c965ce8a7164d2ac16b8e5be3d8b89e34172179fa0473d6e3327cc557b8e",
+        "size": 328994
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "f766e784bd4ec2758dedb12d6aaba572683bcb5388dadea8954c04a854657d0c",
+        "size": 270926
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "6071604f0684114442ad3322bd6bc03a9c360d3122824ee7819c429bef239e92",
+        "size": 270974
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "5f7c063afce7c7534e5f0f4b21f775f92b55af44efd34a8e6e1785f1de36c16d",
+        "size": 275414
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "dde7ec3685a77c0b2d6e83be62c717875755315660a85ddc8f2f7212a8b280d7",
+        "size": 270812
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "1bebabc415971d81c2515d9cd96b79280f7841c541e995f6c28c3928d412f1c0",
+        "size": 270638
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "72fc6752a20b942a2bae0f9e82db4cbedea75a6675d4b496a5a83c51ee1c928a",
+        "size": 270974
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "bf8b424e80314d4520f103650bafe311020170a2b8e0169d92abbc94339ba0dd",
+        "size": 270638
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "7ba24b7b6f9a789217586d130cdbb59f75a56aa993ab2c63bdcb4f0790298fc7",
+        "size": 270788
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_MP_9.wav",
+        "fetch": "archive",
+        "sha256": "cadf5035b2906ea8670b77c0267b59e052722ed05d0e44f10bcd0ff8254c9ca7",
+        "size": 290612
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_1.wav",
+        "fetch": "archive",
+        "sha256": "820ece430b65c033605b6efdecdd073c1a5058088fa1032a8afe94e59c729ee0",
+        "size": 153314
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_10.wav",
+        "fetch": "archive",
+        "sha256": "734ef04d8f6a2ccfe7bc00d0e910ce32762b0f080c6b75e6d12d7d887931eacd",
+        "size": 153326
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_11.wav",
+        "fetch": "archive",
+        "sha256": "199f0b35f04a7ba41ae470811f9bb8e4de8b999bb864a7b04efb91c0be867074",
+        "size": 152876
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_2.wav",
+        "fetch": "archive",
+        "sha256": "dbe596b8b0914ea0ef6f124a6084622bd772dbdb4cf3a268b849cd7e2d4fa095",
+        "size": 152186
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_3.wav",
+        "fetch": "archive",
+        "sha256": "787e660dbcd0ace98b184b0fd801c61cf3dbd294f64c320daa47fd1902410518",
+        "size": 180974
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_4.wav",
+        "fetch": "archive",
+        "sha256": "a18266d2fe0e300b156b63bfeba862695c0da1dddfeb865a34a1a473d724b04f",
+        "size": 152666
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_5.wav",
+        "fetch": "archive",
+        "sha256": "0f97448ee63c5034f441d106773223c056396357dbde7fd78a6d08b38cda4e17",
+        "size": 151694
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_6.wav",
+        "fetch": "archive",
+        "sha256": "8353f07dae50733667a47ca288efd1e763ba0f0331ebdc1b5e04d72e9d06f32f",
+        "size": 153146
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_7.wav",
+        "fetch": "archive",
+        "sha256": "6012e233eda3948ec11fa56c3de80ebfe423ccf9bc449a7e221a98b6128d75fc",
+        "size": 151856
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_8.wav",
+        "fetch": "archive",
+        "sha256": "665d1572bf42c7559c47c4611a9ce16ebcd1b679bc352770f195c59711247d69",
+        "size": 152666
+      },
+      {
+        "path": "salamander-drumkit/OH/cowbell_P_9.wav",
+        "fetch": "archive",
+        "sha256": "121be72970552f4cd35c0f72278ecf0667f29950ab931167cba16c9090688431",
+        "size": 152186
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1Choke_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "47c6f51a921fe888c9bd05a033224ea17df1ea0aaa4005f42bf87b0a11c81fa8",
+        "size": 565748
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "da28a2e9446c0e0a124f37ccf727db796f0d8575f63fbc923d16ad0143f1310c",
+        "size": 3312620
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "fabe68fa50a178b8e07c8dd41fa39195709882bf7360ef5872849a28a1b8c617",
+        "size": 3265988
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "60f6a95dcc41de18ba0795d70d44b5d4b1ba580b10e2871938a1324bf252779c",
+        "size": 3280052
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "f8c99565c1d9149504c4dddee72b38115699dc8084285f23d46153f372469ad9",
+        "size": 3274364
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "fdbb8aba57b2bdd1b4a6f7d63cd86c0bab0a6a1ee4995cf55b7a065bed87bc96",
+        "size": 3281024
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "2129a504b143081b84bb70794827ee0dd891996c33f64367751f2263e34319df",
+        "size": 3304244
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "82b0ff9452b35ee6cf56445420af28b554d5ccc3659dff48167c21f1a357d795",
+        "size": 2558096
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "4e869d15e40b6a6ade96b9c5cbef515d981f37305a6d3e9912f5d48b7cb45f1c",
+        "size": 2546420
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "a8d98e2d549a7dcdd16ed688e430df54a3fcfc8810fec2247f159188f8ccada6",
+        "size": 2573972
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "09785221624d9a8431a0ea6b1390fd39ef648daa4584737f7d178b71e8bae840",
+        "size": 2555960
+      },
+      {
+        "path": "salamander-drumkit/OH/crash1_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "5557c01901738d6e87e1397af42b0c6a9fbb1935e3e9b596dc258dc11ca7d1a1",
+        "size": 2562560
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2Choke_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "69de7e0bc589eca43cc78e153ec0c86b0700ee863d8078e6374afe9a491576ab",
+        "size": 556850
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "a361cfd992cb33026b1174c82b97b7cf04c10f23af7c9c5c1d1f588dfabc2ff1",
+        "size": 3088784
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "6789bf182d098265d3a320ee927abbfddf7178df377b039cbddadb559d568d5d",
+        "size": 3145346
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "b4c91c707c4d5bf43b0ebf0604f1fa30d88d4e4adae3594fcdf786cf21d14d3c",
+        "size": 3102800
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "3bf6209f24ab7ed8503ea2fc155ffaadf84920ecad87bd1f3884d958a5354947",
+        "size": 3136136
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "feaae7664ece0661394552e18e6a304c91630ca5fdc0b11d81cb67ad632c868f",
+        "size": 3129722
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "bebff5663c91b096f31fac3dc2495fe3f1da72fbe20effa562316f004fa47f4a",
+        "size": 3089246
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "1f3e29e878fe233b520737c2ef5e6ae2df45997a1c4d1d80b82bb47477f59cbb",
+        "size": 3113654
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "6c806e95f29ecd144c59a2bb13743a150f309d0e6175921ecacf5c1df0b72078",
+        "size": 3092990
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "c63c15111aeaa7000addaaa8ff9d6eb95613414ae01d1324e142086e456eb9e2",
+        "size": 2693420
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "8ea399433d20d16d9b187c770421fae3af094c5e9d7d3befa9bb351c594747df",
+        "size": 2966828
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "f64df2ea4e604320892dd25cac0058ed1d928f5971938b1c554ac05517136eaf",
+        "size": 2628908
+      },
+      {
+        "path": "salamander-drumkit/OH/crash2_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "65aa4d0fae390e8aaaf6c3e212205126cf7ea132ce60866824dcd4bfcb4e6978",
+        "size": 2940440
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "dda172bd50c1fe4fde5adcf473954e62d4f780c84881e142d8c46e7532c8dc84",
+        "size": 1868828
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "a880ac3a9deae9c49515fb20c5131279e2ebd42e524d80dfaa19d12217c00f68",
+        "size": 1863410
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "5b63c2ceb58f1286629159f6a7251e7e666dec3c52693ae95fd4a856a7c9822a",
+        "size": 1872002
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "2d96a3b4a17b06ea017b5106f52ce369b4e066381dd30fbb399d0a70db80e765",
+        "size": 1884806
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "c96e7fa7d40aafc5514bb3803789a3a69ed21ecb9d80d270732b8ae502e0f94b",
+        "size": 1858046
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "a71d766b377ce5fe64fad55643c2ab62b64b04782b366ff372ee189876dfd245",
+        "size": 1861118
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "04f6279901d332c4653d84f35547f92381832a9904359820d54d3e169a252473",
+        "size": 1889654
+      },
+      {
+        "path": "salamander-drumkit/OH/crash3_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "cbcd73bc8b7b4e4d5c4eca44c75596070894658b7035937f1ee6c883a094c60c",
+        "size": 1897028
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "25d6092617cc798ba488b2d4843f1ea789324a795007ba405884c981f63f079e",
+        "size": 871400
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_10.wav",
+        "fetch": "archive",
+        "sha256": "96319a76b1f912446a9c2bbce5d96a0722ab79c632642c13407daebc67985449",
+        "size": 887000
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_11.wav",
+        "fetch": "archive",
+        "sha256": "1621450974d8dd592a5d138888e5704705f930c92b67f5f00832f2f20bb66e31",
+        "size": 883928
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_12.wav",
+        "fetch": "archive",
+        "sha256": "e39b5f53bc5ac5fd7c19aa1d80cb85a7075f36e21f8044e8230fa0be4e3db3dc",
+        "size": 872552
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "9d7c743a475ad6f01b549289ec248c9a501aa816ded29f5bce307683ad4b83ed",
+        "size": 868652
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "70c22fb63f5d9759e3e369bfaee5d9f95e578d2d1e0f5d1184e20a3c58898a02",
+        "size": 872696
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "38556e2fd584c304ea43067d7060ae59a81a550885b041422da147f465a9501e",
+        "size": 868808
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "15dbe1b6b56a631e2b9d6e07c9845b3fa208c8af61d4b86e9b3a49d4355f6a0d",
+        "size": 866984
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "524556677ccee000b09f9f2e879a623524cef32b13f95bb0b0d273d00da5328d",
+        "size": 867704
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "fc19b624da87e1ee9d63e88ba7ebb3fcd8ead849f26b4bcaad9a32932198adb9",
+        "size": 864440
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "059b076a45cde31bfacda3f3b20e1edc88c42f18e7493d4c8d9ae8d4685427b9",
+        "size": 866600
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_FF_9.wav",
+        "fetch": "archive",
+        "sha256": "0e5749e231dc92c164e2a72d726354ecd9addc730ad91219f187654598b21513",
+        "size": 866144
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "b6802ce4ff40974f91ab9e30dea885a51db324376db3a56bbcaaaa6eaf69a043",
+        "size": 789824
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "220456a91051c240a14ffedb7c76aed30a409fa4e826c4d4dc12b394c3029829",
+        "size": 788924
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "fb1aa30cbd8106c6a2bdbc2887b247033c5d4df8747316c4b1068a8c13496db0",
+        "size": 785168
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "f26cc2e3012e1abdc3d593811de6aee0528e627efdc4d3036f1f40644a4cd23f",
+        "size": 785600
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "6b7dd3ffd91bcaff4879823575571f117114ea196df4af6232fbb0f9361fdf04",
+        "size": 784364
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "e9b45c3db4e92f058698312e1fb4eb750510b5126fb324e5c3ebca17c55df1d3",
+        "size": 797396
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "6c874990b9cb4b15c3026891b6f80c0beb892edc3783f4c87b233b5c23cbe081",
+        "size": 789260
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "354302b19874169c2b3ebcc162b7cc87735a5a5cca78820604cab556558385a9",
+        "size": 789296
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "ed4a54ff08e689937f0d67b5243040f3f495d17fc27ccb00e59be1956a900611",
+        "size": 788552
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "b30606019d8b5a45feeb2d2649d50801ecf6a6bc5fa0029a0240e3ca6e1fffb9",
+        "size": 789296
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "fe826370a1ef7562a3c11701281a536f2b722f10390bf0322f95655919581568",
+        "size": 599078
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "4a5660feefd3686b43a405f43a4b6e8d7f149b078e223dfae12d37bb7468b6b5",
+        "size": 595262
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "9b9c0bd181e6ddded36d6bbddeb921847af981f89ae1a9aa6ba5108d53fe289d",
+        "size": 590918
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "4d8ac71298979d26c2d21ce7c00b57d2be31b1e19a7d1a71b62b2d54953690a5",
+        "size": 591818
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "48e835a9ad3bdee7a8cc8e9e611cb41674f947e928ea14b97fe110cfc64ff1d2",
+        "size": 593462
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_6.wav",
+        "fetch": "archive",
+        "sha256": "5282ca88cdfaddc27e24dc122fa83a495ccdb96ea2e34d22845e6c25fbe4b34a",
+        "size": 590546
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_7.wav",
+        "fetch": "archive",
+        "sha256": "0125e0d652c93f81bea16ce49054e40e0df0590a1f7ca8bdef21aaf512de1342",
+        "size": 593462
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_8.wav",
+        "fetch": "archive",
+        "sha256": "ef0f27c6664b7da4fa63789756bb40a66b3a4f8b4d67bf95584bf90427c5255f",
+        "size": 599762
+      },
+      {
+        "path": "salamander-drumkit/OH/hiTom_OH_P_9.wav",
+        "fetch": "archive",
+        "sha256": "35fa4be8d486464be88f5aac3157f5359e4772ca82ba8acce7a38d47c844d0bc",
+        "size": 594386
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "bd485de70450f68bb4692557a4ae909caaa965f5739693317365ebe85c986cbb",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "360246faab3c5b1c911fce0a6bccc6940a5598d426e0ab0603e5460a5ef7eb78",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_11.wav",
+        "fetch": "archive",
+        "sha256": "2f2194a60ad73a817fa4e83703f03e434c7ca67bf720aa320cf6f97a1768201b",
+        "size": 168902
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_12.wav",
+        "fetch": "archive",
+        "sha256": "a2cda4fb5a15ada49511a6098a14dc9ef59c6c7300937a2be46c36d1a770fad1",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_13.wav",
+        "fetch": "archive",
+        "sha256": "2d4b3005f4a160b7c529df0b725ae3dfbe6e7c24b159ba9ecc8dec2b515fd548",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_14.wav",
+        "fetch": "archive",
+        "sha256": "f5a54742b5166f09e4f0404ca4870b870721f90d668b8992266ea3acb566b7f9",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_15.wav",
+        "fetch": "archive",
+        "sha256": "c7d6ccb4a186e834c912fafb9e37e0adb4fd7a9c4f8a35273b40a0fbddb4333e",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_16.wav",
+        "fetch": "archive",
+        "sha256": "c321c21ce794e28c92d2f23f0e0405a7fdb2bf7751a97d1a8e8cdd9440ef8ef7",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_17.wav",
+        "fetch": "archive",
+        "sha256": "b1c7a004fe55f52f8913d0e80145c4de1e05660b30cf60ea7239118e7b67e38e",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_18.wav",
+        "fetch": "archive",
+        "sha256": "4580273b6c210db89d804a1ec2311a956f8651b7f4203bf56824afa50ad914df",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_19.wav",
+        "fetch": "archive",
+        "sha256": "d114b0d02a17de93790c61b461c689c42bba31054183a54275e7f367d6bd380c",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "bab25cdfc2e7a79b8f6713a2f3bea280ccaf9db42c52f67bf6875f7a05c008fa",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_20.wav",
+        "fetch": "archive",
+        "sha256": "b991a35d1e1c616b69c8e6cf7e2bab624a665871991f198be772eb3ef339b67f",
+        "size": 162758
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "fbf90c995314298eeb924de29eb3193632beed5b72c73b3ae8caa79c11efabf8",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "b5702661e970af3ebc3910953c59943c526c7bb4e03463de9b5c09b8b070515d",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "6fc3e2127e2fd2d69e66b1874582fd70c9013d562381370db058d5ce310ac8e5",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "ec8155fbb50b4b9ca64e0e2243dcdeae91ef6bab39dc35e9314873287dfc47de",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "e568cc1e31d8ca92f039e07c97795446fd8e6a75f74c561441772ec4f9594f23",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "72df13d2b56a79f1072c57c17f598043c76a54db82fd097fdb1f62d905516e35",
+        "size": 165830
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "0274295b016e5c7ef54edcbb636045146b7c0be4727f544bf6e76000d203c113",
+        "size": 168902
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "75e3a8ee84db75d0e9cec922d8bb44b977f5a73648145fbcd59a76e706636040",
+        "size": 150878
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_10.wav",
+        "fetch": "archive",
+        "sha256": "f68c81bbef2c90f5c5dd032e161fa9ae7344a91d03d901d5576ed77a25ce9b35",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_11.wav",
+        "fetch": "archive",
+        "sha256": "135d59b4d58aef8648caf6ed694d2201db17a115450146874148b81f6ef73e26",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_12.wav",
+        "fetch": "archive",
+        "sha256": "751d3150727511e41724abe935a618d5f18768c02fc05af566ff30adbb384df1",
+        "size": 150878
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_13.wav",
+        "fetch": "archive",
+        "sha256": "a6703983792a977e8cd9226e15751de51b77916d3f1f4553c3bf7cb11c40c3d7",
+        "size": 153950
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_14.wav",
+        "fetch": "archive",
+        "sha256": "b3e50612ea711461d3334ecd087321c47bdc4cca0394b80bb6f8195f4bbfca83",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_15.wav",
+        "fetch": "archive",
+        "sha256": "a4c398038078355452c93b5d507ee3449abd64196dfbf818976bd200e8123928",
+        "size": 150878
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_16.wav",
+        "fetch": "archive",
+        "sha256": "d2ccc0e71e4d4f2b0b04d697d40f67fec22ca268af0132240ce470eeede04233",
+        "size": 153950
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_17.wav",
+        "fetch": "archive",
+        "sha256": "18425b32ad1a774da0d32632e6178a60b42758a635728f6ae5b2178e18f4b0f8",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_18.wav",
+        "fetch": "archive",
+        "sha256": "d10dc34b6550c38ae3993096e316c501ec6fd1dae6d39b16b6bcaf6ea642e2b1",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_19.wav",
+        "fetch": "archive",
+        "sha256": "f10a3578faa519fbbb51633130b3b09295ed87f4579eac6aba9ee5340392f315",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "a69d7982ec566005ae5b1ddc345ec1c931725838d9bd4d4dd469afc27cb3dd47",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_20.wav",
+        "fetch": "archive",
+        "sha256": "8bc31be1ddb17814127ad9e902c5125bcd2c95b0723b6dd861464215019516c2",
+        "size": 144734
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "625469cab6bf578e152e640c1169ef1cac67c75c3b3c387c89b719be78078492",
+        "size": 144734
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "a0f5daa222fb020347e1641f43fb5c5735666b50d3b6e41808d708d9d7f22f11",
+        "size": 144734
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "279d1766b822da5852e353f2adc37d5b70b56af69078aaa6e184cb718ba34831",
+        "size": 150878
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_6.wav",
+        "fetch": "archive",
+        "sha256": "7f9a644c2e6392a7e4af583494efd1307b915bd7367c54c183f455398187df7f",
+        "size": 144734
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_7.wav",
+        "fetch": "archive",
+        "sha256": "5a003340317a7a4fb601416f2d886fe9c1981deaddf7e823608881bd840af15b",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_8.wav",
+        "fetch": "archive",
+        "sha256": "939b33127c8fa2cb73667dff61d5448021284e72776cd95b80351fcee3be25d4",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatClosed_OH_P_9.wav",
+        "fetch": "archive",
+        "sha256": "6c219c4f4f13cedf7c32a261be49b546c4ce565188802b7eaa21d94cf3853296",
+        "size": 147806
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFootStomp_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "f76b78fc0d99af6622107bca797bf85d8c60f3c3e808d52f7ae220383b5ba37e",
+        "size": 2666018
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFootStomp_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "a36d8b5ca133d95209bca1184b37b05bd19027d22d474fe0723a9b945b44cef3",
+        "size": 2667362
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFootStomp_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "4e3c3d096a2fca9668d094098cd2adad2b0be44180fb02fa65939b92df88e4c9",
+        "size": 2423330
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFootStomp_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "26350dff091828034a6f5ce4a3a988a73e472f77c887756028cfd308be389328",
+        "size": 2433044
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "2ad5e1bc38e5b9984d923b278b8ec5488540366082f4de9401d4702b9ba95e4c",
+        "size": 382556
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_10.wav",
+        "fetch": "archive",
+        "sha256": "459b89383db221b9a53276947a99f26bfbda2025f18abff12e4360ff8fc025ac",
+        "size": 376046
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_11.wav",
+        "fetch": "archive",
+        "sha256": "2e85019e335876e8d4da4fbb052be5e692be538a3dec0cc92068b6709469e6ec",
+        "size": 262712
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_12.wav",
+        "fetch": "archive",
+        "sha256": "3f9d9417a1256a825cf425adf6023a54310660baec9349b3859e7eccf16b9bc0",
+        "size": 316610
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "4f47abeb749727a89d6f4c305dbab84ac5f06a8c4ef3cf123956406b92693857",
+        "size": 367196
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "b6a9960e3bdb9eb7f51ce17701bd93cc741c3f30c45615d5f71810a0ea0fbdc2",
+        "size": 342620
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "61d0be677ae16e19c43090fd94a98607c6f12021ca5fcaf0b4b8232a8dfa36b1",
+        "size": 376412
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "e2e1a432dc803d26c56ee5d5695b1d6195c8bbbc3bcb584a058188ebefe1dce3",
+        "size": 394844
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "a6d19dfb28b1f8844aa3ee6f4f3200f612095c35f61b5a1c327b7b3eb6217001",
+        "size": 508508
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "4e9332f5e08d84f32aa83abdb36491f1399648eaf64966465a8535e8c8b50999",
+        "size": 465500
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "e7f8dedf7b27d38d2a09473cb6a3abb2309bc523c9b0c513900c35baead24b28",
+        "size": 290396
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatFoot_OH_MP_9.wav",
+        "fetch": "archive",
+        "sha256": "48728915e1fe09aabe673dd7c13047bea6a6f2b5bbe50c161cfd451c2e79341f",
+        "size": 413276
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "ef88d66d0289de4befe583de11298d75bae788de9ea63f156b493689668a7d54",
+        "size": 2897654
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "f17e44b535801012b99905614151301c8cfc0986ef6a171b15d8898ac702515c",
+        "size": 2893604
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "bbb313654cd3a108b935cf52a32ec17235c41078302924d35b3894c2a4a06247",
+        "size": 2953544
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "f976afb708d190001c138d611bce60a2b039352e9c5e68d27d188e34668d0c6c",
+        "size": 2892440
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "52d58d9fb62b2d662942148c595883e51a1dc0946222ea4293e8494bcf37e571",
+        "size": 2897048
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "56d3864368b4e9821a8d53b127c28c4932f41ce92ab13fa002a3e5de9ff1961a",
+        "size": 3187382
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "7493fce31fb00093e4944f878a7fe802177a5c311e82725ac0ce7956e86f2fdc",
+        "size": 2554610
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "4296378777b3d053c9c9b879d4dac48a856865030a7962fffcef49e811cb44fd",
+        "size": 2524400
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "de81f49dea6f7bcb05cba08b181a29e3aacbe0a60d1cc746a3ec8807c5b7d42d",
+        "size": 2511236
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "6c3ed9d664d944f4d0902a10d36c8da361cb30a3dd4f8d949d9442e4548d6f3e",
+        "size": 2604020
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "1af729b606c5a5610c0634d483323f7705aa00872399cf5edf34625c8808bc66",
+        "size": 2778842
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "3aeb5939739ac0d94a0ab5e0d237d96c46545f0c98778a5b2b18001be1090391",
+        "size": 2397722
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "6b8425bf5659ac659cc8f6d11f64a4d90ec7b64048171df2d50ce9a394c5d77d",
+        "size": 2421014
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "e5c9127d0671031c57da72e45bc84e4feaffc32f322fb9229b326bb4661d1170",
+        "size": 2499302
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "ca0c043151103e8ebeb13fc4640ee61a29db41b3ff43d8e08016d94a75d8bd0d",
+        "size": 2389148
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "a6640750bf46dd23f652f8a225e41ab2d1bc93c76baa7ecd12b28872244dc238",
+        "size": 2398010
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_6.wav",
+        "fetch": "archive",
+        "sha256": "8d1a176eb123056bdc9191f116d5a017493276c3794494b781c75cffbf299536",
+        "size": 2367782
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatOpen_OH_P_7.wav",
+        "fetch": "archive",
+        "sha256": "907cbd6ec0dcbd4b53467411e253d878a996495a427ca0e1235f4097c3e9c757",
+        "size": 2757572
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "9c5c885e78da7c528771cfab9f2f54c142fc784af102a52e1509a57bf2a0594c",
+        "size": 299732
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "ae3c11ddef338536345b62ad5d4c4e1a0183d3fc00514dd64d2a12a92aff3093",
+        "size": 299732
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "8c1fd7f193399140f4b1ff0533f72855648afd3b5defb2a5abab6da7a768d27f",
+        "size": 302642
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "d6cf43c948b868dcbe032d817a3dad80f99161ad28092e0cbdf9f235033b1bfa",
+        "size": 298514
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "56fbfc67db89e13c92e877a6175e9271174d305bff1eb7519795200be6e5d8e7",
+        "size": 302060
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_P_.wav",
+        "fetch": "archive",
+        "sha256": "0fa932b21bd781556751bf7492edaa953c83064ca42fc7af78bda9d5261f173c",
+        "size": 302864
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "237b8f315526a89dab2209c1f22e8400f16b9f3210d10f539592dc8b376f4601",
+        "size": 302864
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "977bd0bd38b55536bf4ecaeaeb9f3af94f6867b9cbd11b376fa7ffd1c8bb46c6",
+        "size": 304484
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "3326f3d73c82441362949afba276ead200ae3ee2b99d7942ccbe114d6d27d0b0",
+        "size": 311918
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "f051fbf6f084d9c52c5fc393b36063c0e9584e8990c6a2d209d9394d11295891",
+        "size": 300104
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen1_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "06d192892e11c5deb7f7676aeecbfd47475d28c37a022102531593f205304483",
+        "size": 300092
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "506ccfeb0cef030d9d7e51be1035cf04a9edfc29f0ccb0cbbda1826c2daef75d",
+        "size": 533228
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "6e3f167e1bb6eaf51dc45fe24592147a4711ebf66a71d9f7cbc0585801d7eb6c",
+        "size": 484076
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "cef03156d80a244c85153d93c771f0d2029539b9f54d756b17e1c23aa9ef25d6",
+        "size": 450284
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "1e1f15f6aa5e9e8eaa4ff8155bd5edaec8178db705015a966fb2efe3e6d5f26a",
+        "size": 496364
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "997fdb5451f8ea2eb7ba59f1472a4482b376a87e192905203d8a95b6451a063a",
+        "size": 534998
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "217104549fcff6bcab23d471769fdf69a1dcf9c77feae6766498793c6e03adea",
+        "size": 446042
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "deabac6ec384fc38c5e5c67c2e4fd6822cbea1a19d7b003ebfcd6007a819937f",
+        "size": 444416
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "013202fd840b3abe70481ba82227c5c3876cf81271dfcb43a3e3f06d9c0d45c0",
+        "size": 441152
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "ee013453699d203642154241f3f53fcd70a6179ddd47d18f63b69bb884d9898e",
+        "size": 441068
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen2_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "0634ee4f898d98806c40beb8cc3e72a9589c9fc7c685458f9f4e7b309e380522",
+        "size": 438620
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "eb887f7bdebf6e22325257c0aa7eb7c2ea72e9aa8f582b52d1b563b22c51b128",
+        "size": 539288
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "78faedd11a0082e04a91b05a2e6026f4b99c1a0c4e62a298f55b47d8b78074d6",
+        "size": 477848
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "abace678fc5cc818ebef2b6b03cae58a29b0cd09ccd810314bd108b4c54c7749",
+        "size": 566936
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "2e43aa9986550db2ca977a6fa9158b6b4b31c905f8374910a7aff35cf1244bab",
+        "size": 588440
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "f56e8d8dda5ac1154ec62ae6efc8d962b07bf255672bddd697ac4aff78005f06",
+        "size": 606872
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "9f01d4c43e66793010ba4d77f1be62ea4689f0067657159647f6044d12cfe9bb",
+        "size": 491342
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "de0da16f02fac661208caf916d5281bc88c41f5a6a8de1e9decc01071e7e6fb1",
+        "size": 496862
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "4da26fcd8bf04f500170d56d4dd27581d93f355b94fc8a42f40c7a7876550f55",
+        "size": 488636
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "6181a329f974c82ac07f2bf916f290ddb2bdb4d60d3777a1679f1059b5cc4576",
+        "size": 490892
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen3_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "e0c5202aee81e4c12e517cca7173c38be865ffd7fd8faaae89b05949c929bbd9",
+        "size": 502454
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "b748a7a0f9a3d9f03361e83ba5c65ff98642ee4376e7b7247c479227ed241739",
+        "size": 614966
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "2f7ad420d068f99ee6609bff793c87c0c435deeafc3c82ed1b8cc2d975abf707",
+        "size": 581174
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "6e5cfbc0201e41967dbbb544f943963efaac6bb4b7b3afa03226559bcee0e2c1",
+        "size": 602678
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "ef803cb9ac61c2ab869c3933abc4f3c2ef896cf2fbda9abd6e7058a32dded161",
+        "size": 596534
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "6e41dc06d2f26da9a219d1618bf56f8575601855c29c89587f4cfad9d2d5b3bb",
+        "size": 575030
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "4f2f8da3bbf650d0b996c7f3f626342ec61b224876d622d4097e91404e8b12fc",
+        "size": 545078
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "cf4d25fad007414b831b8dc714d5ae5d8ae2cf4986f365440d4f308b43584d09",
+        "size": 552110
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "86d81ac676dfbb815e924082acd9907e4bf0070aac3daa41345d85b2eeb9c803",
+        "size": 552674
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "521e1d0b152b1c4972fbf3c63a7a82ff7004dd2e480c4efde2a833f62e73c179",
+        "size": 549602
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen4_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "0c7200e06a0222a755ae77906d60345f44baafbe094bbfa7c087c4a946f93e31",
+        "size": 547898
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "3fc2156c57a2da4917b1f34a22a1bb399bab3e913ba6b622e36ee3d97360b93d",
+        "size": 874298
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "f833902691dbb4c0c143e2c7782714e547c9994631e3a3c204dac0a24e78ad7a",
+        "size": 885536
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "400c62aa398ffb4f795c2161778494fd73f5fdc17f5946e7bff382c4e124386d",
+        "size": 880748
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "c3b3dee759b6d7ba6bb9ca0b5dccef84dffc97937f2f6b6cda2578e80056a116",
+        "size": 878852
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "bbf2451209dcfdbc84c610b6f0791e943318b88c1a5c6ec54571f577c2dee79a",
+        "size": 878762
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "4649925ae330ca73b86c2caaf856480c0daf539b634eb42027e0b3c39f911b91",
+        "size": 709364
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "b83a449adcf2b2787bc00346485b56e6a4d549aba07abcd7fe9dfb2b0843a9e5",
+        "size": 705200
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "d179489eec387baa3d79125c681c4207e3521d8de5f01e6511a0f8f80ef9e538",
+        "size": 703394
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "d2c8f2321e80ddef5d8e6701aba5bd4bbb245f83e2bc9848b6809f3d3264e40e",
+        "size": 702218
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen5_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "b4397d34555fdb723c0e1a0e0947dfc4aba07a9c1c0f43eabdbdf15a6b604fb9",
+        "size": 709616
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "91da14f639c2ebe999baf0c187c5602b532d7f65efc8f46650ba66527131dbe2",
+        "size": 1330676
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "161120254d96713489b0607462c0c9bced52928698fc4f5ac3a0539c2bdb8979",
+        "size": 1336820
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "a6d69a1e162dca253e5cab9bdad11d9626359104c10a8876be020adebdbb06ef",
+        "size": 1310798
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "874b25e17739f604ab5035068ba0678f6f2156691c237f839ce380da4dde7a53",
+        "size": 1337372
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "35a61fc97e4e136b9d2efcd8093521beede4535d066e92f6901cb71d642f53ea",
+        "size": 1311266
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "d0d8a853ce568b48fbcd5fa5a39783f35fafc3e75c1b1b448da72008febeb2de",
+        "size": 1110674
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "68d6d5ee8f67fbe2feed35a9e7f20f6ad84b20b94b283616f267c353acf3e920",
+        "size": 1126034
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "eb10a33c482b4c779842902dcda73ea26cca4c08489b9e2ec39ce3e624e8b9bc",
+        "size": 1070738
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "6316cd16604206044618e887189b30d7aa89c4d5593e18c7bf36a095898aafd6",
+        "size": 1202834
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen6_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "90cd55df36010644d34b29a706a6095af3f0612fe6849a6d8a932a157a98779b",
+        "size": 1220420
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "eb8bb733025e7f7fc6856794f3fcea415f3b81f20cbdca8c6aa3a5416e87e5e7",
+        "size": 1783250
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "1bff48d23fe108b075d00a98e1c66c6da68c37ce53e32275032e0035094664e3",
+        "size": 1785782
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "2f4e33b3db236812dc852a832fcc705317986ad67be1ccdde90fc7a76424a78d",
+        "size": 1784390
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "98d35fcfe5c28e4453f57a1c0ce7b04491a12107f0fc91784e71fc0347ab2808",
+        "size": 1780814
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "05c9dec7e5091564f596cf6b2c8c10ea1bb2715f019f21cf3d912b61ca8f871a",
+        "size": 1782152
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "be4e760cd6008c5aa20b27716a363aa3c53e1a5e7a5fc0aeceeb94dbbbf8c47e",
+        "size": 1438712
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "0de7c4c54ac9c9afe3dcedc1c6455143cb13a76750e9d1e63f55ce079b48cc71",
+        "size": 1440656
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "b4199d9034fe52cfcb856d04b08b1b8cf6af283dcdbd3a48362015d07c91a4b1",
+        "size": 1438412
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "10283b89bff2b89966e7ddf0b04cf7057cc7c8d0b810726514811312ba86a811",
+        "size": 1455164
+      },
+      {
+        "path": "salamander-drumkit/OH/hihatSemiOpen7_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "4a04d83013d7a21a2ccef3dceace0579686ae69568ea6345813f607a0cd7b2cb",
+        "size": 1438202
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "03812d6ca9b9fc489392217c02ac4fdc2c46ebedbf22b890666775ffbbecff9d",
+        "size": 136022
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_10.wav",
+        "fetch": "archive",
+        "sha256": "3b8071c4e756939d651dedfd80a0ff20b69124c6b3f5727944ff50f0549aa546",
+        "size": 136766
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_11.wav",
+        "fetch": "archive",
+        "sha256": "ba7144084b66b6af50ce51902be92469c37d963b4c681c6b16445d0c4c20c97b",
+        "size": 135392
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_12.wav",
+        "fetch": "archive",
+        "sha256": "2352cec4c73cd2fe41ccc442f33be1aa09c3bd755b8b13c405a41117df70a911",
+        "size": 136868
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "c582b7c0da95dc3bc9fbc10cf7ecba7059b412851993cd4932261b9bd0afbfe4",
+        "size": 135296
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "e8e29cfbcc80ea1642ec11ebc69afecf15274e2b098c106ce61bb3c8bab9e617",
+        "size": 135824
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "56bf67c7ca1f2b1dd695408bdbcf7b84ffcee63892afc1f5d5aa0303aa3f43c1",
+        "size": 135974
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "52eaabec3f3d2a1b07c7c609655bec707c485d870d93d1b98accbc67da9dd44b",
+        "size": 136022
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "e790327d9a898d1f8787ce5d9e5517fb20073f5a69ac8f6eff93ae60ecb13233",
+        "size": 136610
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "afc0e604412497071bf7a35aea77941d2e1fedba943186af057d740fa0d21a05",
+        "size": 136028
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "b12ece06133a57961548655a307575b0928f7a9cebc2a567ecaf94c29557300e",
+        "size": 138266
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_FF_9.wav",
+        "fetch": "archive",
+        "sha256": "dce419c81924b64a1f9d45b485da0e5b993a6154889c8236d1ec78c1e048044d",
+        "size": 139436
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "e93dc6cdfe5316da1b45a848e99eea6999ca7bc8101e13cb89b9a57e6b7c49bb",
+        "size": 135920
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "1b1d1662fb90dd6fe1939729f9fe39c016feb1c5511ebbfba71d82b2911dfc55",
+        "size": 137096
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_11.wav",
+        "fetch": "archive",
+        "sha256": "0fc84fb68d8aa25e01cc7c1073998c3e2d43fda745b5ee66ad2e7993d02d5e30",
+        "size": 135740
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "ea463ec5219d8014a381a3e9e6dd1eec63c64a55031c660d862daa19a503a376",
+        "size": 136316
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "88ba7157c78cc4e7b1becdf88c2838b79e5530489ef9c65eb919df08663df8fa",
+        "size": 137000
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "12df19150ee3ef633fe6b06bf0bdc69fbb43b32da031142d78fde0cc8ba72e92",
+        "size": 136904
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "5067907c7899ac4ae79384c0482cb0258b97306f01832e3f6ddc3ee0ce7253e4",
+        "size": 136208
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "b84380a72c3e4def02b64a05cebf23cde661dad68f1ce2a5de2cca9c0ef0870f",
+        "size": 136712
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "abb8ffd424f89b477701a71eb89744b637169f2b4b4a45de3a93fa8bd98189fd",
+        "size": 136712
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "6b099a8131d82d7914b08e23c740fe0c166340be16a7fdfb35d53d3b5a2a59a0",
+        "size": 135920
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "4604a883f9324fb4eed44298af4eeca6ed51a80e26ae4173bd69834bf72c4ba7",
+        "size": 137432
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "dd12bd84b8b409cfb2ce79a88f8e62ae4c78859fba5b4629b9108baab85e43c0",
+        "size": 136220
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "1d5a284b25cc8d6ed9f31f92d225e61a21652062985a2a2c6c705721b4da9bd8",
+        "size": 137012
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "b8476d98fb3176f2a9828db661f31ef7431852690ea67d1d626316c703584da5",
+        "size": 136316
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "5ee36601724639b3e58214a2f5b03df999be57f11db9e113a9e12d90894de034",
+        "size": 136658
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "3a13b8576b382527dd874512131528ab9fb76c44260ee597c93eb097a1ffb162",
+        "size": 137408
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_6.wav",
+        "fetch": "archive",
+        "sha256": "ce0dc41c5e97b57d366d93a3ec5e7a011b7408eb9867e1b6fd9136e08851a645",
+        "size": 135368
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_7.wav",
+        "fetch": "archive",
+        "sha256": "2bc034d18edf652947e60c527a228ce0c14fb894baba22900ee282bfb2f1a9ec",
+        "size": 135368
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_8.wav",
+        "fetch": "archive",
+        "sha256": "611f1492fc9ea848ac4a764428cb1bed73151a6f6bf691b6826b6b8b198d7c2e",
+        "size": 136316
+      },
+      {
+        "path": "salamander-drumkit/OH/kick2_OH_P_9.wav",
+        "fetch": "archive",
+        "sha256": "b1b39ab2fc8c05232d7a6cc58b220ba7644a286a492d718e69fdc579e18fc8c4",
+        "size": 137438
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "f3c3272a7d0623b6d9b7cb028b08b5b3812c650fd22f4739e43e77e9faf69b28",
+        "size": 136022
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_10.wav",
+        "fetch": "archive",
+        "sha256": "004118dff5d919ae606ae72f4a3afebe9d95be98fc84067f62b4e9dd7b82ab60",
+        "size": 136766
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_11.wav",
+        "fetch": "archive",
+        "sha256": "bf741f16b098e7f69ce39dc88e1428aaeaba70edac740a40180cc474290112a7",
+        "size": 135392
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_12.wav",
+        "fetch": "archive",
+        "sha256": "97676faa484d49c67d4ef0d5284dc9aa5610355ec1637e82ac11a4059e2e1f88",
+        "size": 136868
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "d7a5c50cdd03cf985b330397030dada2a4ce4350b6a6db43fa1b8a3db48c9a75",
+        "size": 135296
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "216bfaca6ad9acea86e041ae7e88498ffd0ecc77923079ee7498b2771f6c6204",
+        "size": 135824
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "0a1ab3061e24c86f4db77e4e6baa58d5ed1166672d58f41c7eecabfd535126d3",
+        "size": 135974
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "048dba6144e6e11fd6bbae3dc43ee4a097a731f942a2f5f33681c6f0bd21ebb3",
+        "size": 136022
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "8f032531272202da0af68857c6591cd13bd88fb1d173786fa0402f8b5a7b06cd",
+        "size": 136610
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "1f07957da48f6afc0a3c9d320b3473b52a7243135352f0c489b5ea8e446d15e1",
+        "size": 136028
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "ae9261e1775c9c37df5da50b0735e53d7fc95a1d9aac0b97b118f8d598318de6",
+        "size": 138266
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_FF_9.wav",
+        "fetch": "archive",
+        "sha256": "2576689f41077aad8ce2d1c7d4cf802c24225fbd291bbd490cae2184ed209971",
+        "size": 139436
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "fc1a6388402144f1888a3febce1207799795fbbc3d87f41ce84be31f4adc70ae",
+        "size": 135920
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "10513735c8c24f8c33f0457f79fee13a60c9fb98e2e0f62eb030b19b2a68b782",
+        "size": 137096
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_11.wav",
+        "fetch": "archive",
+        "sha256": "c1d2356b76fe7c5e59baa682576f9b9f1e1b05a7dc9b1c24eb131803a47d3421",
+        "size": 135740
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "30bfcd1f944c3a427e443db037a813278f404628bde6349cba96cd1501365fc2",
+        "size": 136316
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "b112956b8422f55be2fded7688e2a5c86b41f58e5a4171aefbe3ffdd267c2dbc",
+        "size": 137000
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "e7dba761a85fc7299f67059cb747fde29841b8b82c06960d3d2c94337f790b5a",
+        "size": 136904
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "926912994a9a201c117978f130a329ef7942e49294790b38a1f4ab4b4f2dc568",
+        "size": 136208
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "e31c5d46c5404fce5865fa680102930db550c36a748a93e229e47ad4578eba67",
+        "size": 136712
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "b09afd59e43d7999bbeaf139b55917cd31f74646f035408604e49af1b61388d6",
+        "size": 136712
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "ade55f6fcb008a40f52bd7b87d1d299249438359075fa9118b9e2892ddd79903",
+        "size": 135920
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "82ebb7453fd5272f555a6a4c5809f1c370613632b16e63d37d35942363a88bbf",
+        "size": 137432
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "bab7bc6aaec2c0d6db39c8e33214c4bf6870f51b557238eb1a5ce88052c92f06",
+        "size": 12832244
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "3520f1518c7d05a7ad507aee1d50aa6e299572c6daba9c9d50731bfd9e33beb3",
+        "size": 137012
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "097d64b8d3a2ed085b1e970943a0257a4debfcabbc6db8d3933956025bb2b630",
+        "size": 136316
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "6c30e1e38adee692fb0758f6d6149464fd8a99cbfa9b436e12e6087a29651455",
+        "size": 136658
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "c08ba4e701a4fda8d0b60a0e78a97a7a1656c117e8e901ad853b9b41d73bf616",
+        "size": 137408
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_6.wav",
+        "fetch": "archive",
+        "sha256": "25656ea63e857ce5ec65752f4cc156b2539964e0ef2125c7e5ee4aaf2df841f2",
+        "size": 135368
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_7.wav",
+        "fetch": "archive",
+        "sha256": "7002cb71c891e1df3d05ae9ea060a56e9c10f794ddfbe36165e943bba9e02a6c",
+        "size": 135368
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_8.wav",
+        "fetch": "archive",
+        "sha256": "d0681dbcc9f5d2ebdb93a43d0dabfbdf38e12269f162de8e179cc04cabdc6749",
+        "size": 136316
+      },
+      {
+        "path": "salamander-drumkit/OH/kick_OH_P_9.wav",
+        "fetch": "archive",
+        "sha256": "c7325c9f595897d6a9570914195cec9c6b7c15be00b24c26e810b94dab1b3076",
+        "size": 137438
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "bfb74d255554c2965bf012452bc3717dee88a44aa04d120f2a1b86b9b6a7082d",
+        "size": 680900
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "656d624bd176a593056d2d00e3cfe3ddce34d15b2d2902a8aa63e9ed31c041b9",
+        "size": 687878
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "2876f826cbbbfd70a5851ea01683e271875c487bc7d0be6cc053938e27d435e1",
+        "size": 693500
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "1d0485f5539db444416cf11026086f8b585573d444f9e09656c2201d006c737d",
+        "size": 687614
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "bf58b8ffb94c9c4d48d58f719d725233733be04f693b3cbb0f21be6eddb2248e",
+        "size": 681158
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "bedb1850fe2028a4da6570e1a8f8d40015dadd2d6c66cd3111eac69e10a64eb5",
+        "size": 692876
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "2be703c69fa0da5bde61269115e339bcd2697da48c77665a65773ec1469bce1b",
+        "size": 695114
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "bd8818b937a0975fc5b92b49b24e61ebe829bb8b26a6df2969db85bb859b7e48",
+        "size": 690686
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "4c1fdf7233a170eb625efa5e5681d1811fb53fb7f34a85a05c8bc936d5ac60b2",
+        "size": 609278
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_10.wav",
+        "fetch": "archive",
+        "sha256": "75be214d3b978767e37f6c0530b3f45fc21053146fd5a253929490fd527248aa",
+        "size": 616568
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "d30cb3a823638fd05b15db7f7cbfd09f1dd8f5bf6b48f37d622ce9e53c4a3f27",
+        "size": 610424
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "2b292c140e295895969a0fd9e21195480380b417b65532cceca6d67008acb3e1",
+        "size": 613496
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "75912c72af0c970c28072e7af8747ced912862d4afac24b07193a34453a64f52",
+        "size": 612332
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "91bac67937b33371d0009f9ecbece6cd84276acc2f9f04c215dd9093dde32111",
+        "size": 616184
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "cc0f6145f2f8f605832b812f51cfeb88df6b4ce381bbd65e13f69bef66171e48",
+        "size": 613076
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "5b8c7ce7e65c523e55f6887ff87f4f41ad7aa4ae10e37fbd86857bb1fc12bf59",
+        "size": 616184
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "86458ea9ae76c42178ce99a84c6b812379be34fe81ca019f1657ba16615e32f5",
+        "size": 610826
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_MP_9.wav",
+        "fetch": "archive",
+        "sha256": "c01624dba48796d60337f85481208681bd49431c0aa6ae5458af5667fb777a27",
+        "size": 611204
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_PP_1.wav",
+        "fetch": "archive",
+        "sha256": "8afb4c8bbb7a46472f387db6cb0d6597f3ad14f73a6e23bbf58ed945accef0e1",
+        "size": 583160
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_PP_2.wav",
+        "fetch": "archive",
+        "sha256": "cb3ce36ed67b1c1496c367ab160f926031d3447cd428bf541c132c72de267b19",
+        "size": 575834
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_PP_3.wav",
+        "fetch": "archive",
+        "sha256": "aa1f5ed7d39cd09f899090782ed244fabd3ff676ee99c52b5ab7d385ffb0acaf",
+        "size": 573926
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_PP_4.wav",
+        "fetch": "archive",
+        "sha256": "31b32eef5040cb64dc3bd2f0ea09ab730aff32dca8de14997e5f3510bbe5ace2",
+        "size": 580856
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_PP_5.wav",
+        "fetch": "archive",
+        "sha256": "5ae59fa72d6385612076e433e8138ae9437b932324a92904f4efe00fd0a5695e",
+        "size": 573926
+      },
+      {
+        "path": "salamander-drumkit/OH/loTom_OH_PP_6.wav",
+        "fetch": "archive",
+        "sha256": "01eddb9acc234dc14a72ba50d910bda52d9e9c6a5ba9806ef73349a749770088",
+        "size": 579692
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1Bell_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "736bb2a58147359054df4b7c857b74c2d7b848efb9335b9e354661f025363e78",
+        "size": 2123384
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1Bell_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "b77ae1c2db21d363a94b0d667aba620d47f9bd4d64f6c64ac528119da7398cfd",
+        "size": 2144888
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1Bell_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "54840c84362223f5e1f2a395ff3f8ad294cf168357b9c112c91f3fd36d801344",
+        "size": 2071010
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1Bell_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "9a2a9b4aeda1c56bd150d4508539c31f042e6ba6b43a21437e24317710dd2f5e",
+        "size": 2119016
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1Bell_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "43fa7974e04c4bdb757d6936ea15a97b92eaf7591a1d501edeb3a7ca8471b512",
+        "size": 2261624
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1Bell_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "61da1657a50c9b17b790c0d0f94f736c0baed7b13f44676d2ff4f7ee98b3fa1b",
+        "size": 2092718
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "5dbdf8cdecd62b83acfde4e268be6a52da0ca64ae145536004ffce3b1b7d6608",
+        "size": 3094256
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "5e80faf808cfd0d783bf105b23c6024a6eb733698b5f054fbf717ac0dbff21ae",
+        "size": 3008558
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "00451b68c50c47f7bb0ee5c8d014750423a0ea4fd0d18a02713f41cce90faf2f",
+        "size": 3293792
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "4341d6aec319426602c5e940bd919ec7400130e3b806358bb6b8af65438539ef",
+        "size": 3237632
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "9e9135d595edf9f41ee3bd5caa9c797233422f62a3fb2c63ea542c58fb5ba155",
+        "size": 1946042
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "97a1190257bb90081bebc9fb1360cdb9feccbbe210d042cae685aad067fc0ad0",
+        "size": 1990232
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "4225eb0a1c758349e8e2bd06c3d2645f88d990fe02bb366612becf79fb1650f2",
+        "size": 1952462
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "b8ee4a7fe5893379d3e8c9192bee810ead7ee0445e59cac9a4100d052d38be53",
+        "size": 1930694
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "1d86389daac3bf2393f1dbf565baf9889a1ac09f569e53fc42647e975dcef836",
+        "size": 1947224
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "b6981c15b6b9a146182ea7a84f8c3f2ffddf30689faaa3c07ffe68fe3e9379e5",
+        "size": 1943960
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "a0373fc95ce9da740f745c3a3691d3cb4355b560af13cd9fa3d51306d135fca1",
+        "size": 1971698
+      },
+      {
+        "path": "salamander-drumkit/OH/ride1_OH_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "772906b0a160ff9567622986349f3879cd8eadf5b854a79f768d2fc9fdf933ba",
+        "size": 2010818
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Bell_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "b6062bf73ff312c893da144d8a89fa27335fadfb05ad297ff28f472f42083c24",
+        "size": 2094494
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Bell_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "5fd7f36f659e8647e1f8fcc4a3b702fa93c5428bff6d33c20e6b699df1e0b553",
+        "size": 2131820
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Bell_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "44d5a092eb14fc23753a2042f45bb59a70ad8c2a2d70ba42317fca24debc8b28",
+        "size": 2088086
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Bell_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "c43695e92f374d69eb0ce627b627457adffd7eccd4b4fddbcf804ac7b6013023",
+        "size": 2080226
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Bell_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "f3b4458b77ad4442fa2f8818ddf863f507dbbd94fec79089b28d2854934bf9ca",
+        "size": 2090984
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Bell_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "334f47ee128fcaca84845b52ee30b06d3027e18cc65c5f9cb5dd4dfa8177df8f",
+        "size": 2073116
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2CrashChoke_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "78d5516875f31c681a194572d66ca80590842bb8d77aba777ee0dcecfe49a47c",
+        "size": 623888
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "a906cde8af480ecc653861bb3e2b672f89d9bf9c12bd1d302078c8f9efb2b4e6",
+        "size": 3072092
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "12400d7d9a723b2d98503fb1e3e5660ae024f6019bd2343da7a9fafe4e1ab668",
+        "size": 3196640
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "ce97319993660d040aa76bf0a42c319fdcc239110dde83c096c02c80c1d43849",
+        "size": 3044492
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "6f930ed77039d6c59c1078c15486eaf86eb17a9482ea9ac17e7ee0e598518deb",
+        "size": 3284636
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "1e8804d1f3f5d3bc97009b9ffa7be9eff77fda49cb7e5f78cd3839aefbd1ad60",
+        "size": 3081932
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "25fed9995d74c141272f3d565879017409c2044414330ec397ef6b75e8e985cc",
+        "size": 3073232
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "3473c37e8033cb2a59d8c0b60267c405ee221e2fc71b6c32c10a04697ab671bb",
+        "size": 2878118
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "8c2d667cba2b7e59ad1fc2d099689e740f1a21d3414e89a5e4f6160dbbc2c6e3",
+        "size": 2899046
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2Crash_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "c66ddea26294646fde371a227b982e47ab0120ab510a788d57dfb6d478ab7438",
+        "size": 2951294
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "957682815818559d262dc65808b35abb8798962d0897f7e622893d9050985f01",
+        "size": 2964086
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "57325de3110c5bb38be0287f053237f0e576b3661bf5b73bdfba1c9603ae794c",
+        "size": 2976308
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "0b24b78b0c81708686fa36fda00c9ee6729ee16525a3d984440def69436a0dbe",
+        "size": 2952080
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "96ed12ec8d87e2087e62b5ce54ed10685841c824f40350aa79c18346dd954263",
+        "size": 2944400
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "eb26776f1debb86c266ef8260c1c51658e4dd0d49c90417ce61d145df1fccaed",
+        "size": 2938166
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "c3c7dd94837550e73cab0a59b312f432fd1fc82e640287aac710f7665e99c910",
+        "size": 2817512
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "06ddb8cc673d060a69a69d886479022d145b0223ef945785eab070f832573990",
+        "size": 2844356
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "d9385ce5a2e2168c4133385a4a46bc525e2953869f13b7ebeb8cd32e2d97ae44",
+        "size": 2823026
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "16316d661c1924e94b0f3229e7f65a4c78f1dd5a859087f62b3226c9e738c282",
+        "size": 2835950
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "a62863d92467b0238657a49520ef4f602daa85834908c31352f773a181179498",
+        "size": 2836214
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "1eabfce8e7d370b6ec832692319aa005abb0179675567e64dc1e3911db9fd357",
+        "size": 2809562
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "16eda2cfc429964da9a8d12da5f14e337f4c924a66b7cbb30c17fbe646a5b2f0",
+        "size": 2827352
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "b2ade71e3e953520eccf3550eb9e9e0caa63761c8db187df1f0c9894cb8b4791",
+        "size": 2809826
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_PP_1.wav",
+        "fetch": "archive",
+        "sha256": "ed657fef84aa385f58ebb87cacfa0da31e7465e01d6dfdb1c9a16322466d9556",
+        "size": 1595048
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_PP_2.wav",
+        "fetch": "archive",
+        "sha256": "aabb65c40893109fb1b01e91d697a3ac8182f159f74e1424fd4bf4663bfe06df",
+        "size": 1663358
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_PP_3.wav",
+        "fetch": "archive",
+        "sha256": "5bb42315585e1960dc56205e1fdb5dad9d50859255befbf396f495fa449ba6b1",
+        "size": 1570358
+      },
+      {
+        "path": "salamander-drumkit/OH/ride2_OH_PP_4.wav",
+        "fetch": "archive",
+        "sha256": "56e783c3965dd6a967992ee584a5a4f552c6d916d1efe79906fb10b4c2e49e3b",
+        "size": 1588916
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "c0214b067eb9001ebb1505f91ac39589c5c62acdb9e60fb59f89a43336897519",
+        "size": 486734
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "b693e0814fe11754e251863e2c5ab0cec36f9767ff2ebcbc2fa80e4541f62142",
+        "size": 490070
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "c58ad1f8b5478cc3a4d42b9be0bd2ee4810f27a84789b896d9be0887342be494",
+        "size": 474026
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "cdfcecac2a0faca358d2fe1ef33044e65b4f806fd995512ed414077e3a2f1b35",
+        "size": 474308
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "fcedd96777dd919ad7d72e3d462d38b17c9bd2b50d8653e1a2ce83b0f46aa517",
+        "size": 490904
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "691df03cae81c65d70b544d27532e550290bbfd0262b4f08c009bf0d9a995c7f",
+        "size": 496364
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "bc8d0fe0993da7a159871e401c98d382e0bfeae789ac46c6967b35d65c993032",
+        "size": 478652
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "9de1f37658912923a9210b5d6dfd40e69ceb4b9024854b0f1005c0f0b29f0984",
+        "size": 481202
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "6944b64ce42610dc8cec0610099a0355e8f919dcb04d3512615573f873229574",
+        "size": 475760
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "a0102c3fe4cfa5b4d953d09ffaddbae5c0e3518fb491d789c8be30eeadf68e98",
+        "size": 478310
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "4d700218921ad4fb1da1ae9e3eaf3b516ea7f31c67f87b4ffaa22cb1d99c5d39",
+        "size": 398558
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "2ffc08c3718565bfb690e7a0b0cf5a96cf61f5e60c2fc8955f62b1da0b2d7215",
+        "size": 406226
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "fa8a8bd510626da5db89f639b3be3a5fdfe9970c5baab68e92acf400025683ab",
+        "size": 405542
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "d4a4fb408fb148b3d881e6a096de459b28e6c5177d3ca54034e009d017dda956",
+        "size": 412634
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "bf9cfbc9bfc310fcc4413a77fc3c8b8d210b92211bc4bdcff6049ef5d603467e",
+        "size": 403526
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2OFF_OH_P_6.wav",
+        "fetch": "archive",
+        "sha256": "c7ef14eaf0683162f8fde03f02870f6ff25b00329878b062fe06a4480a4d2703",
+        "size": 403640
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "21303083cff25aa5689c0c8f2a6a86e5e1c60f0455a6cb00a05cd9c54eb282e9",
+        "size": 499958
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "e0c6a69c450871776d0cc862e20af7fe81eeb88ef6e39af036b240df36f6ee4c",
+        "size": 505580
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "ed223aa2a4b2cd69842ea09eed5516b14d1ece2d94b5c2fd90b1581bda1ab678",
+        "size": 507704
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "7cd8ffd0cd9b3b7131d6be05b2b9ded5a9de452374f452b855ec58a9ccac5d81",
+        "size": 528470
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "7b90ee7a3d9867894c55734f0de45b61a3b57327ac7f17672ecd0e33206cd829",
+        "size": 537764
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "293cb08549cece9f127301557bf175e7a10b2baefce029c70c44b890fe637392",
+        "size": 507152
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "5dc270a6b749f10d2c1a25710d8d330e25ced94adef27027d468e373289b9c81",
+        "size": 542096
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "e546492729b87cec9f6df848b33781199adf5b23ac4eef4bb07baab28fdc9b1c",
+        "size": 508940
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "b7b513d1393cff150e09c83893b95b07fe71449032d142104026214885b0df0e",
+        "size": 493472
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "d8ec5eb0fcf9de80a383f1731742651088ff2e1df234445059da457b8bad4e5a",
+        "size": 497780
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_11.wav",
+        "fetch": "archive",
+        "sha256": "da09d0df6a53b6468be44a833463c287bc72b1659c6df12264fc1437e740fd43",
+        "size": 495344
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_12.wav",
+        "fetch": "archive",
+        "sha256": "e3331d307d8ed36a52f35d1482130f40aa569a265e86e5a3eacc8e88e9d0c9b8",
+        "size": 541958
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "b85b99911de67c86309c000201dfc664f696f5229c433c8f44aab2c6faedaaa3",
+        "size": 501488
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "503b64e20686d113c5d59113a9077a22ee154ebf7434696586e1bdc0527b025c",
+        "size": 503324
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "0de2b5be0bd1bd7a529be42f0f10e87a1b96bd80a5c7c09c1742e588491dae3f",
+        "size": 506996
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "f1789101fe97512a001fcaaf1004367257b1e178e7fca23857e7317404058aff",
+        "size": 503324
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "db915254b49430ad3e85d3f65ba373342cae630651548561ee338d908a213779",
+        "size": 514376
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "f3794971f881d7e33a9a068858e7fe2752673c48a9bb8be2971d3f53931d4a87",
+        "size": 515612
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "e322a162a0adfcb02f2c9b6bc63671eb4deec4455b5da3596bdd5dc8de738b1e",
+        "size": 495344
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "b4559f98a78849d28daab241d76ff709d7ad7d61198b4cfeab983c4a272fc8eb",
+        "size": 517448
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_1.wav",
+        "fetch": "archive",
+        "sha256": "85c2613eaa813ab88f5c5893a3c8176f1324227a6640e4cd16026e8277e45fcd",
+        "size": 170216
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_10.wav",
+        "fetch": "archive",
+        "sha256": "8d3a540b7d8d809357fa13de8910481efa0bb741949fa886af37ad6579a46067",
+        "size": 173348
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_2.wav",
+        "fetch": "archive",
+        "sha256": "fabb017de663c366af70c04c7bd25c3493b21eb89d903d2e7b53d1d282c55b47",
+        "size": 171566
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_3.wav",
+        "fetch": "archive",
+        "sha256": "3578a7f082dbe42bcf3ecc2c4d7f92b80bc1ceb3029a7b18a575ce5c472fab4e",
+        "size": 171050
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_4.wav",
+        "fetch": "archive",
+        "sha256": "26965bd1067944c8591275ade302e71141b4426711d2965f61422842e709fd10",
+        "size": 179306
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_5.wav",
+        "fetch": "archive",
+        "sha256": "e5cc17fb10d6c76fe1fc4519e1b1002fac7c648d53c6f973a554d210e8ba6ae7",
+        "size": 173534
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_6.wav",
+        "fetch": "archive",
+        "sha256": "27d18b543ac7ab31da0b9cbe7a641867d76712502f418a8fc41a0913f438ed7d",
+        "size": 170252
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_7.wav",
+        "fetch": "archive",
+        "sha256": "523c0375489161552e05045fa09e99a3cd23b8a3c0704573877e22ba260d8bf1",
+        "size": 184694
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_8.wav",
+        "fetch": "archive",
+        "sha256": "8885e8a1a95ee40fd923076a2c8f9b2e7871d1a81981cb99fba898a02d74d160",
+        "size": 170330
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_Ghost_9.wav",
+        "fetch": "archive",
+        "sha256": "1b4d5902a6f12d20a179c7edf923f05e212b6795e0d50d32e24e94d8ea35e063",
+        "size": 171056
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "3eba070b310fea31ea5869423de3ca947ee4d6e0cee1898ae33c810f0bb3c4c0",
+        "size": 510806
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_10.wav",
+        "fetch": "archive",
+        "sha256": "723b8887aa10959a906c038b898340e4d11d2e66313aa5513b0db0646b38d358",
+        "size": 516848
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_11.wav",
+        "fetch": "archive",
+        "sha256": "a182ebf82fc66d1edad6191e2e007d60fabdaefe0237554abe22f5e7140f257f",
+        "size": 514376
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_12.wav",
+        "fetch": "archive",
+        "sha256": "8b85b0bae13f606753921ff82c727abc8088561bd6bd2f89311bd1433f5279c8",
+        "size": 503324
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_13.wav",
+        "fetch": "archive",
+        "sha256": "43167c644247181aee2a351fa89c63e276d44554417b84e1df7494d4aa821b2e",
+        "size": 512540
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_14.wav",
+        "fetch": "archive",
+        "sha256": "065eb354a131fb90451c4f6d49427b1361a7d96ef8d1bed1f295a4344f3aa9ee",
+        "size": 495344
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "981394196a9474a033817a09c8801b986b2d57fb9675dc6722f76c5bd3a6ce31",
+        "size": 494324
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "193fc75084fd4c66c5d38313cbe55924ab1cfd92933b893560a3fa5d49477ff8",
+        "size": 525944
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "fa2561bed875215b9abb1a2164f2c3e7558872ca002d78b2d69fed538b625725",
+        "size": 500852
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "eab08730c6a68985255648cf39499839845e4f7242ceddf76496e21c5390b4a6",
+        "size": 565442
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "f132067f687902de0ede507f50e1e22294100d2ad9bac2756b7a72c51baeb3c8",
+        "size": 510854
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "8aff0ab8892bf7884c128e8e0d36487ca244dd6a33c2ea7ecadcb780b7184ea6",
+        "size": 538586
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "b574abb3bc24e20f01561af212b97ca9a2e0a61fb7ae8f447594f66d1214f2e9",
+        "size": 513776
+      },
+      {
+        "path": "salamander-drumkit/OH/snare2_OH_MP_9.wav",
+        "fetch": "archive",
+        "sha256": "8487ae051b59d0f263bd9a33a7052414dd96748c9312510f820ed6ee764b8be3",
+        "size": 512540
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "e6149123772bd25d72aaa1c85bd23d6dae693da954f1f53bf1455686db85cc18",
+        "size": 369062
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "5257aa24652d69d423874afaa2d3d8b21369a518dd5d103ed69f53655ca29328",
+        "size": 383858
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "0467abdf68238a0f7096151ffdf31b1d9267f6d4cad9455270b291f6a82595dd",
+        "size": 359246
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "170489ce4ef3f2f2f9f3e3a9f493e06dd51d3365ec4cfadc27160580926463fb",
+        "size": 386294
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "28a83c1c7187193db449d1ca0d77678db0084f41595647ab8917136111115d74",
+        "size": 374606
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "c31f38dec9d2eb1ffabc9f5896db5026eec73c5442dda5b5b668ac903764a6ba",
+        "size": 362318
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "46a7ec543f04c4331747c602939fe90297b319cdc135ff635b48002651ee6375",
+        "size": 346958
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "49fec5cb32712db0f765f14fdd1cb4e974c828604bcb44f93a68867dbc5a07c4",
+        "size": 368462
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "baef1e6950eaa5739d38ab56584e74648985e077dc160aa6a0edb9f81b255460",
+        "size": 342152
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "53dfe3c6c414b8984114e7e8182f2e85ebcac6b2f4216c22e03ea20f1f173016",
+        "size": 352502
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "7a28dea97f618a377834d537cf0285a80b18df18ce20b6e94817ca59c3aaf6f4",
+        "size": 343886
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "8bd6edb0af99ac3efe444433e0c9efb79afcbb0f6b49abdd790a00a651915711",
+        "size": 337778
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "3ae275919b9bf33394fd0cdd01acdb1c11a690b0eb563441f4b4e919032b52d0",
+        "size": 350030
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "f09b9fe4d33c5b0980a4ac7228c1f86dd1af18f1909658e9e54c3b3a094b6869",
+        "size": 340814
+      },
+      {
+        "path": "salamander-drumkit/OH/snareOFF_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "f2c27ca6f39d5ced0cf00047a26f19e30637a66d7926e18cf8ffda7c00ff9da2",
+        "size": 342884
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "cf1eb153fd033d822325071e7496f54a1f7610ae1702c2d700135ac98eaf5354",
+        "size": 200330
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "61065f6e82fb80c10956c4c16d09bcbdc361d124106219e803ffb29ffb9063c6",
+        "size": 194360
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "d05d5238b703d2b35202a878e85f426ff4fe0111f39e8321530edc1fcacaf434",
+        "size": 200558
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "78f6e263ce93543171872bf97b81fb0ca9772e8906866caf7e70e76b696e63b4",
+        "size": 193370
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "05adf64670c928185b945247a330a23684ff957ce4c3e288e7cbb78a0693a5a4",
+        "size": 200870
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "64363bf1c0479645c975f39e58f7ebad4a1e9d095f373cb0b35d842ecb0ac7f2",
+        "size": 194726
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "3b58a87e6d6d3a44ebcb8a2707444d4ae7c97625b623c7c0ab480727b6689e54",
+        "size": 196076
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "12259afe656dca2ccea9491df062cc4cc7b0264c6149830aa82c857745ee7d51",
+        "size": 196802
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "5c7cbd3f487734190fb73290c1bc990c1a5470c8efea4dc6202d165b7d6852f8",
+        "size": 199424
+      },
+      {
+        "path": "salamander-drumkit/OH/snareStick_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "9bdc64315c86f2da5dd56a11a001dffd53b0ea8a04a3216bab3f4f3c704b82dc",
+        "size": 199652
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_1.wav",
+        "fetch": "archive",
+        "sha256": "4f30503ba0b27e702c75f027cfecdb49ec526ae31ea510f7bea71f98eaf9dc39",
+        "size": 526562
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_2.wav",
+        "fetch": "archive",
+        "sha256": "4a4e1a3cd56d87e013cd93379e71e4ef9e8c8b781cbb0cd177f5f068b168bf29",
+        "size": 514484
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_3.wav",
+        "fetch": "archive",
+        "sha256": "5cc0315e222b2a2e8ffc538f03fd76bf9de34acd8d42111ca08460f9d099fee5",
+        "size": 527324
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_4.wav",
+        "fetch": "archive",
+        "sha256": "a91fedf36f016c07e363b6c9665d76f5fea64cff8644971572420cf8ed266d61",
+        "size": 526814
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_5.wav",
+        "fetch": "archive",
+        "sha256": "05ccf707fa7f45c8496a571ed9c906661a3ed16d01da16c187eae858c9e8bac3",
+        "size": 523760
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_6.wav",
+        "fetch": "archive",
+        "sha256": "fe6478cf6a4672367757896f515294bc15bfa82ef997f63a9ba359a53b0f529d",
+        "size": 542408
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_7.wav",
+        "fetch": "archive",
+        "sha256": "6c3ff8124d7b84e40c49f44324027e322775b18069d85f2cd906fc64fd22f274",
+        "size": 525350
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_8.wav",
+        "fetch": "archive",
+        "sha256": "c384cfac866e786d02d77a7f0ef54c7822ad3284a5e7ce0207b9946861bebec9",
+        "size": 524780
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_FF_9.wav",
+        "fetch": "archive",
+        "sha256": "70593397c685ef0b4168b91ea9b25ad655f81673bbef521d21eb2918e4bb8792",
+        "size": 520100
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "502b42305ae9c82c34060b1664d5ab5bf9d23dc7afacedbafaf92bb7047b7457",
+        "size": 479102
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_10.wav",
+        "fetch": "archive",
+        "sha256": "42dc048c650776bb2b4a0724e8e6f3a69a63d6cb2a9a8863847655f016c59ff1",
+        "size": 474980
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_11.wav",
+        "fetch": "archive",
+        "sha256": "366ff0a7657018e4abf39c92639cec62b0ca983b7a3266d3c0e2b1f8c759e3d3",
+        "size": 476894
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_12.wav",
+        "fetch": "archive",
+        "sha256": "02fffd1b9629f50a5f26b399fb4eee1c0062317ed3e72b6297bc8b2f7c19e82d",
+        "size": 483974
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "4daaefe7f43a7e8a2d9a45f9bb1ef35502122ec95191cf9dbf6a55776f401ff3",
+        "size": 476714
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "79450ca54856fc8351bb0b5c6f3cef7d10e6c7aa9f9b92480de3fec1254e0d73",
+        "size": 492866
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "7b451ff94530bcb91b39c7d9a63e51343bc727b78809fabdfdc33be8bb3e90d3",
+        "size": 490316
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "074043775c3109b95d695a4c3246a1b93cc5585fd75378c04ac4bf8fe7541b6e",
+        "size": 483596
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_6.wav",
+        "fetch": "archive",
+        "sha256": "e197623e78a014ae9355d146014649a474950925af3c61e83c7933dc744fb7a0",
+        "size": 491078
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_7.wav",
+        "fetch": "archive",
+        "sha256": "5c07c4751270f2ecd6f448a5202d60090cce964ffe8e61b87877fffbbbe1eb9b",
+        "size": 476504
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_8.wav",
+        "fetch": "archive",
+        "sha256": "4a36180b53b44db371a4bd70a285f6d46436fc1d9ad182d25528f2d9b2814325",
+        "size": 494054
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_F_9.wav",
+        "fetch": "archive",
+        "sha256": "9bb6dea1078d6a5955affd89887114918ce7b0eeadb9822a41a3b1e7d79b0f56",
+        "size": 493412
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_1.wav",
+        "fetch": "archive",
+        "sha256": "b856339d674b8c92200cdb2aaace161c6b54001e029df7f1f7328c182fc59f0a",
+        "size": 133448
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_10.wav",
+        "fetch": "archive",
+        "sha256": "7db74bf07ed284771bb834c1b3d9ed128f65e328880c66a7ce10ae90be77e746",
+        "size": 210716
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_2.wav",
+        "fetch": "archive",
+        "sha256": "abe51b8167caff1f9d2e9fafff7dcaf632647359e65293ef8bfdd0604423cb10",
+        "size": 132026
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_3.wav",
+        "fetch": "archive",
+        "sha256": "1829e6a8ab0e76a301f032f7b0b1a32307247d2aec77741bc25f69bf5997971c",
+        "size": 132980
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_4.wav",
+        "fetch": "archive",
+        "sha256": "78eef3cdef7ab2faf8462b08b7af8d1c181b1f3a7ee577d90c7b2d58d6ef0009",
+        "size": 146204
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_5.wav",
+        "fetch": "archive",
+        "sha256": "cc7a5e92bc98e31f055801c1ed8275491b0a29ec6d7fcef05623710b7bc7b902",
+        "size": 133448
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_6.wav",
+        "fetch": "archive",
+        "sha256": "316e74768d06f23a0b75e8bd64e2ff3596ee5fd2e1e7c5f391feb7af0a2f52e8",
+        "size": 132518
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_7.wav",
+        "fetch": "archive",
+        "sha256": "0e2acbaa238e89b954f029b9f19dcac897aadf3fa100674c08f05ffd301fe5b8",
+        "size": 132518
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_8.wav",
+        "fetch": "archive",
+        "sha256": "058e37422ddeadb93587287ca1889276f9a6edf7240161b8ff49ec412e197fcd",
+        "size": 130142
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_Ghost_9.wav",
+        "fetch": "archive",
+        "sha256": "86197d857b4eb3ad8808872def03d7e6db2dd94b54c75a8a19c33cdf5745aa40",
+        "size": 164636
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_1.wav",
+        "fetch": "archive",
+        "sha256": "9f671962ba0eccd713d85f5b297bfb5e2cde2e7f4ff7735e535480b524aa185f",
+        "size": 440678
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_10.wav",
+        "fetch": "archive",
+        "sha256": "2a8c0103d26e0cff0fc2c5dff59cc86ecb857aff6d9e105aed143b6292b840d8",
+        "size": 446000
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_11.wav",
+        "fetch": "archive",
+        "sha256": "6a98a2c96070654b488297bbbbe0c213314b823ab323d3c212ee8d2391307fdd",
+        "size": 440090
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_12.wav",
+        "fetch": "archive",
+        "sha256": "0b7662c103059a90d66ea8e04cc43330320bb71634afdd15d35b97879d0c442d",
+        "size": 450260
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_13.wav",
+        "fetch": "archive",
+        "sha256": "2bd960d38b7b9ca77dc4f96c123b4e65b7872810fe60a6a285ca899ccd5d709a",
+        "size": 440090
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_14.wav",
+        "fetch": "archive",
+        "sha256": "d835e8c143035589d757677ffa399f6e14f35f072c139897afc47a3db6b93cb4",
+        "size": 443714
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_2.wav",
+        "fetch": "archive",
+        "sha256": "cbfec703cc8d3bec8b12127aa4d9daf626af2d50842995fd98fc27716eac17f9",
+        "size": 439310
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_3.wav",
+        "fetch": "archive",
+        "sha256": "4aea5fd07444a45f30a3a79304e58aa2f0e31d267a694dd7fbf813730c704aab",
+        "size": 439832
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_4.wav",
+        "fetch": "archive",
+        "sha256": "9b6a96c5425a69d7da9529855a3379adef0b720940936e6ecf662e1841e356b6",
+        "size": 444974
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_5.wav",
+        "fetch": "archive",
+        "sha256": "deb40261bbbdf3ade8011438758b09241f245e15a19e7e6beefe60e230cc9fb0",
+        "size": 439196
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_6.wav",
+        "fetch": "archive",
+        "sha256": "3fc3dd8b609841771b08174c6b9d012edb416906f144024a0cdbc1631984a03d",
+        "size": 446000
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_7.wav",
+        "fetch": "archive",
+        "sha256": "634cd5534909914e1c2663f741775f909fdb2f359caa950a238478667166de03",
+        "size": 446000
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_8.wav",
+        "fetch": "archive",
+        "sha256": "d800694e34994863c014b0e4bb9034d8cce3785909377eb571ef497504ec705f",
+        "size": 442118
+      },
+      {
+        "path": "salamander-drumkit/OH/snare_OH_MP_9.wav",
+        "fetch": "archive",
+        "sha256": "2873b576c5ca82166ed8f7d5a3bd73b20f2b64255d540229e8e5cadf924600ab",
+        "size": 439280
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_F_1.wav",
+        "fetch": "archive",
+        "sha256": "5da973992fd55f6de10a8d85ecba5209e82a1d7618fc36175418f29126373fb9",
+        "size": 728912
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_F_2.wav",
+        "fetch": "archive",
+        "sha256": "de1682f2cb84c060a81d795e9ea9cd5d049be9dc9a40e2597f80a4ce3312a590",
+        "size": 723614
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_F_3.wav",
+        "fetch": "archive",
+        "sha256": "02ac332f97cd6ba5a381d8cacdc4488d2fc928f9b6d049d03a10acfdb2b5a186",
+        "size": 722918
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_F_4.wav",
+        "fetch": "archive",
+        "sha256": "ae7e0fed293390d56036d9004d221948b794bc2164778d18943f083f4481518f",
+        "size": 731576
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_F_5.wav",
+        "fetch": "archive",
+        "sha256": "4400886fd386ae4de135163307ae34422ce915f0129b3410e851aa36b9be6c2d",
+        "size": 713516
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_P_1.wav",
+        "fetch": "archive",
+        "sha256": "681f4e9fd0993bf6a2e958d8082b633f808418dad96ef7fa4062d112f5d582c6",
+        "size": 720164
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_P_2.wav",
+        "fetch": "archive",
+        "sha256": "6a4051e45935d29585f6eec17076c1d62df2334cc39cbed423c8e3db6dc55069",
+        "size": 765680
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_P_3.wav",
+        "fetch": "archive",
+        "sha256": "fd0aa4ad0bd8bfa1cd9307e0272f915024a76c464f5f146dd23d57845eabd757",
+        "size": 727562
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_P_4.wav",
+        "fetch": "archive",
+        "sha256": "0b368f7563eb21bf84a481e8a0211d9261da294f70a3f3f2c51871ec2af85e0b",
+        "size": 750698
+      },
+      {
+        "path": "salamander-drumkit/OH/splash1_OH_P_5.wav",
+        "fetch": "archive",
+        "sha256": "0fe4f055ac568a9e7905badc5bae1aefd7a60bed29fdc0297a4aa2f3132a3fd0",
+        "size": 723668
+      },
+      {
+        "path": "salamander-drumkit/REAMDE",
+        "fetch": "archive",
+        "sha256": "d260ca02713d1a6b5b272de5a57a0d1bf454ee8a281d41e7069eb8ba41482ce5",
+        "size": 1727
+      },
+      {
+        "path": "salamander-drumkit/crashesFX.sfz",
+        "fetch": "archive",
+        "sha256": "be3aa2cf0486a67b28cf0c8bd7146315ed7cd2a39c569e778dded099668deca1",
+        "size": 7474
+      },
+      {
+        "path": "salamander-drumkit/hihat.sfz",
+        "fetch": "archive",
+        "sha256": "70989fa711411794488945da7950c18fe9b303809732f6fa3ae00a065983fa19",
+        "size": 13004
+      },
+      {
+        "path": "salamander-drumkit/hitom.sfz",
+        "fetch": "archive",
+        "sha256": "78616836d42e32ac2be5b63cb010d5ef6fd448a9ac1d76a307718e7153126bdf",
+        "size": 1935
+      },
+      {
+        "path": "salamander-drumkit/kick.sfz",
+        "fetch": "archive",
+        "sha256": "b4c72c278801b28cdc06b4ac9c4955f2a008d317ab6087c677b9a90b866186b4",
+        "size": 4421
+      },
+      {
+        "path": "salamander-drumkit/lotom.sfz",
+        "fetch": "archive",
+        "sha256": "30406dd8b53d74f4780b6613628c67cbdda495f3513d95873ca5ee0143ff8870",
+        "size": 1580
+      },
+      {
+        "path": "salamander-drumkit/ride.sfz",
+        "fetch": "archive",
+        "sha256": "7cc44d91d636c9ed076f9508bce747953ffbf584e14859a756cbf890291c5a88",
+        "size": 4479
+      },
+      {
+        "path": "salamander-drumkit/snare.sfz",
+        "fetch": "archive",
+        "sha256": "28635523cf0c0197e1a62e112797f9447e103aba3197f5fe1e720a715d9b81d2",
+        "size": 9266
+      }
+    ]
+  }
+]

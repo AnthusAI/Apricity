@@ -3,19 +3,19 @@
 import { StreamLanguage, type StringStream } from "@codemirror/language";
 
 // Keep in step with crates/apricity-score/src/dsl.rs (STATEMENTS, CLIP/TRACK options, TRACK/BUS/MASTER_LINES).
-const STATEMENTS = new Set(["apricity", "tempo", "meter", "key", "samples", "bars", "clip", "kit", "chords", "track", "bus", "master"]);
+const STATEMENTS = new Set(["apricity", "tempo", "time", "key", "samples", "bars", "clip", "kit", "chords", "track", "group", "return", "master"]);
 const OPTIONS = new Set([
   // clips and kits
-  "beats", "seconds", "slice", "pick", "root", "ratio", "warp", "chop", "by", "into", "hits", "bar",
+  "beats", "seconds", "pick", "root", "ratio", "warp", "slice", "by", "into", "transients", "phrases", "bar", "repitch", "complex", "texture",
   // tracks
-  "as", "role", "follow", "transpose", "every", "at", "bars", "gain", "loop", "steps", "grid", "swing",
+  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing",
   "reverse", "filter", "lp", "hp", "lowpass", "highpass", "gate", "stutter", "half", "double", "speed",
   // mix lines and bus options
-  "out", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",
+  "group", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",
   "predelay", "damp", "mix", "feedback", "pingpong",
 ]);
 // Indented lines under a track, a bus or `master`.
-const BLOCK_LINES = new Set(["eq", "comp", "limit", "reverb", "delay", "pan", "send", "loudness"]);
+const BLOCK_LINES = new Set(["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send", "loudness"]);
 
 interface State {
   statement: string | null;

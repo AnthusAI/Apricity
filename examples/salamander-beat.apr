@@ -1,0 +1,32 @@
+# Salamander Beat — a rock beat on the Salamander Drumkit (CC BY-SA 3.0, Alexander Holm),
+# one layer per drum from the overhead mic. Fetch it with: apricity sources fetch salamander-drumkit
+tempo 100
+time 4/4
+key C major   # required by the language; unused, since drums are unpitched
+samples ../samples
+bars 4
+
+# One-shots are re-pitched: they play as recorded, and are never stretched to the grid.
+clip kick     = salamander-drumkit/OH/kick_OH_F_1.wav           warp repitch
+clip snare    = salamander-drumkit/OH/snare_OH_F_1.wav          warp repitch
+clip ghost    = salamander-drumkit/OH/snare_OH_Ghost_1.wav      warp repitch
+clip hat      = salamander-drumkit/OH/hihatClosed_OH_F_1.wav    warp repitch
+clip hatopen  = salamander-drumkit/OH/hihatOpen_OH_F_1.wav      warp repitch
+clip tom      = salamander-drumkit/OH/hiTom_OH_F_1.wav          warp repitch
+clip floor    = salamander-drumkit/OH/loTom_OH_MP_1.wav         warp repitch
+clip crash    = salamander-drumkit/OH/crash1_OH_FF_1.wav        warp repitch
+
+kit drums
+  kick    = kick
+  snare   = snare
+  ghost   = ghost
+  hat     = hat
+  hatopen = hatopen
+  tom     = tom
+  floor   = floor
+  crash   = crash
+
+# Sixteenth-note steps, four bars: kick and snare, then the hats over them, then a fill.
+track drums  steps "kick . . . snare . . ghost | . . kick . snare . . . | kick . . . snare . . ghost | . . kick . snare . tom floor"  volume -3
+track drums.hat  steps "x . x . x . x . | x . x . x . x . | x . x . x . x . | x . x . x . . ."  volume -8
+track drums.crash  at 1  volume -8

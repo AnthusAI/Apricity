@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "True-to-the-flag-march_00694039_002_00-02-43.wav",
   "sha256": "49491538623f2bce46b88c73182b46f794b07d53880dfdb434bdda71fd81a318",
@@ -831,7 +831,35 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.04,
+    "source": "ml",
+    "note": "32beats, Eb"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.04,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 2.8,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 5.14,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 6.96,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.04,
@@ -888,7 +916,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.04,
     "end": 0.26,
     "source": "ml",
@@ -897,7 +925,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 2.8,
     "end": 3.02,
     "source": "ml",
@@ -906,7 +934,7 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 5.14,
     "end": 5.36,
     "source": "ml",
@@ -915,41 +943,13 @@
     ]
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 6.96,
     "end": 7.18,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.04,
-    "source": "ml",
-    "note": "32beats, Eb"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.04,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 2.8,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 5.14,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 6.96,
-    "source": "ml"
    }
   ]
  }

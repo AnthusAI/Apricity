@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "Army-bugle-calls_jukebox-118367_001_00-00-56.wav",
   "sha256": "03ca871769ca4644bb11a4c81374f55c47cf38c585b397c83ecabadcc043c3d0",
@@ -576,7 +576,14 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "transient",
+    "seconds": 0.06,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "loop-1",
     "start": 0.2,
@@ -589,20 +596,13 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.06,
     "end": 0.43,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "hit",
-    "seconds": 0.06,
-    "source": "ml"
    }
   ]
  }

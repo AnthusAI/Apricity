@@ -37,3 +37,4 @@ project/.overlay/
 
 # conformance run output
 /web/test/conformance/cucumber-report.json
+/samples/salamander-drumkit/

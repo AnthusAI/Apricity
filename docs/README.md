@@ -6,7 +6,7 @@ together, they sound the chords you asked for.
 
 | Page | Read it when… |
 |---|---|
-| [Concepts](concepts.md) | you want the mental model: clips, beats, regions, the harmony solver, how a score becomes sound |
+| [Concepts](concepts.md) | you want the mental model: samples, clips, kits, beats, the harmony solver, how a score becomes sound, and the words it shares with Ableton Live |
 | [The Apricity language](language.md) | you're writing a `.apr` score (the compact text format) |
 | [YAML scores](yaml.md) | you'd rather write (or generate) scores as YAML/JSON |
 | [Chords and keys](chords.md) | you want to know every chord and key you can write |
@@ -26,7 +26,7 @@ clip horns = marine-band/stems/WashingtonPost/other.wav  pick 1bar
 chords I7 IV7 I7 . | IV7 . I7 . | V7 IV7 I7 V7
 
 track tuba   follow
-track horns  follow  bars 5-12  gain -2
+track horns  follow  bars 5-12  volume -2
 ```
 
 The same score as YAML is in [YAML scores](yaml.md#the-same-score-both-ways). Both formats compile to

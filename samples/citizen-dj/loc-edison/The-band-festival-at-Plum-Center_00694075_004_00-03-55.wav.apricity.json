@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav",
   "sha256": "69c9486190a555362969929b1f6c683c6d48da4d7610e1e797aa18541b7aab38",
@@ -149,7 +149,7 @@
   }
  ],
  "annotations": {
-  "slices": [],
-  "markers": []
+  "markers": [],
+  "clips": []
  }
 }

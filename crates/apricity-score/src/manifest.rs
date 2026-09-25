@@ -59,8 +59,9 @@ pub struct KeyEstimate {
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct Annotations {
+    /// Clips saved with the sample: yours, and automatic markup's (`sec-A1`, `loop-1`, `shot-3`).
     #[serde(default)]
-    pub slices: Vec<Slice>,
+    pub clips: Vec<SavedClip>,
     #[serde(default)]
     pub markers: Vec<Marker>,
 }
@@ -71,8 +72,9 @@ pub struct Marker {
     pub seconds: f64,
 }
 
+/// A named region of a sample, saved in its manifest.
 #[derive(Debug, Clone, Deserialize)]
-pub struct Slice {
+pub struct SavedClip {
     pub name: String,
     pub start: f64,
     pub end: f64,

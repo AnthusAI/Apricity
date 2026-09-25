@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-b3e2ba15-1dbd-40d5-9a47-121b388b444a",
+  "title": "Hero story: sound you can turn on, in step with the animation",
+  "description": "Readers can turn on sound for the already-playing hero story (apricitus-4e056d), and hear each step as it happens:\n- the recording while it's analyzed (the sweep lasts as long as the audio);\n- the slice once it's selected;\n- each chop as it's cut;\n- each chop landing in the composition, warped and tuned (taken from the real engine's render of its track);\n- the drum groove, then the whole piece.\n\n**Done when:** one click turns it on from anywhere in the story, and the audio clock drives the pictures. Turning it off returns to silent motion; chapter jumps re-sync; the sound holds when the hero is off-screen. Tests and a browser check pass.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "3e7ccba1-d786-49e8-9761-7f8e842e7b41",
+      "author": "home",
+      "text": "Built and verified.\n\n- **Assets:** scripts/hero-data.py now also writes web/public/hero/*.mp3 (608 KB): the two source windows (mono, level-matched), plus tracks b and h, each rendered alone by the engine. Each render gets a gain back to its level in the full mix, computed from the master make-up (both −1.6/−1.5 dB).\n- **Story:**\n  - the listen sweeps are linear and last as long as their windows;\n  - the horns' phases moved later to fit;\n  - the playhead runs in two sessions (29.5–34.5 s drums only; 58.5 s → end, both tracks);\n  - glows pulse on whatever is sounding.\n- **Engine:** web/src/ui/flow/sound.ts schedules on its own 100 ms timer with 1.2 s of lookahead. The first version scheduled from animation frames and dropped cues when frames were throttled.\n- **Checks:**\n  - logged every buffer start with a patched AudioBufferSourceNode.start: slice, 8 chops, drum landings, drum loop, horn landings, and both loops at 58.5 s, all at the right audio times and offsets;\n  - sound off stops everything;\n  - tests pass 4/4 (added a cue test); build OK.",
+      "created_at": "2026-09-24T13:46:44.834388Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Web/Docs Session"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T13:46:44.807626Z",
+  "updated_at": "2026-09-24T13:46:45.001252Z",
+  "closed_at": "2026-09-24T13:46:45.001197Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

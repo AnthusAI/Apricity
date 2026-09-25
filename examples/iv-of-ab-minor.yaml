@@ -3,7 +3,7 @@
 # iv of A♭ minor (D♭ F♭ A♭), then carried through a progression.
 apricity: 0.1
 tempo: 116
-meter: 4
+time: 4/4
 key: Abm
 samples: ../samples
 
@@ -24,6 +24,6 @@ progression:
 
 tracks:
   - { clip: stripes, role: root }
-  - { clip: cotton, role: fifth, gain: -2 }
-  - { clip: bugle,  role: third, pattern: { every: 2bars }, gain: -3 }
-  - { clip: edison, role: chord, gain: -1 }
+  - { clip: cotton, role: fifth, volume: -2 }
+  - { clip: bugle,  role: third, pattern: { every: 2bars }, volume: -3 }
+  - { clip: edison, role: chord, volume: -1 }

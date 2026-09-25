@@ -1,15 +1,14 @@
-use apricity_data::rank::{rank, Candidate, CandidateContext, Proposer, Verdict};
+use apricity_data::rank::{Candidate, CandidateContext, Proposer, Verdict, rank};
 use std::collections::HashMap;
 
 #[test]
 fn test_rank_parity_with_fixture() {
-    let fixture_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/rank.json");
+    let fixture_path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/rank.json");
 
-    let fixture_text = std::fs::read_to_string(&fixture_path)
-        .expect("Failed to read fixture file");
-    let fixture: serde_json::Value = serde_json::from_str(&fixture_text)
-        .expect("Failed to parse fixture JSON");
+    let fixture_text = std::fs::read_to_string(&fixture_path).expect("Failed to read fixture file");
+    let fixture: serde_json::Value =
+        serde_json::from_str(&fixture_text).expect("Failed to parse fixture JSON");
 
     // Extract candidates and verdicts from fixture
     let candidates_data = &fixture["candidates"];
@@ -41,8 +40,14 @@ fn test_rank_parity_with_fixture() {
                     seconds: ctx.get("seconds").and_then(|v| v.as_f64()),
                     bpm: ctx.get("bpm").and_then(|v| v.as_f64()),
                     beats: ctx.get("beats").and_then(|v| v.as_f64()),
-                    key: ctx.get("key").and_then(|v| v.as_str()).map(|s| s.to_string()),
-                    stem: ctx.get("stem").and_then(|v| v.as_str()).map(|s| s.to_string()),
+                    key: ctx
+                        .get("key")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string()),
+                    stem: ctx
+                        .get("stem")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string()),
                 })
             } else {
                 None
@@ -66,7 +71,10 @@ fn test_rank_parity_with_fixture() {
         for (cid, v_val) in obj {
             let verdict = Verdict {
                 verdict: v_val["verdict"].as_str().unwrap().to_string(),
-                stars: v_val.get("stars").and_then(|v| v.as_u64()).map(|s| s as u32),
+                stars: v_val
+                    .get("stars")
+                    .and_then(|v| v.as_u64())
+                    .map(|s| s as u32),
             };
             verdicts.insert(cid.clone(), verdict);
         }
@@ -94,11 +102,7 @@ fn test_rank_parity_with_fixture() {
             .collect::<Vec<_>>();
         let expected_later = expected["later"].as_bool().unwrap();
 
-        assert_eq!(
-            actual.id, expected_id,
-            "Mismatch at position {}: id",
-            i
-        );
+        assert_eq!(actual.id, expected_id, "Mismatch at position {}: id", i);
 
         // Check rank within 1e-4 tolerance
         if (actual.rank - expected_rank).abs() > 0.00011 {
@@ -121,5 +125,8 @@ fn test_rank_parity_with_fixture() {
         );
     }
 
-    println!("✓ Rank parity test passed: {} candidates ranked correctly", ranked.len());
+    println!(
+        "✓ Rank parity test passed: {} candidates ranked correctly",
+        ranked.len()
+    );
 }

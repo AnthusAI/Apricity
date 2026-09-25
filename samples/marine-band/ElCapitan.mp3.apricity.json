@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "ElCapitan.mp3",
   "sha256": "4711fabff82ef23b81a59cf1f00096b2d8f35bf96a6850c0bd0a3d6378ca12a8",
@@ -14970,7 +14970,97 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.24,
+    "source": "ml",
+    "note": "54beats, Bb"
+   },
+   {
+    "name": "section B",
+    "seconds": 27.22,
+    "source": "ml",
+    "note": "18beats, Gm"
+   },
+   {
+    "name": "section C",
+    "seconds": 36.34,
+    "source": "ml",
+    "note": "28beats, Bb"
+   },
+   {
+    "name": "section A",
+    "seconds": 50.3,
+    "source": "ml",
+    "note": "34beats, Bb"
+   },
+   {
+    "name": "section D",
+    "seconds": 67.24,
+    "source": "ml",
+    "note": "62beats, Eb, trio"
+   },
+   {
+    "name": "section E",
+    "seconds": 97.26,
+    "source": "ml",
+    "note": "16beats, Gm"
+   },
+   {
+    "name": "section D",
+    "seconds": 105.06,
+    "source": "ml",
+    "note": "32beats, Eb, trio"
+   },
+   {
+    "name": "section F",
+    "seconds": 120.62,
+    "source": "ml",
+    "note": "32beats, Eb, trio"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.169,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 4.744,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 32.259,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 50.255,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 70.816,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 103.521,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 120.588,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 135.75,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 0.167,
@@ -15231,7 +15321,7 @@
     }
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.169,
     "end": 0.669,
     "source": "ml",
@@ -15243,7 +15333,7 @@
     }
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 4.744,
     "end": 5.244,
     "source": "ml",
@@ -15255,7 +15345,7 @@
     }
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 32.259,
     "end": 32.759,
     "source": "ml",
@@ -15267,7 +15357,7 @@
     }
    },
    {
-    "name": "hit-4",
+    "name": "shot-4",
     "start": 50.255,
     "end": 50.755,
     "source": "ml",
@@ -15279,7 +15369,7 @@
     }
    },
    {
-    "name": "hit-5",
+    "name": "shot-5",
     "start": 70.816,
     "end": 71.316,
     "source": "ml",
@@ -15291,7 +15381,7 @@
     }
    },
    {
-    "name": "hit-6",
+    "name": "shot-6",
     "start": 103.521,
     "end": 104.021,
     "source": "ml",
@@ -15303,7 +15393,7 @@
     }
    },
    {
-    "name": "hit-7",
+    "name": "shot-7",
     "start": 120.588,
     "end": 121.088,
     "source": "ml",
@@ -15315,7 +15405,7 @@
     }
    },
    {
-    "name": "hit-8",
+    "name": "shot-8",
     "start": 135.75,
     "end": 136.25,
     "source": "ml",
@@ -15325,96 +15415,6 @@
     "evidence": {
      "standout": 13.4
     }
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.24,
-    "source": "ml",
-    "note": "54beats, Bb"
-   },
-   {
-    "name": "section B",
-    "seconds": 27.22,
-    "source": "ml",
-    "note": "18beats, Gm"
-   },
-   {
-    "name": "section C",
-    "seconds": 36.34,
-    "source": "ml",
-    "note": "28beats, Bb"
-   },
-   {
-    "name": "section A",
-    "seconds": 50.3,
-    "source": "ml",
-    "note": "34beats, Bb"
-   },
-   {
-    "name": "section D",
-    "seconds": 67.24,
-    "source": "ml",
-    "note": "62beats, Eb, trio"
-   },
-   {
-    "name": "section E",
-    "seconds": 97.26,
-    "source": "ml",
-    "note": "16beats, Gm"
-   },
-   {
-    "name": "section D",
-    "seconds": 105.06,
-    "source": "ml",
-    "note": "32beats, Eb, trio"
-   },
-   {
-    "name": "section F",
-    "seconds": 120.62,
-    "source": "ml",
-    "note": "32beats, Eb, trio"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.169,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 4.744,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 32.259,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 50.255,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 70.816,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 103.521,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 120.588,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 135.75,
-    "source": "ml"
    }
   ]
  }
