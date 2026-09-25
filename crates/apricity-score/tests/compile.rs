@@ -24,8 +24,8 @@ fn fixture(dir: &Path, name: &str, bpm: f64) -> PathBuf {
         "tonal": { "key": {"tonic": "C", "mode": "major", "strength": 0.9}, "tuning_hz": 440.0, "tuning_cents": 0.0,
                    "pitch_class_profile": chroma, "beat_chroma": vec![chroma.clone(); 32] },
         "annotations": {
-            "slices": [{ "name": "intro", "start": 1.0, "end": 1.0 + 4.0 * spb }],
-            "markers": [{ "name": "hit", "seconds": 1.0 + 2.0 * spb }, { "name": "hit", "seconds": 1.0 + 5.0 * spb }]
+            "clips": [{ "name": "intro", "start": 1.0, "end": 1.0 + 4.0 * spb }],
+            "markers": [{ "name": "transient", "seconds": 1.0 + 2.0 * spb }, { "name": "transient", "seconds": 1.0 + 5.0 * spb }]
         }
     });
     std::fs::write(dir.join(format!("{name}.apricity.json")), manifest.to_string()).unwrap();
@@ -41,7 +41,7 @@ fn speech_fixture(dir: &Path) {
         "rhythm": { "bpm": null, "bpm_stability": 0.0, "beats": [], "downbeats": [], "meter": null, "warp_markers": [], "loudness": vec![-30.0; 40] },
         "tonal": { "key": {"tonic": "F#", "mode": "minor", "strength": 0.1}, "tuning_hz": 440.0, "tuning_cents": 12.0,
                    "pitch_class_profile": vec![0.5; 12], "beat_chroma": [] },
-        "annotations": { "slices": [
+        "annotations": { "clips": [
             { "name": "phrase-1", "start": 0.4, "end": 3.1 },
             { "name": "phrase-2", "start": 3.9, "end": 7.5 },
             { "name": "phrase-3", "start": 8.2, "end": 19.0 }
@@ -83,7 +83,7 @@ tracks: [ { clip: horn, role: root } ]
 "#)
     .unwrap();
     assert_eq!(tl.length_beats, 16.0);
-    // An 8-beat loop over 16 beats = 2 hits; the first is split at the I→V change at beat 4.
+    // An 8-beat loop over 16 beats = 2 notes; the first is split at the I→V change at beat 4.
     let spans: Vec<(f64, f64, i32)> = tl.events.iter().map(|e| (e.start_beat, e.dur_beats, e.semitones)).collect();
     assert_eq!(spans, vec![(0.0, 4.0, 0), (4.0, 4.0, -5), (8.0, 8.0, -5)]);
     // The split half starts 4 clip beats (= 4 s) into the region, and warps one point per beat.
@@ -118,7 +118,7 @@ apricity: 0.1
 tempo: 120
 key: C
 bars: 4
-clips: { horn: { source: horn.wav, slice: intro, beat_ratio: 1 } }
+clips: { horn: { source: horn.wav, saved: intro, beat_ratio: 1 } }
 tracks:
   - { clip: horn, name: a, pattern: { every: 2beats } }
   - { clip: horn, name: b, pattern: { at: ["2:1", "4:3"] }, transpose: 3 }
@@ -141,8 +141,8 @@ key: Abm
 clips:
   horn:  { source: horn.wav, beats: [0, 99] }
   horn2: { source: missing.wav }
-  horn3: { source: horn.wav, beats: [0, 4], slice: intro }
-  horn4: { source: horn.wav, slice: chorus }
+  horn3: { source: horn.wav, beats: [0, 4], saved: intro }
+  horn4: { source: horn.wav, saved: chorus }
 progression: [ { chord: iv, bars: 2 }, { chord: I6, bars: 2 } ]
 tracks:
   - { clip: hron }
@@ -153,8 +153,8 @@ tracks:
     for expected in [
         "clips.horn.beats: [0, 99] is outside the clip's beats [0, 32]",
         "clips.horn2.source: audio file",
-        "clips.horn3: give at most one of beats, seconds, slice or pick",
-        "clips.horn4.slice: no slice \"chorus\" in this clip; it has [\"intro\"]",
+        "clips.horn3: give at most one of beats, seconds, a saved clip or pick",
+        "clips.horn4.saved: no saved clip \"chorus\" in this sample; it has [\"intro\"]",
         "progression[1].chord: \"I6\": inversion figures",
         "tracks[0].clip: no clip or kit named \"hron\" (did you mean \"horn\"?)",
         "tracks[1].bars: \"3-9\" runs past the end of the piece (4 bars)",
@@ -245,7 +245,7 @@ fn round(x: f64) -> f64 {
 }
 
 #[test]
-fn chop_kits_play_with_steps() {
+fn sliced_kits_play_with_steps() {
     // 60 BPM so one clip beat = one score beat = one second (no folding).
     let tl = run(r#"
 apricity: 0.1
@@ -253,13 +253,13 @@ tempo: 60
 key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 16] } }
-kits: { k: { clip: horn, chop: { beats: 2 } } }
+kits: { k: { clip: horn, slice: { beats: 2 } } }
 tracks:
   - { clip: k, pattern: { steps: "1 . 3 _" }, grid: 4 }
 "#)
     .unwrap();
     assert_eq!(tl.tracks[0].chops, Some(8));
-    // chop 1 = clip beats 0–2, chop 3 = clip beats 4–6. `.` is silence, `_` holds chop 3 to 2 beats.
+    // pad 1 = clip beats 0–2, pad 3 = clip beats 4–6. `.` is silence, `_` holds pad 3 to 2 beats.
     assert_eq!(hits_of(&tl, "k"), vec![(0.0, 1.0, 1.0), (2.0, 2.0, 5.0)]);
 }
 
@@ -271,7 +271,7 @@ tempo: 60
 key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 16] } }
-kits: { k: { clip: horn, chop: { beats: 1 } } }
+kits: { k: { clip: horn, slice: { beats: 1 } } }
 tracks: [ { clip: k, pattern: { steps: "1 2 3 4" }, swing: 75 } ]
 "#)
     .unwrap();
@@ -281,41 +281,41 @@ tracks: [ { clip: k, pattern: { steps: "1 2 3 4" }, swing: 75 } ]
 }
 
 #[test]
-fn chop_refs_stutter_gate_and_half_time() {
+fn slice_pads_stutter_gate_and_half_time() {
     let tl = run(r#"
 apricity: 0.1
 tempo: 60
 key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 16] } }
-kits: { k: { clip: horn, chop: { into: 4 } } }
+kits: { k: { clip: horn, slice: { into: 4 } } }
 tracks:
   - { clip: k.3, name: stut, pattern: { every: 4beats }, stutter: 2, gate: 0.5, reverse: true, filter: { lowpass: 800 } }
   - { clip: k.2, name: slow, speed: 0.5 }
 "#)
     .unwrap();
-    // k.3 = clip beats 8–12. Stutter 2 → two 2-beat pieces, each restarting at the chop; gate halves them.
+    // k.3 = clip beats 8–12. Stutter 2 → two 2-beat pieces, each restarting at the slice; gate halves them.
     assert_eq!(hits_of(&tl, "stut"), vec![(0.0, 1.0, 9.0), (2.0, 1.0, 9.0)]);
     let e = tl.events.iter().find(|e| e.track == "stut").unwrap();
     assert!(e.reverse && e.filter.is_some());
-    // Half-time: the 4-beat chop k.2 (clip beats 4–8) now lasts 8 beats, so one bar holds half of it.
+    // Half-time: the 4-beat slice k.2 (clip beats 4–8) now lasts 8 beats, so one bar holds half of it.
     assert_eq!(hits_of(&tl, "slow"), vec![(0.0, 4.0, 5.0)]);
     assert_eq!(tl.tracks[1].beat_ratio, 0.5);
 }
 
 #[test]
-fn kits_chopped_at_hits() {
+fn kits_sliced_at_transients() {
     let tl = run(r#"
 apricity: 0.1
 tempo: 60
 key: C
 bars: 2
 clips: { horn: { source: horn.wav, beats: [0, 16] } }
-kits: { h: { clip: horn, chop: hits } }
+kits: { h: { clip: horn, slice: transients } }
 tracks: [ { clip: h, pattern: { steps: "1 _ _ _ 2 _ _ _" }, grid: 4 } ]
 "#)
     .unwrap();
-    // Hits at clip beats 2 and 5: chop 1 runs to the next hit (3 beats), chop 2 up to a bar (4 beats).
+    // Transients at clip beats 2 and 5: slice 1 runs to the next transient (3 beats), slice 2 up to a bar (4 beats).
     assert_eq!(tl.tracks[0].chops, Some(2));
     assert_eq!(hits_of(&tl, "h")[..2], [(0.0, 3.0, 3.0), (4.0, 4.0, 6.0)]);
 }
@@ -328,7 +328,7 @@ tempo: 60
 key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 16] } }
-kits: { k: { clip: horn, chop: { beats: 4 } }, bad: { clip: hron, chop: { into: 2 } } }
+kits: { k: { clip: horn, slice: { beats: 4 } }, bad: { clip: hron, slice: { into: 2 } } }
 tracks:
   - { clip: k, pattern: { steps: "1 2 9" } }
   - { clip: k }
@@ -340,10 +340,10 @@ tracks:
     .join("\n");
     for expected in [
         "kits.bad.clip: no clip named \"hron\" (did you mean \"horn\"?)",
-        "tracks[0].pattern.steps: uses chop 9, but kit `k` has 4 chops",
+        "tracks[0].pattern.steps: uses pad 9, but kit `k` has 4 pads",
         "tracks[1].pattern: `k` is a kit; play it with steps",
-        "tracks[2].pattern.steps: `1` picks a chop, but `horn` is a single sound; use x",
-        "tracks[3].clip: kit `k` has chops 1–4; there's no `k.7`",
+        "tracks[2].pattern.steps: `1` picks a pad, but `horn` is a single sound; use x",
+        "tracks[3].clip: kit `k` has pads 1–4; there's no `k.7`",
         "tracks[4].swing: 90 is outside 50–75",
         "tracks[4].gate: 2 must be between 0 and 1",
         "tracks[4].speed: 20 is outside 0.125–8",
@@ -361,7 +361,7 @@ key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 16] }, fast: { source: fast.wav, beats: [0, 16], beat_ratio: 1 } }
 kits:
-  k: { clip: horn, chop: { beats: 1 } }
+  k: { clip: horn, slice: { beats: 1 } }
   drums:
     pads:
       kick:  { clip: horn, beats: [2, 3] }
@@ -374,7 +374,7 @@ tracks:
     .unwrap();
     let pads: Vec<(f64, f64, usize)> = tl.events.iter().filter(|e| e.track == "drums").map(|e| (round(e.start_beat), round(e.src_start), e.source)).collect();
     // horn is 60 BPM (clip beat b at 1 + b s), fast is 240 BPM (1 + b/4 s): kick = horn beat 2 → 3.0 s,
-    // snare = fast beat 4 → 2.0 s, rim = chop k.8 = horn beat 7 → 8.0 s. Each pad keeps its own source.
+    // snare = fast beat 4 → 2.0 s, rim = slice k.8 = horn beat 7 → 8.0 s. Each pad keeps its own source.
     let horn = tl.sources.iter().position(|s| s.clip == "horn").unwrap();
     let fast = tl.sources.iter().position(|s| s.clip == "fast").unwrap();
     assert_eq!(pads, vec![(0.0, 3.0, horn), (2.0, 2.0, fast), (3.0, 8.0, horn)]);
@@ -389,7 +389,7 @@ bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 16] } }
 kits:
   drums: { pads: { kick: { clip: horn, beats: [2, 3] }, clap: { clip: hron } } }
-  both: { clip: horn, chop: { beats: 1 }, pads: { a: { clip: horn } } }
+  both: { clip: horn, slice: { beats: 1 }, pads: { a: { clip: horn } } }
 tracks:
   - { clip: drums, pattern: { steps: "kick . snair ." } }
   - { clip: drums, name: d2, pattern: { steps: "1 . 2 ." } }
@@ -399,8 +399,8 @@ tracks:
     .unwrap_err()
     .join("\n");
     for expected in [
-        "kits.drums.pads.clap.clip: no clip or chop named \"hron\" (did you mean \"horn\"?)",
-        "kits.both: a kit is either `clip` + `chop` (a chopped clip) or `pads` (a drum kit)",
+        "kits.drums.pads.clap.clip: no clip or slice named \"hron\" (did you mean \"horn\"?)",
+        "kits.both: a kit is either `clip` + `slice` (a sliced clip) or `pads` (a drum kit)",
         "tracks[0].pattern.steps: kit `drums` has no pad `snair`",
         "tracks[1].pattern.steps: `1`: kit `drums` has named pads; call them by name",
         "tracks[2].clip: kit `drums` has no pad `kik` (did you mean \"kick\"?)",
@@ -419,18 +419,21 @@ key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 4] } }
 tracks:
-  - { clip: horn, name: a, sends: { room: 0.25 } }
-  - { clip: horn, name: b, out: beat }
-buses:
-  beat: { effects: [ {comp: {ratio: 3, threshold: -12}} ], gain: -2 }
-  room: { effects: [ {reverb: {type: plate, decay_s: 1.8}} ], out: beat }
+  - { clip: horn, name: a, sends: { room: 0.25 }, group: inner }
+  - { clip: horn, name: b, group: beat, volume: -1 }
+groups:
+  beat: { effects: [ {comp: {ratio: 3, threshold: -12}} ], volume: -2 }
+  inner: { group: beat }
+returns:
+  room: { effects: [ {reverb: {type: plate, decay_s: 1.8}} ], volume: -3 }
 "#)
     .unwrap();
-    let names: Vec<&str> = tl.buses.iter().map(|b| b.name.as_str()).collect();
-    assert_eq!(names, ["room", "beat"], "room feeds beat, so it renders first");
-    assert_eq!((tl.buses[1].out.as_str(), tl.buses[1].gain_db), ("master", -2.0));
-    assert_eq!((tl.tracks[0].out.as_str(), tl.tracks[0].sends["room"]), ("master", 0.25));
+    let got: Vec<(&str, &str, &str)> = tl.buses.iter().map(|b| (b.name.as_str(), b.kind.as_str(), b.out.as_str())).collect();
+    assert_eq!(got, [("inner", "group", "beat"), ("beat", "group", "master"), ("room", "return", "master")], "groups inside out, then returns");
+    assert_eq!((tl.buses[1].gain_db, tl.buses[2].gain_db), (-2.0, -3.0));
+    assert_eq!((tl.tracks[0].out.as_str(), tl.tracks[0].sends["room"]), ("inner", 0.25));
     assert_eq!(tl.tracks[1].out, "beat");
+    assert!(tl.events.iter().filter(|e| e.track == "b").all(|e| (e.gain_db - (-1.0 + tl.tracks[1].level_db)).abs() < 1e-9), "volume is the track's fader");
 }
 
 #[test]
@@ -442,30 +445,35 @@ key: C
 bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 4] } }
 tracks:
-  - { clip: horn, out: rooom, sends: { echo: 1.5, master: 0.2 } }
-  - { clip: horn, out: echo, sends: { echo: 0.2 } }
+  - { clip: horn, group: bet, sends: { echo: 1.5, master: 0.2, beat: 0.1 } }
+  - { clip: horn, group: echo }
   - { clip: horn }
-buses:
-  room: { effects: [ {reverb: {decay_s: 60}} ] }
-  echo: { effects: [ {delay: {beats: 0.5, ms: 200, feedback: 1.2}} ], out: loop2 }
-  loop2: { out: echo }
+groups:
+  beat: { effects: [ {reverb: {decay_s: 60}} ], group: loop2 }
+  loop2: { group: beat }
   horn: {}
+returns:
+  echo: { effects: [ {delay: {beats: 0.5, ms: 200, feedback: 1.2}} ], volume: 20 }
+  room: {}
 master: { effects: [ {reverb: {}} ] }
 "#)
     .unwrap_err()
     .join("\n");
     for expected in [
-        "tracks[0].out: there's no bus `rooom` (did you mean \"room\"?)",
+        "tracks[0].group: there's no group track `bet` (did you mean \"beat\"?)",
         "tracks[0].sends.echo: 150% is outside 0–100%",
-        "tracks[0].sends: a track already plays into the master; send to a bus",
-        "tracks[1].sends.echo: the track already goes out to `echo`",
+        "tracks[0].sends: a track already plays into the master; send to a return track",
+        "tracks[0].sends.beat: there's no return track `beat`; `beat` is a group track: put the track in it with group beat",
+        "tracks[1].group: there's no group track `echo`; `echo` is a return track: reach it with send echo 20%",
         "tracks[2]: track name \"horn\" is used twice",
-        "buses.room: nothing plays into this bus",
-        "buses.room.effects[0].reverb.decay: 60 s is outside",
-        "buses.echo.effects[0].delay: give the time once",
-        "buses.echo.effects[0].delay.feedback: 120% is outside",
-        "buses.horn: a track is also named `horn`",
-        "buses: `echo`, `loop2` feed each other in a loop",
+        "groups.beat.effects[0].reverb.decay: 60 s is outside",
+        "groups.horn: a track is also named `horn`",
+        "groups.horn: nothing plays in this group",
+        "groups: `beat`, `loop2` sit inside each other in a loop",
+        "returns.echo.volume: 20 dB is outside -60 to +12",
+        "returns.echo.effects[0].delay: give the time once",
+        "returns.echo.effects[0].delay.feedback: 120% is outside",
+        "returns.room: nothing sends to this return track",
         "master.effects[0]: reverb doesn't go on the master",
     ] {
         assert!(errors.contains(expected), "missing {expected:?} in:\n{errors}");
@@ -479,7 +487,7 @@ apricity: 0.1
 tempo: 120
 key: C
 clips:
-  speech: { source: speech.wav, warp: off }
+  speech: { source: speech.wav, warp: repitch }
   horn:   { source: horn.wav, beats: [0, 4] }
 progression: [ { chord: I, bars: 1 }, { chord: IV, bars: 1 } ]
 tracks:
@@ -497,7 +505,7 @@ tracks:
     let e = speech[0];
     assert_eq!((e.start_beat, e.dur_beats, e.semitones, e.tuning_cents), (0.0, 40.0, 0, 0.0));
     assert!((e.src_start - 0.0).abs() < 1e-9 && (e.src_end - 20.0).abs() < 1e-9);
-    assert_eq!(e.mode, apricity_score::score::WarpModeSpec::Off);
+    assert_eq!(e.mode, apricity_score::score::WarpModeSpec::Repitch);
     assert_eq!(tl.tracks[0].varispeed, Some(1.0));
     assert!((tl.tracks[0].level_db - 10.0).abs() < 1e-6, "level-matched from the time curve (-30 dBFS → -20): {}", tl.tracks[0].level_db);
     assert!(tl.events.iter().filter(|e| e.track == "horn").map(|e| e.start_beat + e.dur_beats).fold(0.0, f64::max) >= 40.0 - 1e-9, "the other tracks fill the grown piece");
@@ -511,9 +519,9 @@ tempo: 120
 key: C
 bars: 16
 clips:
-  fast:  { source: speech.wav, warp: off, speed: 2, seconds: [0, 10] }
-  words: { source: speech.wav, warp: off }
-kits: { w: { clip: words, chop: phrases } }
+  fast:  { source: speech.wav, warp: repitch, speed: 2, seconds: [0, 10] }
+  words: { source: speech.wav, warp: repitch }
+kits: { w: { clip: words, slice: phrases } }
 tracks:
   - { clip: fast, pattern: { at: ["1", "12.5s"] } }
   - { clip: w.2, pattern: { at: ["3:2.5"] } }
@@ -544,23 +552,23 @@ bars: 4
 clips:
   speech: { source: speech.wav }
   horn:   { source: horn.wav, speed: 1.5 }
-  talk:   { source: speech.wav, warp: off, speed: 9 }
-  said:   { source: speech.wav, warp: off, pick: 1bar }
-  line:   { source: speech.wav, warp: off }
+  talk:   { source: speech.wav, warp: repitch, speed: 9 }
+  said:   { source: speech.wav, warp: repitch, pick: 1bar }
+  line:   { source: speech.wav, warp: repitch }
   hornk:  { source: horn.wav, beats: [0, 4] }
-kits: { k: { clip: hornk, chop: phrases } }
+kits: { k: { clip: hornk, slice: phrases } }
 tracks:
   - { clip: line, transpose: follow, pattern: { at: ["1", "-3s", "soon"] } }
 "#)
     .unwrap_err()
     .join("\n");
     for expected in [
-        "clips.speech: no beat grid was detected, so it can't be warped by beats; add `warp off` to play it as recorded",
-        "clips.horn.speed: speed is for unwarped clips (warp off)",
+        "clips.speech: no beat grid was detected, so it can't be warped by beats; add `warp repitch` to play it as recorded",
+        "clips.horn.speed: speed is for re-pitched clips (warp repitch)",
         "clips.talk.speed: 9× is outside 0.25–4",
-        "clips.said: `pick` needs the clip's own beats, but it plays unwarped",
-        "kits.k.chop: `hornk` has no phrases marked in its region",
-        "tracks[0].transpose: `line` plays unwarped (as recorded), so it isn't transposed",
+        "clips.said: `pick` needs the clip's own beats, but it plays re-pitched",
+        "kits.k.slice: `hornk` has no phrases marked in its region",
+        "tracks[0].transpose: `line` plays re-pitched (as recorded), so it isn't transposed",
         "tracks[0].pattern.at[1]: \"-3s\": seconds count from the start",
         "tracks[0].pattern.at[2]: \"soon\"",
     ] {
@@ -578,10 +586,10 @@ bars: 1
 clips: { horn: { source: horn.wav, beats: [0, 4] } }
 tracks:
   - { clip: horn, name: a, effects: [ {comp: {ratio: 4, threshold: -30, sidechain: b}} ] }
-  - { clip: horn, name: b, effects: [ {comp: {ratio: 4, threshold: -30, sidechain: a}} ], out: grp }
+  - { clip: horn, name: b, effects: [ {comp: {ratio: 4, threshold: -30, sidechain: a}} ], group: grp }
   - { clip: horn, name: c, effects: [ {comp: {ratio: 4, threshold: -30, sidechain: c}}, {comp: {ratio: 4, threshold: -30, sidechain: bee}}, {comp: {ratio: 4, threshold: -30, sidechain: grp}} ] }
   - { clip: horn, name: d, effects: [ {drive: {db: 50}}, {lofi: {}}, {lofi: {bits: 1}}, {width: 3}, {noisegate: {threshold: 5}} ] }
-buses:
+groups:
   grp: {}
 master: { effects: [ {comp: {ratio: 2, threshold: -10, sidechain: a}}, {lofi: {bits: 8}}, {width: 1.2} ] }
 "#)
@@ -591,7 +599,7 @@ master: { effects: [ {comp: {ratio: 2, threshold: -10, sidechain: a}}, {lofi: {b
         "tracks[0]: `a` is ducked by a track that is (in turn) ducked by it",
         "tracks[2]: a comp can't be keyed by its own track",
         "tracks[2]: sidechain `bee`: there's no track by that name (did you mean \"b\"?)",
-        "tracks[2]: sidechain `grp`: there's no track by that name (a bus can't key a sidechain",
+        "tracks[2]: sidechain `grp`: there's no track by that name (a group or return track can't key a sidechain",
         "tracks[3].effects[0].drive: 50 dB is outside",
         "tracks[3].effects[1].lofi: give it bits, rate and/or wow",
         "tracks[3].effects[2].lofi.bits: 1 bits is outside",
@@ -603,4 +611,42 @@ master: { effects: [ {comp: {ratio: 2, threshold: -10, sidechain: a}}, {lofi: {b
         assert!(errors.contains(expected), "missing {expected:?} in:\n{errors}");
     }
     assert!(!errors.contains("master.effects[2]"), "width is fine on the master:\n{errors}");
+}
+
+#[test]
+fn events_trace_back_to_the_piece_and_source_they_play() {
+    // A sliced kit and a drum kit whose pads come from two clips: every event names its piece,
+    // and the piece says which source it's from and where.
+    let tl = run(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips:
+  horn: { source: horn.wav, beats: [0, 16] }
+  fast: { source: fast.wav, beats: [0, 16], beat_ratio: 1 }
+kits:
+  k: { clip: horn, slice: { beats: 2 } }
+  d: { pads: { hi: { clip: horn, beats: [4, 5] }, lo: { clip: fast, beats: [2, 3] } } }
+tracks:
+  - { clip: k, pattern: { steps: "1 . 3 _" }, grid: 4 }
+  - { clip: d, pattern: { steps: "hi lo hi lo" }, grid: 4 }
+"#)
+    .unwrap();
+    let k = &tl.tracks[0];
+    assert_eq!((k.kit.as_deref(), k.pieces.len()), (Some("k"), 8));
+    // The slices tile their clip's region, end to end.
+    let region = tl.sources[k.pieces[0].source].region.expect("sources carry their region");
+    assert!((k.pieces[0].src_start - region.0).abs() < 1e-6 && (k.pieces[7].src_end - region.1).abs() < 1e-6, "{region:?}");
+    let d = &tl.tracks[1];
+    assert_eq!(d.pieces.iter().map(|p| p.name.as_deref().unwrap()).collect::<Vec<_>>(), ["hi", "lo"]);
+    assert_ne!(d.pieces[0].source, d.pieces[1].source, "pads from two clips point at two sources");
+    for e in &tl.events {
+        let tr = tl.tracks.iter().find(|t| t.name == e.track).unwrap();
+        let p = &tr.pieces[e.piece];
+        assert_eq!(p.source, e.source);
+        assert!(e.src_start >= p.src_start - 1e-6 && e.src_end <= p.src_end + 1e-6, "{e:?} inside {p:?}");
+    }
+    let played: Vec<usize> = tl.events.iter().filter(|e| e.track == "k").map(|e| e.piece).collect();
+    assert_eq!(played, [0, 2], "steps 1 and 3");
 }

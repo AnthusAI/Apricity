@@ -24,7 +24,7 @@ SAMPLES = ROOT / "samples"
 READABLE = ("samples", "examples", "scores", "schema")
 SCORE_DIRS = ("examples", "scores")
 AUDIO = {".wav", ".mp3", ".flac", ".aif", ".aiff", ".ogg", ".m4a"}
-SLICE_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
+CLIP_NAME = re.compile(r"^[A-Za-z0-9_-]+$")
 
 app = FastAPI(title="Apricity")
 
@@ -93,25 +93,25 @@ def _summary(manifest_path: pathlib.Path, credits: dict) -> dict:
         "keys_over_time": segs,
         "tuning_cents": m["tonal"].get("tuning_cents"),
         "notes": len(m.get("notes", [])),
-        "slices": len(m.get("annotations", {}).get("slices", [])),
+        "clips": len(m.get("annotations", {}).get("clips", [])),
         "markers": len(m.get("annotations", {}).get("markers", [])),
         "stem": stem["stem"] if stem else None,
     }
 
 
-@app.get("/api/clips")
-def clips():
+@app.get("/api/samples")
+def samples():
     credits = _credits()
     # Modern, full-length recordings first; then the archive excerpts; then uploads.
     order = {"marine-band": 0, "citizen-dj": 1, "uploads": 2}
     out = sorted((_summary(p, credits) for p in SAMPLES.rglob("*.apricity.json")), key=lambda c: (order.get(c["group"], 3), c["path"]))
     pending = [str(p.relative_to(ROOT)) for p in sorted(SAMPLES.rglob("*")) if p.suffix.lower() in AUDIO and not p.with_name(p.name + ".apricity.json").exists()]
-    return {"clips": out, "unanalyzed": pending, "jobs": list(JOBS.values())}
+    return {"samples": out, "unanalyzed": pending, "jobs": list(JOBS.values())}
 
 
 @app.put("/api/annotations")
 async def put_annotations(path: str, request: Request):
-    """Replace a clip's annotations (markers, slices, tags). Validated so nothing out of range is saved."""
+    """Replace a sample's annotations (saved clips, markers, tags). Validated so nothing out of range is saved."""
     audio = resolve(path, ("samples",))
     mpath = audio.with_name(audio.name + ".apricity.json")
     if not mpath.exists():
@@ -121,20 +121,21 @@ async def put_annotations(path: str, request: Request):
     dur = m["source"]["duration"]
     problems = []
     names = set()
-    for i, s in enumerate(ann.get("slices", [])):
-        if not SLICE_NAME.match(str(s.get("name", ""))):
-            problems.append(f"slices[{i}]: name {s.get('name')!r} must be letters, digits, - or _")
+    for i, s in enumerate(ann.get("clips", [])):
+        if not CLIP_NAME.match(str(s.get("name", ""))):
+            problems.append(f"clips[{i}]: name {s.get('name')!r} must be letters, digits, - or _")
         if s.get("name") in names:
-            problems.append(f"slices[{i}]: name {s.get('name')!r} is used twice")
+            problems.append(f"clips[{i}]: name {s.get('name')!r} is used twice")
         names.add(s.get("name"))
         if not (0 <= s.get("start", -1) < s.get("end", -1) <= dur + 1e-6):
-            problems.append(f"slices[{i}] {s.get('name')!r}: [{s.get('start')}, {s.get('end')}] must satisfy 0 ≤ start < end ≤ {dur}")
+            problems.append(f"clips[{i}] {s.get('name')!r}: [{s.get('start')}, {s.get('end')}] must satisfy 0 ≤ start < end ≤ {dur}")
     for i, mk in enumerate(ann.get("markers", [])):
         if not (0 <= mk.get("seconds", -1) <= dur + 1e-6):
-            problems.append(f"markers[{i}]: {mk.get('seconds')} is outside the clip (0..{dur})")
+            problems.append(f"markers[{i}]: {mk.get('seconds')} is outside the sample (0..{dur})")
     if problems:
         return JSONResponse({"errors": problems}, status_code=422)
-    m["annotations"] = {k: v for k, v in ann.items() if k in ("markers", "slices", "tags")}
+    m["annotations"] = {k: v for k, v in ann.items() if k in ("markers", "clips", "tags")}
+    m["apricity_manifest"] = 2
     from .analyze import validate
 
     try:

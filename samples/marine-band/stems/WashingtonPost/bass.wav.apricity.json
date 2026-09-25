@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "bass.wav",
   "sha256": "ac0e9eafc614812be6bb08bfce036d7d753667f665ebcfb774e83c51206b8f58",
@@ -7051,7 +7051,63 @@
   "model": "htdemucs"
  },
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.22,
+    "source": "ml",
+    "note": "70beats, Fm"
+   },
+   {
+    "name": "section B",
+    "seconds": 35.4,
+    "source": "ml",
+    "note": "40beats, Bbm"
+   },
+   {
+    "name": "section A",
+    "seconds": 55.44,
+    "source": "ml",
+    "note": "16beats, Dm"
+   },
+   {
+    "name": "section C",
+    "seconds": 63.44,
+    "source": "ml",
+    "note": "16beats, Fm"
+   },
+   {
+    "name": "section B",
+    "seconds": 71.42,
+    "source": "ml",
+    "note": "24beats, Bbm"
+   },
+   {
+    "name": "section D",
+    "seconds": 83.42,
+    "source": "ml",
+    "note": "68beats, Bbm"
+   },
+   {
+    "name": "section C",
+    "seconds": 117.56,
+    "source": "ml",
+    "note": "16beats, Bbm"
+   },
+   {
+    "name": "section E",
+    "seconds": 125.56,
+    "source": "ml",
+    "note": "16beats, Fm"
+   },
+   {
+    "name": "section C",
+    "seconds": 133.66,
+    "source": "ml",
+    "note": "38beats, Bbm"
+   }
+  ],
+  "clips": [
    {
     "name": "phrase-1",
     "start": 35.166,
@@ -7348,62 +7404,6 @@
      "static": 0.96,
      "level_db": 4.8
     }
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.22,
-    "source": "ml",
-    "note": "70beats, Fm"
-   },
-   {
-    "name": "section B",
-    "seconds": 35.4,
-    "source": "ml",
-    "note": "40beats, Bbm"
-   },
-   {
-    "name": "section A",
-    "seconds": 55.44,
-    "source": "ml",
-    "note": "16beats, Dm"
-   },
-   {
-    "name": "section C",
-    "seconds": 63.44,
-    "source": "ml",
-    "note": "16beats, Fm"
-   },
-   {
-    "name": "section B",
-    "seconds": 71.42,
-    "source": "ml",
-    "note": "24beats, Bbm"
-   },
-   {
-    "name": "section D",
-    "seconds": 83.42,
-    "source": "ml",
-    "note": "68beats, Bbm"
-   },
-   {
-    "name": "section C",
-    "seconds": 117.56,
-    "source": "ml",
-    "note": "16beats, Bbm"
-   },
-   {
-    "name": "section E",
-    "seconds": 125.56,
-    "source": "ml",
-    "note": "16beats, Fm"
-   },
-   {
-    "name": "section C",
-    "seconds": 133.66,
-    "source": "ml",
-    "note": "38beats, Bbm"
    }
   ]
  }

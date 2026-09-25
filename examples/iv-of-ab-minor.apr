@@ -12,6 +12,6 @@ chords i*2 VI*2
 chords V*2 i*2
 
 track stripes  role root
-track cotton   role fifth  gain -2
-track bugle    role third  every 2bars  gain -3
-track edison   role chord  gain -1
+track cotton   role fifth  volume -2
+track bugle    role third  every 2bars  volume -3
+track edison   role chord  volume -1

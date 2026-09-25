@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-4e056d5c-bfe4-4c97-8016-5580ddceda2b",
+  "title": "Hero story: animated clip → slices → composition explainer",
+  "description": "Replace the landing hero's decorative waveform with a slow animated story of what Apricity does, told with real data from examples/chop-shop.apr.\n\n**Story:** the Thunderer drum stem appears → analysis sweep (beats, hits, BPM/key/tuning) → a hand-made slice → the slice projects to a chops row (16 half-beat chops) → the chops fly into the composition and warp to the 88 BPM grid. Then clip 1 collapses to a summary, and the horns stem goes through the same steps: 4 chops that land in bars 5–8 transposed to follow I7/IV7/V7. Full playback follows, with lineage glows (tile → chop → source span). About a 70 s loop, with a chapter bar (Listen · Slice · Chop · Warp · Tune · Play), pause on hover, and a static frame under reduced motion.\n\n**Build:** a reusable renderer in web/src/ui/flow/ (model, layout, paint, tween, story). The data is baked by scripts/hero-data.py from the manifests plus the compiled timeline. The CTA becomes Hear \"Chop Shop\".\n\n**Done when:** the data checks pass (peaks for both sources, 16 + 4 chops, every tile mapped, h transposed under IV7/V7); tsc passes; the browser check covers each chapter, light/dark, mobile and reduced motion; and Hear plays chop-shop.\n\nPlan: ~/.claude/plans/system-reminder-the-user-started-zazzy-moore.md",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "f029d1ed-8d11-41e6-adf4-6cd38826f2f7",
+      "author": "home",
+      "text": "Built and verified.\n\n- **Data:** scripts/hero-data.py bakes web/src/ui/flow/hero-data.json (12 KB) from examples/chop-shop.apr's compiled timeline plus the Thunderer drum and horn stems. The drum loop is 4 beats, so it makes 8 half-beat chops (not the 16 in the plan). Horns: 4 chops, transposed −5 / 0 / +2 under I7 / IV7 / V7. The drum stems have no hit markers in the window, so transients are detected from the audio instead (like Live's transient markers).\n- **Renderer:** web/src/ui/flow/{model,tween,layout,paint,story}.ts. Per-lane heights: pitched lanes are taller so transposition shows as height. Headers sit on the right, Live-style. Ribbons for lineage.\n- **Decisions:**\n  - The mobile composition shows all 8 bars, not 4, because the horns only play in bars 5–8.\n  - Under reduced motion, the chapter buttons pick that chapter's settled frame.\n- **Verified:**\n  - chapters in light and dark;\n  - mobile 375px with no horizontal scroll;\n  - the reduced-motion still frame;\n  - Hear \"Chop Shop\" opens the Score tab and plays;\n  - a frame costs under 1 ms at 1080×380 @2x;\n  - tsc and vite build pass;\n  - web/test/flow.test.ts passes 3/3 (npm run test:flow).",
+      "created_at": "2026-09-24T13:35:45.930261Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Web/Docs Session"
+      }
+    }
+  ],
+  "created_at": "2026-09-24T13:21:18.126783Z",
+  "updated_at": "2026-09-24T13:35:46.029583Z",
+  "closed_at": "2026-09-24T13:35:46.029547Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Web/Docs Session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

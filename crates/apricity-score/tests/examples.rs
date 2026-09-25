@@ -43,8 +43,8 @@ fn every_example_round_trips_through_both_formats() {
 }
 
 #[test]
-fn chop_into_round_trips() {
-    let src = "tempo 90\nkey C\nclip a = x.wav\nkit e = chop a into 8\nbars 1\ntrack e steps \"1 2\"\n";
+fn slice_into_round_trips() {
+    let src = "tempo 90\nkey C\nclip a = x.wav\nkit e = slice a into 8\nbars 1\ntrack e steps \"1 2\"\n";
     let (score, _) = parse_score(src, Path::new("t.apr")).unwrap();
     let yaml = serde_yaml::to_string(&score).unwrap();
     assert!(yaml.contains("into: 8\n"), "{yaml}");

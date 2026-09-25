@@ -1,5 +1,5 @@
 {
- "apricity_manifest": 1,
+ "apricity_manifest": 2,
  "source": {
   "path": "St-Patricks-parade_144941_001_00-01-11.wav",
   "sha256": "feede98db3c204af9dc9b5bf64020ebd0d14b177dfa4380fda0e517591e5d693",
@@ -2449,7 +2449,48 @@
   }
  ],
  "annotations": {
-  "slices": [
+  "markers": [
+   {
+    "name": "section A",
+    "seconds": 0.02,
+    "source": "ml",
+    "note": "23beats, A"
+   },
+   {
+    "name": "section B",
+    "seconds": 6.8,
+    "source": "ml",
+    "note": "32beats, Em"
+   },
+   {
+    "name": "section C",
+    "seconds": 15.58,
+    "source": "ml",
+    "note": "32beats, E"
+   },
+   {
+    "name": "section D",
+    "seconds": 24.36,
+    "source": "ml",
+    "note": "20beats, Em"
+   },
+   {
+    "name": "transient",
+    "seconds": 0.02,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 25.5,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 28.26,
+    "source": "ml"
+   }
+  ],
+  "clips": [
    {
     "name": "sec-A1",
     "start": 0.02,
@@ -2539,7 +2580,7 @@
     ]
    },
    {
-    "name": "hit-1",
+    "name": "shot-1",
     "start": 0.02,
     "end": 0.3,
     "source": "ml",
@@ -2548,7 +2589,7 @@
     ]
    },
    {
-    "name": "hit-2",
+    "name": "shot-2",
     "start": 25.5,
     "end": 25.78,
     "source": "ml",
@@ -2557,54 +2598,13 @@
     ]
    },
    {
-    "name": "hit-3",
+    "name": "shot-3",
     "start": 28.26,
     "end": 28.54,
     "source": "ml",
     "tags": [
      "hit"
     ]
-   }
-  ],
-  "markers": [
-   {
-    "name": "section A",
-    "seconds": 0.02,
-    "source": "ml",
-    "note": "23beats, A"
-   },
-   {
-    "name": "section B",
-    "seconds": 6.8,
-    "source": "ml",
-    "note": "32beats, Em"
-   },
-   {
-    "name": "section C",
-    "seconds": 15.58,
-    "source": "ml",
-    "note": "32beats, E"
-   },
-   {
-    "name": "section D",
-    "seconds": 24.36,
-    "source": "ml",
-    "note": "20beats, Em"
-   },
-   {
-    "name": "hit",
-    "seconds": 0.02,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 25.5,
-    "source": "ml"
-   },
-   {
-    "name": "hit",
-    "seconds": 28.26,
-    "source": "ml"
    }
   ]
  }

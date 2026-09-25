@@ -16,7 +16,7 @@ chords I7 IV7 I7 .  | IV7 . I7 .  | V7 IV7 I7 V7
 # chorus 2
 chords I7 IV7 I7 .  | IV7 . I7 .  | V7 IV7 I7 .
 
-track groove  transpose 0  gain -3        # drums don't follow the chords
+track groove  transpose 0  volume -3        # drums don't follow the chords
 track tuba    follow                      # oom-pah bass moved to each root: I–IV–V
-track horns   follow  bars 13-24  gain -2 # the riff, in parallel on every chord
-track bugle   at 15 19 23  gain -5        # call and response
+track horns   follow  bars 13-24  volume -2 # the riff, in parallel on every chord
+track bugle   at 15 19 23  volume -5        # call and response

@@ -2,7 +2,8 @@
 
 import { instantiate, type Apricity } from "./wasm/shim.js";
 
-export interface ClipSummary {
+/** A sample in the library: an analyzed audio file. */
+export interface SampleSummary {
   path: string;
   title: string;
   group: string;
@@ -18,11 +19,13 @@ export interface ClipSummary {
   keys_over_time: string[];
   tuning_cents?: number;
   notes: number;
-  slices: number;
+  clips: number; // clips saved with it
   markers: number;
+  stem?: string | null;
 }
 
-export interface Slice {
+/** A clip saved with a sample: a named region (yours, or automatic markup's). */
+export interface SavedClip {
   name: string;
   start: number;
   end: number;
@@ -47,7 +50,27 @@ export interface Manifest {
     pitch_class_profile: number[];
   };
   notes?: unknown[];
-  annotations?: { slices?: Slice[]; markers?: Marker[]; tags?: string[] };
+  annotations?: { clips?: SavedClip[]; markers?: Marker[]; tags?: string[] };
+}
+
+/** One sound a track can play (its clip's region, or a pad: a slice or a clip), and where it's recorded. */
+export interface TimelinePiece {
+  source: number; // index into sources
+  src_start: number; // seconds
+  src_end: number;
+  name?: string; // a drum-kit pad
+}
+
+export interface TimelineEvent {
+  track: string;
+  source: number;
+  start_beat: number;
+  dur_beats: number;
+  src_start: number;
+  src_end: number;
+  semitones: number;
+  piece?: number; // index into its track's pieces
+  reverse?: boolean;
 }
 
 export interface Timeline {
@@ -55,10 +78,10 @@ export interface Timeline {
   meter: number;
   key: string;
   length_beats: number;
-  sources: { clip: string; path: string }[];
-  events: unknown[];
+  sources: { clip: string; path: string; bpm?: number | null; key?: string; region?: [number, number] }[];
+  events: TimelineEvent[];
   harmony: { start_beat: number; end_beat: number; label: string; fit: { chord: string; coverage: number } | null }[];
-  tracks: { name: string; clip: string; region_key: string }[];
+  tracks: { name: string; clip: string; region_key: string; kit?: string; chops?: number; pieces?: TimelinePiece[] }[];
   warnings: string[];
 }
 
@@ -112,7 +135,7 @@ async function json<T>(r: Response): Promise<T> {
 }
 
 export const api = {
-  clips: () => fetch("/api/clips").then((r) => json<{ clips: ClipSummary[]; unanalyzed: string[]; jobs: { path: string; state: string; error?: string }[] }>(r)),
+  samples: () => fetch("/api/samples").then((r) => json<{ samples: SampleSummary[]; unanalyzed: string[]; jobs: { path: string; state: string; error?: string }[] }>(r)),
   scores: () => fetch("/api/scores").then((r) => json<{ scores: { path: string; modified: number }[] }>(r)),
   score: (path: string) => fetch(`/files/${encodePath(path)}`).then((r) => (r.ok ? r.text() : Promise.reject(new Error(`${path}: ${r.status}`)))),
   saveScore: (path: string, text: string) => fetch(`/api/score?path=${encodeURIComponent(path)}`, { method: "PUT", body: text }).then(json),
@@ -149,7 +172,7 @@ export async function extractSources(yaml: string, scorePath: string): Promise<{
 }
 
 /**
- * Extract score references: clips and slices referenced in score text.
+ * Extract score references: the samples and saved clips a score uses.
  */
 export async function extractReferences(
   text: string,

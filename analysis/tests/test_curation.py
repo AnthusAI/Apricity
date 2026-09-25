@@ -19,7 +19,7 @@ def _manifest(path, dur, beats, loud=None, stem=None, slices=()):
         "rhythm": {"bpm": 120.0, "beats": beats, "downbeats": beats[::4], "meter": 4,
                    "warp_markers": [{"seconds": t, "beat": i} for i, t in enumerate(beats)], "beat_loudness": loud or [-20.0] * (len(beats) - 1)},
         "tonal": {"key": {"tonic": "F", "mode": "major"}, "tuning_cents": 0.0, "pitch_class_profile": [0.1] * 12},
-        "annotations": {"slices": list(slices)},
+        "annotations": {"clips": list(slices)},
     }
     if stem:
         m["derived_from"] = {"stem": stem, "source": "x"}
@@ -36,7 +36,7 @@ def lib(tmp_path):
     sf.write(samples / "band" / "March.wav", (0.3 * np.sin(2 * np.pi * 220 * t)).astype(np.float32), SR)
     _manifest(samples / "band" / "March.wav", dur, beats, slices=[
         {"name": "loop-1", "start": 2.0, "end": 6.0, "source": "ml", "tags": ["loop", "8beats", "F"], "evidence": {"repeat": 0.93, "steady": 0.99, "static": 0.95, "level_db": 0.0}},
-        {"name": "hit-1", "start": 7.0, "end": 7.5, "source": "ml", "tags": ["hit"], "evidence": {"standout": 9.0}},
+        {"name": "shot-1", "start": 7.0, "end": 7.5, "source": "ml", "tags": ["shot"], "evidence": {"standout": 9.0}},
         {"name": "sec-A1", "start": 0.0, "end": 8.0, "source": "ml", "tags": ["section", "A"]},
         {"name": "mine", "start": 1.0, "end": 2.0, "source": "user"},
     ])
@@ -86,16 +86,16 @@ def test_keep_writes_a_curated_slice_and_skip_takes_it_back(lib):
     v = cu.judge(lib, loop["id"], "keep", stars=4, tags=["brass"], name="march-loop", crates=["digs"])
     assert v["slice"] == "march-loop"
     m = lib.manifest("band/March.wav")
-    s = next(s for s in m["annotations"]["slices"] if s["name"] == "march-loop")
+    s = next(s for s in m["annotations"]["clips"] if s["name"] == "march-loop")
     assert s["source"] == "curated" and s["stars"] == 4 and s["tags"] == ["loop", "brass"] and s["candidate"] == loop["id"]
     assert s["evidence"]["repeat"] == 0.93
-    assert any(s["name"] == "mine" for s in m["annotations"]["slices"]), "a person's own slices are untouched"
+    assert any(s["name"] == "mine" for s in m["annotations"]["clips"]), "a person's own clips are untouched"
     # A name clash gets a suffix instead of clobbering.
     hit = next(c for c in lib.read("candidates")["candidates"] if c["kind"] == "hit")
     assert cu.judge(lib, hit["id"], "keep", name="mine")["slice"] == "mine-2"
     cu.judge(lib, loop["id"], "skip")
     m = lib.manifest("band/March.wav")
-    assert not any(s.get("candidate") == loop["id"] for s in m["annotations"]["slices"])
+    assert not any(s.get("candidate") == loop["id"] for s in m["annotations"]["clips"])
     assert loop["id"] not in lib.read("crates")["crates"]["digs"]["items"], "skipped material leaves its crates"
     with pytest.raises(ValueError, match="stars go on kept"):
         cu.judge(lib, loop["id"], "skip", stars=3)
@@ -133,8 +133,8 @@ def test_crates_export_as_a_kit(lib):
     cu.judge(lib, brk["id"], "keep", crates=["digs"])
     apr = cu.export_apr(lib, "digs")
     assert "clip march-mix = band/March.wav" in apr
-    assert "kit digs" in apr and "  horn-loop = march-mix  slice horn-loop   # ★★★★★" in apr
-    assert f"  {brk['name']} = march-mix  slice {brk['name']}" in apr
+    assert "kit digs" in apr and "  horn-loop = march-mix  horn-loop   # ★★★★★" in apr
+    assert f"  {brk['name']} = march-mix  {brk['name']}" in apr
     with pytest.raises(KeyError, match="no crate"):
         cu.export_apr(lib, "nope")
 
