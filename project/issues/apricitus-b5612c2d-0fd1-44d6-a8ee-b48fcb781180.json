@@ -1,7 +1,7 @@
 {
   "id": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "title": "Deploy Apricity to AWS Amplify at apricity.anth.us",
-  "description": "test",
+  "description": "Take Apricity from local-only to a production deployment: Amplify Hosting for the web app, the Gen2 backend (AppSync, DynamoDB, Cognito with Google sign-in, S3 file storage), and the custom domain apricity.anth.us in Route 53. Nothing is deployed today (no amplify_outputs.json, amplify.yml, or deploy workflow).\n\nBuilds on apricitus-f2fe8394 (Cloud backend: sandbox, SDL snapshot, gating USER task apricitus-e28a12) and apricitus-25e216 (S3-backed Files + apricity sync). Do not duplicate those; complete them as prerequisites.\n\n## Definition of done\n- https://apricity.anth.us serves the web app over TLS from Amplify Hosting.\n- Google sign-in works there, restricted to the allowed emails.\n- The library (audio, slices, metadata) synced up from a local Mac is browsable and playable in the cloud app, hero demo included.\n- Every deploy is repeatable from the repo (amplify.yml, backend definition, documented DNS records); no manual console steps left undocumented.",
   "type": "epic",
   "status": "open",
   "priority": 2,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-25T02:28:30.549302Z",
-  "updated_at": "2026-09-25T02:28:30.549326Z",
+  "updated_at": "2026-09-25T02:28:53.493706Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
