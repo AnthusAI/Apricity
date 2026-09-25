@@ -6,7 +6,7 @@ import { el } from "./dom";
 import heroData from "./flow/hero-data.json";
 import type { FlowData } from "./flow/model";
 import { readTheme } from "./flow/paint";
-import { soundView, stateAfterProbe, type SoundState } from "./flow/hero-audio";
+import { rememberSound, soundRemembered, soundView, stateAfterProbe, type SoundState } from "./flow/hero-audio";
 import { soundStatus, StorySound } from "./flow/sound";
 import { CHAPTERS, LOOP, STILL, Story, chapterAt } from "./flow/story";
 
@@ -172,7 +172,7 @@ export class Landing {
     // The metronome clicks the beat from the first second until the drums take over.
     this.metronomeBox.addEventListener("change", () => this.sound && (this.sound.clicks = this.metronomeBox.checked));
     const metronome = el("label", { className: "metronome", title: "Click the beat until the drums come in" }, this.metronomeBox, "Metronome");
-    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [el("div", { className: "sound-controls" }, this.soundBtn, metronome)] : []), this.info, nav), steps);
+    const fig = el("figure", { className: "stage" }, this.stage, el("figcaption", {}, ...(this.sound ? [el("div", { className: "sound-controls" }, this.soundBtn, metronome)] : []), this.info, nav), this.provenance(), steps);
     // Hovering the picture holds it still, to look closer (not while listening: the music goes on).
     this.stage.addEventListener("pointerenter", (e) => (e.pointerType === "mouse" ? (this.paused = true) : null));
     this.stage.addEventListener("pointerleave", () => (this.paused = false));
@@ -180,10 +180,47 @@ export class Landing {
     return fig;
   }
 
+  /** Where the story's sounds come from: every sample carries its provenance. */
+  private provenance() {
+    return el(
+      "div",
+      { className: "provenance" },
+      el("h3", {}, "Where these sounds come from"),
+      el("p", {
+        innerHTML:
+          '<b>Horns:</b> <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/The-Thunderer-March/" target="_blank" rel="noopener">“The Thunderer”</a>, a march John Philip Sousa composed in 1889, recorded in 2017 by “The President’s Own” United States Marine Band for <i>The Complete Marches of John Philip Sousa</i>. Apricity split the horns out of the full band recording, then cut four beats of them into stabs. Public domain: the march is from 1889, and the recording is a work of the U.S. Government.',
+      }),
+      el("p", {
+        innerHTML:
+          '<b>Drums:</b> single hits from the <a href="https://archive.org/details/SalamanderDrumkit" target="_blank" rel="noopener">Salamander Drumkit</a>, an acoustic kit recorded and shared by Alexander Holm, taken from the overhead microphone. Licensed <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>.',
+      }),
+    );
+  }
+
   /** The sound is in the library, or it isn't: the story plays either way, silent when it isn't. */
   private async probeSound() {
     if (!this.sound) return;
-    this.soundButton(stateAfterProbe(await soundStatus((heroData as FlowData).audio!)));
+    const state = stateAfterProbe(await soundStatus((heroData as FlowData).audio!));
+    this.soundButton(state);
+    if (state === "ready" && soundRemembered()) this.resumeRemembered();
+  }
+
+  /** Sound was on before a reload: start it now if the browser allows sound without a click, else on
+   *  the first click or key press anywhere on the page. */
+  private resumeRemembered() {
+    const policy = (navigator as Navigator & { getAutoplayPolicy?: (type: string) => string }).getAutoplayPolicy?.("audiocontext");
+    if (policy === "allowed") {
+      void this.toggleSound();
+      return;
+    }
+    this.soundButton("armed");
+    const start = () => {
+      document.removeEventListener("click", start, true);
+      document.removeEventListener("keydown", start, true);
+      if (this.soundState === "armed") void this.toggleSound();
+    };
+    document.addEventListener("click", start, true);
+    document.addEventListener("keydown", start, true);
   }
 
   private soundButton(state: SoundState) {
@@ -202,11 +239,12 @@ export class Landing {
   }
 
   private async toggleSound() {
-    if (!this.sound || this.soundState === "missing" || this.soundState === "checking") return;
+    if (!this.sound || this.soundState === "missing" || this.soundState === "checking" || this.soundState === "loading") return;
     if (this.sound.on) {
       this.storyT = this.sound.now();
       this.sound.disable();
       this.soundButton("ready");
+      rememberSound(false);
       return;
     }
     this.soundButton("loading");
@@ -214,6 +252,7 @@ export class Landing {
       await this.sound.enable(this.storyT);
       this.paused = false;
       this.soundButton("on");
+      rememberSound(true);
       if (!this.raf && this.visible) this.loop();
     } catch {
       // The library answered the probe but the sound could not be played: silent, and says so.

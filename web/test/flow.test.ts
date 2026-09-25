@@ -168,3 +168,19 @@ test("hero metronome: on the horns' grid, from the start until the drums are hea
   assert.ok(Math.abs(m.spb - 60 / d.tempo) < 1e-9, "one click per beat of the score");
   assert.ok(m.anchor % m.spb < m.spb && m.until > m.anchor, "clicks run from the start through the horns' playback");
 });
+
+test("hero sound is remembered across a reload, and storage failures are harmless", async () => {
+  const { soundRemembered, rememberSound, soundView } = await import("../src/ui/flow/hero-audio.ts");
+  const store = new Map<string, string>();
+  const fake = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v), removeItem: (k: string) => void store.delete(k) };
+  assert.equal(soundRemembered(fake), false, "off until turned on");
+  rememberSound(true, fake);
+  assert.equal(soundRemembered(fake), true, "on survives");
+  rememberSound(false, fake);
+  assert.equal(soundRemembered(fake), false, "turning it off forgets it");
+  const blocked = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); }, removeItem: () => { throw new Error("blocked"); } };
+  assert.equal(soundRemembered(blocked), false);
+  assert.doesNotThrow(() => rememberSound(true, blocked));
+  const armed = soundView("armed");
+  assert.ok(armed.pressed && !armed.disabled && /click/.test(armed.label), "after a reload: on, waiting for a click");
+});

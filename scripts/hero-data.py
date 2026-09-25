@@ -57,7 +57,7 @@ PAD_ORDER = ["kick", "snare", "ghost", "stick", "hat", "open", "tom", "floor", "
 # The two stories the hero tells, in order: a sliced loop (its track, and how its slice was cut),
 # then a kit of one-shots (the tracks that play its pads).
 STORIES = [
-    {"kind": "loop", "lane": "h", "tracks": ["h"], "name": "horns", "title": "The Thunderer — horns", "credit": "Sousa, 1889 · US Marine Band · horn stem", "slice": "riff", "chop_beats": 1.0, "key": True},
+    {"kind": "loop", "lane": "h", "tracks": ["h"], "name": "horns", "title": "The Thunderer — horns", "credit": "composed by Sousa in 1889 · recorded by the U.S. Marine Band in 2017 · horn stem", "slice": "riff", "chop_beats": 1.0, "key": True},
     {"kind": "kit", "lane": "drums", "tracks": ["drums.kick", "drums", "drums.hat", "drums.open", "drums.crash"], "name": "drums", "title": "Salamander Drumkit — drums", "credit": "Alexander Holm · CC BY-SA 3.0 · one-shots, overhead mic", "slice": "kit"},
 ]
 

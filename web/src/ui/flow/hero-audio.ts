@@ -6,8 +6,9 @@
 
 import type { FlowAudio } from "./model";
 
-/** What the sound button is doing: checking the library, ready, loading, playing, or out of luck. */
-export type SoundState = "checking" | "ready" | "loading" | "on" | "missing";
+/** What the sound button is doing: checking the library, ready, waiting for a click to resume sound
+ *  that was on before a reload (`armed`), loading, playing, or out of luck. */
+export type SoundState = "checking" | "ready" | "armed" | "loading" | "on" | "missing";
 
 export interface SoundView {
   label: string;
@@ -24,6 +25,8 @@ export function soundView(state: SoundState): SoundView {
       return { label: "Turn on sound", hint: "Checking the audio library", pressed: false, disabled: true };
     case "ready":
       return { label: "Turn on sound", hint: "Turn on sound", pressed: false, disabled: false };
+    case "armed":
+      return { label: "Sound on — click to start", hint: "Sound was on: click or press a key anywhere to start it", pressed: true, disabled: false };
     case "loading":
       return { label: "Loading…", hint: "Loading the sound", pressed: false, disabled: true };
     case "on":
@@ -47,6 +50,27 @@ export function isLibraryKey(key: string): boolean {
 /** A probe or fetch answered with audio: 200, or 206 for a ranged request. */
 export function isAudioStatus(status: number): boolean {
   return status === 200 || status === 206;
+}
+
+const SOUND_KEY = "apricity.heroSound";
+
+/** Did the reader leave the sound on (it survives a reload)? Never throws: storage may be blocked. */
+export function soundRemembered(store: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): boolean {
+  try {
+    return store?.getItem(SOUND_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
+/** Remember whether the sound is on, for the next visit or reload. */
+export function rememberSound(on: boolean, store: Pick<Storage, "setItem" | "removeItem"> | undefined = globalThis.localStorage) {
+  try {
+    if (on) store?.setItem(SOUND_KEY, "on");
+    else store?.removeItem(SOUND_KEY);
+  } catch {
+    // Private mode or blocked storage: the sound simply isn't remembered.
+  }
 }
 
 /** The state after the library was probed: `status` is the HTTP status, or null when it could not be asked. */
