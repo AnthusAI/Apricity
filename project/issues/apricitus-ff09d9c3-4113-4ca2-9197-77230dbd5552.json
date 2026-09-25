@@ -17,10 +17,17 @@
       "text": "Env var APRICITY_OAUTH_REDIRECT_URLS set on app d2n7w4kwqyfwn4 = https://apricity.anth.us/,http://localhost:5173/,http://127.0.0.1:5181/. STILL NEEDED (user must set; agents may not enter credentials): branch secrets GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ALLOWED_EMAILS for app d2n7w4kwqyfwn4 branch main (Amplify console: Hosting > Secret management, or SSM /amplify/d2n7w4kwqyfwn4/main/<NAME>). Google client needs authorized redirect https://<cognito-domain>/oauth2/idpresponse after the first successful backend deploy, plus JS origin https://apricity.anth.us.",
       "created_at": "2026-09-25T03:27:51.673944Z",
       "comment_type": "default"
+    },
+    {
+      "id": "9214e178-8634-429d-b4c1-ab2b6305d39b",
+      "author": "home",
+      "text": "User decision 2026-09-25: authentication is Google only (no email/password users). Amplify auth is always a Cognito user pool with Google federated through it; email sign-in exists only as a stopgap until Google secrets exist. Code is ready: setting APRICITY_GOOGLE_AUTH=true builds the pool with externalProviders only (replaces the pool, currently 0 users) and the dialog then shows only 'Sign in with Google'. TODO for the owner: (1) Google Cloud project + OAuth consent screen, (2) OAuth client (Web application): authorized JavaScript origin https://apricity.anth.us, authorized redirect URI https://apricity-anthus.auth.us-east-1.amazoncognito.com/oauth2/idpresponse, (3) put GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET in Amplify Hosting > Secret management (branch main), (4) tell the agent; it sets APRICITY_GOOGLE_AUTH=true and APRICITY_COGNITO_DOMAIN_PREFIX=apricity-anthus and redeploys. Needs 'aws login' again (session expired).",
+      "created_at": "2026-09-25T10:40:40.439570Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.338842Z",
-  "updated_at": "2026-09-25T03:27:51.673961Z",
+  "updated_at": "2026-09-25T10:40:40.439594Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
