@@ -55,3 +55,14 @@ project/.overlay/
 # In-progress `apricity sources fetch` staging (archive download and extraction)
 /samples/**/.extract/
 /samples/**/.archive.part
+
+# Audio never lives in git: fetched assets and libraries are synced (design/storage.md), not committed.
+/web/public/hero/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aif
+*.aiff
+*.opus
