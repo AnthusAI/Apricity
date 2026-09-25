@@ -1,5 +1,5 @@
 {
-  "version": "2a9947fd87eb3b63",
+  "version": "ad0c92d6f62a5fa6",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -1444,6 +1444,13 @@
           "isArray": false,
           "kind": "enum"
         },
+        "kind": {
+          "name": "kind",
+          "type": "ScoreKind",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "enum"
+        },
         "text": {
           "name": "text",
           "type": "String",
@@ -1506,6 +1513,12 @@
             "title"
           ],
           "sortArgument": "title"
+        },
+        {
+          "name": "scoresByKind",
+          "queryField": "scoresByKind",
+          "partitionField": "kind",
+          "sortFields": []
         }
       ],
       "relationships": [
@@ -1739,6 +1752,182 @@
         "owner"
       ]
     },
+    "Rating": {
+      "name": "Rating",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "RatingTarget",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "stars": {
+          "name": "stars",
+          "type": "Int",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "ratedAt": {
+          "name": "ratedAt",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "identityClaim": "cognito:username",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
+    "Tally": {
+      "name": "Tally",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "RatingTarget",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "day": {
+          "name": "day",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "count": {
+          "name": "count",
+          "type": "Int",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sum": {
+          "name": "sum",
+          "type": "Int",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "talliesByTargetTypeAndDay",
+          "queryField": "talliesByTypeAndDay",
+          "partitionField": "targetType",
+          "sortFields": [
+            "day"
+          ],
+          "sortArgument": "day"
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": []
+    },
     "Job": {
       "name": "Job",
       "fields": {
@@ -1856,6 +2045,17 @@
       "keep",
       "skip",
       "later"
+    ],
+    "ScoreKind": [
+      "song",
+      "beat",
+      "chords",
+      "melody"
+    ],
+    "RatingTarget": [
+      "sample",
+      "clip",
+      "score"
     ],
     "SampleRole": [
       "source",
@@ -2320,6 +2520,36 @@
         ]
       }
     ],
+    "Rating": [
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "identityClaim": "cognito:username",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
+    "Tally": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      }
+    ],
     "Job": [
       {
         "provider": "iam",
@@ -2491,6 +2721,31 @@
       },
       {
         "path": "ScoreRef/*",
+        "readable": [
+          "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Rating/*",
+        "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Tally/*",
         "readable": [
           "guest",
           "authenticated",

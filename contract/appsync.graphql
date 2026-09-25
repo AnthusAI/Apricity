@@ -20,6 +20,19 @@ enum VerdictValue {
   later
 }
 
+enum ScoreKind {
+  song
+  beat
+  chords
+  melody
+}
+
+enum RatingTarget {
+  sample
+  clip
+  score
+}
+
 type Recording @aws_iam @aws_cognito_user_pools {
   id: ID!
   title: String!
@@ -168,6 +181,7 @@ type Score @aws_iam @aws_cognito_user_pools {
   title: String!
   folder: String!
   format: ScoreFormat
+  kind: ScoreKind
   text: String!
   lastErrors: [String]
   legacyPath: String
@@ -189,6 +203,28 @@ type ScoreRef @aws_iam @aws_cognito_user_pools {
   start: Float
   end: Float
   owner: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Rating {
+  id: ID!
+  targetType: RatingTarget!
+  targetId: ID!
+  stars: Int!
+  ratedAt: AWSDateTime!
+  owner: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Tally @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  targetType: RatingTarget!
+  targetId: ID!
+  day: String!
+  count: Int!
+  sum: Int!
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
@@ -444,6 +480,8 @@ type Query {
   listCrates(id: ID, filter: ModelCrateFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCrateConnection
   getCrateItem(id: ID!): CrateItem
   listCrateItems(id: ID, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCrateItemConnection
+  getRating(id: ID!): Rating
+  listRatings(id: ID, filter: ModelRatingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRatingConnection
   verdictsByJudge(judge: String!, judgedAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelVerdictFilterInput, limit: Int, nextToken: String): ModelVerdictConnection
   cratesByOwner(owner: String!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateFilterInput, limit: Int, nextToken: String): ModelCrateConnection
   crateItemsByCrate(crateId: ID!, position: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
@@ -473,11 +511,15 @@ type Query {
   getScore(id: ID!): Score @aws_iam @aws_cognito_user_pools
   listScores(id: ID, filter: ModelScoreFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreConnection @aws_iam @aws_cognito_user_pools
   scoresByFolder(folder: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection @aws_iam @aws_cognito_user_pools
+  scoresByKind(kind: ScoreKind!, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection @aws_iam @aws_cognito_user_pools
   getScoreRef(id: ID!): ScoreRef @aws_iam @aws_cognito_user_pools
   listScoreRefs(id: ID, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsBySample(sampleId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsByClip(clipId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  getTally(id: ID!): Tally @aws_iam @aws_cognito_user_pools
+  listTallies(id: ID, filter: ModelTallyFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelTallyConnection @aws_iam @aws_cognito_user_pools
+  talliesByTypeAndDay(targetType: RatingTarget!, day: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelTallyFilterInput, limit: Int, nextToken: String): ModelTallyConnection @aws_iam @aws_cognito_user_pools
   getJob(id: ID!): Job @aws_iam @aws_cognito_user_pools
   listJobs(id: ID, filter: ModelJobFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelJobConnection @aws_iam @aws_cognito_user_pools
   jobsByState(state: JobState!, sortDirection: ModelSortDirection, filter: ModelJobFilterInput, limit: Int, nextToken: String): ModelJobConnection @aws_iam @aws_cognito_user_pools
@@ -563,6 +605,12 @@ type Mutation {
   createScoreRef(input: CreateScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
   updateScoreRef(input: UpdateScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
   deleteScoreRef(input: DeleteScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
+  createRating(input: CreateRatingInput!, condition: ModelRatingConditionInput): Rating
+  updateRating(input: UpdateRatingInput!, condition: ModelRatingConditionInput): Rating
+  deleteRating(input: DeleteRatingInput!, condition: ModelRatingConditionInput): Rating
+  createTally(input: CreateTallyInput!, condition: ModelTallyConditionInput): Tally
+  updateTally(input: UpdateTallyInput!, condition: ModelTallyConditionInput): Tally
+  deleteTally(input: DeleteTallyInput!, condition: ModelTallyConditionInput): Tally
   createJob(input: CreateJobInput!, condition: ModelJobConditionInput): Job
   updateJob(input: UpdateJobInput!, condition: ModelJobConditionInput): Job
   deleteJob(input: DeleteJobInput!, condition: ModelJobConditionInput): Job
@@ -595,6 +643,9 @@ type Subscription {
   onCreateCrateItem(filter: ModelSubscriptionCrateItemFilterInput, owner: String): CrateItem @aws_subscribe(mutations: ["createCrateItem"])
   onUpdateCrateItem(filter: ModelSubscriptionCrateItemFilterInput, owner: String): CrateItem @aws_subscribe(mutations: ["updateCrateItem"])
   onDeleteCrateItem(filter: ModelSubscriptionCrateItemFilterInput, owner: String): CrateItem @aws_subscribe(mutations: ["deleteCrateItem"])
+  onCreateRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["createRating"])
+  onUpdateRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["updateRating"])
+  onDeleteRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["deleteRating"])
   onCreateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["createRecording"]) @aws_iam @aws_cognito_user_pools
   onUpdateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["updateRecording"]) @aws_iam @aws_cognito_user_pools
   onDeleteRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["deleteRecording"]) @aws_iam @aws_cognito_user_pools
@@ -616,6 +667,9 @@ type Subscription {
   onCreateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["createScoreRef"]) @aws_iam @aws_cognito_user_pools
   onUpdateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["updateScoreRef"]) @aws_iam @aws_cognito_user_pools
   onDeleteScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["deleteScoreRef"]) @aws_iam @aws_cognito_user_pools
+  onCreateTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["createTally"]) @aws_iam @aws_cognito_user_pools
+  onUpdateTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["updateTally"]) @aws_iam @aws_cognito_user_pools
+  onDeleteTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["deleteTally"]) @aws_iam @aws_cognito_user_pools
   onCreateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["createJob"]) @aws_iam @aws_cognito_user_pools
   onUpdateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["updateJob"]) @aws_iam @aws_cognito_user_pools
   onDeleteJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["deleteJob"]) @aws_iam @aws_cognito_user_pools
@@ -1322,11 +1376,17 @@ input ModelScoreFormatInput {
   ne: ScoreFormat
 }
 
+input ModelScoreKindInput {
+  eq: ScoreKind
+  ne: ScoreKind
+}
+
 input ModelScoreFilterInput {
   id: ModelIDInput
   title: ModelStringInput
   folder: ModelStringInput
   format: ModelScoreFormatInput
+  kind: ModelScoreKindInput
   text: ModelStringInput
   lastErrors: ModelStringInput
   legacyPath: ModelStringInput
@@ -1342,6 +1402,7 @@ input ModelScoreConditionInput {
   title: ModelStringInput
   folder: ModelStringInput
   format: ModelScoreFormatInput
+  kind: ModelScoreKindInput
   text: ModelStringInput
   lastErrors: ModelStringInput
   legacyPath: ModelStringInput
@@ -1358,6 +1419,7 @@ input CreateScoreInput {
   title: String!
   folder: String!
   format: ScoreFormat
+  kind: ScoreKind
   text: String!
   lastErrors: [String]
   legacyPath: String
@@ -1369,6 +1431,7 @@ input UpdateScoreInput {
   title: String
   folder: String
   format: ScoreFormat
+  kind: ScoreKind
   text: String
   lastErrors: [String]
   legacyPath: String
@@ -1384,6 +1447,7 @@ input ModelSubscriptionScoreFilterInput {
   title: ModelSubscriptionStringInput
   folder: ModelSubscriptionStringInput
   format: ModelSubscriptionStringInput
+  kind: ModelSubscriptionStringInput
   text: ModelSubscriptionStringInput
   lastErrors: ModelSubscriptionStringInput
   legacyPath: ModelSubscriptionStringInput
@@ -1479,6 +1543,145 @@ input ModelSubscriptionScoreRefFilterInput {
   and: [ModelSubscriptionScoreRefFilterInput]
   or: [ModelSubscriptionScoreRefFilterInput]
   owner: ModelStringInput
+}
+
+type ModelRatingConnection {
+  items: [Rating]!
+  nextToken: String
+}
+
+input ModelRatingTargetInput {
+  eq: RatingTarget
+  ne: RatingTarget
+}
+
+input ModelRatingFilterInput {
+  id: ModelIDInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  stars: ModelIntInput
+  ratedAt: ModelStringInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelRatingFilterInput]
+  or: [ModelRatingFilterInput]
+  not: ModelRatingFilterInput
+}
+
+input ModelRatingConditionInput {
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  stars: ModelIntInput
+  ratedAt: ModelStringInput
+  owner: ModelStringInput
+  and: [ModelRatingConditionInput]
+  or: [ModelRatingConditionInput]
+  not: ModelRatingConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateRatingInput {
+  id: ID
+  targetType: RatingTarget!
+  targetId: ID!
+  stars: Int!
+  ratedAt: AWSDateTime!
+  owner: String
+}
+
+input UpdateRatingInput {
+  id: ID!
+  targetType: RatingTarget
+  targetId: ID
+  stars: Int
+  ratedAt: AWSDateTime
+  owner: String
+}
+
+input DeleteRatingInput {
+  id: ID!
+}
+
+input ModelSubscriptionRatingFilterInput {
+  id: ModelSubscriptionIDInput
+  targetType: ModelSubscriptionStringInput
+  targetId: ModelSubscriptionIDInput
+  stars: ModelSubscriptionIntInput
+  ratedAt: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionRatingFilterInput]
+  or: [ModelSubscriptionRatingFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelTallyConnection @aws_iam @aws_cognito_user_pools {
+  items: [Tally]!
+  nextToken: String
+}
+
+input ModelTallyFilterInput {
+  id: ModelIDInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  day: ModelStringInput
+  count: ModelIntInput
+  sum: ModelIntInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelTallyFilterInput]
+  or: [ModelTallyFilterInput]
+  not: ModelTallyFilterInput
+}
+
+input ModelTallyConditionInput {
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  day: ModelStringInput
+  count: ModelIntInput
+  sum: ModelIntInput
+  and: [ModelTallyConditionInput]
+  or: [ModelTallyConditionInput]
+  not: ModelTallyConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateTallyInput {
+  id: ID
+  targetType: RatingTarget!
+  targetId: ID!
+  day: String!
+  count: Int!
+  sum: Int!
+}
+
+input UpdateTallyInput {
+  id: ID!
+  targetType: RatingTarget
+  targetId: ID
+  day: String
+  count: Int
+  sum: Int
+}
+
+input DeleteTallyInput {
+  id: ID!
+}
+
+input ModelSubscriptionTallyFilterInput {
+  id: ModelSubscriptionIDInput
+  targetType: ModelSubscriptionStringInput
+  targetId: ModelSubscriptionIDInput
+  day: ModelSubscriptionStringInput
+  count: ModelSubscriptionIntInput
+  sum: ModelSubscriptionIntInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionTallyFilterInput]
+  or: [ModelSubscriptionTallyFilterInput]
 }
 
 type ModelJobConnection @aws_iam @aws_cognito_user_pools {

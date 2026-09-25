@@ -3,12 +3,13 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import contract from "../../../contract/apricity.contract.json" with { type: "json" };
-import { importOrder, importLibraryFromBucket, listModelKeys, toApiInput, ImportNotAllowedError, type ImportDeps, type StorageApi } from "../../src/data/import-library.ts";
+import { CLOUD_ONLY, importOrder, importLibraryFromBucket, listModelKeys, toApiInput, ImportNotAllowedError, type ImportDeps, type StorageApi } from "../../src/data/import-library.ts";
 
 const FIX = join(import.meta.dirname, "..", "fixtures", "library");
 const fixtures = (model: string) =>
   readdirSync(join(FIX, model)).map((f) => ({ key: `${model}/${f}`, rec: JSON.parse(readFileSync(join(FIX, model, f), "utf8")) as Record<string, any> }));
-const models = Object.keys((contract as any).models);
+// Library models: ratings and tallies live only in the cloud and are never imported.
+const models = Object.keys((contract as any).models).filter((m) => !CLOUD_ONLY.has(m));
 const me = { sub: "sub-1", username: "user-1", email: "a@b.c", groups: ["admins", "curators"], admin: true };
 
 /** In-memory bucket: every fixture under its key; `pageSize` forces pagination. */
@@ -72,7 +73,8 @@ describe("import order", () => {
   it("puts every parent before its children, from the contract", () => {
     const order = importOrder();
     assert.deepEqual([...order].sort(), [...models].sort());
-    for (const [m, def] of Object.entries<any>((contract as any).models))
+    assert.ok(!order.includes("Rating") && !order.includes("Tally"), "cloud-only models are not imported");
+    for (const [m, def] of Object.entries<any>((contract as any).models).filter(([m]) => !CLOUD_ONLY.has(m)))
       for (const r of def.relationships.filter((r: any) => r.kind === "belongsTo"))
         assert.ok(order.indexOf(r.target) < order.indexOf(m), `${r.target} before ${m}`);
   });

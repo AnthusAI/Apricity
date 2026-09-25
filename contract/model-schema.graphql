@@ -20,6 +20,19 @@ enum VerdictValue {
   later
 }
 
+enum ScoreKind {
+  song
+  beat
+  chords
+  melody
+}
+
+enum RatingTarget {
+  sample
+  clip
+  score
+}
+
 type Recording @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
   {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
@@ -179,6 +192,7 @@ type Score @model @auth(rules: [{allow: public, provider: identityPool, operatio
   title: String!
   folder: String! @index(sortKeyFields: ["title"], queryField: "scoresByFolder")
   format: ScoreFormat
+  kind: ScoreKind @index(queryField: "scoresByKind")
   text: String!
   lastErrors: [String]
   legacyPath: String
@@ -202,6 +216,27 @@ type ScoreRef @model @auth(rules: [{allow: public, provider: identityPool, opera
   start: Float
   end: Float
   owner: String
+}
+
+type Rating @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  id: ID! @primaryKey
+  targetType: RatingTarget!
+  targetId: ID!
+  stars: Int!
+  ratedAt: AWSDateTime!
+  owner: String
+}
+
+type Tally @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]}])
+{
+  id: ID! @primaryKey
+  targetType: RatingTarget! @index(sortKeyFields: ["day"], queryField: "talliesByTypeAndDay")
+  targetId: ID!
+  day: String!
+  count: Int!
+  sum: Int!
 }
 
 type Job @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},

@@ -37,6 +37,10 @@ const schema = a.schema({
   ClipSource: a.enum(["user", "ml", "curated"]),
   Kind: a.enum(["loop", "break", "hit", "phrase", "section", "chop", "other"]),
   VerdictValue: a.enum(["keep", "skip", "later"]),
+  // What a score is for. There is no other difference: a Beat is a score tagged beat, and so on.
+  ScoreKind: a.enum(["song", "beat", "chords", "melody"]),
+  // What can be rated.
+  RatingTarget: a.enum(["sample", "clip", "score"]),
 
   Recording: a
     .model({
@@ -229,6 +233,7 @@ const schema = a.schema({
       title: a.string().required(),
       folder: a.string().required(),
       format: a.enum(["apr", "yaml"]),
+      kind: a.ref("ScoreKind"),
       text: a.string().required(),
       lastErrors: a.string().array(),
       legacyPath: a.string(),
@@ -237,6 +242,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((i) => [
       i("folder").sortKeys(["title"]).queryField("scoresByFolder"),
+      i("kind").queryField("scoresByKind"),
     ])
     .authorization(made),
 
@@ -260,6 +266,33 @@ const schema = a.schema({
       i("clipId").queryField("refsByClip"),
     ])
     .authorization(made),
+
+  // One person's stars (0-5) for one item. Private: the id is `<targetType>#<targetId>#<owner>`, so a person has one
+  // rating per item (the tally Lambda ignores any other id). Deleting it takes the rating back.
+  Rating: a
+    .model({
+      id: a.id().required(),
+      targetType: a.ref("RatingTarget").required(),
+      targetId: a.id().required(),
+      stars: a.integer().required(),
+      ratedAt: a.datetime().required(),
+      owner: a.string(),
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  // The public side of ratings: per item, the count and star sum for one UTC day (`YYYY-MM-DD`) or for all time
+  // (`all`). Written only by the tally Lambda from the Rating table's stream (amplify/functions/tally).
+  Tally: a
+    .model({
+      id: a.id().required(),
+      targetType: a.ref("RatingTarget").required(),
+      targetId: a.id().required(),
+      day: a.string().required(),
+      count: a.integer().required(),
+      sum: a.integer().required(),
+    })
+    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay")])
+    .authorization(everyone),
 
   Job: a
     .model({

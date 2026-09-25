@@ -67,9 +67,12 @@ export interface ImportDeps {
   concurrency?: number;
 }
 
+/** Models that live only in the cloud, never in a library: people's ratings, and the tallies derived from them. */
+export const CLOUD_ONLY = new Set(["Rating", "Tally"]);
+
 /** Models parents-first: a model comes after every model it `belongsTo`. Stable in contract order. */
 export function importOrder(contract: Contract = CONTRACT): string[] {
-  const names = Object.keys(contract.models);
+  const names = Object.keys(contract.models).filter((m) => !CLOUD_ONLY.has(m));
   const parents = (m: string) => contract.models[m].relationships.filter((r) => r.kind === "belongsTo").map((r) => r.target);
   const out: string[] = [];
   const visiting = new Set<string>();
