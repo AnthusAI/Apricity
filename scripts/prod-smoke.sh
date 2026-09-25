@@ -52,7 +52,7 @@ PY
 
 # --- an unauthenticated GraphQL call is rejected
 code=$(curl -sS -o "$WORK/gql.out" -w '%{http_code}' -X POST -H 'Content-Type: application/json' \
-    -d '{"query":"query { listClips { items { id } } }"}' "$APIURL" 2>>"$WORK/curl.err")
+    -d '{"query":"query { listSamples { items { id } } }"}' "$APIURL" 2>>"$WORK/curl.err")
 [ "$code" = "401" ] || [ "$code" = "403" ]; check "GraphQL without credentials is rejected (got $code)" $?
 
 # --- guest credentials from the identity pool (no account, no password: the pool's unauthenticated role)

@@ -17,7 +17,7 @@ a clip is one *source*, in the score's order:
         one strip, each pad a chop;
   clip  a clip played whole: the window around its region, one chop.
 
-Titles, credits and provenance come from the library's Recording and Clip records (title, composed,
+Titles, credits and provenance come from the library's Recording and Sample records (title, composed,
 recorded, performer, credit, rights, source page, stem). The bundle's title and blurb come from the
 score's first comment line ("# Title — what it shows"). Anything can be overridden in an optional
 sidecar, <score>.breakdown.yaml:
@@ -60,8 +60,8 @@ STEMS = {"other": "horns", "drums": "drums", "bass": "bass", "vocals": "vocals",
 SCORE: Path = None  # the score being baked
 EXE = None  # the apricity binary
 SAMPLES = None  # temporary samples folder of symlinks into the library
-KEYS = {}  # samples-relative clip path -> the library key of its audio
-CLIPS = {}  # samples-relative clip path -> its Clip record
+KEYS = {}  # samples-relative sample path -> the library key of its audio
+SAMPLE_RECORDS = {}  # samples-relative sample path -> its Sample record
 
 
 def find_exe() -> Path:
@@ -75,40 +75,40 @@ def find_exe() -> Path:
 
 
 def records(library: Path, model: str) -> dict[str, list[dict]]:
-    """A model's records, grouped by the clip they belong to."""
+    """A model's records, grouped by the sample they belong to."""
     out: dict[str, list[dict]] = {}
     for f in (library / model).glob("*.json") if (library / model).is_dir() else []:
         r = json.loads(f.read_text())
-        out.setdefault(r.get("clipId"), []).append(r)
+        out.setdefault(r.get("sampleId"), []).append(r)
     return out
 
 
-def annotations(slices: list[dict], markers: list[dict]) -> dict:
+def annotations(clips: list[dict], markers: list[dict]) -> dict:
     """The manifest's `annotations`, as crates/apricity-data/src/loader.rs builds them from the
-    library's Slice and Marker records."""
-    clips = []
-    for s in sorted(slices, key=lambda s: (s["start"], s["name"])):
+    library's Clip and Marker records."""
+    saved = []
+    for s in sorted(clips, key=lambda s: (s["start"], s["name"])):
         c = {"name": s["name"], "start": s["start"], "end": s["end"], "source": s["source"]}
         for a, b in (("tags", "tags"), ("candidateId", "candidate"), ("retired", "retired")):
             if a in s:
                 c[b] = s[a]
         if isinstance(s.get("evidence"), str):
             c["evidence"] = json.loads(s["evidence"])
-        clips.append(c)
+        saved.append(c)
     marks = []
     for m in sorted(markers, key=lambda m: (m["seconds"], m["name"])):
         marks.append({k: m[k] for k in ("name", "seconds", "source", "note") if k in m})
-    return {"clips": clips, "markers": marks}
+    return {"clips": saved, "markers": marks}
 
 
 def link_samples(library: Path, tmp: Path):
-    """Lay the library's clips out as a samples folder the engine reads: <path> (a symlink into
-    files/) and <path>.apricity.json (the clip's analysis plus its annotations from the library's
+    """Lay the library's samples out as a samples folder the engine reads: <path> (a symlink into
+    files/) and <path>.apricity.json (the sample's analysis plus its annotations from the library's
     records). Nothing large is copied."""
     global SAMPLES
     SAMPLES = tmp / "samples"
-    slices, markers = records(library, "Slice"), records(library, "Marker")
-    for rec in sorted((library / "Clip").glob("*.json")):
+    clips, markers = records(library, "Clip"), records(library, "Marker")
+    for rec in sorted((library / "Sample").glob("*.json")):
         c = json.loads(rec.read_text())
         audio, analysis = (c.get("audio") or {}).get("key"), (c.get("analysis") or {}).get("key")
         if not (c.get("path") and audio and analysis):
@@ -120,10 +120,10 @@ def link_samples(library: Path, tmp: Path):
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.symlink_to(a.resolve())
         manifest = json.loads(m.read_text())
-        manifest["annotations"] = annotations(slices.get(c["id"], []), markers.get(c["id"], []))
+        manifest["annotations"] = annotations(clips.get(c["id"], []), markers.get(c["id"], []))
         Path(str(dest) + ".apricity.json").write_text(json.dumps(manifest))
         KEYS[c["path"]] = audio
-        CLIPS[c["path"]] = c
+        SAMPLE_RECORDS[c["path"]] = c
     if not SAMPLES.is_dir():
         sys.exit(NEEDS_LIBRARY)
 
@@ -251,15 +251,15 @@ def rel_of(tl, source: int) -> str:
 
 
 def recording(library: Path, rel: str) -> dict:
-    clip = CLIPS.get(rel, {})
-    f = library / "Recording" / f"{clip.get('recordingId', '')}.json"
-    return json.loads(f.read_text()) if clip.get("recordingId") and f.is_file() else {}
+    sample = SAMPLE_RECORDS.get(rel, {})
+    f = library / "Recording" / f"{sample.get('recordingId', '')}.json"
+    return json.loads(f.read_text()) if sample.get("recordingId") and f.is_file() else {}
 
 
 def part_of(rel: str) -> str | None:
     """What part of a recording a clip is: a stem's name ("horns"), or None for the whole thing."""
-    clip = CLIPS.get(rel, {})
-    stem = clip.get("stem") or (Path(rel).stem if "/stems/" in rel else None)
+    sample = SAMPLE_RECORDS.get(rel, {})
+    stem = sample.get("stem") or (Path(rel).stem if "/stems/" in rel else None)
     return STEMS.get(stem, stem) if stem else None
 
 

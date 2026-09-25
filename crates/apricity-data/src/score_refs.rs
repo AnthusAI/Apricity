@@ -1,9 +1,9 @@
-/// Score reference resolution: extract and catalog clips and slices referenced in a score.
+/// Score reference resolution: extract and catalog samples and clips referenced in a score.
 /// Implements features/data/domain/score_refs.feature and design/storage.md §1, §5.
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
-/// A catalog reference: a clip or slice referenced in a score, with resolved paths and ids.
+/// A catalog reference: a sample or clip referenced in a score, with resolved paths and ids.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CatalogRef {
@@ -11,20 +11,20 @@ pub struct CatalogRef {
     pub id_suffix: String,
     /// The clip alias declared in the score
     pub alias: String,
-    /// Source path exactly as written: "marine-band/stems/Thunderer/drums.wav" or "@clp_abc123"
+    /// Source path exactly as written: "marine-band/stems/Thunderer/drums.wav" or "@smp_abc123"
     pub source: String,
     /// Resolved catalog path (catalog-relative), if the source is a path and resolved
     #[serde(skip_serializing_if = "Option::is_none")]
     pub catalog_path: Option<String>,
+    /// Sample id if source is @smp_...
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sample_id: Option<String>,
+    /// Clip name if the reference includes a clip (and not @clp_...)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clip_name: Option<String>,
     /// Clip id if source is @clp_...
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clip_id: Option<String>,
-    /// Slice name if the reference includes a slice (and not @slc_...)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub slice_name: Option<String>,
-    /// Slice id if source is @slc_...
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub slice_id: Option<String>,
     /// Kit pad if this is a reference from a kit (e.g., "drums.kick" or "b" for a chopped kit)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub kit_pad: Option<String>,
@@ -41,7 +41,7 @@ pub struct CatalogRef {
 /// A sorted list of CatalogRef with deterministic ids, or parse errors.
 ///
 /// # Catalog-path resolution
-/// - If source starts with "@clp_" → clip_id, no catalog_path
+/// - If source starts with "@smp_" → sample_id, no catalog_path
 /// - If score has no "samples" directive → source is already catalog-relative
 /// - If score has "samples <dir>" → resolve normalize(folder/dir/source)
 ///   - If result starts with "samples/" → strip that prefix
@@ -61,10 +61,10 @@ pub fn catalog_refs(text: &str, folder: &str, file: &str) -> Result<Vec<CatalogR
     let mut catalog_refs: Vec<CatalogRef> = refs
         .iter()
         .map(|r| {
-            let (catalog_path, clip_id) = resolve_catalog_path(&r.source, &score, folder);
+            let (catalog_path, sample_id) = resolve_catalog_path(&r.source, &score, folder);
 
-            let (slice_name, slice_id) = match &r.slice {
-                Some(s) if s.starts_with("@slc_") => (None, Some(s[1..].to_string())),
+            let (clip_name, clip_id) = match &r.slice {
+                Some(s) if s.starts_with("@clp_") => (None, Some(s[1..].to_string())),
                 Some(s) => (Some(s.clone()), None),
                 None => (None, None),
             };
@@ -74,21 +74,21 @@ pub fn catalog_refs(text: &str, folder: &str, file: &str) -> Result<Vec<CatalogR
                 alias: r.alias.clone(),
                 source: r.source.clone(),
                 catalog_path,
+                sample_id,
+                clip_name,
                 clip_id,
-                slice_name,
-                slice_id,
                 kit_pad: r.kit_pad.clone(),
             }
         })
         .collect();
 
-    // Sort by (alias, kit_pad, slice_name, source)
+    // Sort by (alias, kit_pad, clip_name, source)
     // Option already orders None before Some
     catalog_refs.sort_by(|a, b| {
         a.alias
             .cmp(&b.alias)
             .then_with(|| a.kit_pad.cmp(&b.kit_pad))
-            .then_with(|| a.slice_name.cmp(&b.slice_name))
+            .then_with(|| a.clip_name.cmp(&b.clip_name))
             .then_with(|| a.source.cmp(&b.source))
     });
 
@@ -115,14 +115,14 @@ pub fn catalog_refs(text: &str, folder: &str, file: &str) -> Result<Vec<CatalogR
     Ok(catalog_refs)
 }
 
-/// Resolve a source path to catalog_path and optional clip_id.
+/// Resolve a source path to catalog_path and optional sample_id.
 fn resolve_catalog_path(
     source: &str,
     score: &apricity_score::Score,
     folder: &str,
 ) -> (Option<String>, Option<String>) {
-    // Rule (a): @clp_... → clip_id
-    if source.starts_with("@clp_") {
+    // Rule (a): @smp_... → sample_id
+    if source.starts_with("@smp_") {
         return (None, Some(source[1..].to_string()));
     }
 
@@ -172,18 +172,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_rule_a_clp_id() {
+    fn test_rule_a_smp_id() {
         let text = r#"
 tempo 90
 key C
 bars 1
-clip source = @clp_abc123
+clip source = @smp_abc123
 track source
 "#;
         let result = catalog_refs(text, "scores", "test.apr").unwrap();
         assert_eq!(result.len(), 1);
-        assert_eq!(result[0].source, "@clp_abc123");
-        assert_eq!(result[0].clip_id, Some("clp_abc123".to_string()));
+        assert_eq!(result[0].source, "@smp_abc123");
+        assert_eq!(result[0].sample_id, Some("smp_abc123".to_string()));
         assert_eq!(result[0].catalog_path, None);
     }
 
@@ -203,7 +203,7 @@ track beat
             result[0].catalog_path,
             Some("marine-band/stems/Thunderer/drums.wav".to_string())
         );
-        assert_eq!(result[0].clip_id, None);
+        assert_eq!(result[0].sample_id, None);
     }
 
     #[test]
@@ -249,10 +249,10 @@ track drums  steps "crash . . ."
         assert_eq!(result[0].kit_pad, None);
         assert_eq!(result[0].id_suffix, "band");
 
-        // Second ref: band with drums.crash kit pad and slice
+        // Second ref: band with drums.crash kit pad and clip
         assert_eq!(result[1].alias, "band");
         assert_eq!(result[1].source, "marine-band/Thunderer.mp3");
-        assert_eq!(result[1].slice_name, Some("hit-3".to_string()));
+        assert_eq!(result[1].clip_name, Some("hit-3".to_string()));
         assert_eq!(result[1].kit_pad, Some("drums.crash".to_string()));
         assert_eq!(result[1].id_suffix, "band_drums.crash");
     }
@@ -291,19 +291,19 @@ track brk
     }
 
     #[test]
-    fn test_slice_id_form() {
+    fn test_clip_id_form() {
         let text = r#"
 tempo 90
 key C
 bars 1
-clip beat = @clp_abc @slc_xyz
+clip beat = @smp_abc @clp_xyz
 track beat
 "#;
         let result = catalog_refs(text, "scores", "test.apr").unwrap();
         assert_eq!(result.len(), 1);
-        assert_eq!(result[0].clip_id, Some("clp_abc".to_string()));
-        assert_eq!(result[0].slice_id, Some("slc_xyz".to_string()));
-        assert_eq!(result[0].slice_name, None);
+        assert_eq!(result[0].sample_id, Some("smp_abc".to_string()));
+        assert_eq!(result[0].clip_id, Some("clp_xyz".to_string()));
+        assert_eq!(result[0].clip_name, None);
     }
 
     #[test]

@@ -4,21 +4,21 @@ Feature: Index queries with key conditions
 
   Background:
     Given I am user "alice" in groups "members,curators"
-    And these Slice records exist:
+    And these Clip records exist:
       """
       [
-        {"id": "s1", "clipId": "clp-1", "name": "loop-1",  "start": 0,  "end": 4,  "source": "ml"},
-        {"id": "s2", "clipId": "clp-1", "name": "loop-2",  "start": 4,  "end": 8,  "source": "ml"},
-        {"id": "s3", "clipId": "clp-1", "name": "hit-1",   "start": 8,  "end": 9,  "source": "ml"},
-        {"id": "s4", "clipId": "clp-1", "name": "break-1", "start": 12, "end": 16, "source": "ml"},
-        {"id": "s5", "clipId": "clp-2", "name": "loop-1",  "start": 2,  "end": 6,  "source": "ml"}
+        {"id": "s1", "sampleId": "smp-1", "name": "loop-1",  "start": 0,  "end": 4,  "source": "ml"},
+        {"id": "s2", "sampleId": "smp-1", "name": "loop-2",  "start": 4,  "end": 8,  "source": "ml"},
+        {"id": "s3", "sampleId": "smp-1", "name": "hit-1",   "start": 8,  "end": 9,  "source": "ml"},
+        {"id": "s4", "sampleId": "smp-1", "name": "break-1", "start": 12, "end": 16, "source": "ml"},
+        {"id": "s5", "sampleId": "smp-2", "name": "loop-1",  "start": 2,  "end": 6,  "source": "ml"}
       ]
       """
 
   Scenario: Partition only, in ascending sort-key order
-    When I query all Slice by slicesByClip with:
+    When I query all Clip by clipsBySample with:
       """
-      {"key": {"clipId": "clp-1"}}
+      {"key": {"sampleId": "smp-1"}}
       """
     Then data contains exactly these items in this order:
       """
@@ -26,9 +26,9 @@ Feature: Index queries with key conditions
       """
 
   Scenario: Descending order
-    When I query all Slice by slicesByClip with:
+    When I query all Clip by clipsBySample with:
       """
-      {"key": {"clipId": "clp-1"}, "sortDirection": "DESC"}
+      {"key": {"sampleId": "smp-1"}, "sortDirection": "DESC"}
       """
     Then data contains exactly these items in this order:
       """
@@ -36,9 +36,9 @@ Feature: Index queries with key conditions
       """
 
   Scenario Outline: Sort-key conditions
-    When I query all Slice by slicesByClip with:
+    When I query all Clip by clipsBySample with:
       """
-      {"key": {"clipId": "clp-1", "start": <condition>}}
+      {"key": {"sampleId": "smp-1", "start": <condition>}}
       """
     Then data contains exactly these items in this order:
       """
@@ -55,9 +55,9 @@ Feature: Index queries with key conditions
       | {"between": [4, 8]} | [{"id": "s2"}, {"id": "s3"}]                  |
 
   Scenario: beginsWith on a string sort key
-    When I query all Slice by slicesByClipAndName with:
+    When I query all Clip by clipsBySampleAndName with:
       """
-      {"key": {"clipId": "clp-1", "name": {"beginsWith": "loop"}}}
+      {"key": {"sampleId": "smp-1", "name": {"beginsWith": "loop"}}}
       """
     Then data contains exactly these items in this order:
       """
@@ -65,9 +65,9 @@ Feature: Index queries with key conditions
       """
 
   Scenario: A filter on an index query
-    When I query all Slice by slicesByClip with:
+    When I query all Clip by clipsBySample with:
       """
-      {"key": {"clipId": "clp-1"}, "filter": {"name": {"beginsWith": "loop"}}}
+      {"key": {"sampleId": "smp-1"}, "filter": {"name": {"beginsWith": "loop"}}}
       """
     Then data contains exactly these items in this order:
       """
@@ -75,18 +75,18 @@ Feature: Index queries with key conditions
       """
 
   Scenario: An index without a sort key
-    Given these Clip records exist:
+    Given these Sample records exist:
       """
       [
-        {"id": "clp-1", "recordingId": "rec-1", "path": "marine-band/Thunderer.mp3", "collection": "marine-band", "title": "Thunderer", "audio": {"key": "audio/clp-1/Thunderer.mp3", "sha256": "aa"}},
-        {"id": "clp-2", "recordingId": "rec-1", "path": "marine-band/stems/Thunderer/drums.wav", "collection": "marine-band", "title": "Thunderer drums", "audio": {"key": "audio/clp-2/drums.wav", "sha256": "bb"}}
+        {"id": "smp-1", "recordingId": "rec-1", "path": "marine-band/Thunderer.mp3", "collection": "marine-band", "title": "Thunderer", "audio": {"key": "audio/smp-1/Thunderer.mp3", "sha256": "aa"}},
+        {"id": "smp-2", "recordingId": "rec-1", "path": "marine-band/stems/Thunderer/drums.wav", "collection": "marine-band", "title": "Thunderer drums", "audio": {"key": "audio/smp-2/drums.wav", "sha256": "bb"}}
       ]
       """
-    When I query all Clip by clipsByPath with:
+    When I query all Sample by samplesByPath with:
       """
       {"key": {"path": "marine-band/stems/Thunderer/drums.wav"}}
       """
     Then data contains exactly these items in this order:
       """
-      [{"id": "clp-2", "title": "Thunderer drums"}]
+      [{"id": "smp-2", "title": "Thunderer drums"}]
       """

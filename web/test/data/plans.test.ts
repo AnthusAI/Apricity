@@ -18,10 +18,10 @@ function getCatalogRefs(text: string, folder: string, file: string): CatalogRef[
 }
 
 /**
- * Call rw_ids to get curated_slice_id for a candidate
+ * Call rw_ids to get curated_clip_id for a candidate
  */
-function getCuratedSliceId(candidateId: string): string {
-  const result = rw.call("rw_ids", JSON.stringify({ kind: "curated_slice_id", candidate_id: candidateId }));
+function getCuratedClipId(candidateId: string): string {
+  const result = rw.call("rw_ids", JSON.stringify({ kind: "curated_clip_id", candidate_id: candidateId }));
   return result.data as string;
 }
 
@@ -34,7 +34,7 @@ function getPositionAfter(lastPosition: string | null): string {
 }
 
 /**
- * Call rw_markup_merge to merge ML slices. Throws on wasm errors.
+ * Call rw_markup_merge to merge ML clips. Throws on wasm errors.
  */
 function callMarkupMerge(existing: any[], proposals: any[], usedByScore: string[], nameCounters: any): any {
   const result = rw.call("rw_markup_merge", JSON.stringify({
@@ -50,8 +50,8 @@ function callMarkupMerge(existing: any[], proposals: any[], usedByScore: string[
 }
 
 describe("planScoreRefs", () => {
-  describe("Scenario 1: Single clip with slice (score_refs.feature)", () => {
-    it("should create a ScoreRef with clip and slice resolved", () => {
+  describe("Scenario 1: Single sample with clip (score_refs.feature)", () => {
+    it("should create a ScoreRef with sample and clip resolved", () => {
       const text = `tempo 90
 key C
 bars 1
@@ -62,17 +62,17 @@ track beat`;
 
       // Mock lookups
       const lookups: Lookups = {
-        clipsByPath: new Map([
-          ["marine-band/stems/Thunderer/drums.wav", { id: "clp-1", path: "marine-band/stems/Thunderer/drums.wav" }],
+        samplesByPath: new Map([
+          ["marine-band/stems/Thunderer/drums.wav", { id: "smp-1", path: "marine-band/stems/Thunderer/drums.wav" }],
         ]),
-        clipsById: new Map(),
-        slicesByClipAndName: new Map([
+        samplesById: new Map(),
+        clipsBySampleAndName: new Map([
           [
-            "clp-1",
-            new Map([["loop-1", { id: "slc-a", start: 10, end: 14 }]]),
+            "smp-1",
+            new Map([["loop-1", { id: "clp-a", start: 10, end: 14 }]]),
           ],
         ]),
-        slicesById: new Map(),
+        clipsById: new Map(),
       };
 
       const plan = planScoreRefs("score-1", refs, lookups, []);
@@ -82,10 +82,10 @@ track beat`;
             id: "sref_score-1_beat",
             scoreId: "score-1",
             clipAlias: "beat",
-            clipPath: "marine-band/stems/Thunderer/drums.wav",
-            clipId: "clp-1",
-            sliceName: "loop-1",
-            sliceId: "slc-a",
+            samplePath: "marine-band/stems/Thunderer/drums.wav",
+            sampleId: "smp-1",
+            clipName: "loop-1",
+            clipId: "clp-a",
             start: 10,
             end: 14,
           },
@@ -97,7 +97,7 @@ track beat`;
   });
 
   describe("Scenario 2: Kit pad references", () => {
-    it("should create a ScoreRef for a kit pad slice", () => {
+    it("should create a ScoreRef for a kit pad clip", () => {
       const text = `tempo 90
 key C
 bars 1
@@ -110,15 +110,15 @@ track drums  steps "crash . . ."`;
 
       // Mock lookups
       const lookups: Lookups = {
-        clipsByPath: new Map([["marine-band/Thunderer.mp3", { id: "clp-2", path: "marine-band/Thunderer.mp3" }]]),
-        clipsById: new Map(),
-        slicesByClipAndName: new Map([
+        samplesByPath: new Map([["marine-band/Thunderer.mp3", { id: "smp-2", path: "marine-band/Thunderer.mp3" }]]),
+        samplesById: new Map(),
+        clipsBySampleAndName: new Map([
           [
-            "clp-2",
-            new Map([["hit-3", { id: "slc-h", start: 19.8, end: 20.3 }]]),
+            "smp-2",
+            new Map([["hit-3", { id: "clp-h", start: 19.8, end: 20.3 }]]),
           ],
         ]),
-        slicesById: new Map(),
+        clipsById: new Map(),
       };
 
       const plan = planScoreRefs("score-2", refs, lookups, []);
@@ -128,17 +128,17 @@ track drums  steps "crash . . ."`;
             id: "sref_score-2_band",
             scoreId: "score-2",
             clipAlias: "band",
-            clipPath: "marine-band/Thunderer.mp3",
-            clipId: "clp-2",
+            samplePath: "marine-band/Thunderer.mp3",
+            sampleId: "smp-2",
           },
           {
             id: "sref_score-2_band_drums.crash",
             scoreId: "score-2",
             clipAlias: "band",
-            clipPath: "marine-band/Thunderer.mp3",
-            clipId: "clp-2",
-            sliceName: "hit-3",
-            sliceId: "slc-h",
+            samplePath: "marine-band/Thunderer.mp3",
+            sampleId: "smp-2",
+            clipName: "hit-3",
+            clipId: "clp-h",
             start: 19.8,
             end: 20.3,
           },
@@ -168,18 +168,18 @@ track whole`;
 
       // Mock lookups
       const lookups: Lookups = {
-        clipsByPath: new Map([
-          ["marine-band/stems/Thunderer/drums.wav", { id: "clp-1", path: "marine-band/stems/Thunderer/drums.wav" }],
-          ["marine-band/Thunderer.mp3", { id: "clp-2", path: "marine-band/Thunderer.mp3" }],
+        samplesByPath: new Map([
+          ["marine-band/stems/Thunderer/drums.wav", { id: "smp-1", path: "marine-band/stems/Thunderer/drums.wav" }],
+          ["marine-band/Thunderer.mp3", { id: "smp-2", path: "marine-band/Thunderer.mp3" }],
         ]),
-        clipsById: new Map(),
-        slicesByClipAndName: new Map([
+        samplesById: new Map(),
+        clipsBySampleAndName: new Map([
           [
-            "clp-1",
-            new Map([["loop-1", { id: "slc-a", start: 10, end: 14 }]]),
+            "smp-1",
+            new Map([["loop-1", { id: "clp-a", start: 10, end: 14 }]]),
           ],
         ]),
-        slicesById: new Map(),
+        clipsById: new Map(),
       };
 
       // First save
@@ -196,8 +196,8 @@ track whole`;
             id: "sref_score-1_whole",
             scoreId: "score-1",
             clipAlias: "whole",
-            clipPath: "marine-band/Thunderer.mp3",
-            clipId: "clp-2",
+            samplePath: "marine-band/Thunderer.mp3",
+            sampleId: "smp-2",
           },
         ],
         update: [],
@@ -206,8 +206,8 @@ track whole`;
     });
   });
 
-  describe("Scenario 4: Unresolved reference to missing clip", () => {
-    it("should keep unresolved clipPath without clipId", () => {
+  describe("Scenario 4: Unresolved reference to missing sample", () => {
+    it("should keep unresolved samplePath without sampleId", () => {
       const text = `tempo 90
 key C
 bars 1
@@ -216,12 +216,12 @@ track x`;
 
       const refs = getCatalogRefs(text, "scores", "test.apr");
 
-      // Mock lookups (no clip found)
+      // Mock lookups (no sample found)
       const lookups: Lookups = {
-        clipsByPath: new Map(),
+        samplesByPath: new Map(),
+        samplesById: new Map(),
+        clipsBySampleAndName: new Map(),
         clipsById: new Map(),
-        slicesByClipAndName: new Map(),
-        slicesById: new Map(),
       };
 
       const plan = planScoreRefs("score-3", refs, lookups, []);
@@ -231,7 +231,7 @@ track x`;
             id: "sref_score-3_x",
             scoreId: "score-3",
             clipAlias: "x",
-            clipPath: "somewhere/else.wav",
+            samplePath: "somewhere/else.wav",
           },
         ],
         update: [],
@@ -240,22 +240,22 @@ track x`;
     });
   });
 
-  describe("Scenario 5: @clp_ and @slc_ forms", () => {
-    it("should resolve @clp_ and @slc_ references by id", () => {
+  describe("Scenario 5: @smp_ and @clp_ forms", () => {
+    it("should resolve @smp_ and @clp_ references by id", () => {
       const text = `tempo 90
 key C
 bars 1
-clip source = @clp_abc123  @slc_xyz
+clip source = @smp_abc123  @clp_xyz
 track source`;
 
       const refs = getCatalogRefs(text, "scores", "test.apr");
 
       // Mock lookups
       const lookups: Lookups = {
-        clipsByPath: new Map(),
-        clipsById: new Map([["clp_abc123", { id: "clp-abc", path: "marine-band/x.wav" }]]),
-        slicesByClipAndName: new Map(),
-        slicesById: new Map([["slc_xyz", { id: "slc-xyz", start: 5, end: 10 }]]),
+        samplesByPath: new Map(),
+        samplesById: new Map([["smp_abc123", { id: "smp-abc", path: "marine-band/x.wav" }]]),
+        clipsBySampleAndName: new Map(),
+        clipsById: new Map([["clp_xyz", { id: "clp-xyz", start: 5, end: 10 }]]),
       };
 
       const plan = planScoreRefs("score-4", refs, lookups, []);
@@ -265,9 +265,9 @@ track source`;
             id: "sref_score-4_source",
             scoreId: "score-4",
             clipAlias: "source",
-            clipPath: "marine-band/x.wav",
-            clipId: "clp-abc",
-            sliceId: "slc-xyz",
+            samplePath: "marine-band/x.wav",
+            sampleId: "smp-abc",
+            clipId: "clp-xyz",
             start: 5,
             end: 10,
           },
@@ -290,17 +290,17 @@ track beat`;
 
       // Mock lookups
       const lookups: Lookups = {
-        clipsByPath: new Map([
-          ["marine-band/stems/Thunderer/drums.wav", { id: "clp-1", path: "marine-band/stems/Thunderer/drums.wav" }],
+        samplesByPath: new Map([
+          ["marine-band/stems/Thunderer/drums.wav", { id: "smp-1", path: "marine-band/stems/Thunderer/drums.wav" }],
         ]),
-        clipsById: new Map(),
-        slicesByClipAndName: new Map([
+        samplesById: new Map(),
+        clipsBySampleAndName: new Map([
           [
-            "clp-1",
-            new Map([["loop-1", { id: "slc-a", start: 10, end: 14 }]]),
+            "smp-1",
+            new Map([["loop-1", { id: "clp-a", start: 10, end: 14 }]]),
           ],
         ]),
-        slicesById: new Map(),
+        clipsById: new Map(),
       };
 
       // First save
@@ -318,8 +318,8 @@ track beat`;
     });
   });
 
-  describe("Scenario 7: Re-save with different clip", () => {
-    it("should update when clip changes from clp-1 to clp-2", () => {
+  describe("Scenario 7: Re-save with different sample", () => {
+    it("should update when sample changes from smp-1 to smp-2", () => {
       const text1 = `tempo 90
 key C
 bars 1
@@ -337,13 +337,13 @@ track beat`;
 
       // Mock lookups
       const lookups: Lookups = {
-        clipsByPath: new Map([
-          ["marine-band/old.wav", { id: "clp-1", path: "marine-band/old.wav" }],
-          ["marine-band/new.wav", { id: "clp-2", path: "marine-band/new.wav" }],
+        samplesByPath: new Map([
+          ["marine-band/old.wav", { id: "smp-1", path: "marine-band/old.wav" }],
+          ["marine-band/new.wav", { id: "smp-2", path: "marine-band/new.wav" }],
         ]),
+        samplesById: new Map(),
+        clipsBySampleAndName: new Map(),
         clipsById: new Map(),
-        slicesByClipAndName: new Map(),
-        slicesById: new Map(),
       };
 
       // First save
@@ -353,7 +353,7 @@ track beat`;
       // Second save
       const plan2 = planScoreRefs("score-1", refs2, lookups, existing);
 
-      // Should have one update with the new clipId and new clipPath, nulling removed fields
+      // Should have one update with the new sampleId and new samplePath, nulling removed fields
       assert.deepEqual(plan2, {
         create: [],
         update: [
@@ -361,10 +361,10 @@ track beat`;
             id: "sref_score-1_beat",
             scoreId: "score-1",
             clipAlias: "beat",
-            clipPath: "marine-band/new.wav",
-            clipId: "clp-2",
-            sliceName: null as any,
-            sliceId: null as any,
+            samplePath: "marine-band/new.wav",
+            sampleId: "smp-2",
+            clipName: null as any,
+            clipId: null as any,
             start: null as any,
             end: null as any,
           },
@@ -380,12 +380,12 @@ track beat`;
 // ============================================================================
 
 describe("planKeep (keep.feature)", () => {
-  describe("Scenario 1: Keeping creates a verdict, a curated slice and a crate item", () => {
-    it("should plan verdict create, slice create, and crate item create", async () => {
+  describe("Scenario 1: Keeping creates a verdict, a curated clip and a crate item", () => {
+    it("should plan verdict create, clip create, and crate item create", async () => {
       const candidateId = "cand-1";
       const candidate = {
         id: candidateId,
-        clipId: "clp-1",
+        sampleId: "smp-1",
         recordingId: "rec-1",
         start: 10,
         end: 14,
@@ -394,7 +394,7 @@ describe("planKeep (keep.feature)", () => {
       };
 
       const judge = "alice";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       let newIdCounter = 0;
@@ -408,7 +408,7 @@ describe("planKeep (keep.feature)", () => {
         null,
         new Map(),
         [],
-        sliceId,
+        clipId,
         now,
         newId,
         new Map(),
@@ -430,10 +430,10 @@ describe("planKeep (keep.feature)", () => {
           },
           update: undefined,
         },
-        slices: {
+        clips: {
           create: {
-            id: sliceId,
-            clipId: "clp-1",
+            id: clipId,
+            sampleId: "smp-1",
             name: "horn-loop",
             start: 10,
             end: 14,
@@ -469,7 +469,7 @@ describe("planKeep (keep.feature)", () => {
       const candidateId = "cand-1";
       const candidate = {
         id: candidateId,
-        clipId: "clp-1",
+        sampleId: "smp-1",
         recordingId: "rec-1",
         start: 10,
         end: 14,
@@ -478,7 +478,7 @@ describe("planKeep (keep.feature)", () => {
       };
 
       const judge = "alice";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       const myVerdict = {
@@ -490,9 +490,9 @@ describe("planKeep (keep.feature)", () => {
         name: "horn-loop",
       };
 
-      const curatedSlice = {
-        id: sliceId,
-        clipId: "clp-1",
+      const curatedClip = {
+        id: clipId,
+        sampleId: "smp-1",
         name: "horn-loop",
       };
 
@@ -511,10 +511,10 @@ describe("planKeep (keep.feature)", () => {
         judge,
         candidate,
         myVerdict,
-        curatedSlice,
+        curatedClip,
         new Map([["digs", { id: crateId, name: "digs" }]]),
         [crateItem],
-        sliceId,
+        clipId,
         now,
         newId,
         new Map([[crateId, null]]),
@@ -536,7 +536,7 @@ describe("planKeep (keep.feature)", () => {
             by: "person",
           },
         },
-        slices: {
+        clips: {
           create: undefined,
           update: undefined,
         },
@@ -555,7 +555,7 @@ describe("planKeep (keep.feature)", () => {
       const candidateId = "cand-2";
       const candidate = {
         id: candidateId,
-        clipId: "clp-1",
+        sampleId: "smp-1",
         recordingId: "rec-1",
         start: 20,
         end: 24,
@@ -564,7 +564,7 @@ describe("planKeep (keep.feature)", () => {
       };
 
       const judge = "alice";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       const crateId = "crate-digs";
@@ -579,7 +579,7 @@ describe("planKeep (keep.feature)", () => {
         null,
         new Map([["digs", { id: crateId, name: "digs" }]]),
         [],
-        sliceId,
+        clipId,
         now,
         newId,
         new Map([[crateId, "a3"]]),
@@ -601,10 +601,10 @@ describe("planKeep (keep.feature)", () => {
           },
           update: undefined,
         },
-        slices: {
+        clips: {
           create: {
-            id: sliceId,
-            clipId: "clp-1",
+            id: clipId,
+            sampleId: "smp-1",
             name: "loop-cand-2",
             start: 20,
             end: 24,
@@ -635,7 +635,7 @@ describe("planKeep (keep.feature)", () => {
       const candidateId = "cand-2b";
       const candidate = {
         id: candidateId,
-        clipId: "clp-1",
+        sampleId: "smp-1",
         recordingId: "rec-1",
         start: 20,
         end: 24,
@@ -644,7 +644,7 @@ describe("planKeep (keep.feature)", () => {
       };
 
       const judge = "alice";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       const crateId = "crate-digs";
@@ -659,7 +659,7 @@ describe("planKeep (keep.feature)", () => {
         null,
         new Map([["digs", { id: crateId, name: "digs" }]]),
         [],
-        sliceId,
+        clipId,
         now,
         newId,
         new Map([[crateId, "a9"]]),
@@ -681,10 +681,10 @@ describe("planKeep (keep.feature)", () => {
           },
           update: undefined,
         },
-        slices: {
+        clips: {
           create: {
-            id: sliceId,
-            clipId: "clp-1",
+            id: clipId,
+            sampleId: "smp-1",
             name: "loop-cand-2b",
             start: 20,
             end: 24,
@@ -714,7 +714,7 @@ describe("planKeep (keep.feature)", () => {
     it("should return error when candidate is null", async () => {
       const candidateId = "no-such-candidate";
       const judge = "alice";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       const newId = () => "crate-new-1";
@@ -727,7 +727,7 @@ describe("planKeep (keep.feature)", () => {
         null,
         new Map(),
         [],
-        sliceId,
+        clipId,
         now,
         newId,
         new Map(),
@@ -744,10 +744,10 @@ describe("planKeep (keep.feature)", () => {
 // ============================================================================
 
 describe("planSkip (keep.feature)", () => {
-  describe("Scenario 1: Skipping after keeping removes the curated slice", () => {
-    it("should plan verdict update to skip and slice delete when no other keeper", () => {
+  describe("Scenario 1: Skipping after keeping removes the curated clip", () => {
+    it("should plan verdict update to skip and clip delete when no other keeper", () => {
       const candidateId = "cand-1";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       const existingCrateItems = [
@@ -758,7 +758,7 @@ describe("planSkip (keep.feature)", () => {
         { candidateId, judge: "alice", verdict: "keep" },
       ];
 
-      const plan = planSkip(candidateId, "alice", existingCrateItems, allVerdicts, sliceId, now);
+      const plan = planSkip(candidateId, "alice", existingCrateItems, allVerdicts, clipId, now);
 
       assert.deepEqual(plan, {
         verdicts: {
@@ -770,8 +770,8 @@ describe("planSkip (keep.feature)", () => {
             by: "person",
           },
         },
-        slices: {
-          delete: [sliceId],
+        clips: {
+          delete: [clipId],
         },
         crateItems: {
           delete: ["item-1"],
@@ -780,10 +780,10 @@ describe("planSkip (keep.feature)", () => {
     });
   });
 
-  describe("Scenario 2: A skip keeps the slice while someone else still keeps it", () => {
-    it("should plan verdict update to skip and NOT delete slice if other keeper exists", () => {
+  describe("Scenario 2: A skip keeps the clip while someone else still keeps it", () => {
+    it("should plan verdict update to skip and NOT delete clip if other keeper exists", () => {
       const candidateId = "cand-1";
-      const sliceId = getCuratedSliceId(candidateId);
+      const clipId = getCuratedClipId(candidateId);
       const now = "2026-09-24T12:00:00.000Z";
 
       const existingCrateItems = [
@@ -795,7 +795,7 @@ describe("planSkip (keep.feature)", () => {
         { candidateId, judge: "bob", verdict: "keep" },
       ];
 
-      const plan = planSkip(candidateId, "alice", existingCrateItems, allVerdicts, sliceId, now);
+      const plan = planSkip(candidateId, "alice", existingCrateItems, allVerdicts, clipId, now);
 
       assert.deepEqual(plan, {
         verdicts: {
@@ -807,7 +807,7 @@ describe("planSkip (keep.feature)", () => {
             by: "person",
           },
         },
-        slices: {
+        clips: {
           delete: [],
         },
         crateItems: {
@@ -823,7 +823,7 @@ describe("planSkip (keep.feature)", () => {
 // ============================================================================
 
 describe("planPutOff (keep.feature)", () => {
-  describe("Scenario: Putting off records a verdict and no slice", () => {
+  describe("Scenario: Putting off records a verdict and no clip", () => {
     it("should plan verdict create with verdict=later", () => {
       const candidateId = "cand-1";
       const now = "2026-09-24T12:00:00.000Z";
@@ -851,12 +851,12 @@ describe("planPutOff (keep.feature)", () => {
 // ============================================================================
 
 describe("planMerge (markup_merge.feature)", () => {
-  describe("Scenario 1: An overlapping proposal keeps the slice's id and name", () => {
-    it("should plan slice update with new span", () => {
-      const clipId = "clp-1";
+  describe("Scenario 1: An overlapping proposal keeps the clip's id and name", () => {
+    it("should plan clip update with new span", () => {
+      const sampleId = "smp-1";
 
       const existing = [
-        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "clp-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
       ];
 
       const proposals = [
@@ -864,20 +864,20 @@ describe("planMerge (markup_merge.feature)", () => {
       ];
 
       const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
-      const plan = planMerge(clipId, mergeResult);
+      const plan = planMerge(sampleId, mergeResult);
 
       assert.deepEqual(plan, {
-        slices: {
+        clips: {
           update: [
-            { id: "slc-a", start: 10.1, end: 14, rank: 1 },
+            { id: "clp-a", start: 10.1, end: 14, rank: 1 },
           ],
           create: [],
           retire: [],
           delete: [],
         },
-        clip: {
+        sample: {
           update: {
-            id: clipId,
+            id: sampleId,
             nameCounters: '{"loop":1}',
           },
         },
@@ -886,11 +886,11 @@ describe("planMerge (markup_merge.feature)", () => {
   });
 
   describe("Scenario 2: A new proposal gets a new name", () => {
-    it("should plan slice create with new name and clip update with counters", () => {
-      const clipId = "clp-1";
+    it("should plan clip create with new name and sample update with counters", () => {
+      const sampleId = "smp-1";
 
       const existing = [
-        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "clp-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
       ];
 
       const proposals = [
@@ -899,16 +899,16 @@ describe("planMerge (markup_merge.feature)", () => {
       ];
 
       const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
-      const plan = planMerge(clipId, mergeResult);
+      const plan = planMerge(sampleId, mergeResult);
 
       assert.deepEqual(plan, {
-        slices: {
+        clips: {
           update: [
-            { id: "slc-a", start: 10, end: 14, rank: 2 },
+            { id: "clp-a", start: 10, end: 14, rank: 2 },
           ],
           create: [
             {
-              clipId,
+              sampleId,
               name: "loop-2",
               start: 30,
               end: 34,
@@ -919,9 +919,9 @@ describe("planMerge (markup_merge.feature)", () => {
           retire: [],
           delete: [],
         },
-        clip: {
+        sample: {
           update: {
-            id: clipId,
+            id: sampleId,
             nameCounters: '{"loop":2}',
           },
         },
@@ -931,12 +931,12 @@ describe("planMerge (markup_merge.feature)", () => {
 
   describe("Scenario 3: Names are never reused", () => {
     it("should assign loop-3 after creating loop-2", () => {
-      const clipId = "clp-1";
+      const sampleId = "smp-1";
 
-      // After first merge that created loop-2, we have two slices
+      // After first merge that created loop-2, we have two clips
       const existing = [
-        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
-        { id: "slc-b", name: "loop-2", kind: "loop", start: 30, end: 34, source: "ml", retired: false },
+        { id: "clp-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "clp-b", name: "loop-2", kind: "loop", start: 30, end: 34, source: "ml", retired: false },
       ];
 
       // Second merge proposes only 50-54, so existing ones are no longer proposed
@@ -945,14 +945,14 @@ describe("planMerge (markup_merge.feature)", () => {
       ];
 
       const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 2 });
-      const plan = planMerge(clipId, mergeResult);
+      const plan = planMerge(sampleId, mergeResult);
 
       assert.deepEqual(plan, {
-        slices: {
+        clips: {
           update: [],
           create: [
             {
-              clipId,
+              sampleId,
               name: "loop-3",
               start: 50,
               end: 54,
@@ -961,11 +961,11 @@ describe("planMerge (markup_merge.feature)", () => {
             },
           ],
           retire: [],
-          delete: ["slc-a", "slc-b"],
+          delete: ["clp-a", "clp-b"],
         },
-        clip: {
+        sample: {
           update: {
-            id: clipId,
+            id: sampleId,
             nameCounters: '{"loop":3}',
           },
         },
@@ -973,29 +973,29 @@ describe("planMerge (markup_merge.feature)", () => {
     });
   });
 
-  describe("Scenario 4: A slice no longer proposed and not used by any score is deleted", () => {
-    it("should plan slice delete when no proposals and no scores use it", () => {
-      const clipId = "clp-1";
+  describe("Scenario 4: A clip no longer proposed and not used by any score is deleted", () => {
+    it("should plan clip delete when no proposals and no scores use it", () => {
+      const sampleId = "smp-1";
 
       const existing = [
-        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "clp-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
       ];
 
       const proposals = [];
 
       const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
-      const plan = planMerge(clipId, mergeResult);
+      const plan = planMerge(sampleId, mergeResult);
 
       assert.deepEqual(plan, {
-        slices: {
+        clips: {
           update: [],
           create: [],
           retire: [],
-          delete: ["slc-a"],
+          delete: ["clp-a"],
         },
-        clip: {
+        sample: {
           update: {
-            id: clipId,
+            id: sampleId,
             nameCounters: '{"loop":1}',
           },
         },
@@ -1003,31 +1003,31 @@ describe("planMerge (markup_merge.feature)", () => {
     });
   });
 
-  describe("Scenario 5: A slice a score uses is retired, not deleted", () => {
-    it("should plan slice retire when a score references it", () => {
-      const clipId = "clp-1";
+  describe("Scenario 5: A clip a score uses is retired, not deleted", () => {
+    it("should plan clip retire when a score references it", () => {
+      const sampleId = "smp-1";
 
       const existing = [
-        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "clp-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
       ];
 
       const proposals = [];
 
-      const mergeResult = callMarkupMerge(existing, proposals, ["slc-a"], { loop: 1 });
-      const plan = planMerge(clipId, mergeResult);
+      const mergeResult = callMarkupMerge(existing, proposals, ["clp-a"], { loop: 1 });
+      const plan = planMerge(sampleId, mergeResult);
 
       assert.deepEqual(plan, {
-        slices: {
+        clips: {
           update: [],
           create: [],
           retire: [
-            { id: "slc-a", retired: true },
+            { id: "clp-a", retired: true },
           ],
           delete: [],
         },
-        clip: {
+        sample: {
           update: {
-            id: clipId,
+            id: sampleId,
             nameCounters: '{"loop":1}',
           },
         },
@@ -1035,30 +1035,30 @@ describe("planMerge (markup_merge.feature)", () => {
     });
   });
 
-  describe("Scenario 6: Slices made by people are left alone", () => {
-    it("should not touch user-source slices during merge", () => {
-      const clipId = "clp-1";
+  describe("Scenario 6: Clips made by people are left alone", () => {
+    it("should not touch user-source clips during merge", () => {
+      const sampleId = "smp-1";
 
       const existing = [
-        { id: "slc-u", name: "mine", kind: "", start: 1, end: 2, source: "user", retired: false },
-        { id: "slc-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
+        { id: "clp-u", name: "mine", kind: "", start: 1, end: 2, source: "user", retired: false },
+        { id: "clp-a", name: "loop-1", kind: "loop", start: 10, end: 14, source: "ml", retired: false },
       ];
 
       const proposals = [];
 
       const mergeResult = callMarkupMerge(existing, proposals, [], { loop: 1 });
-      const plan = planMerge(clipId, mergeResult);
+      const plan = planMerge(sampleId, mergeResult);
 
       assert.deepEqual(plan, {
-        slices: {
+        clips: {
           update: [],
           create: [],
           retire: [],
-          delete: ["slc-a"],
+          delete: ["clp-a"],
         },
-        clip: {
+        sample: {
           update: {
-            id: clipId,
+            id: sampleId,
             nameCounters: '{"loop":1}',
           },
         },

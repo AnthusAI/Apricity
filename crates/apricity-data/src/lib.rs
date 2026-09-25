@@ -24,7 +24,7 @@ pub mod sync;
 pub use domain::{DomainError, JudgeInput, Proposal, apply_markup_merge, judge, save_score_impl};
 #[cfg(feature = "storage")]
 pub use files::{FileMeta, FileRef, Files, FsFiles};
-pub use ids::{candidate_id, clip_id, curated_slice_id, migrated_marker_id, migrated_slice_id, stem_clip_id};
+pub use ids::{candidate_id, sample_id, curated_clip_id, migrated_marker_id, migrated_clip_id, stem_sample_id};
 #[cfg(feature = "storage")]
 pub use library::Library;
 #[cfg(feature = "storage")]

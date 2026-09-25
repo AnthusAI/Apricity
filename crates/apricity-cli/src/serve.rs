@@ -539,25 +539,25 @@ mod tests {
     #[tokio::test]
     async fn graphql_without_key_is_401_and_with_key_returns_data() {
         let f = fixture(false);
-        let (status, _, _) = send(&f.app, gql(None, "{ listClips { items { id } } }")).await;
+        let (status, _, _) = send(&f.app, gql(None, "{ listSamples { items { id } } }")).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         let (status, _, _) =
-            send(&f.app, gql(Some("wrong"), "{ listClips { items { id } } }")).await;
+            send(&f.app, gql(Some("wrong"), "{ listSamples { items { id } } }")).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
-        let create = "mutation { createClip(input: {id: \"c1\", recordingId: \"r1\", path: \"p/a.wav\", collection: \"p\", title: \"A\", audio: {key: \"audio/c1/a.wav\", sha256: \"x\", size: 20}}) { id } }".to_string();
+        let create = "mutation { createSample(input: {id: \"c1\", recordingId: \"r1\", path: \"p/a.wav\", collection: \"p\", title: \"A\", audio: {key: \"audio/c1/a.wav\", sha256: \"x\", size: 20}}) { id } }".to_string();
         let (status, _, body) = send(&f.app, gql(Some(&f.key), &create)).await;
         let v: Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(status, StatusCode::OK, "{v}");
         assert!(v.get("errors").is_none(), "{v}");
         let (status, _, body) = send(
             &f.app,
-            gql(Some(&f.key), "{ listClips { items { id title } } }"),
+            gql(Some(&f.key), "{ listSamples { items { id title } } }"),
         )
         .await;
         let v: Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(status, StatusCode::OK);
-        assert_eq!(v["data"]["listClips"]["items"][0]["id"], "c1");
-        assert_eq!(v["data"]["listClips"]["items"][0]["title"], "A");
+        assert_eq!(v["data"]["listSamples"]["items"][0]["id"], "c1");
+        assert_eq!(v["data"]["listSamples"]["items"][0]["title"], "A");
     }
 
     #[tokio::test]
@@ -610,7 +610,7 @@ mod tests {
         assert_eq!(v["data"]["aws_region"], "local");
         assert_eq!(v["data"]["default_authorization_type"], "API_KEY");
         assert_eq!(v["data"]["authorization_types"], json!([]));
-        assert!(v["data"]["model_introspection"]["models"]["Clip"].is_object());
+        assert!(v["data"]["model_introspection"]["models"]["Sample"].is_object());
         assert_eq!(v["custom"]["apricity"]["mode"], "local");
         assert_eq!(v["custom"]["apricity"]["identity"]["sub"], "local");
         assert!(v.get("auth").is_none() && v.get("storage").is_none());

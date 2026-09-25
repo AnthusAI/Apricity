@@ -2,7 +2,7 @@
 //! Tests build full state through Library/facades and verify domain operation results.
 
 use apricity_data::{apply_markup_merge, judge, save_score_impl, JudgeInput};
-use apricity_data::markup::ProposedSlice;
+use apricity_data::markup::ProposedClip;
 use serde_json::json;
 use tempfile::TempDir;
 use virtuus_amplify::Identity as VirtuusIdentity;
@@ -26,8 +26,8 @@ fn create_recording(lib: &mut apricity_data::Library, id: &str, title: &str, col
     }
 }
 
-// Helper to create a clip
-fn create_clip(
+// Helper to create a sample
+fn create_sample(
     lib: &mut apricity_data::Library,
     id: &str,
     recording_id: &str,
@@ -35,11 +35,11 @@ fn create_clip(
     collection: &str,
     title: &str,
 ) {
-    create_clip_with_counters(lib, id, recording_id, path, collection, title, json!({}));
+    create_sample_with_counters(lib, id, recording_id, path, collection, title, json!({}));
 }
 
-// Helper to create a clip with initial nameCounters
-fn create_clip_with_counters(
+// Helper to create a sample with initial nameCounters
+fn create_sample_with_counters(
     lib: &mut apricity_data::Library,
     id: &str,
     recording_id: &str,
@@ -48,7 +48,7 @@ fn create_clip_with_counters(
     title: &str,
     counters: serde_json::Value,
 ) {
-    let clip = json!({
+    let sample = json!({
         "id": id,
         "recordingId": recording_id,
         "path": path,
@@ -57,8 +57,8 @@ fn create_clip_with_counters(
         "audio": {"key": format!("audio/{}/test.wav", id), "sha256": "aa"},
         "nameCounters": counters
     });
-    if let Some(table) = lib.engine_mut().table_mut("Clip") {
-        table.put(clip);
+    if let Some(table) = lib.engine_mut().table_mut("Sample") {
+        table.put(sample);
     }
 }
 
@@ -66,7 +66,7 @@ fn create_clip_with_counters(
 fn create_candidate(
     lib: &mut apricity_data::Library,
     id: &str,
-    clip_id: &str,
+    sample_id: &str,
     recording_id: &str,
     start: f64,
     end: f64,
@@ -74,7 +74,7 @@ fn create_candidate(
 ) {
     let candidate = json!({
         "id": id,
-        "clipId": clip_id,
+        "sampleId": sample_id,
         "recordingId": recording_id,
         "start": start,
         "end": end,
@@ -89,30 +89,30 @@ fn create_candidate(
     }
 }
 
-// Helper to create a slice
-fn create_slice(
+// Helper to create a clip
+fn create_clip(
     lib: &mut apricity_data::Library,
     id: &str,
-    clip_id: &str,
+    sample_id: &str,
     name: &str,
     start: f64,
     end: f64,
     source: &str,
     kind: Option<&str>,
 ) {
-    let mut slice_json = json!({
+    let mut clip_json = json!({
         "id": id,
-        "clipId": clip_id,
+        "sampleId": sample_id,
         "name": name,
         "start": start,
         "end": end,
         "source": source
     });
     if let Some(k) = kind {
-        slice_json["kind"] = json!(k);
+        clip_json["kind"] = json!(k);
     }
-    if let Some(table) = lib.engine_mut().table_mut("Slice") {
-        table.put(slice_json);
+    if let Some(table) = lib.engine_mut().table_mut("Clip") {
+        table.put(clip_json);
     }
 }
 
@@ -126,21 +126,21 @@ fn local_identity() -> VirtuusIdentity {
 }
 
 #[test]
-fn test_keep_candidate_creates_verdict_slice_crate_item() {
+fn test_keep_candidate_creates_verdict_clip_crate_item() {
     let (_temp, mut lib) = setup_library();
     let identity = local_identity();
 
-    // Setup: Recording and Clip
+    // Setup: Recording and Sample
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_candidate(&mut lib, "cand-1", "clp-1", "rec-1", 10.0, 14.0, "loop");
+    create_candidate(&mut lib, "cand-1", "smp-1", "rec-1", 10.0, 14.0, "loop");
 
     // Action: keep candidate
     let input = JudgeInput {
@@ -156,18 +156,18 @@ fn test_keep_candidate_creates_verdict_slice_crate_item() {
     assert_eq!(result["candidateId"], "cand-1");
     assert_eq!(result["verdict"], "keep");
 
-    // Verify: Curated Slice exists
-    let slice_id = apricity_data::curated_slice_id("cand-1");
-    let slice_args = json!({ "id": slice_id });
-    let (slice_data, _) = lib
+    // Verify: Curated Clip exists
+    let clip_id = apricity_data::curated_clip_id("cand-1");
+    let clip_args = json!({ "id": clip_id });
+    let (clip_data, _) = lib
         .engine_mut()
-        .call("Slice", "get", &slice_args, &identity)
+        .call("Clip", "get", &clip_args, &identity)
         .unwrap();
-    assert!(!slice_data.is_null());
-    assert_eq!(slice_data["candidateId"], "cand-1");
-    assert_eq!(slice_data["source"], "curated");
-    assert_eq!(slice_data["start"], 10.0);
-    assert_eq!(slice_data["end"], 14.0);
+    assert!(!clip_data.is_null());
+    assert_eq!(clip_data["candidateId"], "cand-1");
+    assert_eq!(clip_data["source"], "curated");
+    assert_eq!(clip_data["start"], 10.0);
+    assert_eq!(clip_data["end"], 14.0);
 
     // Verify: Crate item exists
     let items_args = json!({ "key": { "candidateId": "cand-1" } });
@@ -186,15 +186,15 @@ fn test_keep_candidate_idempotent() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_candidate(&mut lib, "cand-1", "clp-1", "rec-1", 10.0, 14.0, "loop");
+    create_candidate(&mut lib, "cand-1", "smp-1", "rec-1", 10.0, 14.0, "loop");
 
     let input = JudgeInput {
         candidate_id: "cand-1".to_string(),
@@ -211,35 +211,35 @@ fn test_keep_candidate_idempotent() {
     // Keep second time (idempotent - should not error)
     let _ = judge(lib.engine_mut(), &input, &identity).unwrap();
 
-    // Verify: Still only 1 curated slice
-    let slices_args = json!({ "key": { "clipId": "clp-1" } });
-    let (slices_data, _) = lib
+    // Verify: Still only 1 curated clip
+    let clips_args = json!({ "key": { "sampleId": "smp-1" } });
+    let (clips_data, _) = lib
         .engine_mut()
-        .call("Slice", "slicesByClip", &slices_args, &identity)
+        .call("Clip", "clipsBySample", &clips_args, &identity)
         .unwrap();
-    let slices = slices_data.get("items").unwrap().as_array().unwrap();
-    let curated_slices: Vec<_> = slices
+    let clips = clips_data.get("items").unwrap().as_array().unwrap();
+    let curated_clips: Vec<_> = clips
         .iter()
         .filter(|s| s.get("candidateId").unwrap_or(&json!(null)) == "cand-1")
         .collect();
-    assert_eq!(curated_slices.len(), 1);
+    assert_eq!(curated_clips.len(), 1);
 }
 
 #[test]
-fn test_skip_candidate_removes_slice_when_alone() {
+fn test_skip_candidate_removes_clip_when_alone() {
     let (_temp, mut lib) = setup_library();
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_candidate(&mut lib, "cand-1", "clp-1", "rec-1", 10.0, 14.0, "loop");
+    create_candidate(&mut lib, "cand-1", "smp-1", "rec-1", 10.0, 14.0, "loop");
 
     // Keep first
     let keep_input = JudgeInput {
@@ -263,41 +263,41 @@ fn test_skip_candidate_removes_slice_when_alone() {
     };
     let _ = judge(lib.engine_mut(), &skip_input, &identity).unwrap();
 
-    // Verify: No curated slice (should be deleted since no other keeps)
-    let slices_args = json!({ "key": { "clipId": "clp-1" } });
-    let (slices_data, _) = lib
+    // Verify: No curated clip (should be deleted since no other keeps)
+    let clips_args = json!({ "key": { "sampleId": "smp-1" } });
+    let (clips_data, _) = lib
         .engine_mut()
-        .call("Slice", "slicesByClip", &slices_args, &identity)
+        .call("Clip", "clipsBySample", &clips_args, &identity)
         .unwrap();
     let empty_json = json!([]);
-    let default_slices = Vec::new();
-    let slices = slices_data
+    let default_clips = Vec::new();
+    let clips = clips_data
         .get("items")
         .unwrap_or(&empty_json)
         .as_array()
-        .unwrap_or(&default_slices);
-    let curated_slices: Vec<_> = slices
+        .unwrap_or(&default_clips);
+    let curated_clips: Vec<_> = clips
         .iter()
         .filter(|s| s.get("source").unwrap_or(&json!(null)) == "curated")
         .collect();
-    assert_eq!(curated_slices.len(), 0);
+    assert_eq!(curated_clips.len(), 0);
 }
 
 #[test]
-fn test_later_verdict_creates_no_slice() {
+fn test_later_verdict_creates_no_clip() {
     let (_temp, mut lib) = setup_library();
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_candidate(&mut lib, "cand-1", "clp-1", "rec-1", 10.0, 14.0, "loop");
+    create_candidate(&mut lib, "cand-1", "smp-1", "rec-1", 10.0, 14.0, "loop");
 
     let input = JudgeInput {
         candidate_id: "cand-1".to_string(),
@@ -310,20 +310,20 @@ fn test_later_verdict_creates_no_slice() {
 
     let _ = judge(lib.engine_mut(), &input, &identity).unwrap();
 
-    // Verify: No slice created (later verdict doesn't create slices)
-    let slices_args = json!({ "key": { "clipId": "clp-1" } });
-    let (slices_data, _) = lib
+    // Verify: No clip created (later verdict doesn't create clips)
+    let clips_args = json!({ "key": { "sampleId": "smp-1" } });
+    let (clips_data, _) = lib
         .engine_mut()
-        .call("Slice", "slicesByClip", &slices_args, &identity)
+        .call("Clip", "clipsBySample", &clips_args, &identity)
         .unwrap();
     let empty_json = json!([]);
-    let default_slices = Vec::new();
-    let slices = slices_data
+    let default_clips = Vec::new();
+    let clips = clips_data
         .get("items")
         .unwrap_or(&empty_json)
         .as_array()
-        .unwrap_or(&default_slices);
-    assert_eq!(slices.len(), 0);
+        .unwrap_or(&default_clips);
+    assert_eq!(clips.len(), 0);
 }
 
 #[test]
@@ -351,37 +351,37 @@ fn test_markup_merge_overlapping_keeps_id() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
     );
-    create_slice(&mut lib, "slc-a", "clp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
+    create_clip(&mut lib, "clp-a", "smp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
 
-    // Propose overlapping slice (IoU > 0.8)
-    let proposed = vec![ProposedSlice {
+    // Propose overlapping clip (IoU > 0.8)
+    let proposed = vec![ProposedClip {
         kind: "loop".to_string(),
         start: 10.1,
         end: 14.0,
         rank: Some(1),
     }];
 
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed, &identity).unwrap();
 
-    // Verify: Slice still has same id
-    let slice_args = json!({ "id": "slc-a" });
-    let (slice_data, _) = lib
+    // Verify: Clip still has same id
+    let clip_args = json!({ "id": "clp-a" });
+    let (clip_data, _) = lib
         .engine_mut()
-        .call("Slice", "get", &slice_args, &identity)
+        .call("Clip", "get", &clip_args, &identity)
         .unwrap();
-    assert!(!slice_data.is_null());
-    assert_eq!(slice_data["id"], "slc-a");
-    assert_eq!(slice_data["name"], "loop-1");
-    assert_eq!(slice_data["start"], 10.1); // Updated
-    assert_eq!(slice_data["end"], 14.0);
+    assert!(!clip_data.is_null());
+    assert_eq!(clip_data["id"], "clp-a");
+    assert_eq!(clip_data["name"], "loop-1");
+    assert_eq!(clip_data["start"], 10.1); // Updated
+    assert_eq!(clip_data["end"], 14.0);
 }
 
 #[test]
@@ -390,26 +390,26 @@ fn test_markup_merge_new_proposal_creates_name() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip_with_counters(
+    create_sample_with_counters(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
         json!({"loop": 1}),
     );
-    create_slice(&mut lib, "slc-a", "clp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
+    create_clip(&mut lib, "clp-a", "smp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
 
     // Propose overlapping + new
     let proposed = vec![
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 10.0,
             end: 14.0,
             rank: Some(2),
         },
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 30.0,
             end: 34.0,
@@ -417,25 +417,25 @@ fn test_markup_merge_new_proposal_creates_name() {
         },
     ];
 
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed, &identity).unwrap();
 
-    // Verify: New slice has name "loop-2"
-    let slices_args = json!({ "key": { "clipId": "clp-1" } });
-    let (slices_data, _) = lib
+    // Verify: New clip has name "loop-2"
+    let clips_args = json!({ "key": { "sampleId": "smp-1" } });
+    let (clips_data, _) = lib
         .engine_mut()
-        .call("Slice", "slicesByClip", &slices_args, &identity)
+        .call("Clip", "clipsBySample", &clips_args, &identity)
         .unwrap();
     let empty_json = json!([]);
-    let default_slices = Vec::new();
-    let slices = slices_data
+    let default_clips = Vec::new();
+    let clips = clips_data
         .get("items")
         .unwrap_or(&empty_json)
         .as_array()
-        .unwrap_or(&default_slices);
-    let loop_2 = slices
+        .unwrap_or(&default_clips);
+    let loop_2 = clips
         .iter()
         .find(|s| s.get("name").unwrap_or(&json!(null)) == "loop-2");
-    assert!(loop_2.is_some(), "Should find loop-2 slice");
+    assert!(loop_2.is_some(), "Should find loop-2 clip");
     let loop_2 = loop_2.unwrap();
     assert_eq!(loop_2["start"], 30.0);
     assert_eq!(loop_2["end"], 34.0);
@@ -447,71 +447,71 @@ fn test_markup_merge_names_never_reused() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip_with_counters(
+    create_sample_with_counters(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
         json!({"loop": 1}),
     );
-    create_slice(&mut lib, "slc-a", "clp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
+    create_clip(&mut lib, "clp-a", "smp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
 
     // First merge: add loop-2 at 30-34
     let proposed1 = vec![
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 10.0,
             end: 14.0,
             rank: None,
         },
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 30.0,
             end: 34.0,
             rank: None,
         },
     ];
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed1, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed1, &identity).unwrap();
 
     // Second merge: add another (should be loop-3, never reuse loop-2)
     let proposed2 = vec![
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 10.0,
             end: 14.0,
             rank: None,
         },
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 30.0,
             end: 34.0,
             rank: None,
         },
-        ProposedSlice {
+        ProposedClip {
             kind: "loop".to_string(),
             start: 50.0,
             end: 54.0,
             rank: None,
         },
     ];
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed2, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed2, &identity).unwrap();
 
-    // Verify: New slice has name "loop-3" (not reused)
-    let slices_args = json!({ "key": { "clipId": "clp-1" } });
-    let (slices_data, _) = lib
+    // Verify: New clip has name "loop-3" (not reused)
+    let clips_args = json!({ "key": { "sampleId": "smp-1" } });
+    let (clips_data, _) = lib
         .engine_mut()
-        .call("Slice", "slicesByClip", &slices_args, &identity)
+        .call("Clip", "clipsBySample", &clips_args, &identity)
         .unwrap();
     let empty_json = json!([]);
-    let default_slices = Vec::new();
-    let slices = slices_data
+    let default_clips = Vec::new();
+    let clips = clips_data
         .get("items")
         .unwrap_or(&empty_json)
         .as_array()
-        .unwrap_or(&default_slices);
-    let loop_3 = slices
+        .unwrap_or(&default_clips);
+    let loop_3 = clips
         .iter()
         .find(|s| s.get("name").unwrap_or(&json!(null)) == "loop-3")
         .expect("loop-3 should exist");
@@ -520,62 +520,62 @@ fn test_markup_merge_names_never_reused() {
 }
 
 #[test]
-fn test_markup_merge_deletes_unused_slice() {
+fn test_markup_merge_deletes_unused_clip() {
     let (_temp, mut lib) = setup_library();
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
     );
-    create_slice(&mut lib, "slc-a", "clp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
+    create_clip(&mut lib, "clp-a", "smp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
 
-    // Propose empty (no slices)
+    // Propose empty (no clips)
     let proposed = vec![];
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed, &identity).unwrap();
 
-    // Verify: Slice is deleted
-    let slice_args = json!({ "id": "slc-a" });
-    let (slice_data, _) = lib
+    // Verify: Clip is deleted
+    let clip_args = json!({ "id": "clp-a" });
+    let (clip_data, _) = lib
         .engine_mut()
-        .call("Slice", "get", &slice_args, &identity)
+        .call("Clip", "get", &clip_args, &identity)
         .unwrap();
-    assert!(slice_data.is_null());
+    assert!(clip_data.is_null());
 }
 
 #[test]
-fn test_markup_merge_ignores_user_slices() {
+fn test_markup_merge_ignores_user_clips() {
     let (_temp, mut lib) = setup_library();
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
     );
-    create_slice(&mut lib, "slc-u", "clp-1", "mine", 1.0, 2.0, "user", None);
+    create_clip(&mut lib, "clp-u", "smp-1", "mine", 1.0, 2.0, "user", None);
 
     // Propose empty
     let proposed = vec![];
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed, &identity).unwrap();
 
-    // Verify: User slice still exists
-    let slice_args = json!({ "id": "slc-u" });
-    let (slice_data, _) = lib
+    // Verify: User clip still exists
+    let clip_args = json!({ "id": "clp-u" });
+    let (clip_data, _) = lib
         .engine_mut()
-        .call("Slice", "get", &slice_args, &identity)
+        .call("Clip", "get", &clip_args, &identity)
         .unwrap();
-    assert!(!slice_data.is_null());
-    assert_eq!(slice_data["source"], "user");
+    assert!(!clip_data.is_null());
+    assert_eq!(clip_data["source"], "user");
 }
 
 #[test]
@@ -584,18 +584,18 @@ fn test_save_score_creates_references() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
     );
-    create_slice(
+    create_clip(
         &mut lib,
-        "slc-a",
-        "clp-1",
+        "clp-a",
+        "smp-1",
         "loop-1",
         10.0,
         14.0,
@@ -619,8 +619,8 @@ track beat"#;
         .unwrap();
     let refs = refs_data.get("items").unwrap().as_array().unwrap();
     assert_eq!(refs.len(), 1);
-    assert_eq!(refs[0]["clipId"], "clp-1");
-    assert_eq!(refs[0]["sliceId"], "slc-a");
+    assert_eq!(refs[0]["sampleId"], "smp-1");
+    assert_eq!(refs[0]["clipId"], "clp-a");
     assert_eq!(refs[0]["start"], 10.0);
     assert_eq!(refs[0]["end"], 14.0);
 }
@@ -631,26 +631,26 @@ fn test_save_score_idempotent_replaces_references() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
     );
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-2",
+        "smp-2",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_slice(
+    create_clip(
         &mut lib,
-        "slc-a",
-        "clp-1",
+        "clp-a",
+        "smp-1",
         "loop-1",
         10.0,
         14.0,
@@ -683,13 +683,13 @@ track whole"#;
         .unwrap();
     let refs = refs_data.get("items").unwrap().as_array().unwrap();
     assert_eq!(refs.len(), 1);
-    assert_eq!(refs[0]["clipId"], "clp-2");
+    assert_eq!(refs[0]["sampleId"], "smp-2");
 
-    // Verify: Old clip reference is gone
-    let old_refs_args = json!({ "key": { "clipId": "clp-1" } });
+    // Verify: Old sample reference is gone
+    let old_refs_args = json!({ "key": { "sampleId": "smp-1" } });
     let (old_refs_data, _) = lib
         .engine_mut()
-        .call("ScoreRef", "refsByClip", &old_refs_args, &identity)
+        .call("ScoreRef", "refsBySample", &old_refs_args, &identity)
         .unwrap();
     let old_refs = old_refs_data.get("items").unwrap().as_array().unwrap();
     assert_eq!(old_refs.len(), 0);
@@ -716,25 +716,25 @@ track x"#;
         .unwrap();
     let refs = refs_data.get("items").unwrap().as_array().unwrap();
     assert_eq!(refs.len(), 1);
-    assert_eq!(refs[0]["clipPath"], "somewhere/else.wav");
-    let clip_id = refs[0].get("clipId");
-    assert!(clip_id.is_none() || clip_id == Some(&json!(null)));
+    assert_eq!(refs[0]["samplePath"], "somewhere/else.wav");
+    let sample_id = refs[0].get("sampleId");
+    assert!(sample_id.is_none() || sample_id == Some(&json!(null)));
 }
 
 #[test]
-fn test_skip_keeps_slice_when_someone_else_keeps() {
+fn test_skip_keeps_clip_when_someone_else_keeps() {
     let (_temp, mut lib) = setup_library();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_candidate(&mut lib, "cand-1", "clp-1", "rec-1", 10.0, 14.0, "loop");
+    create_candidate(&mut lib, "cand-1", "smp-1", "rec-1", 10.0, 14.0, "loop");
 
     // Alice keeps
     let alice_identity = VirtuusIdentity::User {
@@ -771,15 +771,15 @@ fn test_skip_keeps_slice_when_someone_else_keeps() {
     };
     let _ = judge(lib.engine_mut(), &skip_input, &alice_identity).unwrap();
 
-    // Verify: Slice still exists (bob keeps it)
-    let slice_id = apricity_data::curated_slice_id("cand-1");
-    let slice_args = json!({ "id": slice_id });
-    let (slice_data, _) = lib
+    // Verify: Clip still exists (bob keeps it)
+    let clip_id = apricity_data::curated_clip_id("cand-1");
+    let clip_args = json!({ "id": clip_id });
+    let (clip_data, _) = lib
         .engine_mut()
-        .call("Slice", "get", &slice_args, &alice_identity)
+        .call("Clip", "get", &clip_args, &alice_identity)
         .unwrap();
-    assert!(!slice_data.is_null());
-    assert_eq!(slice_data["candidateId"], "cand-1");
+    assert!(!clip_data.is_null());
+    assert_eq!(clip_data["candidateId"], "cand-1");
 }
 
 #[test]
@@ -788,18 +788,18 @@ fn test_save_score_drum_kit_pads_are_references() {
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip(
+    create_sample(
         &mut lib,
-        "clp-2",
+        "smp-2",
         "rec-1",
         "marine-band/Thunderer.mp3",
         "marine-band",
         "Thunderer",
     );
-    create_slice(
+    create_clip(
         &mut lib,
-        "slc-h",
-        "clp-2",
+        "clp-h",
+        "smp-2",
         "hit-3",
         19.8,
         20.3,
@@ -819,37 +819,37 @@ track drums  steps "crash . . ."
 
     let _ = save_score_impl(lib.engine_mut(), "score-2", score_text, &identity).unwrap();
 
-    // Verify: ScoreRef exists for the kit pad slice
+    // Verify: ScoreRef exists for the kit pad clip
     let refs_args = json!({ "key": { "scoreId": "score-2" } });
     let (refs_data, _) = lib
         .engine_mut()
         .call("ScoreRef", "refsByScore", &refs_args, &identity)
         .unwrap();
     let refs = refs_data.get("items").unwrap().as_array().unwrap();
-    // There should be at least one ref for the slice
-    let slice_ref = refs.iter().find(|r| r.get("sliceId") == Some(&json!("slc-h")));
-    assert!(slice_ref.is_some(), "Should find reference to slice slc-h");
-    assert_eq!(slice_ref.unwrap()["sliceId"], "slc-h");
+    // There should be at least one ref for the clip
+    let clip_ref = refs.iter().find(|r| r.get("clipId") == Some(&json!("clp-h")));
+    assert!(clip_ref.is_some(), "Should find reference to clip clp-h");
+    assert_eq!(clip_ref.unwrap()["clipId"], "clp-h");
 }
 
 #[test]
-fn test_markup_merge_retires_slice_used_by_score() {
+fn test_markup_merge_retires_clip_used_by_score() {
     let (_temp, mut lib) = setup_library();
     let identity = local_identity();
 
     create_recording(&mut lib, "rec-1", "The Thunderer", "marine-band");
-    create_clip_with_counters(
+    create_sample_with_counters(
         &mut lib,
-        "clp-1",
+        "smp-1",
         "rec-1",
         "marine-band/stems/Thunderer/drums.wav",
         "marine-band",
         "Thunderer drums",
         json!({"loop": 1}),
     );
-    create_slice(&mut lib, "slc-a", "clp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
+    create_clip(&mut lib, "clp-a", "smp-1", "loop-1", 10.0, 14.0, "ml", Some("loop"));
 
-    // Create a score that uses the slice
+    // Create a score that uses the clip
     let score_text = r#"tempo 90
 key C
 bars 1
@@ -857,16 +857,16 @@ clip beat = marine-band/stems/Thunderer/drums.wav  loop-1
 track beat"#;
     let _ = save_score_impl(lib.engine_mut(), "score-1", score_text, &identity).unwrap();
 
-    // Merge with empty proposal (no slices)
+    // Merge with empty proposal (no clips)
     let proposed = vec![];
-    let _ = apply_markup_merge(lib.engine_mut(), "clp-1", proposed, &identity).unwrap();
+    let _ = apply_markup_merge(lib.engine_mut(), "smp-1", proposed, &identity).unwrap();
 
-    // Verify: Slice is retired (not deleted, because score uses it)
-    let slice_args = json!({ "id": "slc-a" });
-    let (slice_data, _) = lib
+    // Verify: Clip is retired (not deleted, because score uses it)
+    let clip_args = json!({ "id": "clp-a" });
+    let (clip_data, _) = lib
         .engine_mut()
-        .call("Slice", "get", &slice_args, &identity)
+        .call("Clip", "get", &clip_args, &identity)
         .unwrap();
-    assert!(!slice_data.is_null());
-    assert_eq!(slice_data["retired"], true);
+    assert!(!clip_data.is_null());
+    assert_eq!(clip_data["retired"], true);
 }

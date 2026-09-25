@@ -1,6 +1,6 @@
 # Vocabulary: aligned with Ableton Live (design, 2026-09-24)
 
-Status: **decided by the user 2026-09-24; built the same day** (language, compiler, manifests, analysis, web, docs). The storage contract (task 3) is the storage session's to do. Every user-facing word means one thing,
+Status: **decided by the user 2026-09-24; built the same day** (language, compiler, manifests, analysis, web, docs). The storage rename (task 3) was built 2026-09-25 (see "Storage model" below). Every user-facing word means one thing,
 and the same thing it means in Live, so Live users can read Apricity at a glance. Internal names
 follow in the same change wherever it's cheap. Where it isn't, they're renamed when the code is next
 touched.
@@ -109,11 +109,22 @@ YAML follows the same words:
 - **Server API:**
   - `GET /api/clips` becomes `GET /api/samples` (entries are samples, each with a count of saved clips);
   - `PUT /api/annotations` stays, and writes `clips`.
-- **Storage model** (`design/storage.md`): `Clip` → `Sample`, `Slice` → `Clip`,
-  `slicesByClip` → `clipsBySample`, `Crate`/`CrateItem` → `Collection`/`CollectionItem`,
-  `nameCounters` keys `hit` → `shot`, and `ScoreRef.sliceId` → `clipId`. **This is the storage
-  session's in-flight work:** its owner decides when the contract changes. Doing it before the
-  first cloud deploy avoids a data migration later.
+- **Storage model** (`design/storage.md`). **Done 2026-09-25**, as a clean break (no aliases or
+  old-name readers):
+  - models `Clip` → `Sample`, `Slice` → `Clip`, enum `SliceSource` → `ClipSource`; record folders
+    in the library and the bucket follow (`Sample/`, `Clip/`);
+  - fields and indexes: `parentClipId` → `parentSampleId`, `clipId` → `sampleId` (Clip, Marker,
+    Candidate, Job), `slicesByClip` → `clipsBySample`, `clipsByPath` → `samplesByPath` (and the
+    other `clipsBy*` → `samplesBy*`), `markersByClip` → `markersBySample`, `candidatesByClip` →
+    `candidatesBySample`;
+  - `ScoreRef`: `clipId`/`clipPath` → `sampleId`/`samplePath`, `sliceName`/`sliceId` →
+    `clipName`/`clipId` (`clipAlias` stays), `refsByClip` → `refsBySample`, `refsBySlice` →
+    `refsByClip`; `CrateItem`: `sliceId` → `clipId`, `clipId` → `sampleId`;
+  - ids: samples `smp_…`, clips `clp_…` (were `clp_…` and `slc_…`).
+
+  Still open: `Crate`/`CrateItem` → `Collection`/`CollectionItem` and `nameCounters` keys
+  `hit` → `shot`. An existing library must be re-migrated (`apricity migrate`) to get the new
+  folders and ids.
 
 ## Saved kits *(planned)*
 
@@ -141,7 +152,7 @@ YAML follows the same words:
 |---|---|---|---|
 | 1 | Language + compiler: dsl.rs, score.rs, compile.rs, errors, tests; examples migrated | engine session | — |
 | 2 | Analysis + manifests: markup names, `clips`/`transient`, manifest v2, migration script, `/api/samples` | engine session | — |
-| 3 | Storage contract + apricity-data renames | storage session | 2 |
+| 3 | Storage contract + apricity-data renames (done 2026-09-25; Collection and `shot` counters still open) | storage session | 2 |
 | 4 | Web: Library, Score, Flow, highlighting, hero data regenerated, landing captions | web/docs session | 1, 2 |
 | 5 | Docs + glossary + design briefs | web/docs session | 1 |
 

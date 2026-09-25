@@ -99,26 +99,26 @@ console.log(`mix ok: position ${rw.exports.rw_engine_position()} frames, swaps $
 
 // --- data layer: ids, rank, markup_merge
 
-// Test rw_ids: clip_id
-const clipIdInput = { kind: "clip_id", audio_sha256: "abc123def456789012345678" };
-const clipIdResult = rw.call("rw_ids", JSON.stringify(clipIdInput));
-assert.ok(clipIdResult.data);
-assert.match(clipIdResult.data, /^clp_/);
-console.log(`rw_ids ok: ${clipIdResult.data}`);
+// Test rw_ids: sample_id
+const sampleIdInput = { kind: "sample_id", audio_sha256: "abc123def456789012345678" };
+const sampleIdResult = rw.call("rw_ids", JSON.stringify(sampleIdInput));
+assert.ok(sampleIdResult.data);
+assert.match(sampleIdResult.data, /^smp_/);
+console.log(`rw_ids ok: ${sampleIdResult.data}`);
 
 // Test rw_ids: candidate_id
-const candIdInput = { kind: "candidate_id", clip_id: "clp_abc123", start: 10.0, end: 14.0, kind_val: "loop" };
+const candIdInput = { kind: "candidate_id", sample_id: "smp_abc123", start: 10.0, end: 14.0, kind_val: "loop" };
 const candIdResult = rw.call("rw_ids", JSON.stringify(candIdInput));
 assert.ok(candIdResult.data);
 assert.match(candIdResult.data, /^cand_/);
 console.log(`rw_ids candidate ok: ${candIdResult.data}`);
 
-// Test rw_ids: curated_slice_id
-const curatedSliceIdInput = { kind: "curated_slice_id", candidate_id: "cand_test123" };
-const curatedSliceIdResult = rw.call("rw_ids", JSON.stringify(curatedSliceIdInput));
-assert.ok(curatedSliceIdResult.data);
-assert.match(curatedSliceIdResult.data, /^slc_/);
-console.log(`rw_ids curated_slice ok: ${curatedSliceIdResult.data}`);
+// Test rw_ids: curated_clip_id
+const curatedClipIdInput = { kind: "curated_clip_id", candidate_id: "cand_test123" };
+const curatedClipIdResult = rw.call("rw_ids", JSON.stringify(curatedClipIdInput));
+assert.ok(curatedClipIdResult.data);
+assert.match(curatedClipIdResult.data, /^clp_/);
+console.log(`rw_ids curated_clip ok: ${curatedClipIdResult.data}`);
 
 // Test rw_ids: position_between (fractional indexing)
 const positionBetweenInput1 = { kind: "position_between", a: null, b: null };
@@ -196,7 +196,7 @@ assert.equal(mergeCreateResult.data.create[0][0], "loop-1");
 assert.equal(mergeCreateResult.data.name_counters.loop, 1);
 console.log(`rw_markup_merge create ok: ${mergeCreateResult.data.create[0][0]}`);
 
-// Test rw_references: (i) score_refs.feature scenario 1: clip with slice
+// Test rw_references: (i) score_refs.feature scenario 1: sample with clip
 const referencesInput1 = {
   text: `tempo 90
 key C
@@ -214,12 +214,12 @@ assert.deepEqual(referencesResult1, {
       alias: "beat",
       source: "marine-band/stems/Thunderer/drums.wav",
       catalogPath: "marine-band/stems/Thunderer/drums.wav",
-      sliceName: "loop-1",
+      clipName: "loop-1",
     },
   ],
   errors: [],
 });
-console.log(`rw_references scenario (i) ok: clip with slice`);
+console.log(`rw_references scenario (i) ok: sample with clip`);
 
 // Test rw_references: (ii) kit-pad scenario: two refs with distinct suffixes
 const referencesInput2 = {
@@ -247,7 +247,7 @@ assert.deepEqual(referencesResult2, {
       alias: "band",
       source: "marine-band/Thunderer.mp3",
       catalogPath: "marine-band/Thunderer.mp3",
-      sliceName: "hit-3",
+      clipName: "hit-3",
       kitPad: "drums.crash",
     },
   ],
@@ -255,12 +255,12 @@ assert.deepEqual(referencesResult2, {
 });
 console.log(`rw_references scenario (ii) ok: kit-pad with distinct suffixes`);
 
-// Test rw_references: (iii) @clp_ and @slc_ id forms
+// Test rw_references: (iii) @smp_ and @clp_ id forms
 const referencesInput3 = {
   text: `tempo 90
 key C
 bars 1
-clip source = @clp_abc123def45678901234  @slc_xyz789
+clip source = @smp_abc123def45678901234  @clp_xyz789
 track source`,
   folder: "scores",
   file: "idref.apr",
@@ -271,14 +271,14 @@ assert.deepEqual(referencesResult3, {
     {
       idSuffix: "source",
       alias: "source",
-      source: "@clp_abc123def45678901234",
-      clipId: "clp_abc123def45678901234",
-      sliceId: "slc_xyz789",
+      source: "@smp_abc123def45678901234",
+      sampleId: "smp_abc123def45678901234",
+      clipId: "clp_xyz789",
     },
   ],
   errors: [],
 });
-console.log(`rw_references scenario (iii) ok: @clp_ and @slc_ id forms`);
+console.log(`rw_references scenario (iii) ok: @smp_ and @clp_ id forms`);
 
 // Test rw_references: (iv) samples ../samples score in folder examples
 const referencesInput4 = {

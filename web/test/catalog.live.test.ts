@@ -55,7 +55,7 @@ test("library records -> samples, manifests, scores, and a compiled score", { sk
   for (const p of sources) {
     const m = (await cat.manifest(p))!;
     assert.ok(m.rhythm.beats.length > 0 && m.tonal.pitch_class_profile.length === 12, p);
-    assert.ok(m.annotations?.clips?.length, `${p} has its slices`);
+    assert.ok(m.annotations?.clips?.length, `${p} has its clips`);
     manifests[p] = m;
   }
   const r = rw.call("rw_compile", text, "examples/chop-shop.apr", JSON.stringify(manifests));

@@ -28,7 +28,7 @@ const schema = a.schema({
     key: a.string(),
     stem: a.string(),
   }),
-  SliceSource: a.enum(["user", "ml", "curated"]),
+  ClipSource: a.enum(["user", "ml", "curated"]),
   Kind: a.enum(["loop", "break", "hit", "phrase", "section", "chop", "other"]),
   VerdictValue: a.enum(["keep", "skip", "later"]),
 
@@ -45,7 +45,7 @@ const schema = a.schema({
       sourcePage: a.url(),
       url: a.url(),
       documents: a.ref("FileRef").array(),
-      clips: a.hasMany("Clip", "recordingId"),
+      samples: a.hasMany("Sample", "recordingId"),
     })
     .secondaryIndexes((i) => [
       i("collection")
@@ -54,7 +54,7 @@ const schema = a.schema({
     ])
     .authorization(catalog),
 
-  Clip: a
+  Sample: a
     .model({
       id: a.id().required(),
       recordingId: a.id().required(),
@@ -66,7 +66,7 @@ const schema = a.schema({
       role: a.enum(["source", "stem", "excerpt", "upload"]),
       stem: a.string(),
       stemModel: a.string(),
-      parentClipId: a.id(),
+      parentSampleId: a.id(),
       excerptStart: a.float(),
       audio: a.ref("FileRef").required(),
       analysis: a.ref("FileRef"),
@@ -86,29 +86,29 @@ const schema = a.schema({
       noteCount: a.integer(),
       tags: a.string().array(),
       nameCounters: a.json(),
-      slices: a.hasMany("Slice", "clipId"),
-      markers: a.hasMany("Marker", "clipId"),
-      candidates: a.hasMany("Candidate", "clipId"),
+      clips: a.hasMany("Clip", "sampleId"),
+      markers: a.hasMany("Marker", "sampleId"),
+      candidates: a.hasMany("Candidate", "sampleId"),
     })
     .secondaryIndexes((i) => [
       i("recordingId")
         .sortKeys(["path"])
-        .queryField("clipsByRecording"),
-      i("collection").sortKeys(["path"]).queryField("clipsByCollection"),
-      i("path").queryField("clipsByPath"),
-      i("parentClipId").queryField("clipsByParent"),
+        .queryField("samplesByRecording"),
+      i("collection").sortKeys(["path"]).queryField("samplesByCollection"),
+      i("path").queryField("samplesByPath"),
+      i("parentSampleId").queryField("samplesByParent"),
     ])
     .authorization(catalog),
 
-  Slice: a
+  Clip: a
     .model({
       id: a.id().required(),
-      clipId: a.id().required(),
-      clip: a.belongsTo("Clip", "clipId"),
+      sampleId: a.id().required(),
+      sample: a.belongsTo("Sample", "sampleId"),
       name: a.string().required(),
       start: a.float().required(),
       end: a.float().required(),
-      source: a.ref("SliceSource").required(),
+      source: a.ref("ClipSource").required(),
       kind: a.ref("Kind"),
       tags: a.string().array(),
       evidence: a.json(),
@@ -118,33 +118,33 @@ const schema = a.schema({
       owner: a.string(),
     })
     .secondaryIndexes((i) => [
-      i("clipId").sortKeys(["start"]).queryField("slicesByClip"),
-      i("clipId").sortKeys(["name"]).queryField("slicesByClipAndName"),
-      i("candidateId").queryField("slicesByCandidate"),
+      i("sampleId").sortKeys(["start"]).queryField("clipsBySample"),
+      i("sampleId").sortKeys(["name"]).queryField("clipsBySampleAndName"),
+      i("candidateId").queryField("clipsByCandidate"),
     ])
     .authorization((allow) => [...personal(allow), allow.group("curators")]),
 
   Marker: a
     .model({
       id: a.id().required(),
-      clipId: a.id().required(),
-      clip: a.belongsTo("Clip", "clipId"),
+      sampleId: a.id().required(),
+      sample: a.belongsTo("Sample", "sampleId"),
       name: a.string().required(),
       seconds: a.float().required(),
-      source: a.ref("SliceSource"),
+      source: a.ref("ClipSource"),
       note: a.string(),
       owner: a.string(),
     })
     .secondaryIndexes((i) => [
-      i("clipId").sortKeys(["seconds"]).queryField("markersByClip"),
+      i("sampleId").sortKeys(["seconds"]).queryField("markersBySample"),
     ])
     .authorization((allow) => [...personal(allow), allow.group("curators")]),
 
   Candidate: a
     .model({
       id: a.id().required(),
-      clipId: a.id().required(),
-      clip: a.belongsTo("Clip", "clipId"),
+      sampleId: a.id().required(),
+      sample: a.belongsTo("Sample", "sampleId"),
       recordingId: a.id().required(),
       start: a.float().required(),
       end: a.float().required(),
@@ -161,7 +161,7 @@ const schema = a.schema({
       i("recordingId")
         .sortKeys(["baseScore"])
         .queryField("candidatesByRecording"),
-      i("clipId").sortKeys(["start"]).queryField("candidatesByClip"),
+      i("sampleId").sortKeys(["start"]).queryField("candidatesBySample"),
     ])
     .authorization(catalog),
 
@@ -206,8 +206,8 @@ const schema = a.schema({
       crate: a.belongsTo("Crate", "crateId"),
       position: a.string().required(),
       candidateId: a.id(),
-      sliceId: a.id(),
       clipId: a.id(),
+      sampleId: a.id(),
       note: a.string(),
       owner: a.string(),
     })
@@ -240,18 +240,18 @@ const schema = a.schema({
       scoreId: a.id().required(),
       score: a.belongsTo("Score", "scoreId"),
       clipAlias: a.string().required(),
+      sampleId: a.id(),
+      samplePath: a.string(),
+      clipName: a.string(),
       clipId: a.id(),
-      clipPath: a.string(),
-      sliceName: a.string(),
-      sliceId: a.id(),
       start: a.float(),
       end: a.float(),
       owner: a.string(),
     })
     .secondaryIndexes((i) => [
       i("scoreId").queryField("refsByScore"),
-      i("clipId").sortKeys(["scoreId"]).queryField("refsByClip"),
-      i("sliceId").queryField("refsBySlice"),
+      i("sampleId").sortKeys(["scoreId"]).queryField("refsBySample"),
+      i("clipId").queryField("refsByClip"),
     ])
     .authorization(personal),
 
@@ -259,7 +259,7 @@ const schema = a.schema({
     .model({
       id: a.id().required(),
       kind: a.string().required(),
-      clipId: a.id(),
+      sampleId: a.id(),
       state: a.enum(["queued", "running", "done", "failed"]),
       error: a.string(),
     })

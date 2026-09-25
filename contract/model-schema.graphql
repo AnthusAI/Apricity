@@ -1,4 +1,4 @@
-enum SliceSource {
+enum ClipSource {
   user
   ml
   curated
@@ -34,29 +34,29 @@ type Recording @model @auth(rules: [{allow: groups, operations: [read], groups: 
   sourcePage: AWSURL
   url: AWSURL
   documents: [FileRef]
-  clips: [Clip] @hasMany(references: ["recordingId"])
+  samples: [Sample] @hasMany(references: ["recordingId"])
 }
 
-type Clip @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
+type Sample @model @auth(rules: [{allow: groups, operations: [read], groups: ["members"]},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
-  recordingId: ID! @index(sortKeyFields: ["path"], queryField: "clipsByRecording")
+  recordingId: ID! @index(sortKeyFields: ["path"], queryField: "samplesByRecording")
   recording: Recording @belongsTo(references: ["recordingId"])
-  path: String! @index(queryField: "clipsByPath")
+  path: String! @index(queryField: "samplesByPath")
   aliases: [String]
-  collection: String! @index(sortKeyFields: ["path"], queryField: "clipsByCollection")
+  collection: String! @index(sortKeyFields: ["path"], queryField: "samplesByCollection")
   title: String!
-  role: ClipRole
+  role: SampleRole
   stem: String
   stemModel: String
-  parentClipId: ID @index(queryField: "clipsByParent")
+  parentSampleId: ID @index(queryField: "samplesByParent")
   excerptStart: Float
   audio: FileRef!
   analysis: FileRef
   analysisVersion: Int
   analyzedAt: AWSDateTime
-  status: ClipStatus
+  status: SampleStatus
   duration: Float
   sampleRate: Int
   channels: Int
@@ -70,27 +70,27 @@ type Clip @model @auth(rules: [{allow: groups, operations: [read], groups: ["mem
   noteCount: Int
   tags: [String]
   nameCounters: AWSJSON
-  slices: [Slice] @hasMany(references: ["clipId"])
-  markers: [Marker] @hasMany(references: ["clipId"])
-  candidates: [Candidate] @hasMany(references: ["clipId"])
+  clips: [Clip] @hasMany(references: ["sampleId"])
+  markers: [Marker] @hasMany(references: ["sampleId"])
+  candidates: [Candidate] @hasMany(references: ["sampleId"])
 }
 
-type Slice @model @auth(rules: [{allow: owner, ownerField: "owner"},
+type Clip @model @auth(rules: [{allow: owner, ownerField: "owner"},
   {allow: groups, operations: [read], groups: ["members"]},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
-  clipId: ID! @index(sortKeyFields: ["start"], queryField: "slicesByClip") @index(sortKeyFields: ["name"], queryField: "slicesByClipAndName")
-  clip: Clip @belongsTo(references: ["clipId"])
+  sampleId: ID! @index(sortKeyFields: ["start"], queryField: "clipsBySample") @index(sortKeyFields: ["name"], queryField: "clipsBySampleAndName")
+  sample: Sample @belongsTo(references: ["sampleId"])
   name: String!
   start: Float!
   end: Float!
-  source: SliceSource!
+  source: ClipSource!
   kind: Kind
   tags: [String]
   evidence: AWSJSON
   rank: Int
-  candidateId: ID @index(queryField: "slicesByCandidate")
+  candidateId: ID @index(queryField: "clipsByCandidate")
   retired: Boolean
   owner: String
 }
@@ -100,11 +100,11 @@ type Marker @model @auth(rules: [{allow: owner, ownerField: "owner"},
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
-  clipId: ID! @index(sortKeyFields: ["seconds"], queryField: "markersByClip")
-  clip: Clip @belongsTo(references: ["clipId"])
+  sampleId: ID! @index(sortKeyFields: ["seconds"], queryField: "markersBySample")
+  sample: Sample @belongsTo(references: ["sampleId"])
   name: String!
   seconds: Float!
-  source: SliceSource
+  source: ClipSource
   note: String
   owner: String
 }
@@ -113,8 +113,8 @@ type Candidate @model @auth(rules: [{allow: groups, operations: [read], groups: 
   {allow: groups, groups: ["curators"]}])
 {
   id: ID! @primaryKey
-  clipId: ID! @index(sortKeyFields: ["start"], queryField: "candidatesByClip")
-  clip: Clip @belongsTo(references: ["clipId"])
+  sampleId: ID! @index(sortKeyFields: ["start"], queryField: "candidatesBySample")
+  sample: Sample @belongsTo(references: ["sampleId"])
   recordingId: ID! @index(sortKeyFields: ["baseScore"], queryField: "candidatesByRecording")
   start: Float!
   end: Float!
@@ -159,8 +159,8 @@ type CrateItem @model @auth(rules: [{allow: owner, ownerField: "owner"},
   crate: Crate @belongsTo(references: ["crateId"])
   position: String!
   candidateId: ID @index(queryField: "crateItemsByCandidate")
-  sliceId: ID
   clipId: ID
+  sampleId: ID
   note: String
   owner: String
 }
@@ -186,10 +186,10 @@ type ScoreRef @model @auth(rules: [{allow: owner, ownerField: "owner"},
   scoreId: ID! @index(queryField: "refsByScore")
   score: Score @belongsTo(references: ["scoreId"])
   clipAlias: String!
-  clipId: ID @index(sortKeyFields: ["scoreId"], queryField: "refsByClip")
-  clipPath: String
-  sliceName: String
-  sliceId: ID @index(queryField: "refsBySlice")
+  sampleId: ID @index(sortKeyFields: ["scoreId"], queryField: "refsBySample")
+  samplePath: String
+  clipName: String
+  clipId: ID @index(queryField: "refsByClip")
   start: Float
   end: Float
   owner: String
@@ -200,7 +200,7 @@ type Job @model @auth(rules: [{allow: groups, operations: [read], groups: ["memb
 {
   id: ID! @primaryKey
   kind: String!
-  clipId: ID
+  sampleId: ID
   state: JobState @index(queryField: "jobsByState")
   error: String
 }
@@ -231,14 +231,14 @@ type CandidateContext
   stem: String
 }
 
-enum ClipRole {
+enum SampleRole {
   source
   stem
   excerpt
   upload
 }
 
-enum ClipStatus {
+enum SampleStatus {
   pending
   analyzing
   ready

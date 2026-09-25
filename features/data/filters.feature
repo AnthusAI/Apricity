@@ -4,18 +4,18 @@ Feature: Filters
 
   Background:
     Given I am user "alice" in groups "members,curators"
-    And these Slice records exist:
+    And these Clip records exist:
       """
       [
-        {"id": "s1", "clipId": "clp-1", "name": "loop-1",  "start": 0,  "end": 4,   "source": "ml",      "kind": "loop",  "tags": ["brass", "low"]},
-        {"id": "s2", "clipId": "clp-1", "name": "loop-2",  "start": 4,  "end": 8,   "source": "ml",      "kind": "loop",  "tags": ["brass"]},
-        {"id": "s3", "clipId": "clp-1", "name": "hit-1",   "start": 8,  "end": 8.5, "source": "user",    "kind": "hit"},
-        {"id": "s4", "clipId": "clp-1", "name": "break-1", "start": 12, "end": 16,  "source": "curated", "kind": "break", "tags": ["drums"], "retired": true}
+        {"id": "s1", "sampleId": "smp-1", "name": "loop-1",  "start": 0,  "end": 4,   "source": "ml",      "kind": "loop",  "tags": ["brass", "low"]},
+        {"id": "s2", "sampleId": "smp-1", "name": "loop-2",  "start": 4,  "end": 8,   "source": "ml",      "kind": "loop",  "tags": ["brass"]},
+        {"id": "s3", "sampleId": "smp-1", "name": "hit-1",   "start": 8,  "end": 8.5, "source": "user",    "kind": "hit"},
+        {"id": "s4", "sampleId": "smp-1", "name": "break-1", "start": 12, "end": 16,  "source": "curated", "kind": "break", "tags": ["drums"], "retired": true}
       ]
       """
 
   Scenario: eq
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"name": {"eq": "hit-1"}}}
       """
@@ -25,7 +25,7 @@ Feature: Filters
       """
 
   Scenario: ne on an enum
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"source": {"ne": "ml"}}}
       """
@@ -35,7 +35,7 @@ Feature: Filters
       """
 
   Scenario: ne matches records missing the field
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"retired": {"ne": true}}}
       """
@@ -45,14 +45,14 @@ Feature: Filters
       """
 
   Scenario: Comparisons against a missing field are false
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"rank": {"gt": 0}}}
       """
     Then data has 0 items
 
   Scenario Outline: Numeric comparisons
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"start": <condition>}}
       """
@@ -70,7 +70,7 @@ Feature: Filters
       | {"between": [4, 8]} | [{"id": "s2"}, {"id": "s3"}]               |
 
   Scenario: beginsWith
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"name": {"beginsWith": "loop"}}}
       """
@@ -80,7 +80,7 @@ Feature: Filters
       """
 
   Scenario: contains on a string is a substring match
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"name": {"contains": "oop"}}}
       """
@@ -90,7 +90,7 @@ Feature: Filters
       """
 
   Scenario: contains on a list is membership
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"tags": {"contains": "brass"}}}
       """
@@ -100,7 +100,7 @@ Feature: Filters
       """
 
   Scenario: notContains matches records missing the field
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"tags": {"notContains": "brass"}}}
       """
@@ -110,7 +110,7 @@ Feature: Filters
       """
 
   Scenario Outline: attributeExists
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"tags": {"attributeExists": <exists>}}}
       """
@@ -125,7 +125,7 @@ Feature: Filters
       | false  | [{"id": "s3"}]                               |
 
   Scenario: size of a string
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"name": {"size": {"eq": 5}}}}
       """
@@ -135,7 +135,7 @@ Feature: Filters
       """
 
   Scenario: and
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"and": [{"kind": {"eq": "loop"}}, {"start": {"ge": 4}}]}}
       """
@@ -145,7 +145,7 @@ Feature: Filters
       """
 
   Scenario: or
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"or": [{"kind": {"eq": "hit"}}, {"kind": {"eq": "break"}}]}}
       """
@@ -155,7 +155,7 @@ Feature: Filters
       """
 
   Scenario: not
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"not": {"kind": {"eq": "loop"}}}}
       """
@@ -165,7 +165,7 @@ Feature: Filters
       """
 
   Scenario: Several fields in one filter are combined with and
-    When I list all Slice with:
+    When I list all Clip with:
       """
       {"filter": {"kind": {"eq": "loop"}, "name": {"eq": "loop-2"}}}
       """

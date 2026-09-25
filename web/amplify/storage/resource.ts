@@ -7,10 +7,10 @@ import contract from "../../../contract/apricity.contract.json";
  * files under the same relative paths, and `apricity serve` serves the library's `files/` folder
  * at `/files/<key>`, so the web app's file paths are the same in both modes:
  *
- *   files/audio/<clipId>/<original-filename>   audio, stems, slices and clips
- *   files/analysis/<clipId>/<sha256>.json      analysis attachments
- *   files/documents/<recordingId>/<file>.pdf   documents
- *   <Model>/<key>.json                         one file per record, as Virtuus writes them
+ *   files/audio/<sampleId>/<original-filename>   audio: sources, stems, excerpts, uploads
+ *   files/analysis/<sampleId>/<sha256>.json      analysis attachments
+ *   files/documents/<recordingId>/<file>.pdf     documents
+ *   <Model>/<key>.json                           one file per record, as Virtuus writes them
  *
  * Machine-local scratch (`.virtuus/`, the sync state, `apricity-library.json`) is never synced.
  *
@@ -27,7 +27,7 @@ const readAll = (allow: any) => [
   allow.groups(["admins"]).to(["read", "write", "delete"]),
 ];
 
-// One record folder per model in the data contract (Recording/, Clip/, Slice/, ...).
+// One record folder per model in the data contract (Recording/, Sample/, Clip/, ...).
 const recordFolders = Object.keys((contract as { models: Record<string, unknown> }).models);
 
 export const storage = defineStorage({

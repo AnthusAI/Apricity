@@ -1,5 +1,5 @@
 {
-  "version": "b14e14e39505afdf",
+  "version": "c4cd652220fd3708",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -81,9 +81,9 @@
           "isArray": true,
           "kind": "customType"
         },
-        "clips": {
-          "name": "clips",
-          "type": "Clip",
+        "samples": {
+          "name": "samples",
+          "type": "Sample",
           "isRequired": false,
           "isArray": true,
           "kind": "model"
@@ -119,11 +119,11 @@
       ],
       "relationships": [
         {
-          "field": "clips",
+          "field": "samples",
           "kind": "hasMany",
-          "target": "Clip",
+          "target": "Sample",
           "references": "recordingId",
-          "childIndex": "clipsByRecording",
+          "childIndex": "samplesByRecording",
           "implicit": false
         }
       ],
@@ -156,8 +156,8 @@
       ],
       "ownerFields": []
     },
-    "Clip": {
-      "name": "Clip",
+    "Sample": {
+      "name": "Sample",
       "fields": {
         "id": {
           "name": "id",
@@ -210,7 +210,7 @@
         },
         "role": {
           "name": "role",
-          "type": "ClipRole",
+          "type": "SampleRole",
           "isRequired": false,
           "isArray": false,
           "kind": "enum"
@@ -229,8 +229,8 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "parentClipId": {
-          "name": "parentClipId",
+        "parentSampleId": {
+          "name": "parentSampleId",
           "type": "ID",
           "isRequired": false,
           "isArray": false,
@@ -273,7 +273,7 @@
         },
         "status": {
           "name": "status",
-          "type": "ClipStatus",
+          "type": "SampleStatus",
           "isRequired": false,
           "isArray": false,
           "kind": "enum"
@@ -369,9 +369,9 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "slices": {
-          "name": "slices",
-          "type": "Slice",
+        "clips": {
+          "name": "clips",
+          "type": "Clip",
           "isRequired": false,
           "isArray": true,
           "kind": "model"
@@ -410,8 +410,8 @@
       ],
       "indexes": [
         {
-          "name": "clipsByRecordingIdAndPath",
-          "queryField": "clipsByRecording",
+          "name": "samplesByRecordingIdAndPath",
+          "queryField": "samplesByRecording",
           "partitionField": "recordingId",
           "sortFields": [
             "path"
@@ -419,14 +419,14 @@
           "sortArgument": "path"
         },
         {
-          "name": "clipsByPath",
-          "queryField": "clipsByPath",
+          "name": "samplesByPath",
+          "queryField": "samplesByPath",
           "partitionField": "path",
           "sortFields": []
         },
         {
-          "name": "clipsByCollectionAndPath",
-          "queryField": "clipsByCollection",
+          "name": "samplesByCollectionAndPath",
+          "queryField": "samplesByCollection",
           "partitionField": "collection",
           "sortFields": [
             "path"
@@ -434,9 +434,9 @@
           "sortArgument": "path"
         },
         {
-          "name": "clipsByParentClipId",
-          "queryField": "clipsByParent",
-          "partitionField": "parentClipId",
+          "name": "samplesByParentSampleId",
+          "queryField": "samplesByParent",
+          "partitionField": "parentSampleId",
           "sortFields": []
         }
       ],
@@ -448,27 +448,27 @@
           "references": "recordingId"
         },
         {
-          "field": "slices",
+          "field": "clips",
           "kind": "hasMany",
-          "target": "Slice",
-          "references": "clipId",
-          "childIndex": "slicesByClip",
+          "target": "Clip",
+          "references": "sampleId",
+          "childIndex": "clipsBySample",
           "implicit": false
         },
         {
           "field": "markers",
           "kind": "hasMany",
           "target": "Marker",
-          "references": "clipId",
-          "childIndex": "markersByClip",
+          "references": "sampleId",
+          "childIndex": "markersBySample",
           "implicit": false
         },
         {
           "field": "candidates",
           "kind": "hasMany",
           "target": "Candidate",
-          "references": "clipId",
-          "childIndex": "candidatesByClip",
+          "references": "sampleId",
+          "childIndex": "candidatesBySample",
           "implicit": false
         }
       ],
@@ -501,8 +501,8 @@
       ],
       "ownerFields": []
     },
-    "Slice": {
-      "name": "Slice",
+    "Clip": {
+      "name": "Clip",
       "fields": {
         "id": {
           "name": "id",
@@ -511,16 +511,16 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "type": "ID",
           "isRequired": true,
           "isArray": false,
           "kind": "scalar"
         },
-        "clip": {
-          "name": "clip",
-          "type": "Clip",
+        "sample": {
+          "name": "sample",
+          "type": "Sample",
           "isRequired": false,
           "isArray": false,
           "kind": "model"
@@ -548,7 +548,7 @@
         },
         "source": {
           "name": "source",
-          "type": "SliceSource",
+          "type": "ClipSource",
           "isRequired": true,
           "isArray": false,
           "kind": "enum"
@@ -622,36 +622,36 @@
       ],
       "indexes": [
         {
-          "name": "slicesByClipIdAndStart",
-          "queryField": "slicesByClip",
-          "partitionField": "clipId",
+          "name": "clipsBySampleIdAndStart",
+          "queryField": "clipsBySample",
+          "partitionField": "sampleId",
           "sortFields": [
             "start"
           ],
           "sortArgument": "start"
         },
         {
-          "name": "slicesByClipIdAndName",
-          "queryField": "slicesByClipAndName",
-          "partitionField": "clipId",
+          "name": "clipsBySampleIdAndName",
+          "queryField": "clipsBySampleAndName",
+          "partitionField": "sampleId",
           "sortFields": [
             "name"
           ],
           "sortArgument": "name"
         },
         {
-          "name": "slicesByCandidateId",
-          "queryField": "slicesByCandidate",
+          "name": "clipsByCandidateId",
+          "queryField": "clipsByCandidate",
           "partitionField": "candidateId",
           "sortFields": []
         }
       ],
       "relationships": [
         {
-          "field": "clip",
+          "field": "sample",
           "kind": "belongsTo",
-          "target": "Clip",
-          "references": "clipId"
+          "target": "Sample",
+          "references": "sampleId"
         }
       ],
       "authRules": [
@@ -707,16 +707,16 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "type": "ID",
           "isRequired": true,
           "isArray": false,
           "kind": "scalar"
         },
-        "clip": {
-          "name": "clip",
-          "type": "Clip",
+        "sample": {
+          "name": "sample",
+          "type": "Sample",
           "isRequired": false,
           "isArray": false,
           "kind": "model"
@@ -737,7 +737,7 @@
         },
         "source": {
           "name": "source",
-          "type": "SliceSource",
+          "type": "ClipSource",
           "isRequired": false,
           "isArray": false,
           "kind": "enum"
@@ -776,9 +776,9 @@
       ],
       "indexes": [
         {
-          "name": "markersByClipIdAndSeconds",
-          "queryField": "markersByClip",
-          "partitionField": "clipId",
+          "name": "markersBySampleIdAndSeconds",
+          "queryField": "markersBySample",
+          "partitionField": "sampleId",
           "sortFields": [
             "seconds"
           ],
@@ -787,10 +787,10 @@
       ],
       "relationships": [
         {
-          "field": "clip",
+          "field": "sample",
           "kind": "belongsTo",
-          "target": "Clip",
-          "references": "clipId"
+          "target": "Sample",
+          "references": "sampleId"
         }
       ],
       "authRules": [
@@ -846,16 +846,16 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "type": "ID",
           "isRequired": true,
           "isArray": false,
           "kind": "scalar"
         },
-        "clip": {
-          "name": "clip",
-          "type": "Clip",
+        "sample": {
+          "name": "sample",
+          "type": "Sample",
           "isRequired": false,
           "isArray": false,
           "kind": "model"
@@ -950,9 +950,9 @@
       ],
       "indexes": [
         {
-          "name": "candidatesByClipIdAndStart",
-          "queryField": "candidatesByClip",
-          "partitionField": "clipId",
+          "name": "candidatesBySampleIdAndStart",
+          "queryField": "candidatesBySample",
+          "partitionField": "sampleId",
           "sortFields": [
             "start"
           ],
@@ -979,10 +979,10 @@
       ],
       "relationships": [
         {
-          "field": "clip",
+          "field": "sample",
           "kind": "belongsTo",
-          "target": "Clip",
-          "references": "clipId"
+          "target": "Sample",
+          "references": "sampleId"
         },
         {
           "field": "verdicts",
@@ -1298,15 +1298,15 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "sliceId": {
-          "name": "sliceId",
+        "clipId": {
+          "name": "clipId",
           "type": "ID",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "type": "ID",
           "isRequired": false,
           "isArray": false,
@@ -1563,29 +1563,29 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "type": "ID",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"
         },
-        "clipPath": {
-          "name": "clipPath",
+        "samplePath": {
+          "name": "samplePath",
           "type": "String",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"
         },
-        "sliceName": {
-          "name": "sliceName",
+        "clipName": {
+          "name": "clipName",
           "type": "String",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"
         },
-        "sliceId": {
-          "name": "sliceId",
+        "clipId": {
+          "name": "clipId",
           "type": "ID",
           "isRequired": false,
           "isArray": false,
@@ -1638,18 +1638,18 @@
           "sortFields": []
         },
         {
-          "name": "scoreRefsByClipIdAndScoreId",
-          "queryField": "refsByClip",
-          "partitionField": "clipId",
+          "name": "scoreRefsBySampleIdAndScoreId",
+          "queryField": "refsBySample",
+          "partitionField": "sampleId",
           "sortFields": [
             "scoreId"
           ],
           "sortArgument": "scoreId"
         },
         {
-          "name": "scoreRefsBySliceId",
-          "queryField": "refsBySlice",
-          "partitionField": "sliceId",
+          "name": "scoreRefsByClipId",
+          "queryField": "refsByClip",
+          "partitionField": "clipId",
           "sortFields": []
         }
       ],
@@ -1707,8 +1707,8 @@
           "isArray": false,
           "kind": "scalar"
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "type": "ID",
           "isRequired": false,
           "isArray": false,
@@ -1786,7 +1786,7 @@
     }
   },
   "enums": {
-    "SliceSource": [
+    "ClipSource": [
       "user",
       "ml",
       "curated"
@@ -1805,13 +1805,13 @@
       "skip",
       "later"
     ],
-    "ClipRole": [
+    "SampleRole": [
       "source",
       "stem",
       "excerpt",
       "upload"
     ],
-    "ClipStatus": [
+    "SampleStatus": [
       "pending",
       "analyzing",
       "ready",
@@ -1962,7 +1962,7 @@
         ]
       }
     ],
-    "Clip": [
+    "Sample": [
       {
         "groupClaim": "cognito:groups",
         "provider": "userPools",
@@ -1989,7 +1989,7 @@
         ]
       }
     ],
-    "Slice": [
+    "Clip": [
       {
         "provider": "userPools",
         "ownerField": "owner",
@@ -2250,7 +2250,7 @@
   "storage": {
     "paths": [
       {
-        "path": "files/hero/*",
+        "path": "files/breakdowns/*",
         "readable": [
           "guest",
           "authenticated",
@@ -2296,7 +2296,7 @@
         ]
       },
       {
-        "path": "Clip/*",
+        "path": "Sample/*",
         "readable": [
           "authenticated",
           "members",
@@ -2308,7 +2308,7 @@
         ]
       },
       {
-        "path": "Slice/*",
+        "path": "Clip/*",
         "readable": [
           "authenticated",
           "members",

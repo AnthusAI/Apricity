@@ -1,1 +1,1 @@
-{"__typename":"Job","clipId":"clp_30a881a48deb9081db1d","createdAt":"2026-09-25T03:30:27.730Z","error":"boom","id":"job_1","kind":"analyze","state":"failed","updatedAt":"2026-09-25T03:30:27.730Z"}
+{"__typename":"Job","sampleId":"smp_30a881a48deb9081db1d","createdAt":"2026-09-25T03:30:27.730Z","error":"boom","id":"job_1","kind":"analyze","state":"failed","updatedAt":"2026-09-25T03:30:27.730Z"}

@@ -20,7 +20,7 @@ const LIBRARY_FILE: &str = "apricity-library.json";
 
 /// Whether a library-relative key takes part in sync.
 ///
-/// Everything under a library syncs (tables, files, analysis, slices, clips, whatever Virtuus
+/// Everything under a library syncs (tables, files, analysis, clips, samples, whatever Virtuus
 /// writes) except machine-local scratch: any path with a dot-prefixed segment (`.virtuus/`
 /// lock, change log and index snapshots, the sync state, upload and transfer scratch,
 /// `.DS_Store`) and `apricity-library.json`.
@@ -673,8 +673,8 @@ mod tests {
     }
 
     fn library(rig: &Rig) {
-        rig.local("tables/Clip/c1.json", b"{\"id\":\"c1\"}");
-        rig.local("tables/Slice/s1.json", b"{\"id\":\"s1\"}");
+        rig.local("tables/Sample/c1.json", b"{\"id\":\"c1\"}");
+        rig.local("tables/Clip/s1.json", b"{\"id\":\"s1\"}");
         rig.local("files/audio/c1/a.wav", &[7u8; 5000]);
         rig.local("files/analysis/c1/abc.json", b"{}");
     }
@@ -682,7 +682,7 @@ mod tests {
     #[test]
     fn syncable_rules() {
         for k in [
-            "tables/Clip/a.json",
+            "tables/Sample/a.json",
             "files/audio/c/a.wav",
             "files/analysis/x/y.json",
             "notes.txt",
@@ -697,7 +697,7 @@ mod tests {
             ".DS_Store",
             "files/audio/.DS_Store",
             "files/.upload-1",
-            "tables/Clip/.c1.json.part-9",
+            "tables/Sample/.c1.json.part-9",
             ".sync-tmp/t1-0",
             "../x",
             "/abs",
@@ -716,8 +716,8 @@ mod tests {
         assert_eq!(first.pushed, 4);
         assert_eq!(first.bytes, 11 + 11 + 5000 + 2);
         for k in [
-            "tables/Clip/c1.json",
-            "tables/Slice/s1.json",
+            "tables/Sample/c1.json",
+            "tables/Clip/s1.json",
             "files/audio/c1/a.wav",
             "files/analysis/c1/abc.json",
         ] {
@@ -731,16 +731,16 @@ mod tests {
         assert_eq!((again.pushed, again.pulled, again.plan.in_sync), (0, 0, 4));
         assert!(again.plan.steps.is_empty() && !again.needs_attention());
 
-        rig.local("tables/Clip/c1.json", b"{\"id\":\"c1\",\"title\":\"new\"}");
-        rig.local("tables/Slice/s2.json", b"{\"id\":\"s2\"}");
+        rig.local("tables/Sample/c1.json", b"{\"id\":\"c1\",\"title\":\"new\"}");
+        rig.local("tables/Clip/s2.json", b"{\"id\":\"s2\"}");
         let third = rig.push();
         assert_eq!(third.pushed, 2);
         assert_eq!(
             keys(&third, StepKind::Push),
-            vec!["tables/Clip/c1.json", "tables/Slice/s2.json"]
+            vec!["tables/Clip/s2.json", "tables/Sample/c1.json"]
         );
         assert_eq!(
-            std::fs::read(rig.remote_root.join("tables/Clip/c1.json")).unwrap(),
+            std::fs::read(rig.remote_root.join("tables/Sample/c1.json")).unwrap(),
             b"{\"id\":\"c1\",\"title\":\"new\"}"
         );
     }
@@ -791,7 +791,7 @@ mod tests {
         dst.remote_root = src.remote_root.clone();
         let p = dst.pull();
         assert_eq!(p.pulled, 4);
-        for k in ["tables/Clip/c1.json", "files/audio/c1/a.wav"] {
+        for k in ["tables/Sample/c1.json", "files/audio/c1/a.wav"] {
             assert_eq!(
                 std::fs::read(dst.local_root.join(k)).unwrap(),
                 std::fs::read(src.local_root.join(k)).unwrap()
@@ -799,10 +799,10 @@ mod tests {
         }
         assert!(!dst.local_root.join(".sync-tmp").exists());
         assert_eq!(dst.pull().pulled, 0);
-        src.local("tables/Clip/c1.json", b"{\"id\":\"c1\",\"v\":2}");
+        src.local("tables/Sample/c1.json", b"{\"id\":\"c1\",\"v\":2}");
         src.push();
         let p = dst.pull();
-        assert_eq!(keys(&p, StepKind::Pull), vec!["tables/Clip/c1.json"]);
+        assert_eq!(keys(&p, StepKind::Pull), vec!["tables/Sample/c1.json"]);
     }
 
     #[test]
@@ -825,25 +825,25 @@ mod tests {
         let mut rig = Rig::new();
         library(&rig);
         rig.push();
-        std::fs::remove_file(rig.local_root.join("tables/Slice/s1.json")).unwrap();
+        std::fs::remove_file(rig.local_root.join("tables/Clip/s1.json")).unwrap();
         let r = rig.push();
         assert_eq!(r.deleted_remote, 0);
         assert_eq!(r.plan.skipped.len(), 1);
         assert!(r.plan.skipped[0].reason.contains("--delete"));
-        assert!(rig.remote_root.join("tables/Slice/s1.json").exists());
+        assert!(rig.remote_root.join("tables/Clip/s1.json").exists());
         let r = rig.run(Direction::Push, true, None, false);
         assert_eq!(r.deleted_remote, 1);
-        assert!(!rig.remote_root.join("tables/Slice/s1.json").exists());
+        assert!(!rig.remote_root.join("tables/Clip/s1.json").exists());
         assert_eq!(rig.push().plan.skipped.len(), 0);
 
         // The other way: deleted on the remote.
-        std::fs::remove_file(rig.remote_root.join("tables/Clip/c1.json")).unwrap();
+        std::fs::remove_file(rig.remote_root.join("tables/Sample/c1.json")).unwrap();
         let r = rig.pull();
         assert_eq!(r.deleted_local, 0);
-        assert!(rig.local_root.join("tables/Clip/c1.json").exists());
+        assert!(rig.local_root.join("tables/Sample/c1.json").exists());
         let r = rig.run(Direction::Pull, true, None, false);
         assert_eq!(r.deleted_local, 1);
-        assert!(!rig.local_root.join("tables/Clip/c1.json").exists());
+        assert!(!rig.local_root.join("tables/Sample/c1.json").exists());
     }
 
     #[test]
@@ -851,27 +851,27 @@ mod tests {
         let mut rig = Rig::new();
         library(&rig);
         rig.push();
-        rig.local("tables/Clip/c1.json", b"local edit");
-        rig.remote("tables/Clip/c1.json", b"remote edit");
-        rig.local("tables/Slice/s1.json", b"only local");
+        rig.local("tables/Sample/c1.json", b"local edit");
+        rig.remote("tables/Sample/c1.json", b"remote edit");
+        rig.local("tables/Clip/s1.json", b"only local");
         for run_pull in [false, true] {
             let r = if run_pull { rig.pull() } else { rig.push() };
             assert_eq!(r.plan.conflicts.len(), 1);
-            assert_eq!(r.plan.conflicts[0].key, "tables/Clip/c1.json");
+            assert_eq!(r.plan.conflicts[0].key, "tables/Sample/c1.json");
             assert!(r.needs_attention());
             assert!(r.display().contains("CONFLICT"));
             assert_eq!(
-                std::fs::read(rig.local_root.join("tables/Clip/c1.json")).unwrap(),
+                std::fs::read(rig.local_root.join("tables/Sample/c1.json")).unwrap(),
                 b"local edit"
             );
             assert_eq!(
-                std::fs::read(rig.remote_root.join("tables/Clip/c1.json")).unwrap(),
+                std::fs::read(rig.remote_root.join("tables/Sample/c1.json")).unwrap(),
                 b"remote edit"
             );
         }
         // The non-conflicting change still went through on the push.
         assert_eq!(
-            std::fs::read(rig.remote_root.join("tables/Slice/s1.json")).unwrap(),
+            std::fs::read(rig.remote_root.join("tables/Clip/s1.json")).unwrap(),
             b"only local"
         );
 
@@ -879,17 +879,17 @@ mod tests {
         let r = rig.run(Direction::Push, false, Some(Prefer::Local), false);
         assert_eq!(r.pushed, 1);
         assert_eq!(
-            std::fs::read(rig.remote_root.join("tables/Clip/c1.json")).unwrap(),
+            std::fs::read(rig.remote_root.join("tables/Sample/c1.json")).unwrap(),
             b"local edit"
         );
         assert!(!r.needs_attention());
 
-        rig.local("tables/Clip/c1.json", b"local again");
-        rig.remote("tables/Clip/c1.json", b"remote again");
+        rig.local("tables/Sample/c1.json", b"local again");
+        rig.remote("tables/Sample/c1.json", b"remote again");
         let r = rig.run(Direction::Pull, false, Some(Prefer::Remote), false);
         assert_eq!(r.pulled, 1);
         assert_eq!(
-            std::fs::read(rig.local_root.join("tables/Clip/c1.json")).unwrap(),
+            std::fs::read(rig.local_root.join("tables/Sample/c1.json")).unwrap(),
             b"remote again"
         );
         assert_eq!(rig.push().plan.steps.len(), 0);
@@ -1043,7 +1043,7 @@ mod tests {
         .unwrap();
         assert_eq!(rep.pushed, 0);
         assert_eq!(heads.load(Ordering::SeqCst), 0, "cached hashes are reused");
-        rig.local("tables/Clip/c1.json", b"changed");
+        rig.local("tables/Sample/c1.json", b"changed");
         let rep = run(
             &mut l,
             &mut r,

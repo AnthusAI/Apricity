@@ -40,13 +40,13 @@ Semantics follow `design/storage.md` §2.2.
 
 ## Model operations
 
-`{word}` is a model name from the contract (`Crate`, `Slice`, `Verdict`, …). Each step replaces `result`.
+`{word}` is a model name from the contract (`Crate`, `Clip`, `Verdict`, …). Each step replaces `result`.
 
 | Step | Call (Amplify `client.models.<Model>` shape) |
 |---|---|
 | `When I create a {word} with:` | `create(<json>)` |
 | `When I get a {word} with key:` | `get(<json identifier>)`, e.g. `{"id": "x"}` or `{"candidateId": "c", "judge": "u"}` |
-| `When I get a {word} with:` | `get(<key>, { selectionSet })`: the JSON is `{"key": {...}, "selectionSet": ["id", "slices.*", "clip.title"]}` |
+| `When I get a {word} with:` | `get(<key>, { selectionSet })`: the JSON is `{"key": {...}, "selectionSet": ["id", "clips.*", "sample.title"]}` |
 | `When I update a {word} with:` | `update(<json>)`: identifier fields plus the fields to change; `null` removes a field |
 | `When I delete a {word} with key:` | `delete(<json identifier>)` |
 | `When I list {word} with:` | `list(<json options>)`: `filter`, `limit`, `nextToken`, `selectionSet`. One page. |
@@ -76,7 +76,7 @@ Semantics follow `design/storage.md` §2.2.
 | `Then data has {int} items` | `data` is a list of exactly N items |
 | `Then data contains exactly these items in any order:` | `data` is a list of the same length as the JSON array, and each expected item subset-matches a distinct actual item |
 | `Then data contains exactly these items in this order:` | same length, and item *i* subset-matches expected item *i* |
-| `Then data field {string} has {int} items` | the value at the dotted path is a list of exactly N items (e.g. `"slices.items"`) |
+| `Then data field {string} has {int} items` | the value at the dotted path is a list of exactly N items (e.g. `"clips.items"`) |
 | `Then data field {string} is {string}` | the value at the dotted path, compared as a string (numbers and booleans stringified; `null` becomes `"null"`) |
 | `Then there is a next token` | `nextToken` is a non-empty string |
 | `Then there is no next token` | `nextToken` is `null` |
@@ -92,7 +92,7 @@ These go through the domain layer (`apricity-data::domain` in Rust and Python, `
 | `When I keep candidate {string} with:` | `judge(candidateId, "keep", <json: stars?, tags?, name?, crates?: [names]>)` |
 | `When I skip candidate {string}` | `judge(candidateId, "skip")` |
 | `When I put off candidate {string}` | `judge(candidateId, "later")` |
-| `When I merge markup for clip {string} with:` | `markup::merge(clipId, <json array of proposed ML slices: {kind, start, end, rank?, evidence?}>)` |
+| `When I merge markup for sample {string} with:` | `markup::merge(sampleId, <json array of proposed ML clips: {kind, start, end, rank?, evidence?}>)` |
 | `When I save score {string} with text:` | `save_score(scoreId, <docstring: the .apr text, not JSON>)`; creates the Score if missing and rebuilds its ScoreRefs |
-| `Then clip {string} has these active slices:` | the clip's slices with `retired` not true, via `slicesByClip`, subset-match the JSON array in `start` order |
-| `Then clip {string} has these retired slices:` | the same for `retired: true` |
+| `Then sample {string} has these active clips:` | the sample's clips with `retired` not true, via `clipsBySample`, subset-match the JSON array in `start` order |
+| `Then sample {string} has these retired clips:` | the same for `retired: true` |

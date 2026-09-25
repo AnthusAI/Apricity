@@ -1,6 +1,6 @@
-//! Integration test: load clips from library and compile scores.
+//! Integration test: load samples from library and compile scores.
 
-use apricity_data::{Library, clip_id, make, migrated_slice_id};
+use apricity_data::{Library, sample_id, make, migrated_clip_id};
 use apricity_score::{compile, compile_with, parse_score};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -27,8 +27,8 @@ fn import_manifest(
         .and_then(|v| v.as_str())
         .ok_or_else(|| "Source missing sha256".to_string())?;
 
-    // Create clip ID
-    let clip_id_val = clip_id(sha256);
+    // Create sample ID
+    let sample_id_val = sample_id(sha256);
     let recording_id = format!("rec_{}", uuid::Uuid::new_v4().simple());
 
     // Extract the samples-relative path from audio_path
@@ -47,7 +47,7 @@ fn import_manifest(
     let mut hasher = Sha256::new();
     hasher.update(analysis_json.as_bytes());
     let analysis_sha256 = hasher.finalize();
-    let analysis_key = format!("analysis/{}/{:x}.json", clip_id_val, analysis_sha256);
+    let analysis_key = format!("analysis/{}/{:x}.json", sample_id_val, analysis_sha256);
 
     // Compute audio hash
     let audio_bytes = fs::read(audio_path)?;
@@ -58,7 +58,7 @@ fn import_manifest(
         .file_name()
         .and_then(|s| s.to_str())
         .ok_or_else(|| "Invalid audio filename".to_string())?;
-    let audio_key = format!("audio/{}/{}", clip_id_val, audio_filename);
+    let audio_key = format!("audio/{}/{}", sample_id_val, audio_filename);
 
     // Create a dummy Recording record if needed
     let recording_record = json!({
@@ -70,15 +70,15 @@ fn import_manifest(
         table.put(recording_record);
     }
 
-    // Insert Clip record into the library's engine table
-    let clip_record = json!({
-        "id": clip_id_val,
+    // Insert Sample record into the library's engine table
+    let sample_record = json!({
+        "id": sample_id_val,
         "recordingId": recording_id,
         "path": path,
         "title": path,
         "collection": "samples",
         "role": "source",
-        "parentClipId": Value::Null,
+        "parentSampleId": Value::Null,
         "duration": source.get("duration").cloned().unwrap_or(Value::Null),
         "sampleRate": source.get("sample_rate").cloned().unwrap_or(Value::Null),
         "channels": source.get("channels").cloned().unwrap_or(Value::Null),
@@ -94,48 +94,48 @@ fn import_manifest(
         },
     });
 
-    // Put the clip record into the library's engine
-    if let Some(table) = lib.engine_mut().table_mut("Clip") {
-        table.put(clip_record.clone());
+    // Put the sample record into the library's engine
+    if let Some(table) = lib.engine_mut().table_mut("Sample") {
+        table.put(sample_record.clone());
     }
 
     // Write files
     let lib_path = lib.path();
-    let analysis_dir = lib_path.join("files").join("analysis").join(&clip_id_val);
+    let analysis_dir = lib_path.join("files").join("analysis").join(&sample_id_val);
     fs::create_dir_all(&analysis_dir)?;
     fs::write(
         analysis_dir.join(format!("{:x}.json", analysis_sha256)),
         analysis_json,
     )?;
 
-    let audio_dir = lib_path.join("files").join("audio").join(&clip_id_val);
+    let audio_dir = lib_path.join("files").join("audio").join(&sample_id_val);
     fs::create_dir_all(&audio_dir)?;
     fs::copy(audio_path, audio_dir.join(audio_filename))?;
 
-    // Insert slices and markers from annotations into the library's engine
+    // Insert clips and markers from annotations into the library's engine
     if let Some(annotations) = manifest.get("annotations").and_then(|v| v.as_object()) {
-        if let Some(slices) = annotations.get("slices").and_then(|v| v.as_array()) {
-            for (index, slice) in slices.iter().enumerate() {
-                if let Some(slice_obj) = slice.as_object() {
-                    let name = slice_obj.get("name").and_then(|v| v.as_str()).unwrap_or("");
-                    let slice_id = migrated_slice_id(&clip_id_val, name);
+        if let Some(clips) = annotations.get("clips").and_then(|v| v.as_array()) {
+            for (index, clip) in clips.iter().enumerate() {
+                if let Some(clip_obj) = clip.as_object() {
+                    let name = clip_obj.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                    let clip_id = migrated_clip_id(&sample_id_val, name);
 
-                    let slice_record = json!({
-                        "id": slice_id,
-                        "clipId": clip_id_val,
+                    let clip_record = json!({
+                        "id": clip_id,
+                        "sampleId": sample_id_val,
                         "name": name,
-                        "start": slice_obj.get("start").cloned().unwrap_or(Value::Null),
-                        "end": slice_obj.get("end").cloned().unwrap_or(Value::Null),
-                        "source": slice_obj.get("source").and_then(|v| v.as_str()).unwrap_or("ml"),
-                        "kind": slice_obj.get("kind").cloned().unwrap_or(Value::Null),
-                        "tags": slice_obj.get("tags").cloned().unwrap_or(Value::Array(vec![])),
-                        "evidence": slice_obj.get("evidence").cloned().unwrap_or(Value::Null),
+                        "start": clip_obj.get("start").cloned().unwrap_or(Value::Null),
+                        "end": clip_obj.get("end").cloned().unwrap_or(Value::Null),
+                        "source": clip_obj.get("source").and_then(|v| v.as_str()).unwrap_or("ml"),
+                        "kind": clip_obj.get("kind").cloned().unwrap_or(Value::Null),
+                        "tags": clip_obj.get("tags").cloned().unwrap_or(Value::Array(vec![])),
+                        "evidence": clip_obj.get("evidence").cloned().unwrap_or(Value::Null),
                         "rank": index as i64,
                         "candidateId": Value::Null,
                     });
 
-                    if let Some(table) = lib.engine_mut().table_mut("Slice") {
-                        table.put(slice_record);
+                    if let Some(table) = lib.engine_mut().table_mut("Clip") {
+                        table.put(clip_record);
                     }
                 }
             }
@@ -146,7 +146,7 @@ fn import_manifest(
                 if let Some(marker_obj) = marker.as_object() {
                     let marker_record = json!({
                         "id": format!("mrk_{}", uuid::Uuid::new_v4().simple()),
-                        "clipId": clip_id_val,
+                        "sampleId": sample_id_val,
                         "name": marker_obj.get("name").cloned().unwrap_or(Value::Null),
                         "seconds": marker_obj.get("seconds").cloned().unwrap_or(Value::Null),
                         "source": marker_obj.get("source").cloned().unwrap_or(Value::Null),
@@ -196,7 +196,7 @@ fn test_compile_loader_vs_file_based() {
     // Compile file-based first
     let file_result = compile(&score, &samples_root);
 
-    // Create a temporary library and import clips
+    // Create a temporary library and import samples
     let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
     let mut lib = Library::create(temp_dir.path()).expect("Failed to create library");
 
@@ -239,13 +239,13 @@ fn test_compile_loader_vs_file_based() {
 
     let loader_result = compile_with(&score, &samples_root, &mut loader);
 
-    // The loader should successfully load clips and compile scores
-    // If compilation fails, it's typically due to missing saved slices or kit definitions,
-    // not due to the loader failing to load clips from the library.
+    // The loader should successfully load samples and compile scores
+    // If compilation fails, it's typically due to missing saved clips or kit definitions,
+    // not due to the loader failing to load samples from the library.
     //
-    // The loader proves it worked by getting past clip resolution.
-    // If we get an error about missing clips, the loader failed.
-    // If we get an error about missing saved slices or kit pads, that's expected
+    // The loader proves it worked by getting past sample resolution.
+    // If we get an error about missing samples, the loader failed.
+    // If we get an error about missing saved clips or kit pads, that's expected
     // if the test data doesn't define them.
 
     match (&loader_result, &file_result) {
@@ -262,14 +262,14 @@ fn test_compile_loader_vs_file_based() {
             // could just be a difference in how they handle the same score
         }
         (Err(loader_errs), _) => {
-            // Check if the errors are about missing clips (which would mean loader failed)
-            // or about missing saved slices/kit definitions (which are okay)
+            // Check if the errors are about missing samples (which would mean loader failed)
+            // or about missing saved clips/kit definitions (which are okay)
             for err in loader_errs {
-                if err.contains("Clip not found in library") {
-                    panic!("Loader failed to load clip from library: {}", err);
+                if err.contains("Sample not found in library") {
+                    panic!("Loader failed to load sample from library: {}", err);
                 }
             }
-            // Other errors are acceptable (missing saved slices, kit definitions, etc.)
+            // Other errors are acceptable (missing saved clips, kit definitions, etc.)
         }
     }
 }

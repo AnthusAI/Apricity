@@ -4,12 +4,12 @@
 // from the bucket): only the injected client and file functions differ.
 //
 // Mapping (records -> the shapes the UI has always consumed):
-//   sample path       "samples/" + Clip.path (the catalog alias scores resolve; Clip.aliases also match)
-//   SampleSummary     Clip summary fields + Recording title/credit/rights (+ the parent's title for stems)
-//   Manifest          the Clip.analysis attachment (files/analysis/<clipId>/<sha>.json) + annotations
-//                     rebuilt from Slice (slicesByClip) and Marker (markersByClip) records,
+//   sample path       "samples/" + Sample.path (the catalog alias scores resolve; Sample.aliases also match)
+//   SampleSummary     Sample summary fields + Recording title/credit/rights (+ the parent's title for stems)
+//   Manifest          the Sample.analysis attachment (files/analysis/<sampleId>/<sha>.json) + annotations
+//                     rebuilt from Clip (clipsBySample) and Marker (markersBySample) records,
 //                     as crates/apricity-data/src/loader.rs does for the CLI
-//   audio bytes       Clip.audio.key through files.ts getUrl
+//   audio bytes       Sample.audio.key through files.ts getUrl
 //   score path        `${Score.folder}/${Score.title}.${Score.format}` (= legacyPath for migrated scores)
 //   score id          scr_<folder with / as _>_<title>_<format> (migration's scheme)
 
@@ -75,7 +75,7 @@ export interface FileRef {
   size?: number | null;
   contentType?: string | null;
 }
-export interface ClipRecord {
+export interface SampleRecord {
   id: string;
   recordingId: string;
   path: string;
@@ -84,7 +84,7 @@ export interface ClipRecord {
   title: string;
   role?: string | null;
   stem?: string | null;
-  parentClipId?: string | null;
+  parentSampleId?: string | null;
   excerptStart?: number | null;
   audio: FileRef;
   analysis?: FileRef | null;
@@ -106,9 +106,9 @@ export interface RecordingRecord {
   credit?: string | null;
   rights?: string | null;
 }
-export interface SliceRecord {
+export interface ClipRecord {
   id: string;
-  clipId: string;
+  sampleId: string;
   name: string;
   start: number;
   end: number;
@@ -121,7 +121,7 @@ export interface SliceRecord {
 }
 export interface MarkerRecord {
   id: string;
-  clipId: string;
+  sampleId: string;
   name: string;
   seconds: number;
   source?: string | null;
@@ -139,15 +139,15 @@ export interface ScoreRecord {
 export interface JobRecord {
   id: string;
   kind: string;
-  clipId?: string | null;
+  sampleId?: string | null;
   state?: "queued" | "running" | "done" | "failed" | null;
   error?: string | null;
 }
 
 // ------------------------------------------------------------------ pure mappers
 
-/** The path the UI and scores use for a clip: repo-relative, under samples/. */
-export const samplePath = (clip: Pick<ClipRecord, "path">) => `samples/${clip.path}`;
+/** The path the UI and scores use for a sample: repo-relative, under samples/. */
+export const samplePath = (sample: Pick<SampleRecord, "path">) => `samples/${sample.path}`;
 
 /** "Bb major" -> "Bb", "C minor" -> "Cm" (the old summary's key label). */
 export function keyLabel(k: string | null | undefined): string {
@@ -186,37 +186,37 @@ function recordingTitle(rec: RecordingRecord | undefined): string | undefined {
 }
 
 export interface Counts {
-  slices: Map<string, number>;
+  clips: Map<string, number>;
   markers: Map<string, number>;
 }
 
-export function toSummary(clip: ClipRecord, recordings: Map<string, RecordingRecord>, clips: Map<string, ClipRecord>, counts: Counts): SampleSummary {
-  const rec = recordings.get(clip.recordingId);
-  let title = recordingTitle(rec) ?? fileTitle(clip.path);
-  if (clip.stem) {
-    const parent = clip.parentClipId ? clips.get(clip.parentClipId) : undefined;
-    const base = recordingTitle(rec) ?? (parent ? fileTitle(parent.path) : fileTitle(clip.path.split("/").slice(0, -1).join("/")));
-    title = `${base} · ${clip.stem}`;
+export function toSummary(sample: SampleRecord, recordings: Map<string, RecordingRecord>, samples: Map<string, SampleRecord>, counts: Counts): SampleSummary {
+  const rec = recordings.get(sample.recordingId);
+  let title = recordingTitle(rec) ?? fileTitle(sample.path);
+  if (sample.stem) {
+    const parent = sample.parentSampleId ? samples.get(sample.parentSampleId) : undefined;
+    const base = recordingTitle(rec) ?? (parent ? fileTitle(parent.path) : fileTitle(sample.path.split("/").slice(0, -1).join("/")));
+    title = `${base} · ${sample.stem}`;
   }
   return {
-    path: samplePath(clip),
+    path: samplePath(sample),
     title,
-    group: clip.collection.split("/")[0],
-    excerpt_start: excerptLabel(clip.excerptStart),
+    group: sample.collection.split("/")[0],
+    excerpt_start: excerptLabel(sample.excerptStart),
     credit: rec?.credit ?? undefined,
     rights: rec?.rights ?? undefined,
-    duration: clip.duration ?? 0,
-    bpm: clip.bpm ?? null,
-    stability: clip.bpmStability ?? undefined,
-    meter: clip.meter ?? undefined,
-    key: keyLabel(clip.key),
-    camelot: clip.camelot ?? undefined,
-    keys_over_time: keysOverTime(clip.keysOverTime),
-    tuning_cents: clip.tuningCents ?? undefined,
-    notes: clip.noteCount ?? 0,
-    clips: counts.slices.get(clip.id) ?? 0,
-    markers: counts.markers.get(clip.id) ?? 0,
-    stem: clip.stem ?? null,
+    duration: sample.duration ?? 0,
+    bpm: sample.bpm ?? null,
+    stability: sample.bpmStability ?? undefined,
+    meter: sample.meter ?? undefined,
+    key: keyLabel(sample.key),
+    camelot: sample.camelot ?? undefined,
+    keys_over_time: keysOverTime(sample.keysOverTime),
+    tuning_cents: sample.tuningCents ?? undefined,
+    notes: sample.noteCount ?? 0,
+    clips: counts.clips.get(sample.id) ?? 0,
+    markers: counts.markers.get(sample.id) ?? 0,
+    stem: sample.stem ?? null,
   };
 }
 
@@ -228,9 +228,9 @@ export function sortSummaries(list: SampleSummary[]): SampleSummary[] {
 
 const byTime = <T>(at: (x: T) => number, name: (x: T) => string) => (a: T, b: T) => at(a) - at(b) || (name(a) < name(b) ? -1 : name(a) > name(b) ? 1 : 0);
 
-/** Slice records -> the manifest's annotations.clips, in time order (retired ones kept and flagged). */
-export function sliceAnnotations(slices: SliceRecord[]): SavedClip[] {
-  return [...slices].sort(byTime((s) => s.start, (s) => s.name)).map((s) => {
+/** Clip records -> the manifest's annotations.clips, in time order (retired ones kept and flagged). */
+export function clipAnnotations(clips: ClipRecord[]): SavedClip[] {
+  return [...clips].sort(byTime((s) => s.start, (s) => s.name)).map((s) => {
     const out: SavedClip = { id: s.id, name: s.name, start: s.start, end: s.end, source: s.source === "ml" ? "ml" : "user" };
     const tags = (s.tags ?? []).filter((t): t is string => typeof t === "string");
     if (s.tags) out.tags = tags;
@@ -250,8 +250,8 @@ export function markerAnnotations(markers: MarkerRecord[]): MarkerAnn[] {
 }
 
 /** The old `<audio>.apricity.json`: the analysis attachment plus annotations from the records. */
-export function toManifest(analysis: Manifest, slices: SliceRecord[], markers: MarkerRecord[]): Manifest {
-  return { ...analysis, annotations: { ...(analysis.annotations ?? {}), clips: sliceAnnotations(slices), markers: markerAnnotations(markers) } };
+export function toManifest(analysis: Manifest, clips: ClipRecord[], markers: MarkerRecord[]): Manifest {
+  return { ...analysis, annotations: { ...(analysis.annotations ?? {}), clips: clipAnnotations(clips), markers: markerAnnotations(markers) } };
 }
 
 export const scorePath = (s: Pick<ScoreRecord, "folder" | "title" | "format">) => `${s.folder}/${s.title}.${s.format ?? "apr"}`;
@@ -277,22 +277,22 @@ export function validateClips(clips: SavedClip[], duration: number): string[] {
   return problems;
 }
 
-export interface SlicePlan {
-  create: Omit<SliceRecord, "id">[];
-  update: (Pick<SliceRecord, "id"> & Partial<SliceRecord>)[];
+export interface ClipPlan {
+  create: Omit<ClipRecord, "id">[];
+  update: (Pick<ClipRecord, "id"> & Partial<ClipRecord>)[];
   delete: string[];
 }
 
-/** Edited clips vs the clip's slice records: what to create, update and delete (by slice id). */
-export function planSlices(clipId: string, existing: SliceRecord[], edited: SavedClip[]): SlicePlan {
+/** Edited clips vs the sample's clip records: what to create, update and delete (by clip id). */
+export function planClips(sampleId: string, existing: ClipRecord[], edited: SavedClip[]): ClipPlan {
   const byId = new Map(existing.map((s) => [s.id, s]));
   const kept = new Set<string>();
-  const plan: SlicePlan = { create: [], update: [], delete: [] };
+  const plan: ClipPlan = { create: [], update: [], delete: [] };
   for (const c of edited) {
     const old = c.id ? byId.get(c.id) : undefined;
     const source = c.source === "ml" ? "ml" : old?.source === "curated" ? "curated" : "user";
     if (!old) {
-      plan.create.push({ clipId, name: c.name, start: c.start, end: c.end, source, ...(c.tags ? { tags: c.tags } : {}) });
+      plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source, ...(c.tags ? { tags: c.tags } : {}) });
       continue;
     }
     kept.add(old.id);
@@ -300,7 +300,7 @@ export function planSlices(clipId: string, existing: SliceRecord[], edited: Save
       plan.update.push({ id: old.id, name: c.name, start: c.start, end: c.end, source });
     }
   }
-  // Retired slices never reach the editor; they stay for the scores that still use them.
+  // Retired clips never reach the editor; they stay for the scores that still use them.
   for (const s of existing) if (!kept.has(s.id) && !s.retired) plan.delete.push(s.id);
   return plan;
 }
@@ -317,8 +317,8 @@ export interface CatalogDeps {
 }
 
 interface Index {
-  clips: ClipRecord[];
-  byPath: Map<string, ClipRecord>;
+  samples: SampleRecord[];
+  byPath: Map<string, SampleRecord>;
   summaries: SampleSummary[];
   jobs: { path: string; state: string; error?: string }[];
 }
@@ -341,34 +341,34 @@ export class Catalog {
   private load(): Promise<Index> {
     this.index ??= (async () => {
       const m = this.models;
-      const [clips, recordings, slices, markers, jobs] = await Promise.all([
-        listAll<ClipRecord>((nextToken) => m.Clip.list({ limit: 1000, nextToken })),
+      const [samples, recordings, clips, markers, jobs] = await Promise.all([
+        listAll<SampleRecord>((nextToken) => m.Sample.list({ limit: 1000, nextToken })),
         listAll<RecordingRecord>((nextToken) => m.Recording.list({ limit: 1000, nextToken })),
-        listAll<SliceRecord>((nextToken) => m.Slice.list({ limit: 1000, nextToken, selectionSet: ["id", "clipId", "retired"] })),
-        listAll<MarkerRecord>((nextToken) => m.Marker.list({ limit: 1000, nextToken, selectionSet: ["id", "clipId"] })),
+        listAll<ClipRecord>((nextToken) => m.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId", "retired"] })),
+        listAll<MarkerRecord>((nextToken) => m.Marker.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId"] })),
         listAll<JobRecord>((nextToken) => m.Job.list({ limit: 1000, nextToken })),
       ]);
-      const count = (xs: { clipId: string; retired?: boolean | null }[]) => {
+      const count = (xs: { sampleId: string; retired?: boolean | null }[]) => {
         const n = new Map<string, number>();
-        for (const x of xs) if (!x.retired) n.set(x.clipId, (n.get(x.clipId) ?? 0) + 1);
+        for (const x of xs) if (!x.retired) n.set(x.sampleId, (n.get(x.sampleId) ?? 0) + 1);
         return n;
       };
-      const counts = { slices: count(slices), markers: count(markers) };
+      const counts = { clips: count(clips), markers: count(markers) };
       const recs = new Map(recordings.map((r) => [r.id, r]));
-      const byId = new Map(clips.map((c) => [c.id, c]));
-      const byPath = new Map<string, ClipRecord>();
-      for (const c of clips) for (const p of [samplePath(c), c.path, ...(c.aliases ?? [])]) byPath.set(p, c);
-      const analysed = clips.filter((c) => c.analysis?.key);
+      const byId = new Map(samples.map((c) => [c.id, c]));
+      const byPath = new Map<string, SampleRecord>();
+      for (const c of samples) for (const p of [samplePath(c), c.path, ...(c.aliases ?? [])]) byPath.set(p, c);
+      const analysed = samples.filter((c) => c.analysis?.key);
       const state = (s: JobRecord["state"]) => (s === "running" ? "analyzing" : s ?? "queued");
       return {
-        clips,
+        samples,
         byPath,
         summaries: sortSummaries(analysed.map((c) => toSummary(c, recs, byId, counts))),
         jobs: jobs
           .filter((j) => j.kind === "analyze")
           .map((j) => {
-            const c = j.clipId ? byId.get(j.clipId) : undefined;
-            return { path: c ? samplePath(c) : j.clipId ?? j.id, state: state(j.state), ...(j.error ? { error: j.error } : {}) };
+            const c = j.sampleId ? byId.get(j.sampleId) : undefined;
+            return { path: c ? samplePath(c) : j.sampleId ?? j.id, state: state(j.state), ...(j.error ? { error: j.error } : {}) };
           }),
       };
     })();
@@ -378,30 +378,30 @@ export class Catalog {
 
   async samples() {
     const i = await this.load();
-    return { samples: i.summaries, unanalyzed: i.clips.filter((c) => !c.analysis?.key).map(samplePath), jobs: i.jobs };
+    return { samples: i.summaries, unanalyzed: i.samples.filter((c) => !c.analysis?.key).map(samplePath), jobs: i.jobs };
   }
 
-  /** The clip record a sample path (or catalog alias) names. */
-  async clip(path: string): Promise<ClipRecord | null> {
+  /** The sample record a sample path (or catalog alias) names. */
+  async sample(path: string): Promise<SampleRecord | null> {
     const i = await this.load();
     return i.byPath.get(path) ?? i.byPath.get(path.replace(/^samples\//, "")) ?? null;
   }
 
   async manifest(path: string): Promise<Manifest | null> {
-    const c = await this.clip(path);
+    const c = await this.sample(path);
     if (!c?.analysis?.key) return null;
     const m = this.models;
-    const [text, slices, markers] = await Promise.all([
+    const [text, clips, markers] = await Promise.all([
       this.deps.readText(c.analysis.key),
-      listAll<SliceRecord>((nextToken) => m.Slice.slicesByClip({ clipId: c.id }, { limit: 1000, nextToken })),
-      listAll<MarkerRecord>((nextToken) => m.Marker.markersByClip({ clipId: c.id }, { limit: 1000, nextToken })),
+      listAll<ClipRecord>((nextToken) => m.Clip.clipsBySample({ sampleId: c.id }, { limit: 1000, nextToken })),
+      listAll<MarkerRecord>((nextToken) => m.Marker.markersBySample({ sampleId: c.id }, { limit: 1000, nextToken })),
     ]);
-    return toManifest(JSON.parse(text) as Manifest, slices, markers);
+    return toManifest(JSON.parse(text) as Manifest, clips, markers);
   }
 
   /** A URL for a sample's audio (a signed S3 URL in the cloud; Range requests work on both). */
   async audioUrl(path: string): Promise<string> {
-    const c = await this.clip(path);
+    const c = await this.sample(path);
     if (!c) throw new Error(`${path}: not in the library`);
     return this.deps.url(c.audio.key);
   }
@@ -449,19 +449,19 @@ export class Catalog {
     return { ok: true };
   }
 
-  /** Save the clips edited on a sample as Slice records (created, updated or deleted one by one). */
+  /** Save the clips edited on a sample as Clip records (created, updated or deleted one by one). */
   async saveClips(path: string, clips: SavedClip[]) {
-    const c = await this.clip(path);
+    const c = await this.sample(path);
     if (!c) throw new Error(`${path}: not in the library`);
     const problems = validateClips(clips, c.duration ?? Infinity);
     if (problems.length) throw Object.assign(new Error(problems.join("\n")), { errors: problems });
     const m = this.models;
-    const existing = await listAll<SliceRecord>((nextToken) => m.Slice.slicesByClip({ clipId: c.id }, { limit: 1000, nextToken }));
-    const plan = planSlices(c.id, existing, clips);
+    const existing = await listAll<ClipRecord>((nextToken) => m.Clip.clipsBySample({ sampleId: c.id }, { limit: 1000, nextToken }));
+    const plan = planClips(c.id, existing, clips);
     const check = (r: { errors?: GqlError[] }) => r.errors?.length && fail(r.errors, true);
-    for (const id of plan.delete) check(await m.Slice.delete({ id }));
-    for (const u of plan.update) check(await m.Slice.update(u));
-    for (const s of plan.create) check(await m.Slice.create({ id: `slc_${crypto.randomUUID()}`, ...s }));
+    for (const id of plan.delete) check(await m.Clip.delete({ id }));
+    for (const u of plan.update) check(await m.Clip.update(u));
+    for (const s of plan.create) check(await m.Clip.create({ id: `clp_${crypto.randomUUID()}`, ...s }));
     this.index = null;
     return { ok: true };
   }

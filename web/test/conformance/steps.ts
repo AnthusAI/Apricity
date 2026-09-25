@@ -582,17 +582,17 @@ When("I put off candidate {string}", async function (this: ConformanceWorld, can
 });
 
 When(
-  "I merge markup for clip {string} with:",
-  async function (this: ConformanceWorld, clipId: string, jsonStr: string) {
-    const slices = JSON.parse(jsonStr);
-    const substituted = this.substituteInJson(slices) as Array<{
+  "I merge markup for sample {string} with:",
+  async function (this: ConformanceWorld, sampleId: string, jsonStr: string) {
+    const clips = JSON.parse(jsonStr);
+    const substituted = this.substituteInJson(clips) as Array<{
       kind: string;
       start: number;
       end: number;
       rank?: number;
       evidence?: unknown;
     }>;
-    const domainResult = await this.domain.mergeMarkup(clipId, substituted);
+    const domainResult = await this.domain.mergeMarkup(sampleId, substituted);
     this.result = {
       data: domainResult.data,
       errors: (domainResult.errors as Array<{ message: string; errorType?: string }>) || null,
@@ -611,70 +611,70 @@ When(
   }
 );
 
-Then("clip {string} has these active slices:", async function (this: ConformanceWorld, clipId: string, expectedJson: string) {
+Then("sample {string} has these active clips:", async function (this: ConformanceWorld, sampleId: string, expectedJson: string) {
   const expected = JSON.parse(expectedJson) as unknown[];
   const substituted = this.substituteInJson(expected) as unknown[];
 
   const client = await this.getClient();
 
-  // Collect all active slices for this clip
-  const allSlices: any[] = [];
+  // Collect all active clips for this sample
+  const allClips: any[] = [];
   let nextToken: string | null = null;
 
   do {
-    const result: any = await client.models.Slice.slicesByClip(
-      { clipId },
+    const result: any = await client.models.Clip.clipsBySample(
+      { sampleId },
       { nextToken: nextToken ?? undefined }
     );
 
     if (result.errors && result.errors.length > 0) {
-      throw new Error(`Failed to fetch slices: ${result.errors[0].message}`);
+      throw new Error(`Failed to fetch clips: ${result.errors[0].message}`);
     }
 
-    allSlices.push(...(result.data || []));
+    allClips.push(...(result.data || []));
     nextToken = result.nextToken ?? null;
   } while (nextToken);
 
-  // Filter to active slices only
-  const activeSlices = allSlices.filter((s: any) => !s.retired);
+  // Filter to active clips only
+  const activeClips = allClips.filter((s: any) => !s.retired);
 
-  if (!arrayMatchesExact(substituted, activeSlices)) {
+  if (!arrayMatchesExact(substituted, activeClips)) {
     throw new Error(
-      `Active slices do not match in order.\nExpected: ${JSON.stringify(substituted)}\nGot: ${JSON.stringify(activeSlices)}`
+      `Active clips do not match in order.\nExpected: ${JSON.stringify(substituted)}\nGot: ${JSON.stringify(activeClips)}`
     );
   }
 });
 
-Then("clip {string} has these retired slices:", async function (this: ConformanceWorld, clipId: string, expectedJson: string) {
+Then("sample {string} has these retired clips:", async function (this: ConformanceWorld, sampleId: string, expectedJson: string) {
   const expected = JSON.parse(expectedJson) as unknown[];
   const substituted = this.substituteInJson(expected) as unknown[];
 
   const client = await this.getClient();
 
-  // Collect all retired slices for this clip
-  const allSlices: any[] = [];
+  // Collect all retired clips for this sample
+  const allClips: any[] = [];
   let nextToken: string | null = null;
 
   do {
-    const result: any = await client.models.Slice.slicesByClip(
-      { clipId },
+    const result: any = await client.models.Clip.clipsBySample(
+      { sampleId },
       { nextToken: nextToken ?? undefined }
     );
 
     if (result.errors && result.errors.length > 0) {
-      throw new Error(`Failed to fetch slices: ${result.errors[0].message}`);
+      throw new Error(`Failed to fetch clips: ${result.errors[0].message}`);
     }
 
-    allSlices.push(...(result.data || []));
+    allClips.push(...(result.data || []));
     nextToken = result.nextToken ?? null;
   } while (nextToken);
 
-  // Filter to retired slices only
-  const retiredSlices = allSlices.filter((s: any) => s.retired);
+  // Filter to retired clips only
+  const retiredClips = allClips.filter((s: any) => s.retired);
 
-  if (!arrayMatchesExact(substituted, retiredSlices)) {
+  if (!arrayMatchesExact(substituted, retiredClips)) {
     throw new Error(
-      `Retired slices do not match in order.\nExpected: ${JSON.stringify(substituted)}\nGot: ${JSON.stringify(retiredSlices)}`
+      `Retired clips do not match in order.\nExpected: ${JSON.stringify(substituted)}\nGot: ${JSON.stringify(retiredClips)}`
     );
   }
 });

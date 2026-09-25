@@ -84,11 +84,11 @@
           "attributes": [],
           "isArrayNullable": true
         },
-        "clips": {
-          "name": "clips",
+        "samples": {
+          "name": "samples",
           "isArray": true,
           "type": {
-            "model": "Clip"
+            "model": "Sample"
           },
           "isRequired": false,
           "attributes": [],
@@ -182,8 +182,8 @@
         "sortKeyFieldNames": []
       }
     },
-    "Clip": {
-      "name": "Clip",
+    "Sample": {
+      "name": "Sample",
       "fields": {
         "id": {
           "name": "id",
@@ -247,7 +247,7 @@
           "name": "role",
           "isArray": false,
           "type": {
-            "enum": "ClipRole"
+            "enum": "SampleRole"
           },
           "isRequired": false,
           "attributes": []
@@ -266,8 +266,8 @@
           "isRequired": false,
           "attributes": []
         },
-        "parentClipId": {
-          "name": "parentClipId",
+        "parentSampleId": {
+          "name": "parentSampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": false,
@@ -316,7 +316,7 @@
           "name": "status",
           "isArray": false,
           "type": {
-            "enum": "ClipStatus"
+            "enum": "SampleStatus"
           },
           "isRequired": false,
           "attributes": []
@@ -414,11 +414,11 @@
           "isRequired": false,
           "attributes": []
         },
-        "slices": {
-          "name": "slices",
+        "clips": {
+          "name": "clips",
           "isArray": true,
           "type": {
-            "model": "Slice"
+            "model": "Clip"
           },
           "isRequired": false,
           "attributes": [],
@@ -426,7 +426,7 @@
           "association": {
             "connectionType": "HAS_MANY",
             "associatedWith": [
-              "clipId"
+              "sampleId"
             ]
           }
         },
@@ -442,7 +442,7 @@
           "association": {
             "connectionType": "HAS_MANY",
             "associatedWith": [
-              "clipId"
+              "sampleId"
             ]
           }
         },
@@ -458,7 +458,7 @@
           "association": {
             "connectionType": "HAS_MANY",
             "associatedWith": [
-              "clipId"
+              "sampleId"
             ]
           }
         },
@@ -480,7 +480,7 @@
         }
       },
       "syncable": true,
-      "pluralName": "Clips",
+      "pluralName": "Samples",
       "attributes": [
         {
           "type": "model",
@@ -497,8 +497,8 @@
         {
           "type": "key",
           "properties": {
-            "name": "clipsByRecordingIdAndPath",
-            "queryField": "clipsByRecording",
+            "name": "samplesByRecordingIdAndPath",
+            "queryField": "samplesByRecording",
             "fields": [
               "recordingId",
               "path"
@@ -508,8 +508,8 @@
         {
           "type": "key",
           "properties": {
-            "name": "clipsByPath",
-            "queryField": "clipsByPath",
+            "name": "samplesByPath",
+            "queryField": "samplesByPath",
             "fields": [
               "path"
             ]
@@ -518,8 +518,8 @@
         {
           "type": "key",
           "properties": {
-            "name": "clipsByCollectionAndPath",
-            "queryField": "clipsByCollection",
+            "name": "samplesByCollectionAndPath",
+            "queryField": "samplesByCollection",
             "fields": [
               "collection",
               "path"
@@ -529,10 +529,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "clipsByParentClipId",
-            "queryField": "clipsByParent",
+            "name": "samplesByParentSampleId",
+            "queryField": "samplesByParent",
             "fields": [
-              "parentClipId"
+              "parentSampleId"
             ]
           }
         },
@@ -575,8 +575,8 @@
         "sortKeyFieldNames": []
       }
     },
-    "Slice": {
-      "name": "Slice",
+    "Clip": {
+      "name": "Clip",
       "fields": {
         "id": {
           "name": "id",
@@ -585,25 +585,25 @@
           "isRequired": true,
           "attributes": []
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": true,
           "attributes": []
         },
-        "clip": {
-          "name": "clip",
+        "sample": {
+          "name": "sample",
           "isArray": false,
           "type": {
-            "model": "Clip"
+            "model": "Sample"
           },
           "isRequired": false,
           "attributes": [],
           "association": {
             "connectionType": "BELONGS_TO",
             "targetNames": [
-              "clipId"
+              "sampleId"
             ]
           }
         },
@@ -632,7 +632,7 @@
           "name": "source",
           "isArray": false,
           "type": {
-            "enum": "SliceSource"
+            "enum": "ClipSource"
           },
           "isRequired": true,
           "attributes": []
@@ -707,7 +707,7 @@
         }
       },
       "syncable": true,
-      "pluralName": "Slices",
+      "pluralName": "Clips",
       "attributes": [
         {
           "type": "model",
@@ -724,10 +724,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "slicesByClipIdAndStart",
-            "queryField": "slicesByClip",
+            "name": "clipsBySampleIdAndStart",
+            "queryField": "clipsBySample",
             "fields": [
-              "clipId",
+              "sampleId",
               "start"
             ]
           }
@@ -735,10 +735,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "slicesByClipIdAndName",
-            "queryField": "slicesByClipAndName",
+            "name": "clipsBySampleIdAndName",
+            "queryField": "clipsBySampleAndName",
             "fields": [
-              "clipId",
+              "sampleId",
               "name"
             ]
           }
@@ -746,8 +746,8 @@
         {
           "type": "key",
           "properties": {
-            "name": "slicesByCandidateId",
-            "queryField": "slicesByCandidate",
+            "name": "clipsByCandidateId",
+            "queryField": "clipsByCandidate",
             "fields": [
               "candidateId"
             ]
@@ -814,25 +814,25 @@
           "isRequired": true,
           "attributes": []
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": true,
           "attributes": []
         },
-        "clip": {
-          "name": "clip",
+        "sample": {
+          "name": "sample",
           "isArray": false,
           "type": {
-            "model": "Clip"
+            "model": "Sample"
           },
           "isRequired": false,
           "attributes": [],
           "association": {
             "connectionType": "BELONGS_TO",
             "targetNames": [
-              "clipId"
+              "sampleId"
             ]
           }
         },
@@ -854,7 +854,7 @@
           "name": "source",
           "isArray": false,
           "type": {
-            "enum": "SliceSource"
+            "enum": "ClipSource"
           },
           "isRequired": false,
           "attributes": []
@@ -908,10 +908,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "markersByClipIdAndSeconds",
-            "queryField": "markersByClip",
+            "name": "markersBySampleIdAndSeconds",
+            "queryField": "markersBySample",
             "fields": [
-              "clipId",
+              "sampleId",
               "seconds"
             ]
           }
@@ -977,25 +977,25 @@
           "isRequired": true,
           "attributes": []
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": true,
           "attributes": []
         },
-        "clip": {
-          "name": "clip",
+        "sample": {
+          "name": "sample",
           "isArray": false,
           "type": {
-            "model": "Clip"
+            "model": "Sample"
           },
           "isRequired": false,
           "attributes": [],
           "association": {
             "connectionType": "BELONGS_TO",
             "targetNames": [
-              "clipId"
+              "sampleId"
             ]
           }
         },
@@ -1120,10 +1120,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "candidatesByClipIdAndStart",
-            "queryField": "candidatesByClip",
+            "name": "candidatesBySampleIdAndStart",
+            "queryField": "candidatesBySample",
             "fields": [
-              "clipId",
+              "sampleId",
               "start"
             ]
           }
@@ -1522,15 +1522,15 @@
           "isRequired": false,
           "attributes": []
         },
-        "sliceId": {
-          "name": "sliceId",
+        "clipId": {
+          "name": "clipId",
           "isArray": false,
           "type": "ID",
           "isRequired": false,
           "attributes": []
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": false,
@@ -1837,29 +1837,29 @@
           "isRequired": true,
           "attributes": []
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": false,
           "attributes": []
         },
-        "clipPath": {
-          "name": "clipPath",
+        "samplePath": {
+          "name": "samplePath",
           "isArray": false,
           "type": "String",
           "isRequired": false,
           "attributes": []
         },
-        "sliceName": {
-          "name": "sliceName",
+        "clipName": {
+          "name": "clipName",
           "isArray": false,
           "type": "String",
           "isRequired": false,
           "attributes": []
         },
-        "sliceId": {
-          "name": "sliceId",
+        "clipId": {
+          "name": "clipId",
           "isArray": false,
           "type": "ID",
           "isRequired": false,
@@ -1931,10 +1931,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "scoreRefsByClipIdAndScoreId",
-            "queryField": "refsByClip",
+            "name": "scoreRefsBySampleIdAndScoreId",
+            "queryField": "refsBySample",
             "fields": [
-              "clipId",
+              "sampleId",
               "scoreId"
             ]
           }
@@ -1942,10 +1942,10 @@
         {
           "type": "key",
           "properties": {
-            "name": "scoreRefsBySliceId",
-            "queryField": "refsBySlice",
+            "name": "scoreRefsByClipId",
+            "queryField": "refsByClip",
             "fields": [
-              "sliceId"
+              "clipId"
             ]
           }
         },
@@ -2003,8 +2003,8 @@
           "isRequired": true,
           "attributes": []
         },
-        "clipId": {
-          "name": "clipId",
+        "sampleId": {
+          "name": "sampleId",
           "isArray": false,
           "type": "ID",
           "isRequired": false,
@@ -2109,8 +2109,8 @@
     }
   },
   "enums": {
-    "SliceSource": {
-      "name": "SliceSource",
+    "ClipSource": {
+      "name": "ClipSource",
       "values": [
         "user",
         "ml",
@@ -2137,8 +2137,8 @@
         "later"
       ]
     },
-    "ClipRole": {
-      "name": "ClipRole",
+    "SampleRole": {
+      "name": "SampleRole",
       "values": [
         "source",
         "stem",
@@ -2146,8 +2146,8 @@
         "upload"
       ]
     },
-    "ClipStatus": {
-      "name": "ClipStatus",
+    "SampleStatus": {
+      "name": "SampleStatus",
       "values": [
         "pending",
         "analyzing",

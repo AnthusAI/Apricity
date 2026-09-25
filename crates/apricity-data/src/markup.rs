@@ -1,19 +1,19 @@
-/// Markup merge: match proposed ML slices to existing ones, handle names and retirement.
+/// Markup merge: match proposed ML clips to existing ones, handle names and retirement.
 /// Implements design/storage.md §1.3 exactly.
 use std::collections::{HashMap, HashSet};
 
-/// A proposed slice from markup analysis.
+/// A proposed clip from markup analysis.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct ProposedSlice {
+pub struct ProposedClip {
     pub kind: String,
     pub start: f64,
     pub end: f64,
     pub rank: Option<i32>,
 }
 
-/// An existing slice to potentially match.
+/// An existing clip to potentially match.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct ExistingSlice {
+pub struct ExistingClip {
     pub id: String,
     pub name: String,
     pub kind: String,
@@ -43,9 +43,9 @@ pub fn iou(a: (f64, f64), b: (f64, f64)) -> f64 {
     }
 }
 
-/// Action to take with an existing slice.
+/// Action to take with an existing clip.
 #[derive(Debug, Clone, PartialEq)]
-pub enum SliceAction {
+pub enum ClipAction {
     Keep {
         new_span: (f64, f64),
         rank: Option<i32>,
@@ -59,32 +59,32 @@ pub enum SliceAction {
 pub struct MergePlan {
     pub keep: Vec<(String, (f64, f64), Option<i32>)>, // (existing_id, new_span, rank)
     pub create: Vec<(String, f64, f64, Option<i32>)>, // (name, start, end, rank)
-    pub retire: Vec<String>,                          // existing slice ids
-    pub delete: Vec<String>,                          // existing slice ids
+    pub retire: Vec<String>,                          // existing clip ids
+    pub delete: Vec<String>,                          // existing clip ids
     pub name_counters: HashMap<String, u32>,          // updated counters
 }
 
-/// Plan a merge of proposed slices with existing active slices.
-/// Matches same-kind ML slices with ≥0.8 IoU, keeping ids/names.
-/// Unmatched slices get new names. Old slices not proposed become retired (if used by a score) or deleted.
+/// Plan a merge of proposed clips with existing active clips.
+/// Matches same-kind ML clips with ≥0.8 IoU, keeping ids/names.
+/// Unmatched clips get new names. Old clips not proposed become retired (if used by a score) or deleted.
 pub fn plan_merge(
-    existing: &[ExistingSlice],
-    proposed: &[ProposedSlice],
+    existing: &[ExistingClip],
+    proposed: &[ProposedClip],
     mut name_counters: HashMap<String, u32>,
     used_by_score: &HashSet<String>,
 ) -> MergePlan {
-    // Only match active ML slices
+    // Only match active ML clips
     let active_ml: Vec<_> = existing
         .iter()
         .filter(|s| s.source == "ml" && !s.retired)
         .collect();
 
-    // Track which existing and proposed slices are matched
+    // Track which existing and proposed clips are matched
     let mut matched_existing = HashSet::new();
     let mut matched_proposed = HashSet::new();
     let mut keep = Vec::new();
 
-    // Greedy matching: for each proposed slice, find the best active ML slice to match
+    // Greedy matching: for each proposed clip, find the best active ML clip to match
     for (pidx, proposed) in proposed.iter().enumerate() {
         let mut best_match: Option<(usize, f64)> = None;
 
@@ -119,15 +119,15 @@ pub fn plan_merge(
         }
     }
 
-    // Sort keep by existing slice id to be deterministic
+    // Sort keep by existing clip id to be deterministic
     keep.sort_by(|a, b| a.0.cmp(&b.0));
 
-    // Create new slices for unmatched proposals
+    // Create new clips for unmatched proposals
     let mut create = Vec::new();
 
     for (pidx, proposed) in proposed.iter().enumerate() {
         if matched_proposed.contains(&pidx) {
-            continue; // This proposed slice was matched
+            continue; // This proposed clip was matched
         }
 
         // This is a new unmatched proposal; give it a new name
@@ -139,13 +139,13 @@ pub fn plan_merge(
         create.push((name, proposed.start, proposed.end, proposed.rank));
     }
 
-    // Handle old slices not proposed: retire if used by score, else delete
+    // Handle old clips not proposed: retire if used by score, else delete
     let mut retire = Vec::new();
     let mut delete = Vec::new();
 
     for (eidx, existing) in active_ml.iter().enumerate() {
         if !matched_existing.contains(&eidx) {
-            // This old ML slice is not in the new proposal
+            // This old ML clip is not in the new proposal
             if used_by_score.contains(&existing.id) {
                 retire.push(existing.id.clone());
             } else {
@@ -206,8 +206,8 @@ mod tests {
 
     #[test]
     fn test_merge_overlapping_keeps_id() {
-        let existing = vec![ExistingSlice {
-            id: "slc-a".to_string(),
+        let existing = vec![ExistingClip {
+            id: "clp-a".to_string(),
             name: "loop-1".to_string(),
             kind: "loop".to_string(),
             start: 10.0,
@@ -216,7 +216,7 @@ mod tests {
             retired: false,
         }];
 
-        let proposed = vec![ProposedSlice {
+        let proposed = vec![ProposedClip {
             kind: "loop".to_string(),
             start: 10.1,
             end: 14.0,
@@ -229,7 +229,7 @@ mod tests {
         let plan = plan_merge(&existing, &proposed, name_counters, &HashSet::new());
 
         assert_eq!(plan.keep.len(), 1);
-        assert_eq!(plan.keep[0].0, "slc-a");
+        assert_eq!(plan.keep[0].0, "clp-a");
         assert_eq!(plan.create.len(), 0);
         assert_eq!(plan.retire.len(), 0);
         assert_eq!(plan.delete.len(), 0);
@@ -237,8 +237,8 @@ mod tests {
 
     #[test]
     fn test_merge_new_proposal_creates_name() {
-        let existing = vec![ExistingSlice {
-            id: "slc-a".to_string(),
+        let existing = vec![ExistingClip {
+            id: "clp-a".to_string(),
             name: "loop-1".to_string(),
             kind: "loop".to_string(),
             start: 10.0,
@@ -248,13 +248,13 @@ mod tests {
         }];
 
         let proposed = vec![
-            ProposedSlice {
+            ProposedClip {
                 kind: "loop".to_string(),
                 start: 10.0,
                 end: 14.0,
                 rank: Some(2),
             },
-            ProposedSlice {
+            ProposedClip {
                 kind: "loop".to_string(),
                 start: 30.0,
                 end: 34.0,
@@ -274,8 +274,8 @@ mod tests {
 
     #[test]
     fn test_merge_no_proposal_deletes_unused() {
-        let existing = vec![ExistingSlice {
-            id: "slc-a".to_string(),
+        let existing = vec![ExistingClip {
+            id: "clp-a".to_string(),
             name: "loop-1".to_string(),
             kind: "loop".to_string(),
             start: 10.0,
@@ -292,13 +292,13 @@ mod tests {
 
         assert_eq!(plan.keep.len(), 0);
         assert_eq!(plan.delete.len(), 1);
-        assert_eq!(plan.delete[0], "slc-a");
+        assert_eq!(plan.delete[0], "clp-a");
     }
 
     #[test]
     fn test_merge_no_proposal_retires_used() {
-        let existing = vec![ExistingSlice {
-            id: "slc-a".to_string(),
+        let existing = vec![ExistingClip {
+            id: "clp-a".to_string(),
             name: "loop-1".to_string(),
             kind: "loop".to_string(),
             start: 10.0,
@@ -311,20 +311,20 @@ mod tests {
         let mut name_counters = HashMap::new();
         name_counters.insert("loop".to_string(), 1);
         let mut used_by_score = HashSet::new();
-        used_by_score.insert("slc-a".to_string());
+        used_by_score.insert("clp-a".to_string());
 
         let plan = plan_merge(&existing, &proposed, name_counters, &used_by_score);
 
         assert_eq!(plan.keep.len(), 0);
         assert_eq!(plan.retire.len(), 1);
-        assert_eq!(plan.retire[0], "slc-a");
+        assert_eq!(plan.retire[0], "clp-a");
     }
 
     #[test]
-    fn test_merge_ignores_user_slices() {
+    fn test_merge_ignores_user_clips() {
         let existing = vec![
-            ExistingSlice {
-                id: "slc-a".to_string(),
+            ExistingClip {
+                id: "clp-a".to_string(),
                 name: "loop-1".to_string(),
                 kind: "loop".to_string(),
                 start: 10.0,
@@ -332,8 +332,8 @@ mod tests {
                 source: "ml".to_string(),
                 retired: false,
             },
-            ExistingSlice {
-                id: "slc-u".to_string(),
+            ExistingClip {
+                id: "clp-u".to_string(),
                 name: "mine".to_string(),
                 kind: "loop".to_string(),
                 start: 1.0,
@@ -349,8 +349,8 @@ mod tests {
 
         let plan = plan_merge(&existing, &proposed, name_counters, &HashSet::new());
 
-        // Only the ML slice should be deleted; the user slice should be ignored
+        // Only the ML clip should be deleted; the user clip should be ignored
         assert_eq!(plan.delete.len(), 1);
-        assert_eq!(plan.delete[0], "slc-a");
+        assert_eq!(plan.delete[0], "clp-a");
     }
 }

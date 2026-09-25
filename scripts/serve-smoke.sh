@@ -51,32 +51,32 @@ import json, sys
 o = json.load(sys.stdin); d = o["data"]
 assert d["url"].endswith("/graphql") and d["aws_region"] == "local"
 assert d["default_authorization_type"] == "API_KEY" and d["api_key"]
-assert "Clip" in d["model_introspection"]["models"]
+assert "Sample" in d["model_introspection"]["models"]
 assert o["custom"]["apricity"]["mode"] == "local" and o["custom"]["apricity"]["identity"]["sub"]
 assert "auth" not in o and "storage" not in o
 '
 check "amplify_outputs.json fields" $?
 
-QUERY='{"query":"{ listClips(limit: 1000) { items { id title audio { key size } } } }"}'
+QUERY='{"query":"{ listSamples(limit: 1000) { items { id title audio { key size } } } }"}'
 CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -d "$QUERY" "$BASE/graphql")"
 [ "$CODE" = "401" ]; check "graphql without API key is 401 (got $CODE)" $?
-curl -s -X POST -H 'content-type: application/json' -H "x-api-key: $KEY" -d "$QUERY" "$BASE/graphql" >"$WORK/clips.json"
+curl -s -X POST -H 'content-type: application/json' -H "x-api-key: $KEY" -d "$QUERY" "$BASE/graphql" >"$WORK/samples.json"
 python3 -c '
 import json, sys
-items = json.load(open(sys.argv[1]))["data"]["listClips"]["items"]
+items = json.load(open(sys.argv[1]))["data"]["listSamples"]["items"]
 assert len(items) > 0 and all(i["id"] and i["audio"]["key"] for i in items)
-print("        listClips returned", len(items), "clips")
-' "$WORK/clips.json"
-check "listClips returns real data" $?
+print("        listSamples returned", len(items), "samples")
+' "$WORK/samples.json"
+check "listSamples returns real data" $?
 
 # Pick the largest audio file and compare a mid-file byte range with the original.
 KEYPATH="$(python3 -c '
 import json, os, sys
 lib = sys.argv[2]
-items = json.load(open(sys.argv[1]))["data"]["listClips"]["items"]
+items = json.load(open(sys.argv[1]))["data"]["listSamples"]["items"]
 items = [i for i in items if os.path.exists(os.path.join(lib, "files", i["audio"]["key"]))]
 print(max(items, key=lambda i: os.path.getsize(os.path.join(lib, "files", i["audio"]["key"])))["audio"]["key"])
-' "$WORK/clips.json" "$LIB")"
+' "$WORK/samples.json" "$LIB")"
 ORIG="$LIB/files/$KEYPATH"
 SIZE="$(wc -c <"$ORIG" | tr -d ' ')"
 START=$((SIZE / 3)); END=$((START + 65535)); [ "$END" -ge "$SIZE" ] && END=$((SIZE - 1))

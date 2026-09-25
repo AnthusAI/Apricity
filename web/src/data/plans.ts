@@ -9,9 +9,9 @@ export interface CatalogRef {
   alias: string;
   source: string;
   catalogPath?: string;
+  sampleId?: string;
+  clipName?: string;
   clipId?: string;
-  sliceName?: string;
-  sliceId?: string;
   kitPad?: string;
 }
 
@@ -22,23 +22,23 @@ export interface ScoreRef {
   id: string;
   scoreId: string;
   clipAlias: string;
-  clipPath?: string;
+  samplePath?: string;
+  sampleId?: string;
+  clipName?: string;
   clipId?: string;
-  sliceName?: string;
-  sliceId?: string;
   start?: number;
   end?: number;
   owner?: string;
 }
 
 /**
- * Lookup maps for resolved clips and slices.
+ * Lookup maps for resolved samples and clips.
  */
 export interface Lookups {
-  clipsByPath: Map<string, { id: string; path: string }>;
-  clipsById: Map<string, { id: string; path: string }>;
-  slicesByClipAndName: Map<string, Map<string, { id: string; start: number; end: number }>>;
-  slicesById: Map<string, { id: string; start: number; end: number }>;
+  samplesByPath: Map<string, { id: string; path: string }>;
+  samplesById: Map<string, { id: string; path: string }>;
+  clipsBySampleAndName: Map<string, Map<string, { id: string; start: number; end: number }>>;
+  clipsById: Map<string, { id: string; start: number; end: number }>;
 }
 
 /**
@@ -55,7 +55,7 @@ export interface ScoreRefPlan {
  *
  * @param scoreId - The score's id
  * @param refs - Catalog references from rw_references
- * @param lookups - Resolved clip and slice records
+ * @param lookups - Resolved sample and clip records
  * @param existing - Existing ScoreRef records for this score
  * @returns A plan with create, update, and delete operations
  */
@@ -69,51 +69,51 @@ export function planScoreRefs(
   const newRefs = refs.map((ref) => {
     const id = `sref_${scoreId}_${ref.idSuffix}`;
 
-    // Resolve clip: try id first, then path
+    // Resolve sample: try id first, then path
+    let sampleId: string | undefined;
+    let samplePath: string | undefined;
+
+    if (ref.sampleId) {
+      // Sample id form: @smp_...
+      const sample = lookups.samplesById.get(ref.sampleId);
+      if (sample) {
+        sampleId = sample.id;
+        samplePath = sample.path;
+      }
+    } else if (ref.catalogPath) {
+      // Catalog path form
+      const sample = lookups.samplesByPath.get(ref.catalogPath);
+      if (sample) {
+        sampleId = sample.id;
+        samplePath = sample.path;
+      }
+      // Always set samplePath, even if unresolved
+      samplePath = samplePath || ref.catalogPath;
+    }
+
+    // Resolve clip: try id first, then name
     let clipId: string | undefined;
-    let clipPath: string | undefined;
+    let clipName = ref.clipName; // Keep clipName even if unresolved
+    let start: number | undefined;
+    let end: number | undefined;
 
     if (ref.clipId) {
       // Clip id form: @clp_...
       const clip = lookups.clipsById.get(ref.clipId);
       if (clip) {
         clipId = clip.id;
-        clipPath = clip.path;
+        start = clip.start;
+        end = clip.end;
       }
-    } else if (ref.catalogPath) {
-      // Catalog path form
-      const clip = lookups.clipsByPath.get(ref.catalogPath);
-      if (clip) {
-        clipId = clip.id;
-        clipPath = clip.path;
-      }
-      // Always set clipPath, even if unresolved
-      clipPath = clipPath || ref.catalogPath;
-    }
-
-    // Resolve slice: try id first, then name
-    let sliceId: string | undefined;
-    let sliceName = ref.sliceName; // Keep sliceName even if unresolved
-    let start: number | undefined;
-    let end: number | undefined;
-
-    if (ref.sliceId) {
-      // Slice id form: @slc_...
-      const slice = lookups.slicesById.get(ref.sliceId);
-      if (slice) {
-        sliceId = slice.id;
-        start = slice.start;
-        end = slice.end;
-      }
-    } else if (ref.sliceName && clipId) {
-      // Named slice form: resolve by (clipId, name)
-      const clipSlices = lookups.slicesByClipAndName.get(clipId);
-      if (clipSlices) {
-        const slice = clipSlices.get(ref.sliceName);
-        if (slice) {
-          sliceId = slice.id;
-          start = slice.start;
-          end = slice.end;
+    } else if (ref.clipName && sampleId) {
+      // Named clip form: resolve by (sampleId, name)
+      const sampleClips = lookups.clipsBySampleAndName.get(sampleId);
+      if (sampleClips) {
+        const clip = sampleClips.get(ref.clipName);
+        if (clip) {
+          clipId = clip.id;
+          start = clip.start;
+          end = clip.end;
         }
       }
     }
@@ -123,13 +123,13 @@ export function planScoreRefs(
       id,
       scoreId,
       clipAlias: ref.alias,
-      clipPath,
+      samplePath,
     };
 
     // Add optional fields if present
+    if (sampleId) record.sampleId = sampleId;
+    if (clipName) record.clipName = clipName;
     if (clipId) record.clipId = clipId;
-    if (sliceName) record.sliceName = sliceName;
-    if (sliceId) record.sliceId = sliceId;
     if (start !== undefined) record.start = start;
     if (end !== undefined) record.end = end;
 
@@ -158,14 +158,14 @@ export function planScoreRefs(
           id: newRef.id,
           scoreId: newRef.scoreId,
           clipAlias: newRef.clipAlias,
-          clipPath: newRef.clipPath,
+          samplePath: newRef.samplePath,
         };
+        if (newRef.sampleId) updateRecord.sampleId = newRef.sampleId;
+        else updateRecord.sampleId = null as any;
+        if (newRef.clipName) updateRecord.clipName = newRef.clipName;
+        else updateRecord.clipName = null as any;
         if (newRef.clipId) updateRecord.clipId = newRef.clipId;
         else updateRecord.clipId = null as any;
-        if (newRef.sliceName) updateRecord.sliceName = newRef.sliceName;
-        else updateRecord.sliceName = null as any;
-        if (newRef.sliceId) updateRecord.sliceId = newRef.sliceId;
-        else updateRecord.sliceId = null as any;
         if (newRef.start !== undefined) updateRecord.start = newRef.start;
         else updateRecord.start = null as any;
         if (newRef.end !== undefined) updateRecord.end = newRef.end;
@@ -194,10 +194,10 @@ export function planScoreRefs(
  */
 function hasScoreRefChanged(oldRef: ScoreRef, newRef: ScoreRef): boolean {
   if (oldRef.clipAlias !== newRef.clipAlias) return true;
-  if ((oldRef.clipPath ?? null) !== (newRef.clipPath ?? null)) return true;
+  if ((oldRef.samplePath ?? null) !== (newRef.samplePath ?? null)) return true;
+  if ((oldRef.sampleId ?? null) !== (newRef.sampleId ?? null)) return true;
+  if ((oldRef.clipName ?? null) !== (newRef.clipName ?? null)) return true;
   if ((oldRef.clipId ?? null) !== (newRef.clipId ?? null)) return true;
-  if ((oldRef.sliceName ?? null) !== (newRef.sliceName ?? null)) return true;
-  if ((oldRef.sliceId ?? null) !== (newRef.sliceId ?? null)) return true;
   if ((oldRef.start ?? null) !== (newRef.start ?? null)) return true;
   if ((oldRef.end ?? null) !== (newRef.end ?? null)) return true;
   return false;
@@ -209,14 +209,14 @@ function hasScoreRefChanged(oldRef: ScoreRef, newRef: ScoreRef): boolean {
 
 export interface KeepPlan {
   verdicts: { create: any; update?: any };
-  slices: { create?: any; update?: any };
+  clips: { create?: any; update?: any };
   crates: { create: any[] };
   crateItems: { create: any[] };
 }
 
 export interface SkipPlan {
   verdicts: { update: any };
-  slices: { delete: string[] };
+  clips: { delete: string[] };
   crateItems: { delete: string[] };
 }
 
@@ -225,39 +225,39 @@ export interface PutOffPlan {
 }
 
 export interface MergePlan {
-  slices: {
+  clips: {
     update: any[];
     create: any[];
     retire: any[];
     delete: string[];
   };
-  clip: { update?: any };
+  sample: { update?: any };
 }
 
 /**
- * Plan keeping a candidate: upsert Verdict, create/update curated Slice, create CrateItems and Crates.
+ * Plan keeping a candidate: upsert Verdict, create/update curated Clip, create CrateItems and Crates.
  * Returns an error if candidate is null.
  *
  * @param candidateId - The candidate's id
  * @param judge - The current user's sub
  * @param candidate - The candidate record (or null)
  * @param myVerdict - Existing verdict from the judge, or null
- * @param curatedSlice - Existing curated slice, or null
+ * @param curatedClip - Existing curated clip, or null
  * @param cratesByName - Map of crate name to Crate record
  * @param existingCrateItems - Existing CrateItems for this candidate
- * @param sliceId - The curated slice id (from rw_ids)
+ * @param clipId - The curated clip id (from rw_ids)
  * @param options - Keep options (stars, tags, name, crates)
- * @returns A plan with create/update for Verdict, Slice, Crates, CrateItems, or error if candidate is null
+ * @returns A plan with create/update for Verdict, Clip, Crates, CrateItems, or error if candidate is null
  */
 export async function planKeep(
   candidateId: string,
   judge: string,
   candidate: any,
   myVerdict: any | null,
-  curatedSlice: any | null,
+  curatedClip: any | null,
   cratesByName: Map<string, any>,
   existingCrateItems: any[],
-  sliceId: string,
+  clipId: string,
   now: string,
   newId: () => string,
   lastPositionByCrate: Map<string, string | null>,
@@ -283,14 +283,14 @@ export async function planKeep(
     by: "person",
   };
 
-  // Slice: create if missing, update if exists
-  let sliceToCreate: any | undefined;
-  let sliceToUpdate: any | undefined;
+  // Clip: create if missing, update if exists
+  let clipToCreate: any | undefined;
+  let clipToUpdate: any | undefined;
 
-  if (!curatedSlice) {
-    sliceToCreate = {
-      id: sliceId,
-      clipId: candidate.clipId,
+  if (!curatedClip) {
+    clipToCreate = {
+      id: clipId,
+      sampleId: candidate.sampleId,
       name: options?.name || candidate.name || "curated",
       start: candidate.start,
       end: candidate.end,
@@ -299,10 +299,10 @@ export async function planKeep(
       kind: candidate.kind,
     };
   } else {
-    // Slice exists; update its name if provided
-    if (options?.name && options.name !== curatedSlice.name) {
-      sliceToUpdate = {
-        id: sliceId,
+    // Clip exists; update its name if provided
+    if (options?.name && options.name !== curatedClip.name) {
+      clipToUpdate = {
+        id: clipId,
         name: options.name,
       };
     }
@@ -349,9 +349,9 @@ export async function planKeep(
       create: !myVerdict ? verdictRecord : undefined,
       update: myVerdict ? verdictRecord : undefined,
     },
-    slices: {
-      create: sliceToCreate,
-      update: sliceToUpdate,
+    clips: {
+      create: clipToCreate,
+      update: clipToUpdate,
     },
     crates: {
       create: cratesToCreate,
@@ -363,21 +363,21 @@ export async function planKeep(
 }
 
 /**
- * Plan skipping a candidate: update Verdict, delete Slice if no other keeper, delete CrateItems.
+ * Plan skipping a candidate: update Verdict, delete Clip if no other keeper, delete CrateItems.
  *
  * @param candidateId - The candidate's id
  * @param judge - The current user's sub
  * @param existingCrateItems - Existing CrateItems for this candidate
  * @param existingVerdicts - All existing verdicts for this candidate (to check for other keepers)
- * @param sliceId - The curated slice id
- * @returns A plan with Verdict update, Slice delete, CrateItem deletes
+ * @param clipId - The curated clip id
+ * @returns A plan with Verdict update, Clip delete, CrateItem deletes
  */
 export function planSkip(
   candidateId: string,
   judge: string,
   existingCrateItems: any[],
   existingVerdicts: any[],
-  sliceId: string,
+  clipId: string,
   now: string
 ): SkipPlan {
   const timestamp = now;
@@ -396,8 +396,8 @@ export function planSkip(
     (v: any) => v.judge !== judge && v.verdict === "keep"
   );
 
-  // Slice: delete if no other keeper
-  const slicesToDelete = hasOtherKeeper ? [] : [sliceId];
+  // Clip: delete if no other keeper
+  const clipsToDelete = hasOtherKeeper ? [] : [clipId];
 
   // CrateItems: delete all for this candidate
   const crateItemIdsToDelete = existingCrateItems.map((item: any) => item.id);
@@ -406,8 +406,8 @@ export function planSkip(
     verdicts: {
       update: verdictRecord,
     },
-    slices: {
-      delete: slicesToDelete,
+    clips: {
+      delete: clipsToDelete,
     },
     crateItems: {
       delete: crateItemIdsToDelete,
@@ -448,15 +448,15 @@ export function planPutOff(
 }
 
 /**
- * Plan merging markup: match proposed ML slices to existing, handle retirement.
- * Wraps rw_markup_merge output into Slice writes and Clip nameCounters update.
+ * Plan merging markup: match proposed ML clips to existing, handle retirement.
+ * Wraps rw_markup_merge output into Clip writes and Sample nameCounters update.
  *
- * @param clipId - The clip's id
+ * @param sampleId - The sample's id
  * @param mergeResult - Output from rw_markup_merge with {keep, create, retire, delete, name_counters}
- * @returns A plan with Slice create/update/retire/delete and Clip update
+ * @returns A plan with Clip create/update/retire/delete and Sample update
  */
 export function planMerge(
-  clipId: string,
+  sampleId: string,
   mergeResult: any
 ): MergePlan {
   // Extract the plan from wasm output
@@ -466,17 +466,17 @@ export function planMerge(
   const deleteIds = mergeResult.delete || [];
   const nameCounters = mergeResult.name_counters || {};
 
-  // Build Slice updates for kept slices
-  const sliceUpdates = keep.map(([id, [start, end], rank]: [string, [number, number], number | null]) => ({
+  // Build Clip updates for kept clips
+  const clipUpdates = keep.map(([id, [start, end], rank]: [string, [number, number], number | null]) => ({
     id,
     start,
     end,
     ...(rank !== null && rank !== undefined && { rank }),
   }));
 
-  // Build Slice creates for new slices
-  const sliceCreates = create.map(([name, start, end, rank]: [string, number, number, number | null]) => ({
-    clipId,
+  // Build Clip creates for new clips
+  const clipCreates = create.map(([name, start, end, rank]: [string, number, number, number | null]) => ({
+    sampleId,
     name,
     start,
     end,
@@ -484,29 +484,29 @@ export function planMerge(
     ...(rank !== null && rank !== undefined && { rank }),
   }));
 
-  // Build Slice retires (set retired: true)
-  const sliceRetires = retire.map((id: string) => ({
+  // Build Clip retires (set retired: true)
+  const clipRetires = retire.map((id: string) => ({
     id,
     retired: true,
   }));
 
-  // Build Clip update for nameCounters
-  const clipUpdate = Object.keys(nameCounters).length > 0
+  // Build Sample update for nameCounters
+  const sampleUpdate = Object.keys(nameCounters).length > 0
     ? {
-        id: clipId,
+        id: sampleId,
         nameCounters: JSON.stringify(nameCounters),
       }
     : undefined;
 
   return {
-    slices: {
-      update: sliceUpdates,
-      create: sliceCreates,
-      retire: sliceRetires,
+    clips: {
+      update: clipUpdates,
+      create: clipCreates,
+      retire: clipRetires,
       delete: deleteIds,
     },
-    clip: {
-      update: clipUpdate,
+    sample: {
+      update: sampleUpdate,
     },
   };
 }

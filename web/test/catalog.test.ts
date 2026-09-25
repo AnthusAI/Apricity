@@ -10,29 +10,29 @@ import {
   keyLabel,
   keysOverTime,
   listAll,
-  planSlices,
+  planClips,
   scoreKey,
   scorePath,
-  sliceAnnotations,
+  clipAnnotations,
   toManifest,
   toSummary,
   validateClips,
-  type ClipRecord,
+  type SampleRecord,
   type RecordingRecord,
-  type SliceRecord,
+  type ClipRecord,
 } from "../src/data/catalog.ts";
 
 const rec: RecordingRecord = { id: "rec_Thunderer", title: "The Thunderer", collection: "marine-band", credit: "Marine Band", rights: "Public domain" };
-const source: ClipRecord = {
-  id: "clp_src",
+const source: SampleRecord = {
+  id: "smp_src",
   recordingId: "rec_Thunderer",
   path: "marine-band/Thunderer.mp3",
   aliases: ["samples/marine-band/Thunderer.mp3"],
   collection: "marine-band",
   title: "Thunderer.mp3",
   role: "source",
-  audio: { key: "audio/clp_src/Thunderer.mp3" },
-  analysis: { key: "analysis/clp_src/aa.json" },
+  audio: { key: "audio/smp_src/Thunderer.mp3" },
+  analysis: { key: "analysis/smp_src/aa.json" },
   duration: 180.5,
   bpm: 120,
   bpmStability: 0.9,
@@ -43,14 +43,14 @@ const source: ClipRecord = {
   tuningCents: -12,
   noteCount: 400,
 };
-const stem: ClipRecord = { ...source, id: "clp_drums", path: "marine-band/stems/Thunderer/drums.wav", aliases: [], role: "stem", stem: "drums", parentClipId: "clp_src", audio: { key: "audio/clp_drums/drums.wav" }, analysis: { key: "analysis/clp_drums/bb.json" }, key: "C minor" };
-const excerpt: ClipRecord = { ...source, id: "clp_ex", recordingId: "rec_loc_1", path: "citizen-dj/loc-edison/march_001_00-01-55.wav", collection: "citizen-dj/loc-edison", excerptStart: 115, audio: { key: "audio/clp_ex/march.wav" }, analysis: { key: "analysis/clp_ex/cc.json" } };
-const upload: ClipRecord = { ...source, id: "clp_up", recordingId: "rec_uploads_announcer", path: "uploads/announcer.wav", collection: "uploads", audio: { key: "audio/clp_up/announcer.wav" }, analysis: null };
+const stem: SampleRecord = { ...source, id: "smp_drums", path: "marine-band/stems/Thunderer/drums.wav", aliases: [], role: "stem", stem: "drums", parentSampleId: "smp_src", audio: { key: "audio/smp_drums/drums.wav" }, analysis: { key: "analysis/smp_drums/bb.json" }, key: "C minor" };
+const excerpt: SampleRecord = { ...source, id: "smp_ex", recordingId: "rec_loc_1", path: "citizen-dj/loc-edison/march_001_00-01-55.wav", collection: "citizen-dj/loc-edison", excerptStart: 115, audio: { key: "audio/smp_ex/march.wav" }, analysis: { key: "analysis/smp_ex/cc.json" } };
+const upload: SampleRecord = { ...source, id: "smp_up", recordingId: "rec_uploads_announcer", path: "uploads/announcer.wav", collection: "uploads", audio: { key: "audio/smp_up/announcer.wav" }, analysis: null };
 const recs = new Map([rec, { id: "rec_loc_1", title: "The stars and stripes forever march", collection: "citizen-dj/loc-edison" }, { id: "rec_uploads_announcer", title: "uploads_announcer", collection: "uploads" }].map((r) => [r.id, r as RecordingRecord]));
-const clipMap = new Map([source, stem, excerpt, upload].map((c) => [c.id, c]));
-const counts = { slices: new Map([["clp_drums", 3]]), markers: new Map([["clp_drums", 1]]) };
+const sampleMap = new Map([source, stem, excerpt, upload].map((c) => [c.id, c]));
+const counts = { clips: new Map([["smp_drums", 3]]), markers: new Map([["smp_drums", 1]]) };
 
-const slice = (id: string, name: string, start: number, end: number, extra: Partial<SliceRecord> = {}): SliceRecord => ({ id, clipId: "clp_drums", name, start, end, source: "ml", ...extra });
+const clip = (id: string, name: string, start: number, end: number, extra: Partial<ClipRecord> = {}): ClipRecord => ({ id, sampleId: "smp_drums", name, start, end, source: "ml", ...extra });
 
 test("key labels and keys over time", () => {
   assert.equal(keyLabel("Bb major"), "Bb");
@@ -62,8 +62,8 @@ test("key labels and keys over time", () => {
   assert.equal(excerptLabel(null), undefined);
 });
 
-test("a clip record becomes the summary the Library list shows", () => {
-  assert.deepEqual(toSummary(source, recs, clipMap, counts), {
+test("a sample record becomes the summary the Library list shows", () => {
+  assert.deepEqual(toSummary(source, recs, sampleMap, counts), {
     path: "samples/marine-band/Thunderer.mp3",
     title: "The Thunderer",
     group: "marine-band",
@@ -83,23 +83,23 @@ test("a clip record becomes the summary the Library list shows", () => {
     markers: 0,
     stem: null,
   });
-  const s = toSummary(stem, recs, clipMap, counts);
+  const s = toSummary(stem, recs, sampleMap, counts);
   assert.equal(s.title, "The Thunderer · drums");
   assert.equal(s.key, "Cm");
   assert.equal(s.stem, "drums");
   assert.deepEqual([s.clips, s.markers], [3, 1]);
-  const e = toSummary(excerpt, recs, clipMap, counts);
+  const e = toSummary(excerpt, recs, sampleMap, counts);
   assert.equal(e.group, "citizen-dj");
   assert.equal(e.excerpt_start, "00:01:55");
   assert.equal(e.title, "The stars and stripes forever march");
-  assert.equal(toSummary(upload, recs, clipMap, counts).title, "announcer", "an invented recording title falls back to the file name");
+  assert.equal(toSummary(upload, recs, sampleMap, counts).title, "announcer", "an invented recording title falls back to the file name");
 });
 
-test("slices and markers become the manifest's annotations, in time order", () => {
+test("clips and markers become the manifest's annotations, in time order", () => {
   const analysis = { source: { path: "x", duration: 10, sample_rate: 44100, channels: 2 }, rhythm: { bpm: 120, beats: [0, 0.5], downbeats: [0], meter: 4 }, tonal: { key: { tonic: "C", mode: "minor", strength: 0.5 }, tuning_hz: 440, pitch_class_profile: [] } };
-  const m = toManifest(analysis as any, [slice("s2", "loop-2", 4, 6, { tags: ["loop", "2 beats"] }), slice("s1", "mine", 1, 2, { source: "user" }), slice("s3", "old", 7, 8, { retired: true, candidateId: "cand_1" })], [
-    { id: "m2", clipId: "clp_drums", name: "b", seconds: 5, source: "ml" },
-    { id: "m1", clipId: "clp_drums", name: "a", seconds: 2, note: "hi" },
+  const m = toManifest(analysis as any, [clip("s2", "loop-2", 4, 6, { tags: ["loop", "2 beats"] }), clip("s1", "mine", 1, 2, { source: "user" }), clip("s3", "old", 7, 8, { retired: true, candidateId: "cand_1" })], [
+    { id: "m2", sampleId: "smp_drums", name: "b", seconds: 5, source: "ml" },
+    { id: "m1", sampleId: "smp_drums", name: "a", seconds: 2, note: "hi" },
   ]);
   assert.deepEqual(m.rhythm, analysis.rhythm, "the analysis is passed through");
   assert.deepEqual(m.annotations, {
@@ -113,7 +113,7 @@ test("slices and markers become the manifest's annotations, in time order", () =
       { name: "b", seconds: 5, source: "ml" },
     ],
   });
-  assert.equal(sliceAnnotations([slice("c", "cur", 0, 1, { source: "curated" })])[0].source, "user", "curated slices are yours in the editor");
+  assert.equal(clipAnnotations([clip("c", "cur", 0, 1, { source: "curated" })])[0].source, "user", "curated clips are yours in the editor");
 });
 
 test("score paths and ids follow the migration's scheme", () => {
@@ -123,22 +123,22 @@ test("score paths and ids follow the migration's scheme", () => {
   assert.throws(() => scoreKey("x.txt"), /folder/);
 });
 
-test("edited clips: validated, then planned as slice creates, updates and deletes", () => {
+test("edited clips: validated, then planned as clip creates, updates and deletes", () => {
   assert.deepEqual(validateClips([{ name: "ok", start: 0, end: 1 }], 10), []);
   const problems = validateClips([{ name: "a b", start: 0, end: 1 }, { name: "x", start: 2, end: 1 }, { name: "x", start: 0, end: 11 }], 10);
   assert.equal(problems.length, 4);
-  const existing = [slice("s1", "loop-1", 0, 2), slice("s2", "loop-2", 2, 4), slice("s3", "gone", 4, 5, { retired: true })];
-  const plan = planSlices("clp_drums", existing, [
+  const existing = [clip("s1", "loop-1", 0, 2), clip("s2", "loop-2", 2, 4), clip("s3", "gone", 4, 5, { retired: true })];
+  const plan = planClips("smp_drums", existing, [
     { id: "s1", name: "loop-1", start: 0, end: 2, source: "ml" },
     { id: "s2", name: "verse", start: 2, end: 4, source: "user" },
     { name: "clip-3", start: 5, end: 6, source: "user" },
   ]);
   assert.deepEqual(plan, {
-    create: [{ clipId: "clp_drums", name: "clip-3", start: 5, end: 6, source: "user" }],
+    create: [{ sampleId: "smp_drums", name: "clip-3", start: 5, end: 6, source: "user" }],
     update: [{ id: "s2", name: "verse", start: 2, end: 4, source: "user" }],
     delete: [],
   });
-  assert.deepEqual(planSlices("clp_drums", existing, []).delete, ["s1", "s2"], "retired slices stay for the scores using them");
+  assert.deepEqual(planClips("smp_drums", existing, []).delete, ["s1", "s2"], "retired clips stay for the scores using them");
 });
 
 test("listAll follows nextToken and surfaces errors", async () => {
@@ -147,14 +147,14 @@ test("listAll follows nextToken and surfaces errors", async () => {
   assert.deepEqual(await listAll((t) => (seen.push(t), Promise.resolve(pages[t ?? "start"]))), [1, 2, 3]);
   assert.deepEqual(seen, [null, "b", "c"]);
   await assert.rejects(listAll(() => Promise.resolve({ data: null, errors: [{ message: "boom", errorType: "Internal" }] })), /boom/);
-  await assert.rejects(listAll(() => Promise.resolve({ data: null, errors: [{ message: "Not Authorized to access listClips on type Query", errorType: "Unauthorized" }] })), SignedOut);
+  await assert.rejects(listAll(() => Promise.resolve({ data: null, errors: [{ message: "Not Authorized to access listSamples on type Query", errorType: "Unauthorized" }] })), SignedOut);
   await assert.rejects(listAll(() => Promise.reject(Object.assign(new Error("No current user"), { name: "NoValidAuthTokens" }))), SignedOut);
   assert.ok(isUnauthorized({ errors: [{ errorType: "Unauthorized" }] }));
   assert.ok(!isUnauthorized(new Error("network down")));
 });
 
-/** A stub of the generated client: one page per list call, index queries by clipId. */
-function stubClient(state: { signedIn: boolean; clips: ClipRecord[]; slices: SliceRecord[]; scores: any[] }, calls: string[] = []) {
+/** A stub of the generated client: one page per list call, index queries by sampleId. */
+function stubClient(state: { signedIn: boolean; samples: SampleRecord[]; clips: ClipRecord[]; scores: any[] }, calls: string[] = []) {
   const guard = <T>(name: string, v: () => T) => {
     calls.push(name);
     if (!state.signedIn) return Promise.reject(Object.assign(new Error("No current user"), { name: "NoValidAuthTokens" }));
@@ -163,16 +163,16 @@ function stubClient(state: { signedIn: boolean; clips: ClipRecord[]; slices: Sli
   const list = (name: string, items: () => unknown[]) => ({ list: () => guard(`${name}.list`, () => ({ data: items(), nextToken: null })) });
   return {
     models: {
-      Clip: list("Clip", () => state.clips),
+      Sample: list("Sample", () => state.samples),
       Recording: list("Recording", () => [...recs.values()]),
-      Slice: {
-        ...list("Slice", () => state.slices),
-        slicesByClip: ({ clipId }: { clipId: string }) => guard("Slice.slicesByClip", () => ({ data: state.slices.filter((s) => s.clipId === clipId), nextToken: null })),
-        create: (s: SliceRecord) => guard("Slice.create", () => (state.slices.push(s), { data: s })),
-        update: (u: SliceRecord) => guard("Slice.update", () => (Object.assign(state.slices.find((s) => s.id === u.id)!, u), { data: u })),
-        delete: ({ id }: { id: string }) => guard("Slice.delete", () => ((state.slices = state.slices.filter((s) => s.id !== id)), { data: { id } })),
+      Clip: {
+        ...list("Clip", () => state.clips),
+        clipsBySample: ({ sampleId }: { sampleId: string }) => guard("Clip.clipsBySample", () => ({ data: state.clips.filter((s) => s.sampleId === sampleId), nextToken: null })),
+        create: (s: ClipRecord) => guard("Clip.create", () => (state.clips.push(s), { data: s })),
+        update: (u: ClipRecord) => guard("Clip.update", () => (Object.assign(state.clips.find((s) => s.id === u.id)!, u), { data: u })),
+        delete: ({ id }: { id: string }) => guard("Clip.delete", () => ((state.clips = state.clips.filter((s) => s.id !== id)), { data: { id } })),
       },
-      Marker: { ...list("Marker", () => []), markersByClip: () => guard("Marker.markersByClip", () => ({ data: [], nextToken: null })) },
+      Marker: { ...list("Marker", () => []), markersBySample: () => guard("Marker.markersBySample", () => ({ data: [], nextToken: null })) },
       Job: list("Job", () => []),
       Score: {
         ...list("Score", () => state.scores),
@@ -186,7 +186,7 @@ function stubClient(state: { signedIn: boolean; clips: ClipRecord[]; slices: Sli
 const analysisJson = JSON.stringify({ source: { path: "d.wav", duration: 180.5, sample_rate: 44100, channels: 2 }, rhythm: { bpm: 120, beats: [0], downbeats: [0], meter: 2 }, tonal: { key: { tonic: "C", mode: "minor", strength: 1 }, tuning_hz: 440, pitch_class_profile: [] } });
 
 test("signed out: the views get SignedOut (their empty state), and reload after sign-in", async () => {
-  const state = { signedIn: false, clips: [source, stem], slices: [slice("s1", "loop-1", 0, 2)], scores: [{ id: "scr_examples_a_apr", title: "a", folder: "examples", format: "apr", text: "tempo 90" }] };
+  const state = { signedIn: false, samples: [source, stem], clips: [clip("s1", "loop-1", 0, 2)], scores: [{ id: "scr_examples_a_apr", title: "a", folder: "examples", format: "apr", text: "tempo 90" }] };
   const cat = new Catalog({ client: () => stubClient(state), readText: async () => analysisJson, url: async (k) => `/files/${k}` });
   await assert.rejects(cat.samples(), SignedOut);
   await assert.rejects(cat.scores(), SignedOut);
@@ -200,18 +200,18 @@ test("signed out: the views get SignedOut (their empty state), and reload after 
 });
 
 test("manifests, audio urls and saves go through the records", async () => {
-  const state = { signedIn: true, clips: [source, stem], slices: [slice("s1", "loop-1", 0, 2), slice("s2", "loop-2", 2, 4)], scores: [] as any[] };
+  const state = { signedIn: true, samples: [source, stem], clips: [clip("s1", "loop-1", 0, 2), clip("s2", "loop-2", 2, 4)], scores: [] as any[] };
   const reads: string[] = [];
   const cat = new Catalog({ client: () => stubClient(state), readText: async (k) => (reads.push(k), analysisJson), url: async (k) => `https://bucket/files/${k}?sig` });
   const m = (await cat.manifest("marine-band/stems/Thunderer/drums.wav"))!; // a catalog alias works too
-  assert.deepEqual(reads, ["analysis/clp_drums/bb.json"]);
+  assert.deepEqual(reads, ["analysis/smp_drums/bb.json"]);
   assert.deepEqual(m.annotations!.clips!.map((c) => c.name), ["loop-1", "loop-2"]);
-  assert.equal(await cat.audioUrl("samples/marine-band/Thunderer.mp3"), "https://bucket/files/audio/clp_src/Thunderer.mp3?sig");
+  assert.equal(await cat.audioUrl("samples/marine-band/Thunderer.mp3"), "https://bucket/files/audio/smp_src/Thunderer.mp3?sig");
   await assert.rejects(cat.audioUrl("samples/nope.wav"), /not in the library/);
 
   await cat.saveClips("samples/marine-band/stems/Thunderer/drums.wav", [{ id: "s1", name: "intro", start: 0, end: 2, source: "user" }, { name: "clip-2", start: 5, end: 6, source: "user" }]);
-  assert.deepEqual(state.slices.map((s) => [s.name, s.source]).sort(), [["clip-2", "user"], ["intro", "user"]]);
-  assert.match(state.slices.find((s) => s.name === "clip-2")!.id, /^slc_/);
+  assert.deepEqual(state.clips.map((s) => [s.name, s.source]).sort(), [["clip-2", "user"], ["intro", "user"]]);
+  assert.match(state.clips.find((s) => s.name === "clip-2")!.id, /^clp_/);
   await assert.rejects(cat.saveClips("samples/marine-band/stems/Thunderer/drums.wav", [{ name: "bad name", start: 0, end: 1 }]), /letters, digits/);
 
   const saved: [string, string][] = [];

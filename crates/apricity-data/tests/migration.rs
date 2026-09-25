@@ -2,8 +2,8 @@
 //! a stem, annotations, candidates, verdicts, a crate and two scores.
 
 use apricity_data::{
-    Library, MigrationReport, candidate_id, clip_id, curated_slice_id, loader, migrate,
-    stem_clip_id,
+    Library, MigrationReport, candidate_id, sample_id, curated_clip_id, loader, migrate,
+    stem_sample_id,
 };
 use apricity_score::{compile_file, compile_text};
 use serde_json::{Value, json};
@@ -184,7 +184,7 @@ fn counts_and_report() {
         r.recordings, 1,
         "one recording per Marine Band piece, stem included"
     );
-    assert_eq!((r.clips, r.slices, r.markers), (2, 3, 2));
+    assert_eq!((r.samples, r.clips, r.markers), (2, 3, 2));
     assert_eq!(
         (r.candidates, r.verdicts, r.crates, r.crate_items),
         (2, 1, 1, 2)
@@ -197,14 +197,14 @@ fn counts_and_report() {
         "the absent PDF is reported: {:?}",
         r.skipped
     );
-    assert!(r.display().contains("Clips: 2"));
+    assert!(r.display().contains("Samples: 2"));
 }
 
 #[test]
-fn clips_recordings_and_stems() {
+fn samples_recordings_and_stems() {
     let mut m = Migrated::new(false);
-    let piece = clip_id(PIECE_SHA);
-    let stem = stem_clip_id(&piece, "drums", "htdemucs");
+    let piece = sample_id(PIECE_SHA);
+    let stem = stem_sample_id(&piece, "drums", "htdemucs");
     let rec = m.get("Recording", json!({"id": "rec_Piece"}));
     assert_eq!(
         (
@@ -216,7 +216,7 @@ fn clips_recordings_and_stems() {
     );
     assert_eq!(rec["collection"], "marine-band");
 
-    let c = m.get("Clip", json!({"id": piece}));
+    let c = m.get("Sample", json!({"id": piece}));
     assert_eq!(
         (
             c["path"].as_str(),
@@ -247,7 +247,7 @@ fn clips_recordings_and_stems() {
         "loop-N names are never reused"
     );
 
-    let s = m.get("Clip", json!({"id": stem}));
+    let s = m.get("Sample", json!({"id": stem}));
     assert_eq!(
         (
             s["role"].as_str(),
@@ -256,14 +256,14 @@ fn clips_recordings_and_stems() {
         ),
         (Some("stem"), Some("drums"), Some("htdemucs"))
     );
-    assert_eq!(s["parentClipId"].as_str(), Some(piece.as_str()));
+    assert_eq!(s["parentSampleId"].as_str(), Some(piece.as_str()));
     assert_eq!(s["recordingId"], "rec_Piece");
 }
 
 #[test]
 fn audio_is_copied_byte_equal_and_analysis_is_content_addressed() {
     let mut m = Migrated::new(false);
-    let piece = clip_id(PIECE_SHA);
+    let piece = sample_id(PIECE_SHA);
     let src = m.repo.join("samples/marine-band/Piece.wav");
     let dst = m.files().join(format!("audio/{piece}/Piece.wav"));
     assert_eq!(fs::read(&src).unwrap(), fs::read(&dst).unwrap());
@@ -273,18 +273,18 @@ fn audio_is_copied_byte_equal_and_analysis_is_content_addressed() {
         "a copy, not a link"
     );
 
-    let clip = m.get("Clip", json!({"id": piece}));
+    let sample = m.get("Sample", json!({"id": piece}));
     assert_eq!(
-        clip["audio"]["sha256"].as_str(),
+        sample["audio"]["sha256"].as_str(),
         Some(sha256_hex(&fs::read(&src).unwrap()).as_str())
     );
     assert_eq!(
-        clip["audio"]["key"].as_str(),
+        sample["audio"]["key"].as_str(),
         Some(format!("audio/{piece}/Piece.wav").as_str())
     );
 
-    let key = clip["analysis"]["key"].as_str().unwrap().to_string();
-    let sha = clip["analysis"]["sha256"].as_str().unwrap();
+    let key = sample["analysis"]["key"].as_str().unwrap().to_string();
+    let sha = sample["analysis"]["sha256"].as_str().unwrap();
     assert_eq!(key, format!("analysis/{piece}/{sha}.json"));
     let bytes = fs::read(m.files().join(&key)).unwrap();
     assert_eq!(
@@ -292,11 +292,11 @@ fn audio_is_copied_byte_equal_and_analysis_is_content_addressed() {
         sha,
         "the filename is the sha256 of the content"
     );
-    assert_eq!(clip["analysis"]["size"].as_u64(), Some(bytes.len() as u64));
+    assert_eq!(sample["analysis"]["size"].as_u64(), Some(bytes.len() as u64));
     let analysis: Value = serde_json::from_slice(&bytes).unwrap();
     assert!(
         analysis.get("annotations").is_none(),
-        "annotations live in Slice and Marker records"
+        "annotations live in Clip and Marker records"
     );
     assert_eq!(analysis["rhythm"]["bpm"], 120.0);
 }
@@ -304,7 +304,7 @@ fn audio_is_copied_byte_equal_and_analysis_is_content_addressed() {
 #[test]
 fn link_shares_the_inode() {
     let m = Migrated::new(true);
-    let piece = clip_id(PIECE_SHA);
+    let piece = sample_id(PIECE_SHA);
     let src = fs::metadata(m.repo.join("samples/marine-band/Piece.wav")).unwrap();
     let dst = fs::metadata(m.files().join(format!("audio/{piece}/Piece.wav"))).unwrap();
     assert_eq!((src.dev(), src.ino()), (dst.dev(), dst.ino()));
@@ -314,7 +314,7 @@ fn link_shares_the_inode() {
 fn second_run_changes_nothing() {
     for link in [false, true] {
         let mut m = Migrated::new(link);
-        let piece = clip_id(PIECE_SHA);
+        let piece = sample_id(PIECE_SHA);
         let audio = m.files().join(format!("audio/{piece}/Piece.wav"));
         let before = fs::metadata(&audio).unwrap();
         let again = m.rerun(link);
@@ -350,27 +350,27 @@ fn changed_input_is_picked_up() {
     let again = m.rerun(false);
     assert_eq!(
         (
-            again.slices,
-            again.score_refs,
             again.clips,
+            again.score_refs,
+            again.samples,
             again.files,
             again.total_changes()
         ),
         (1, 1, 0, 0, 2),
-        "the edited slice and the score reference that records its span change; the analysis attachment is untouched: {again:?}"
+        "the edited clip and the score reference that records its span change; the analysis attachment is untouched: {again:?}"
     );
 }
 
 #[test]
-fn candidates_verdicts_crates_and_curated_slices() {
+fn candidates_verdicts_crates_and_curated_clips() {
     let mut m = Migrated::new(false);
-    let piece = clip_id(PIECE_SHA);
+    let piece = sample_id(PIECE_SHA);
     let cid = candidate_id(&piece, 4.0, 6.0, "break");
     let cand = m.get("Candidate", json!({"id": cid}));
     assert_eq!(
         (
             cand["legacyId"].as_str(),
-            cand["clipId"].as_str(),
+            cand["sampleId"].as_str(),
             cand["recordingId"].as_str()
         ),
         (
@@ -405,13 +405,13 @@ fn candidates_verdicts_crates_and_curated_slices() {
         )
     );
 
-    let slice = m.get("Slice", json!({"id": curated_slice_id(&cid)}));
+    let clip = m.get("Clip", json!({"id": curated_clip_id(&cid)}));
     assert_eq!(
         (
-            slice["name"].as_str(),
-            slice["source"].as_str(),
-            slice["candidateId"].as_str(),
-            slice["kind"].as_str()
+            clip["name"].as_str(),
+            clip["source"].as_str(),
+            clip["candidateId"].as_str(),
+            clip["kind"].as_str()
         ),
         (
             Some("brk-1"),
@@ -432,11 +432,11 @@ fn candidates_verdicts_crates_and_curated_slices() {
         (Some("a0"), Some("a1"))
     );
     assert_eq!(
-        first["sliceId"].as_str(),
-        Some(curated_slice_id(&cid).as_str()),
-        "a kept candidate's item points at its curated slice"
+        first["clipId"].as_str(),
+        Some(curated_clip_id(&cid).as_str()),
+        "a kept candidate's item points at its curated clip"
     );
-    assert!(second.get("sliceId").is_none());
+    assert!(second.get("clipId").is_none());
     assert_eq!(
         m.get("Crate", json!({"id": "crt_breaks"}))["note"],
         "for later"
@@ -444,9 +444,9 @@ fn candidates_verdicts_crates_and_curated_slices() {
 }
 
 #[test]
-fn score_refs_resolve_by_alias_and_slice_name() {
+fn score_refs_resolve_by_alias_and_clip_name() {
     let mut m = Migrated::new(false);
-    let piece = clip_id(PIECE_SHA);
+    let piece = sample_id(PIECE_SHA);
     let score = m.get("Score", json!({"id": "scr_examples_song_apr"}));
     assert_eq!(
         (
@@ -462,20 +462,20 @@ fn score_refs_resolve_by_alias_and_slice_name() {
             Some(SCORE)
         )
     );
-    let slice_id = apricity_data::migrated_slice_id(&piece, "loop-1");
+    let clip_id = apricity_data::migrated_clip_id(&piece, "loop-1");
     let r = m.get("ScoreRef", json!({"id": "sref_scr_examples_song_apr_a"}));
     assert_eq!(
         (
-            r["clipId"].as_str(),
-            r["clipPath"].as_str(),
-            r["sliceName"].as_str(),
-            r["sliceId"].as_str()
+            r["sampleId"].as_str(),
+            r["samplePath"].as_str(),
+            r["clipName"].as_str(),
+            r["clipId"].as_str()
         ),
         (
             Some(piece.as_str()),
             Some("marine-band/Piece.wav"),
             Some("loop-1"),
-            Some(slice_id.as_str())
+            Some(clip_id.as_str())
         )
     );
     assert_eq!(
@@ -490,13 +490,13 @@ fn timeline_json(tl: &impl serde::Serialize, lib_files: &Path, repo: &Path) -> S
     for (rel, lib_rel) in [
         (
             "marine-band/Piece.wav",
-            format!("audio/{}/Piece.wav", clip_id(PIECE_SHA)),
+            format!("audio/{}/Piece.wav", sample_id(PIECE_SHA)),
         ),
         (
             "marine-band/stems/Piece/drums.wav",
             format!(
                 "audio/{}/drums.wav",
-                stem_clip_id(&clip_id(PIECE_SHA), "drums", "htdemucs")
+                stem_sample_id(&sample_id(PIECE_SHA), "drums", "htdemucs")
             ),
         ),
     ] {
@@ -523,9 +523,9 @@ fn library_timeline_equals_file_timeline() {
     );
 
     // Regression: the loader once wrote annotations under `slices` while the manifest reads
-    // `clips`, dropping every slice; and the audio it points at must be the library's own copy.
-    let clip = load(&m.repo.join("samples/marine-band/Piece.wav")).unwrap();
-    let names: Vec<&str> = clip
+    // `clips`, dropping every clip; and the audio it points at must be the library's own copy.
+    let sample = load(&m.repo.join("samples/marine-band/Piece.wav")).unwrap();
+    let names: Vec<&str> = sample
         .manifest
         .annotations
         .clips
@@ -534,11 +534,11 @@ fn library_timeline_equals_file_timeline() {
         .collect();
     assert_eq!(names, ["loop-1", "loop-2", "brk-1"]);
     assert_eq!(
-        clip.manifest.annotations.markers.len(),
+        sample.manifest.annotations.markers.len(),
         2,
         "both `section A` markers survive"
     );
-    assert!(clip.audio.starts_with(m.files()));
+    assert!(sample.audio.starts_with(m.files()));
     assert!(m.lib_dir.path().exists());
 }
 

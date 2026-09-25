@@ -428,7 +428,7 @@ mod tests {
 
     #[test]
     fn list_is_by_prefix_sorted() {
-        let (_d, s) = store_with(&[("audio/b/c", b"22"), ("audio/a", b"1"), ("tables/Clip/x.json", b"{}")]);
+        let (_d, s) = store_with(&[("audio/b/c", b"22"), ("audio/a", b"1"), ("tables/Sample/x.json", b"{}")]);
         let keys: Vec<_> = s.list("audio/").unwrap().into_iter().map(|m| (m.key, m.size)).collect();
         assert_eq!(keys, vec![("audio/a".to_string(), 1), ("audio/b/c".to_string(), 2)]);
         assert_eq!(s.list("").unwrap().len(), 3);

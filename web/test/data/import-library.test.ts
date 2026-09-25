@@ -103,14 +103,14 @@ describe("type conversion (real records)", () => {
     const p = (cand.proposers as any[])[0];
     assert.equal(typeof p.evidence, "string");
     assert.equal(p.evidence, "{}");
-    const clip = toApiInput("Clip", fixtures("Clip")[0].rec, me);
-    assert.equal(typeof clip.nameCounters, "string", "an already-string a.json is kept, not double-encoded");
-    assert.doesNotThrow(() => JSON.parse(clip.nameCounters as string));
-    assert.equal(toApiInput("Slice", { ...fixtures("Slice")[0].rec, evidence: { a: 1 } }, me).evidence, '{"a":1}');
+    const sample = toApiInput("Sample", fixtures("Sample")[0].rec, me);
+    assert.equal(typeof sample.nameCounters, "string", "an already-string a.json is kept, not double-encoded");
+    assert.doesNotThrow(() => JSON.parse(sample.nameCounters as string));
+    assert.equal(toApiInput("Clip", { ...fixtures("Clip")[0].rec, evidence: { a: 1 } }, me).evidence, '{"a":1}');
   });
   it("keeps arrays and enums, swaps local owner and judge for the importer", () => {
-    const clip = toApiInput("Clip", fixtures("Clip")[0].rec, me);
-    assert.ok(Array.isArray(clip.aliases) && clip.role);
+    const sample = toApiInput("Sample", fixtures("Sample")[0].rec, me);
+    assert.ok(Array.isArray(sample.aliases) && sample.role);
     assert.equal(toApiInput("Marker", fixtures("Marker")[0].rec, me).owner, "user-1", "cognito:username claim");
     assert.equal(toApiInput("Verdict", fixtures("Verdict")[0].rec, me).judge, "sub-1", "sub claim");
     assert.equal(toApiInput("Marker", { ...fixtures("Marker")[0].rec, owner: "someone" }, me).owner, "someone", "real owners are kept");
@@ -120,11 +120,11 @@ describe("type conversion (real records)", () => {
     assert.ok(!("performer" in out));
   });
   it("rejects bad enums, types and missing required fields", () => {
-    const s = fixtures("Slice")[0].rec;
-    assert.throws(() => toApiInput("Slice", { ...s, kind: "banana" }, me), /not a Kind/);
-    assert.throws(() => toApiInput("Slice", { ...s, start: "1" }, me), /must be a number/);
-    assert.throws(() => toApiInput("Slice", { ...s, name: undefined }, me), /name is required/);
-    assert.throws(() => toApiInput("Clip", { ...fixtures("Clip")[0].rec, audio: undefined }, me), /audio is required/);
+    const s = fixtures("Clip")[0].rec;
+    assert.throws(() => toApiInput("Clip", { ...s, kind: "banana" }, me), /not a Kind/);
+    assert.throws(() => toApiInput("Clip", { ...s, start: "1" }, me), /must be a number/);
+    assert.throws(() => toApiInput("Clip", { ...s, name: undefined }, me), /name is required/);
+    assert.throws(() => toApiInput("Sample", { ...fixtures("Sample")[0].rec, audio: undefined }, me), /audio is required/);
   });
 });
 
@@ -186,23 +186,23 @@ describe("importLibraryFromBucket", () => {
   });
 
   it("one bad record (bad JSON, bad enum, missing file, API error) does not abort the rest", async () => {
-    const good = fixtures("Slice");
+    const good = fixtures("Clip");
     const b = bucket(2, {
-      "Slice/slc_bad_json.json": "{nope",
-      "Slice/slc_bad_enum.json": JSON.stringify({ ...good[0].rec, id: "slc_bad_enum", kind: "banana" }),
-      "Slice/slc_array.json": "[]",
+      "Clip/clp_bad_json.json": "{nope",
+      "Clip/clp_bad_enum.json": JSON.stringify({ ...good[0].rec, id: "clp_bad_enum", kind: "banana" }),
+      "Clip/clp_array.json": "[]",
     });
     const c = fakeClient({ failIds: [good[1].rec.id] });
     // a listed key whose download fails
     const list = b.storage.list;
     b.storage.list = async (i) => {
       const r = await list(i);
-      return i.path === "Slice/" && !i.options?.nextToken ? { ...r, items: [...r.items, { path: "Slice/gone.json" }] } : r;
+      return i.path === "Clip/" && !i.options?.nextToken ? { ...r, items: [...r.items, { path: "Clip/gone.json" }] } : r;
     };
     const s = await importLibraryFromBucket({}, deps(b, c));
     const keys = s.failed.map((f) => f.key).sort();
-    assert.deepEqual(keys, ["Slice/gone.json", `Slice/${good[1].key.split("/")[1]}`, "Slice/slc_array.json", "Slice/slc_bad_enum.json", "Slice/slc_bad_json.json"].sort());
-    assert.equal(s.perModel.Slice.created, 1);
+    assert.deepEqual(keys, ["Clip/gone.json", `Clip/${good[1].key.split("/")[1]}`, "Clip/clp_array.json", "Clip/clp_bad_enum.json", "Clip/clp_bad_json.json"].sort());
+    assert.equal(s.perModel.Clip.created, 1);
     assert.ok(s.perModel.Score.created > 0 && s.perModel.ScoreRef.created > 0, "later models still imported");
   });
 
@@ -218,20 +218,20 @@ describe("importLibraryFromBucket", () => {
     const b = bucket();
     const c = fakeClient();
     const ctl = new AbortController();
-    const s = await importLibraryFromBucket({ signal: ctl.signal, onProgress: (p) => p.model === "Clip" && p.phase === "listing" && ctl.abort() }, deps(b, c));
+    const s = await importLibraryFromBucket({ signal: ctl.signal, onProgress: (p) => p.model === "Sample" && p.phase === "listing" && ctl.abort() }, deps(b, c));
     assert.equal(s.aborted, true);
-    assert.equal(c.tables.Slice.size, 0);
+    assert.equal(c.tables.Clip.size, 0);
   });
 
   it("a model that cannot be listed is reported and the others continue", async () => {
     const b = bucket();
     const list = b.storage.list;
     b.storage.list = async (i) => {
-      if (i.path === "Clip/") throw new Error("AccessDenied");
+      if (i.path === "Sample/") throw new Error("AccessDenied");
       return list(i);
     };
     const s = await importLibraryFromBucket({}, deps(b, fakeClient()));
-    assert.deepEqual(s.failed.map((f) => f.key), ["Clip/"]);
+    assert.deepEqual(s.failed.map((f) => f.key), ["Sample/"]);
     assert.ok(s.created > 0);
   });
 });

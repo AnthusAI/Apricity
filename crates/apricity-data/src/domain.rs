@@ -2,9 +2,9 @@
 //! Implements design/storage.md §3.2 and features/data/domain/*.feature.
 //!
 //! These are idempotent, multi-step operations over the library that coordinate
-//! creating/updating verdicts, curated slices, and score references.
+//! creating/updating verdicts, curated clips, and score references.
 
-use crate::markup::{self, ExistingSlice, ProposedSlice};
+use crate::markup::{self, ExistingClip, ProposedClip};
 use crate::score_refs;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
@@ -16,7 +16,7 @@ use virtuus_amplify::Identity as VirtuusIdentity;
 #[serde(rename_all = "camelCase")]
 pub struct Proposal {
     pub candidate_id: String,
-    pub clip_id: String,
+    pub sample_id: String,
     pub recording_id: String,
     pub start: f64,
     pub end: f64,
@@ -63,7 +63,7 @@ impl From<DomainError> for Value {
 
 pub type Result<T> = std::result::Result<T, DomainError>;
 
-/// Keep a candidate: create a verdict, a curated slice, and crate item.
+/// Keep a candidate: create a verdict, a curated clip, and crate item.
 /// Idempotent: keeping the same candidate twice changes nothing.
 pub fn judge(
     engine: &mut virtuus_amplify::Engine,
@@ -159,13 +159,13 @@ pub fn judge(
         }
     }
 
-    // If verdict is "keep", also create the curated slice and crate item
+    // If verdict is "keep", also create the curated clip and crate item
     if verdict_str == "keep" {
-        let clip_id = candidate_data
-            .get("clipId")
+        let sample_id = candidate_data
+            .get("sampleId")
             .and_then(|v| v.as_str())
             .ok_or(DomainError {
-                message: "Candidate missing clipId".to_string(),
+                message: "Candidate missing sampleId".to_string(),
                 error_type: Some("Validation".to_string()),
             })?;
 
@@ -193,17 +193,17 @@ pub fn judge(
                 error_type: Some("Validation".to_string()),
             })?;
 
-        // Create curated slice with deterministic id based on candidate id
-        let slice_id = crate::curated_slice_id(candidate_id);
-        let slice_name = input
+        // Create curated clip with deterministic id based on candidate id
+        let clip_id = crate::curated_clip_id(candidate_id);
+        let clip_name = input
             .name
             .clone()
             .unwrap_or_else(|| format!("curated-{}", Uuid::new_v4().to_string()[..8].to_string()));
 
-        let slice_args = json!({
-            "id": slice_id,
-            "clipId": clip_id,
-            "name": slice_name,
+        let clip_args = json!({
+            "id": clip_id,
+            "sampleId": sample_id,
+            "name": clip_name,
             "start": start,
             "end": end,
             "source": "curated",
@@ -216,7 +216,7 @@ pub fn judge(
         });
 
         let (_, errors) = engine
-            .call("Slice", "create", &slice_args, identity)
+            .call("Clip", "create", &clip_args, identity)
             .map_err(|e| DomainError {
                 message: e.to_string(),
                 error_type: Some("Engine".to_string()),
@@ -234,7 +234,7 @@ pub fn judge(
 
                 if !is_duplicate {
                     return Err(DomainError {
-                        message: format!("Failed to create slice: {:?}", error_list),
+                        message: format!("Failed to create clip: {:?}", error_list),
                         error_type: Some("Engine".to_string()),
                     });
                 }
@@ -304,8 +304,8 @@ pub fn judge(
             }
         }
     } else if verdict_str == "skip" {
-        // If verdict is "skip", remove the curated slice if nobody else keeps it
-        let slice_id = crate::curated_slice_id(candidate_id);
+        // If verdict is "skip", remove the curated clip if nobody else keeps it
+        let clip_id = crate::curated_clip_id(candidate_id);
 
         // Check how many keep verdicts exist for this candidate
         let verdicts_args = json!({ "filter": { "candidateId": { "eq": candidate_id } } });
@@ -333,10 +333,10 @@ pub fn judge(
 
         // Only delete if no one else keeps it
         if keeps_count == 0 {
-            // Check if any score uses this slice
-            let refs_args = json!({ "key": { "sliceId": slice_id.clone() } });
+            // Check if any score uses this clip
+            let refs_args = json!({ "key": { "clipId": clip_id.clone() } });
             let (refs_data, _) = engine
-                .call("ScoreRef", "refsBySlice", &refs_args, identity)
+                .call("ScoreRef", "refsByClip", &refs_args, identity)
                 .map_err(|e| DomainError {
                     message: e.to_string(),
                     error_type: Some("Engine".to_string()),
@@ -350,22 +350,22 @@ pub fn judge(
                 };
 
             if score_uses_it {
-                // Retire the slice
-                let slice_update = json!({
-                    "id": slice_id,
+                // Retire the clip
+                let clip_update = json!({
+                    "id": clip_id,
                     "retired": true
                 });
                 let _ = engine
-                    .call("Slice", "update", &slice_update, identity)
+                    .call("Clip", "update", &clip_update, identity)
                     .map_err(|e| DomainError {
                         message: e.to_string(),
                         error_type: Some("Engine".to_string()),
                     })?;
             } else {
-                // Delete the slice and associated crate items
-                let slice_delete = json!({ "id": slice_id });
+                // Delete the clip and associated crate items
+                let clip_delete = json!({ "id": clip_id });
                 let _ = engine
-                    .call("Slice", "delete", &slice_delete, identity)
+                    .call("Clip", "delete", &clip_delete, identity)
                     .map_err(|e| DomainError {
                         message: e.to_string(),
                         error_type: Some("Engine".to_string()),
@@ -403,18 +403,18 @@ pub fn judge(
     }))
 }
 
-/// Merge markup: match proposed ML slices to existing ones, handle names and retirement.
+/// Merge markup: match proposed ML clips to existing ones, handle names and retirement.
 /// Implements design/storage.md §1.3.
 pub fn apply_markup_merge(
     engine: &mut virtuus_amplify::Engine,
-    clip_id: &str,
-    proposed: Vec<ProposedSlice>,
+    sample_id: &str,
+    proposed: Vec<ProposedClip>,
     identity: &VirtuusIdentity,
 ) -> Result<Value> {
-    // Fetch the clip to get nameCounters
-    let clip_args = json!({ "id": clip_id });
-    let (clip_data, errors) = engine
-        .call("Clip", "get", &clip_args, identity)
+    // Fetch the sample to get nameCounters
+    let sample_args = json!({ "id": sample_id });
+    let (sample_data, errors) = engine
+        .call("Sample", "get", &sample_args, identity)
         .map_err(|e| DomainError {
             message: e.to_string(),
             error_type: Some("Engine".to_string()),
@@ -423,22 +423,22 @@ pub fn apply_markup_merge(
     if let Some(error_list) = errors {
         if !error_list.is_empty() {
             return Err(DomainError {
-                message: format!("Failed to fetch clip: {:?}", error_list),
+                message: format!("Failed to fetch sample: {:?}", error_list),
                 error_type: Some("Engine".to_string()),
             });
         }
     }
 
-    if clip_data.is_null() {
+    if sample_data.is_null() {
         return Err(DomainError {
-            message: format!("Clip not found: {}", clip_id),
+            message: format!("Sample not found: {}", sample_id),
             error_type: Some("NotFound".to_string()),
         });
     }
 
     // Parse name counters
     // `nameCounters` is AWSJSON: a JSON string in the contract, though older writers stored an object.
-    let name_counters: HashMap<String, u32> = if let Some(nc) = clip_data.get("nameCounters") {
+    let name_counters: HashMap<String, u32> = if let Some(nc) = sample_data.get("nameCounters") {
         match nc.as_str() {
             Some(text) => serde_json::from_str(text).unwrap_or_default(),
             None => serde_json::from_value(nc.clone()).unwrap_or_default(),
@@ -447,10 +447,10 @@ pub fn apply_markup_merge(
         HashMap::new()
     };
 
-    // Fetch existing slices for this clip
-    let slices_args = json!({ "key": { "clipId": clip_id } });
-    let (slices_data, errors) = engine
-        .call("Slice", "slicesByClip", &slices_args, identity)
+    // Fetch existing clips for this sample
+    let clips_args = json!({ "key": { "sampleId": sample_id } });
+    let (clips_data, errors) = engine
+        .call("Clip", "clipsBySample", &clips_args, identity)
         .map_err(|e| DomainError {
             message: e.to_string(),
             error_type: Some("Engine".to_string()),
@@ -459,14 +459,14 @@ pub fn apply_markup_merge(
     if let Some(error_list) = errors {
         if !error_list.is_empty() {
             return Err(DomainError {
-                message: format!("Failed to fetch slices: {:?}", error_list),
+                message: format!("Failed to fetch clips: {:?}", error_list),
                 error_type: Some("Engine".to_string()),
             });
         }
     }
 
-    let existing_slices: Vec<ExistingSlice> =
-        if let Some(items) = slices_data.get("items").and_then(|v| v.as_array()) {
+    let existing_clips: Vec<ExistingClip> =
+        if let Some(items) = clips_data.get("items").and_then(|v| v.as_array()) {
             items
                 .iter()
                 .filter_map(|s| {
@@ -477,7 +477,7 @@ pub fn apply_markup_merge(
                         .to_string();
                     let retired = s.get("retired").and_then(|v| v.as_bool()).unwrap_or(false);
 
-                    Some(ExistingSlice {
+                    Some(ExistingClip {
                         id: s
                             .get("id")
                             .and_then(|v| v.as_str())
@@ -500,7 +500,7 @@ pub fn apply_markup_merge(
                     })
                 })
                 .collect()
-        } else if let Some(arr) = slices_data.as_array() {
+        } else if let Some(arr) = clips_data.as_array() {
             arr.iter()
                 .filter_map(|s| {
                     let source = s
@@ -510,7 +510,7 @@ pub fn apply_markup_merge(
                         .to_string();
                     let retired = s.get("retired").and_then(|v| v.as_bool()).unwrap_or(false);
 
-                    Some(ExistingSlice {
+                    Some(ExistingClip {
                         id: s
                             .get("id")
                             .and_then(|v| v.as_str())
@@ -537,12 +537,12 @@ pub fn apply_markup_merge(
             Vec::new()
         };
 
-    // Get slices used by scores
+    // Get clips used by scores
     let mut used_by_score = HashSet::new();
-    for existing in &existing_slices {
-        let refs_args = json!({ "key": { "sliceId": existing.id.clone() } });
+    for existing in &existing_clips {
+        let refs_args = json!({ "key": { "clipId": existing.id.clone() } });
         let (refs_data, _) = engine
-            .call("ScoreRef", "refsBySlice", &refs_args, identity)
+            .call("ScoreRef", "refsByClip", &refs_args, identity)
             .map_err(|e| DomainError {
                 message: e.to_string(),
                 error_type: Some("Engine".to_string()),
@@ -556,9 +556,9 @@ pub fn apply_markup_merge(
     }
 
     // Plan the merge
-    let plan = markup::plan_merge(&existing_slices, &proposed, name_counters, &used_by_score);
+    let plan = markup::plan_merge(&existing_clips, &proposed, name_counters, &used_by_score);
 
-    // Execute the plan: update kept slices
+    // Execute the plan: update kept clips
     for (existing_id, new_span, rank) in plan.keep {
         let update_args = json!({
             "id": existing_id,
@@ -567,18 +567,18 @@ pub fn apply_markup_merge(
             "rank": rank
         });
         let _ = engine
-            .call("Slice", "update", &update_args, identity)
+            .call("Clip", "update", &update_args, identity)
             .map_err(|e| DomainError {
                 message: e.to_string(),
                 error_type: Some("Engine".to_string()),
             })?;
     }
 
-    // Create new slices
+    // Create new clips
     for (name, start, end, rank) in plan.create {
         let create_args = json!({
-            "id": format!("slc_{}", Uuid::new_v4().simple()),
-            "clipId": clip_id,
+            "id": format!("clp_{}", Uuid::new_v4().simple()),
+            "sampleId": sample_id,
             "name": name,
             "start": start,
             "end": end,
@@ -586,53 +586,53 @@ pub fn apply_markup_merge(
             "rank": rank
         });
         let _ = engine
-            .call("Slice", "create", &create_args, identity)
+            .call("Clip", "create", &create_args, identity)
             .map_err(|e| DomainError {
                 message: e.to_string(),
                 error_type: Some("Engine".to_string()),
             })?;
     }
 
-    // Retire slices
-    for slice_id in plan.retire {
+    // Retire clips
+    for clip_id in plan.retire {
         let update_args = json!({
-            "id": slice_id,
+            "id": clip_id,
             "retired": true
         });
         let _ = engine
-            .call("Slice", "update", &update_args, identity)
+            .call("Clip", "update", &update_args, identity)
             .map_err(|e| DomainError {
                 message: e.to_string(),
                 error_type: Some("Engine".to_string()),
             })?;
     }
 
-    // Delete slices
-    for slice_id in plan.delete {
-        let delete_args = json!({ "id": slice_id });
+    // Delete clips
+    for clip_id in plan.delete {
+        let delete_args = json!({ "id": clip_id });
         let _ = engine
-            .call("Slice", "delete", &delete_args, identity)
+            .call("Clip", "delete", &delete_args, identity)
             .map_err(|e| DomainError {
                 message: e.to_string(),
                 error_type: Some("Engine".to_string()),
             })?;
     }
 
-    // Update clip's nameCounters
+    // Update sample's nameCounters
     let updated_counters = plan.name_counters;
-    let clip_update = json!({
-        "id": clip_id,
+    let sample_update = json!({
+        "id": sample_id,
         "nameCounters": serde_json::to_value(&updated_counters).unwrap_or(json!({}))
     });
     let _ = engine
-        .call("Clip", "update", &clip_update, identity)
+        .call("Sample", "update", &sample_update, identity)
         .map_err(|e| DomainError {
             message: e.to_string(),
             error_type: Some("Engine".to_string()),
         })?;
 
     Ok(json!({
-        "clipId": clip_id,
+        "sampleId": sample_id,
         "processed": true
     }))
 }
@@ -724,25 +724,25 @@ pub fn save_score_impl(
 
     // Create new ScoreRefs
     for catalog_ref in refs {
-        // Resolve clip id from path if needed
-        let clip_id = if let Some(cid) = &catalog_ref.clip_id {
+        // Resolve sample id from path if needed
+        let sample_id = if let Some(cid) = &catalog_ref.sample_id {
             Some(cid.clone())
         } else if let Some(path) = &catalog_ref.catalog_path {
-            // Look up clip by path
-            let clips_args = json!({ "key": { "path": path } });
-            let (clips_data, _) = engine
-                .call("Clip", "clipsByPath", &clips_args, identity)
+            // Look up sample by path
+            let samples_args = json!({ "key": { "path": path } });
+            let (samples_data, _) = engine
+                .call("Sample", "samplesByPath", &samples_args, identity)
                 .map_err(|e| DomainError {
                     message: e.to_string(),
                     error_type: Some("Engine".to_string()),
                 })?;
 
-            if let Some(items) = clips_data.get("items").and_then(|v| v.as_array()) {
+            if let Some(items) = samples_data.get("items").and_then(|v| v.as_array()) {
                 items
                     .first()
                     .and_then(|c| c.get("id").and_then(|v| v.as_str()))
                     .map(|s| s.to_string())
-            } else if let Some(c) = clips_data.as_object() {
+            } else if let Some(c) = samples_data.as_object() {
                 c.get("id").and_then(|v| v.as_str()).map(|s| s.to_string())
             } else {
                 None
@@ -751,26 +751,26 @@ pub fn save_score_impl(
             None
         };
 
-        // Get slice id if slice name is specified
-        let slice_id = if let Some(sid) = &catalog_ref.slice_id {
+        // Get clip id if clip name is specified
+        let clip_id = if let Some(sid) = &catalog_ref.clip_id {
             Some(sid.clone())
-        } else if let Some(clip_id_val) = &clip_id {
-            if let Some(slice_name) = &catalog_ref.slice_name {
-                let slices_args = json!({ "key": { "clipId": clip_id_val } });
-                let (slices_data, _) = engine
-                    .call("Slice", "slicesByClip", &slices_args, identity)
+        } else if let Some(sample_id_val) = &sample_id {
+            if let Some(clip_name) = &catalog_ref.clip_name {
+                let clips_args = json!({ "key": { "sampleId": sample_id_val } });
+                let (clips_data, _) = engine
+                    .call("Clip", "clipsBySample", &clips_args, identity)
                     .map_err(|e| DomainError {
                         message: e.to_string(),
                         error_type: Some("Engine".to_string()),
                     })?;
 
-                if let Some(items) = slices_data.get("items").and_then(|v| v.as_array()) {
+                if let Some(items) = clips_data.get("items").and_then(|v| v.as_array()) {
                     items
                         .iter()
                         .find(|s| {
                             s.get("name")
                                 .and_then(|v| v.as_str())
-                                .map(|n| n == slice_name)
+                                .map(|n| n == clip_name)
                                 .unwrap_or(false)
                         })
                         .and_then(|s| s.get("id").and_then(|v| v.as_str()))
@@ -785,25 +785,25 @@ pub fn save_score_impl(
             None
         };
 
-        // Get start and end from slice if available
-        let (start, end) = if let Some(ref sid) = slice_id {
-            if let Some(ref cid) = clip_id {
-                let slices_args = json!({ "key": { "clipId": cid } });
-                let (slices_data, _) = engine
-                    .call("Slice", "slicesByClip", &slices_args, identity)
+        // Get start and end from clip if available
+        let (start, end) = if let Some(ref sid) = clip_id {
+            if let Some(ref cid) = sample_id {
+                let clips_args = json!({ "key": { "sampleId": cid } });
+                let (clips_data, _) = engine
+                    .call("Clip", "clipsBySample", &clips_args, identity)
                     .map_err(|e| DomainError {
                         message: e.to_string(),
                         error_type: Some("Engine".to_string()),
                     })?;
 
-                if let Some(items) = slices_data.get("items").and_then(|v| v.as_array()) {
-                    let slice = items.iter().find(|s| {
+                if let Some(items) = clips_data.get("items").and_then(|v| v.as_array()) {
+                    let clip = items.iter().find(|s| {
                         s.get("id")
                             .and_then(|v| v.as_str())
                             .map(|id| id == sid)
                             .unwrap_or(false)
                     });
-                    if let Some(s) = slice {
+                    if let Some(s) = clip {
                         let start = s.get("start").and_then(|v| v.as_f64()).unwrap_or(0.0);
                         let end = s.get("end").and_then(|v| v.as_f64()).unwrap_or(0.0);
                         (Some(start), Some(end))
@@ -826,10 +826,10 @@ pub fn save_score_impl(
             "scoreId": score_id,
             "clipAlias": catalog_ref.alias,
             "source": catalog_ref.source,
+            "sampleId": sample_id,
+            "samplePath": catalog_ref.catalog_path,
+            "clipName": catalog_ref.clip_name,
             "clipId": clip_id,
-            "clipPath": catalog_ref.catalog_path,
-            "sliceName": catalog_ref.slice_name,
-            "sliceId": slice_id,
             "start": start,
             "end": end,
             "kitPad": catalog_ref.kit_pad,
@@ -868,7 +868,7 @@ mod tests {
 
     #[test]
     fn test_proposal_deserialization() {
-        let json = r#"{"candidateId": "c1", "clipId": "clp-1", "recordingId": "rec-1", "start": 10.0, "end": 14.0, "kind": "loop", "proposer": "ml", "score": 0.9}"#;
+        let json = r#"{"candidateId": "c1", "sampleId": "smp-1", "recordingId": "rec-1", "start": 10.0, "end": 14.0, "kind": "loop", "proposer": "ml", "score": 0.9}"#;
         let proposal: Proposal = serde_json::from_str(json).unwrap();
         assert_eq!(proposal.candidate_id, "c1");
         assert_eq!(proposal.kind, "loop");

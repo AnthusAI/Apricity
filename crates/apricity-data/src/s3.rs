@@ -860,7 +860,7 @@ mod tests {
         let server = Server::start();
         let dir = tempfile::tempdir().unwrap();
         let a = dir.path().join("a");
-        write(&a, "tables/Clip/c1.json", b"{\"id\":\"c1\"}");
+        write(&a, "tables/Sample/c1.json", b"{\"id\":\"c1\"}");
         write(&a, "files/audio/c1/a.wav", &[9u8; 3000]);
         write(&a, "files/analysis/c1/h.json", b"{}");
         write(&a, ".virtuus/lock", b"x");
@@ -891,7 +891,7 @@ mod tests {
             vec![
                 "hub/files/analysis/c1/h.json",
                 "hub/files/audio/c1/a.wav",
-                "hub/tables/Clip/c1.json"
+                "hub/tables/Sample/c1.json"
             ]
         );
         assert_eq!(
@@ -917,7 +917,7 @@ mod tests {
             "nothing changed, nothing uploaded"
         );
 
-        write(&a, "tables/Clip/c1.json", b"{\"id\":\"c1\",\"t\":1}");
+        write(&a, "tables/Sample/c1.json", b"{\"id\":\"c1\",\"t\":1}");
         let heads = server.count("HEAD");
         let r = sync::run(
             &mut local,
@@ -954,7 +954,7 @@ mod tests {
         .unwrap();
         assert_eq!(r.pulled, 3);
         for k in [
-            "tables/Clip/c1.json",
+            "tables/Sample/c1.json",
             "files/audio/c1/a.wav",
             "files/analysis/c1/h.json",
         ] {
@@ -967,8 +967,8 @@ mod tests {
         assert!(!b.join("apricity-library.json").exists() && !b.join(".virtuus").exists());
 
         // Both change the same file: reported, neither side touched.
-        write(&a, "tables/Clip/c1.json", b"from a");
-        write(&b, "tables/Clip/c1.json", b"from b");
+        write(&a, "tables/Sample/c1.json", b"from a");
+        write(&b, "tables/Sample/c1.json", b"from b");
         sync::run(
             &mut local,
             &mut remote,
@@ -991,10 +991,10 @@ mod tests {
         .unwrap();
         assert_eq!(r.plan.conflicts.len(), 1);
         assert_eq!(
-            std::fs::read(b.join("tables/Clip/c1.json")).unwrap(),
+            std::fs::read(b.join("tables/Sample/c1.json")).unwrap(),
             b"from b"
         );
-        assert_eq!(server.body("hub/tables/Clip/c1.json").unwrap(), b"from a");
+        assert_eq!(server.body("hub/tables/Sample/c1.json").unwrap(), b"from a");
         let r = sync::run(
             &mut local_b,
             &mut remote,
@@ -1007,7 +1007,7 @@ mod tests {
         .unwrap();
         assert_eq!(r.pulled, 1);
         assert_eq!(
-            std::fs::read(b.join("tables/Clip/c1.json")).unwrap(),
+            std::fs::read(b.join("tables/Sample/c1.json")).unwrap(),
             b"from a"
         );
         assert!(r.plan.steps.iter().all(|s| s.kind == StepKind::Pull));

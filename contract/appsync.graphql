@@ -1,4 +1,4 @@
-enum SliceSource {
+enum ClipSource {
   user
   ml
   curated
@@ -32,12 +32,12 @@ type Recording {
   sourcePage: AWSURL
   url: AWSURL
   documents: [FileRef]
-  clips(filter: ModelClipFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelClipConnection
+  samples(filter: ModelSampleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSampleConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
 
-type Clip {
+type Sample {
   id: ID!
   recordingId: ID!
   recording: Recording
@@ -45,16 +45,16 @@ type Clip {
   aliases: [String]
   collection: String!
   title: String!
-  role: ClipRole
+  role: SampleRole
   stem: String
   stemModel: String
-  parentClipId: ID
+  parentSampleId: ID
   excerptStart: Float
   audio: FileRef!
   analysis: FileRef
   analysisVersion: Int
   analyzedAt: AWSDateTime
-  status: ClipStatus
+  status: SampleStatus
   duration: Float
   sampleRate: Int
   channels: Int
@@ -68,21 +68,21 @@ type Clip {
   noteCount: Int
   tags: [String]
   nameCounters: AWSJSON
-  slices(filter: ModelSliceFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSliceConnection
+  clips(filter: ModelClipFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelClipConnection
   markers(filter: ModelMarkerFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelMarkerConnection
   candidates(filter: ModelCandidateFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelCandidateConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
 
-type Slice {
+type Clip {
   id: ID!
-  clipId: ID!
-  clip: Clip
+  sampleId: ID!
+  sample: Sample
   name: String!
   start: Float!
   end: Float!
-  source: SliceSource!
+  source: ClipSource!
   kind: Kind
   tags: [String]
   evidence: AWSJSON
@@ -96,11 +96,11 @@ type Slice {
 
 type Marker {
   id: ID!
-  clipId: ID!
-  clip: Clip
+  sampleId: ID!
+  sample: Sample
   name: String!
   seconds: Float!
-  source: SliceSource
+  source: ClipSource
   note: String
   owner: String
   createdAt: AWSDateTime!
@@ -109,8 +109,8 @@ type Marker {
 
 type Candidate {
   id: ID!
-  clipId: ID!
-  clip: Clip
+  sampleId: ID!
+  sample: Sample
   recordingId: ID!
   start: Float!
   end: Float!
@@ -155,8 +155,8 @@ type CrateItem {
   crate: Crate
   position: String!
   candidateId: ID
-  sliceId: ID
   clipId: ID
+  sampleId: ID
   note: String
   owner: String
   createdAt: AWSDateTime!
@@ -182,10 +182,10 @@ type ScoreRef {
   scoreId: ID!
   score: Score
   clipAlias: String!
+  sampleId: ID
+  samplePath: String
+  clipName: String
   clipId: ID
-  clipPath: String
-  sliceName: String
-  sliceId: ID
   start: Float
   end: Float
   owner: String
@@ -196,7 +196,7 @@ type ScoreRef {
 type Job {
   id: ID!
   kind: String!
-  clipId: ID
+  sampleId: ID
   state: JobState
   error: String
   createdAt: AWSDateTime!
@@ -226,14 +226,14 @@ type CandidateContext {
   stem: String
 }
 
-enum ClipRole {
+enum SampleRole {
   source
   stem
   excerpt
   upload
 }
 
-enum ClipStatus {
+enum SampleStatus {
   pending
   analyzing
   ready
@@ -440,10 +440,10 @@ input ModelRecordingFilterInput {
 type Query {
   getRecording(id: ID!): Recording
   listRecordings(id: ID, filter: ModelRecordingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRecordingConnection
+  getSample(id: ID!): Sample
+  listSamples(id: ID, filter: ModelSampleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSampleConnection
   getClip(id: ID!): Clip
   listClips(id: ID, filter: ModelClipFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelClipConnection
-  getSlice(id: ID!): Slice
-  listSlices(id: ID, filter: ModelSliceFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSliceConnection
   getMarker(id: ID!): Marker
   listMarkers(id: ID, filter: ModelMarkerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelMarkerConnection
   getCandidate(id: ID!): Candidate
@@ -461,15 +461,15 @@ type Query {
   getJob(id: ID!): Job
   listJobs(id: ID, filter: ModelJobFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelJobConnection
   recordingsByCollection(collection: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelRecordingFilterInput, limit: Int, nextToken: String): ModelRecordingConnection
-  clipsByRecording(recordingId: ID!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  clipsByPath(path: String!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  clipsByCollection(collection: String!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  clipsByParent(parentClipId: ID!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
-  slicesByClip(clipId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSliceFilterInput, limit: Int, nextToken: String): ModelSliceConnection
-  slicesByClipAndName(clipId: ID!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSliceFilterInput, limit: Int, nextToken: String): ModelSliceConnection
-  slicesByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelSliceFilterInput, limit: Int, nextToken: String): ModelSliceConnection
-  markersByClip(clipId: ID!, seconds: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelMarkerFilterInput, limit: Int, nextToken: String): ModelMarkerConnection
-  candidatesByClip(clipId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
+  samplesByRecording(recordingId: ID!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
+  samplesByPath(path: String!, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
+  samplesByCollection(collection: String!, path: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
+  samplesByParent(parentSampleId: ID!, sortDirection: ModelSortDirection, filter: ModelSampleFilterInput, limit: Int, nextToken: String): ModelSampleConnection
+  clipsBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
+  clipsBySampleAndName(sampleId: ID!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
+  clipsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection
+  markersBySample(sampleId: ID!, seconds: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelMarkerFilterInput, limit: Int, nextToken: String): ModelMarkerConnection
+  candidatesBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
   candidatesByRecording(recordingId: ID!, baseScore: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
   candidatesByKind(kind: Kind!, baseScore: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCandidateFilterInput, limit: Int, nextToken: String): ModelCandidateConnection
   verdictsByJudge(judge: String!, judgedAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelVerdictFilterInput, limit: Int, nextToken: String): ModelVerdictConnection
@@ -478,8 +478,8 @@ type Query {
   crateItemsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
   scoresByFolder(folder: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection
   refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
-  refsByClip(clipId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
-  refsBySlice(sliceId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
+  refsBySample(sampleId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
+  refsByClip(clipId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection
   jobsByState(state: JobState!, sortDirection: ModelSortDirection, filter: ModelJobFilterInput, limit: Int, nextToken: String): ModelJobConnection
 }
 
@@ -536,12 +536,12 @@ type Mutation {
   createRecording(input: CreateRecordingInput!, condition: ModelRecordingConditionInput): Recording
   updateRecording(input: UpdateRecordingInput!, condition: ModelRecordingConditionInput): Recording
   deleteRecording(input: DeleteRecordingInput!, condition: ModelRecordingConditionInput): Recording
+  createSample(input: CreateSampleInput!, condition: ModelSampleConditionInput): Sample
+  updateSample(input: UpdateSampleInput!, condition: ModelSampleConditionInput): Sample
+  deleteSample(input: DeleteSampleInput!, condition: ModelSampleConditionInput): Sample
   createClip(input: CreateClipInput!, condition: ModelClipConditionInput): Clip
   updateClip(input: UpdateClipInput!, condition: ModelClipConditionInput): Clip
   deleteClip(input: DeleteClipInput!, condition: ModelClipConditionInput): Clip
-  createSlice(input: CreateSliceInput!, condition: ModelSliceConditionInput): Slice
-  updateSlice(input: UpdateSliceInput!, condition: ModelSliceConditionInput): Slice
-  deleteSlice(input: DeleteSliceInput!, condition: ModelSliceConditionInput): Slice
   createMarker(input: CreateMarkerInput!, condition: ModelMarkerConditionInput): Marker
   updateMarker(input: UpdateMarkerInput!, condition: ModelMarkerConditionInput): Marker
   deleteMarker(input: DeleteMarkerInput!, condition: ModelMarkerConditionInput): Marker
@@ -589,12 +589,12 @@ type Subscription {
   onCreateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["createRecording"])
   onUpdateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["updateRecording"])
   onDeleteRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["deleteRecording"])
-  onCreateClip(filter: ModelSubscriptionClipFilterInput): Clip @aws_subscribe(mutations: ["createClip"])
-  onUpdateClip(filter: ModelSubscriptionClipFilterInput): Clip @aws_subscribe(mutations: ["updateClip"])
-  onDeleteClip(filter: ModelSubscriptionClipFilterInput): Clip @aws_subscribe(mutations: ["deleteClip"])
-  onCreateSlice(filter: ModelSubscriptionSliceFilterInput, owner: String): Slice @aws_subscribe(mutations: ["createSlice"])
-  onUpdateSlice(filter: ModelSubscriptionSliceFilterInput, owner: String): Slice @aws_subscribe(mutations: ["updateSlice"])
-  onDeleteSlice(filter: ModelSubscriptionSliceFilterInput, owner: String): Slice @aws_subscribe(mutations: ["deleteSlice"])
+  onCreateSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["createSample"])
+  onUpdateSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["updateSample"])
+  onDeleteSample(filter: ModelSubscriptionSampleFilterInput): Sample @aws_subscribe(mutations: ["deleteSample"])
+  onCreateClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["createClip"])
+  onUpdateClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["updateClip"])
+  onDeleteClip(filter: ModelSubscriptionClipFilterInput, owner: String): Clip @aws_subscribe(mutations: ["deleteClip"])
   onCreateMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["createMarker"])
   onUpdateMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["updateMarker"])
   onDeleteMarker(filter: ModelSubscriptionMarkerFilterInput, owner: String): Marker @aws_subscribe(mutations: ["deleteMarker"])
@@ -621,36 +621,36 @@ type Subscription {
   onDeleteJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["deleteJob"])
 }
 
-type ModelClipConnection {
-  items: [Clip]!
+type ModelSampleConnection {
+  items: [Sample]!
   nextToken: String
 }
 
-input ModelClipRoleInput {
-  eq: ClipRole
-  ne: ClipRole
+input ModelSampleRoleInput {
+  eq: SampleRole
+  ne: SampleRole
 }
 
-input ModelClipStatusInput {
-  eq: ClipStatus
-  ne: ClipStatus
+input ModelSampleStatusInput {
+  eq: SampleStatus
+  ne: SampleStatus
 }
 
-input ModelClipFilterInput {
+input ModelSampleFilterInput {
   id: ModelIDInput
   recordingId: ModelIDInput
   path: ModelStringInput
   aliases: ModelStringInput
   collection: ModelStringInput
   title: ModelStringInput
-  role: ModelClipRoleInput
+  role: ModelSampleRoleInput
   stem: ModelStringInput
   stemModel: ModelStringInput
-  parentClipId: ModelIDInput
+  parentSampleId: ModelIDInput
   excerptStart: ModelFloatInput
   analysisVersion: ModelIntInput
   analyzedAt: ModelStringInput
-  status: ModelClipStatusInput
+  status: ModelSampleStatusInput
   duration: ModelFloatInput
   sampleRate: ModelIntInput
   channels: ModelIntInput
@@ -666,25 +666,25 @@ input ModelClipFilterInput {
   nameCounters: ModelStringInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
-  and: [ModelClipFilterInput]
-  or: [ModelClipFilterInput]
-  not: ModelClipFilterInput
+  and: [ModelSampleFilterInput]
+  or: [ModelSampleFilterInput]
+  not: ModelSampleFilterInput
 }
 
-input ModelClipConditionInput {
+input ModelSampleConditionInput {
   recordingId: ModelIDInput
   path: ModelStringInput
   aliases: ModelStringInput
   collection: ModelStringInput
   title: ModelStringInput
-  role: ModelClipRoleInput
+  role: ModelSampleRoleInput
   stem: ModelStringInput
   stemModel: ModelStringInput
-  parentClipId: ModelIDInput
+  parentSampleId: ModelIDInput
   excerptStart: ModelFloatInput
   analysisVersion: ModelIntInput
   analyzedAt: ModelStringInput
-  status: ModelClipStatusInput
+  status: ModelSampleStatusInput
   duration: ModelFloatInput
   sampleRate: ModelIntInput
   channels: ModelIntInput
@@ -698,30 +698,30 @@ input ModelClipConditionInput {
   noteCount: ModelIntInput
   tags: ModelStringInput
   nameCounters: ModelStringInput
-  and: [ModelClipConditionInput]
-  or: [ModelClipConditionInput]
-  not: ModelClipConditionInput
+  and: [ModelSampleConditionInput]
+  or: [ModelSampleConditionInput]
+  not: ModelSampleConditionInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
 }
 
-input CreateClipInput {
+input CreateSampleInput {
   id: ID
   recordingId: ID!
   path: String!
   aliases: [String]
   collection: String!
   title: String!
-  role: ClipRole
+  role: SampleRole
   stem: String
   stemModel: String
-  parentClipId: ID
+  parentSampleId: ID
   excerptStart: Float
   audio: FileRefInput!
   analysis: FileRefInput
   analysisVersion: Int
   analyzedAt: AWSDateTime
-  status: ClipStatus
+  status: SampleStatus
   duration: Float
   sampleRate: Int
   channels: Int
@@ -737,23 +737,23 @@ input CreateClipInput {
   nameCounters: AWSJSON
 }
 
-input UpdateClipInput {
+input UpdateSampleInput {
   id: ID!
   recordingId: ID
   path: String
   aliases: [String]
   collection: String
   title: String
-  role: ClipRole
+  role: SampleRole
   stem: String
   stemModel: String
-  parentClipId: ID
+  parentSampleId: ID
   excerptStart: Float
   audio: FileRefInput
   analysis: FileRefInput
   analysisVersion: Int
   analyzedAt: AWSDateTime
-  status: ClipStatus
+  status: SampleStatus
   duration: Float
   sampleRate: Int
   channels: Int
@@ -769,11 +769,11 @@ input UpdateClipInput {
   nameCounters: AWSJSON
 }
 
-input DeleteClipInput {
+input DeleteSampleInput {
   id: ID!
 }
 
-input ModelSubscriptionClipFilterInput {
+input ModelSubscriptionSampleFilterInput {
   id: ModelSubscriptionIDInput
   recordingId: ModelSubscriptionIDInput
   path: ModelSubscriptionStringInput
@@ -783,7 +783,7 @@ input ModelSubscriptionClipFilterInput {
   role: ModelSubscriptionStringInput
   stem: ModelSubscriptionStringInput
   stemModel: ModelSubscriptionStringInput
-  parentClipId: ModelSubscriptionIDInput
+  parentSampleId: ModelSubscriptionIDInput
   excerptStart: ModelSubscriptionFloatInput
   analysisVersion: ModelSubscriptionIntInput
   analyzedAt: ModelSubscriptionStringInput
@@ -803,18 +803,18 @@ input ModelSubscriptionClipFilterInput {
   nameCounters: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
-  and: [ModelSubscriptionClipFilterInput]
-  or: [ModelSubscriptionClipFilterInput]
+  and: [ModelSubscriptionSampleFilterInput]
+  or: [ModelSubscriptionSampleFilterInput]
 }
 
-type ModelSliceConnection {
-  items: [Slice]!
+type ModelClipConnection {
+  items: [Clip]!
   nextToken: String
 }
 
-input ModelSliceSourceInput {
-  eq: SliceSource
-  ne: SliceSource
+input ModelClipSourceInput {
+  eq: ClipSource
+  ne: ClipSource
 }
 
 input ModelKindInput {
@@ -822,13 +822,13 @@ input ModelKindInput {
   ne: Kind
 }
 
-input ModelSliceFilterInput {
+input ModelClipFilterInput {
   id: ModelIDInput
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   name: ModelStringInput
   start: ModelFloatInput
   end: ModelFloatInput
-  source: ModelSliceSourceInput
+  source: ModelClipSourceInput
   kind: ModelKindInput
   tags: ModelStringInput
   evidence: ModelStringInput
@@ -838,17 +838,17 @@ input ModelSliceFilterInput {
   owner: ModelStringInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
-  and: [ModelSliceFilterInput]
-  or: [ModelSliceFilterInput]
-  not: ModelSliceFilterInput
+  and: [ModelClipFilterInput]
+  or: [ModelClipFilterInput]
+  not: ModelClipFilterInput
 }
 
-input ModelSliceConditionInput {
-  clipId: ModelIDInput
+input ModelClipConditionInput {
+  sampleId: ModelIDInput
   name: ModelStringInput
   start: ModelFloatInput
   end: ModelFloatInput
-  source: ModelSliceSourceInput
+  source: ModelClipSourceInput
   kind: ModelKindInput
   tags: ModelStringInput
   evidence: ModelStringInput
@@ -856,20 +856,20 @@ input ModelSliceConditionInput {
   candidateId: ModelIDInput
   retired: ModelBooleanInput
   owner: ModelStringInput
-  and: [ModelSliceConditionInput]
-  or: [ModelSliceConditionInput]
-  not: ModelSliceConditionInput
+  and: [ModelClipConditionInput]
+  or: [ModelClipConditionInput]
+  not: ModelClipConditionInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
 }
 
-input CreateSliceInput {
+input CreateClipInput {
   id: ID
-  clipId: ID!
+  sampleId: ID!
   name: String!
   start: Float!
   end: Float!
-  source: SliceSource!
+  source: ClipSource!
   kind: Kind
   tags: [String]
   evidence: AWSJSON
@@ -879,13 +879,13 @@ input CreateSliceInput {
   owner: String
 }
 
-input UpdateSliceInput {
+input UpdateClipInput {
   id: ID!
-  clipId: ID
+  sampleId: ID
   name: String
   start: Float
   end: Float
-  source: SliceSource
+  source: ClipSource
   kind: Kind
   tags: [String]
   evidence: AWSJSON
@@ -895,13 +895,13 @@ input UpdateSliceInput {
   owner: String
 }
 
-input DeleteSliceInput {
+input DeleteClipInput {
   id: ID!
 }
 
-input ModelSubscriptionSliceFilterInput {
+input ModelSubscriptionClipFilterInput {
   id: ModelSubscriptionIDInput
-  clipId: ModelSubscriptionIDInput
+  sampleId: ModelSubscriptionIDInput
   name: ModelSubscriptionStringInput
   start: ModelSubscriptionFloatInput
   end: ModelSubscriptionFloatInput
@@ -914,8 +914,8 @@ input ModelSubscriptionSliceFilterInput {
   retired: ModelSubscriptionBooleanInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
-  and: [ModelSubscriptionSliceFilterInput]
-  or: [ModelSubscriptionSliceFilterInput]
+  and: [ModelSubscriptionClipFilterInput]
+  or: [ModelSubscriptionClipFilterInput]
   owner: ModelStringInput
 }
 
@@ -926,10 +926,10 @@ type ModelMarkerConnection {
 
 input ModelMarkerFilterInput {
   id: ModelIDInput
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   name: ModelStringInput
   seconds: ModelFloatInput
-  source: ModelSliceSourceInput
+  source: ModelClipSourceInput
   note: ModelStringInput
   owner: ModelStringInput
   createdAt: ModelStringInput
@@ -940,10 +940,10 @@ input ModelMarkerFilterInput {
 }
 
 input ModelMarkerConditionInput {
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   name: ModelStringInput
   seconds: ModelFloatInput
-  source: ModelSliceSourceInput
+  source: ModelClipSourceInput
   note: ModelStringInput
   owner: ModelStringInput
   and: [ModelMarkerConditionInput]
@@ -955,20 +955,20 @@ input ModelMarkerConditionInput {
 
 input CreateMarkerInput {
   id: ID
-  clipId: ID!
+  sampleId: ID!
   name: String!
   seconds: Float!
-  source: SliceSource
+  source: ClipSource
   note: String
   owner: String
 }
 
 input UpdateMarkerInput {
   id: ID!
-  clipId: ID
+  sampleId: ID
   name: String
   seconds: Float
-  source: SliceSource
+  source: ClipSource
   note: String
   owner: String
 }
@@ -979,7 +979,7 @@ input DeleteMarkerInput {
 
 input ModelSubscriptionMarkerFilterInput {
   id: ModelSubscriptionIDInput
-  clipId: ModelSubscriptionIDInput
+  sampleId: ModelSubscriptionIDInput
   name: ModelSubscriptionStringInput
   seconds: ModelSubscriptionFloatInput
   source: ModelSubscriptionStringInput
@@ -1014,7 +1014,7 @@ type ModelCandidateConnection {
 
 input ModelCandidateFilterInput {
   id: ModelIDInput
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   recordingId: ModelIDInput
   start: ModelFloatInput
   end: ModelFloatInput
@@ -1030,7 +1030,7 @@ input ModelCandidateFilterInput {
 }
 
 input ModelCandidateConditionInput {
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   recordingId: ModelIDInput
   start: ModelFloatInput
   end: ModelFloatInput
@@ -1047,7 +1047,7 @@ input ModelCandidateConditionInput {
 
 input CreateCandidateInput {
   id: ID
-  clipId: ID!
+  sampleId: ID!
   recordingId: ID!
   start: Float!
   end: Float!
@@ -1061,7 +1061,7 @@ input CreateCandidateInput {
 
 input UpdateCandidateInput {
   id: ID!
-  clipId: ID
+  sampleId: ID
   recordingId: ID
   start: Float
   end: Float
@@ -1079,7 +1079,7 @@ input DeleteCandidateInput {
 
 input ModelSubscriptionCandidateFilterInput {
   id: ModelSubscriptionIDInput
-  clipId: ModelSubscriptionIDInput
+  sampleId: ModelSubscriptionIDInput
   recordingId: ModelSubscriptionIDInput
   start: ModelSubscriptionFloatInput
   end: ModelSubscriptionFloatInput
@@ -1245,8 +1245,8 @@ input ModelCrateItemFilterInput {
   crateId: ModelIDInput
   position: ModelStringInput
   candidateId: ModelIDInput
-  sliceId: ModelIDInput
   clipId: ModelIDInput
+  sampleId: ModelIDInput
   note: ModelStringInput
   owner: ModelStringInput
   createdAt: ModelStringInput
@@ -1260,8 +1260,8 @@ input ModelCrateItemConditionInput {
   crateId: ModelIDInput
   position: ModelStringInput
   candidateId: ModelIDInput
-  sliceId: ModelIDInput
   clipId: ModelIDInput
+  sampleId: ModelIDInput
   note: ModelStringInput
   owner: ModelStringInput
   and: [ModelCrateItemConditionInput]
@@ -1276,8 +1276,8 @@ input CreateCrateItemInput {
   crateId: ID!
   position: String!
   candidateId: ID
-  sliceId: ID
   clipId: ID
+  sampleId: ID
   note: String
   owner: String
 }
@@ -1287,8 +1287,8 @@ input UpdateCrateItemInput {
   crateId: ID
   position: String
   candidateId: ID
-  sliceId: ID
   clipId: ID
+  sampleId: ID
   note: String
   owner: String
 }
@@ -1302,8 +1302,8 @@ input ModelSubscriptionCrateItemFilterInput {
   crateId: ModelSubscriptionIDInput
   position: ModelSubscriptionStringInput
   candidateId: ModelSubscriptionIDInput
-  sliceId: ModelSubscriptionIDInput
   clipId: ModelSubscriptionIDInput
+  sampleId: ModelSubscriptionIDInput
   note: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
@@ -1403,10 +1403,10 @@ input ModelScoreRefFilterInput {
   id: ModelIDInput
   scoreId: ModelIDInput
   clipAlias: ModelStringInput
+  sampleId: ModelIDInput
+  samplePath: ModelStringInput
+  clipName: ModelStringInput
   clipId: ModelIDInput
-  clipPath: ModelStringInput
-  sliceName: ModelStringInput
-  sliceId: ModelIDInput
   start: ModelFloatInput
   end: ModelFloatInput
   owner: ModelStringInput
@@ -1420,10 +1420,10 @@ input ModelScoreRefFilterInput {
 input ModelScoreRefConditionInput {
   scoreId: ModelIDInput
   clipAlias: ModelStringInput
+  sampleId: ModelIDInput
+  samplePath: ModelStringInput
+  clipName: ModelStringInput
   clipId: ModelIDInput
-  clipPath: ModelStringInput
-  sliceName: ModelStringInput
-  sliceId: ModelIDInput
   start: ModelFloatInput
   end: ModelFloatInput
   owner: ModelStringInput
@@ -1438,10 +1438,10 @@ input CreateScoreRefInput {
   id: ID
   scoreId: ID!
   clipAlias: String!
+  sampleId: ID
+  samplePath: String
+  clipName: String
   clipId: ID
-  clipPath: String
-  sliceName: String
-  sliceId: ID
   start: Float
   end: Float
   owner: String
@@ -1451,10 +1451,10 @@ input UpdateScoreRefInput {
   id: ID!
   scoreId: ID
   clipAlias: String
+  sampleId: ID
+  samplePath: String
+  clipName: String
   clipId: ID
-  clipPath: String
-  sliceName: String
-  sliceId: ID
   start: Float
   end: Float
   owner: String
@@ -1468,10 +1468,10 @@ input ModelSubscriptionScoreRefFilterInput {
   id: ModelSubscriptionIDInput
   scoreId: ModelSubscriptionIDInput
   clipAlias: ModelSubscriptionStringInput
+  sampleId: ModelSubscriptionIDInput
+  samplePath: ModelSubscriptionStringInput
+  clipName: ModelSubscriptionStringInput
   clipId: ModelSubscriptionIDInput
-  clipPath: ModelSubscriptionStringInput
-  sliceName: ModelSubscriptionStringInput
-  sliceId: ModelSubscriptionIDInput
   start: ModelSubscriptionFloatInput
   end: ModelSubscriptionFloatInput
   createdAt: ModelSubscriptionStringInput
@@ -1494,7 +1494,7 @@ input ModelJobStateInput {
 input ModelJobFilterInput {
   id: ModelIDInput
   kind: ModelStringInput
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   state: ModelJobStateInput
   error: ModelStringInput
   createdAt: ModelStringInput
@@ -1506,7 +1506,7 @@ input ModelJobFilterInput {
 
 input ModelJobConditionInput {
   kind: ModelStringInput
-  clipId: ModelIDInput
+  sampleId: ModelIDInput
   state: ModelJobStateInput
   error: ModelStringInput
   and: [ModelJobConditionInput]
@@ -1519,7 +1519,7 @@ input ModelJobConditionInput {
 input CreateJobInput {
   id: ID
   kind: String!
-  clipId: ID
+  sampleId: ID
   state: JobState
   error: String
 }
@@ -1527,7 +1527,7 @@ input CreateJobInput {
 input UpdateJobInput {
   id: ID!
   kind: String
-  clipId: ID
+  sampleId: ID
   state: JobState
   error: String
 }
@@ -1539,7 +1539,7 @@ input DeleteJobInput {
 input ModelSubscriptionJobFilterInput {
   id: ModelSubscriptionIDInput
   kind: ModelSubscriptionStringInput
-  clipId: ModelSubscriptionIDInput
+  sampleId: ModelSubscriptionIDInput
   state: ModelSubscriptionStringInput
   error: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput

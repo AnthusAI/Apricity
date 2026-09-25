@@ -1,4 +1,4 @@
-//! Loader: compile clips from the library, integrating with apricity-score.
+//! Loader: compile samples from the library, integrating with apricity-score.
 
 use crate::library::Library;
 use apricity_score::Clip;
@@ -7,10 +7,10 @@ use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
 use virtuus_amplify::Identity;
 
-/// Everything the loader knows about one clip, fetched once at setup.
+/// Everything the loader knows about one sample, fetched once at setup.
 struct Entry {
-    clip: Value,
-    slices: Vec<Value>,
+    sample: Value,
+    clips: Vec<Value>,
     markers: Vec<Value>,
 }
 
@@ -18,9 +18,9 @@ struct Entry {
 pub type ClipLoader = Box<dyn FnMut(&Path) -> Result<Clip, String>>;
 
 /// Build the loader closure for `apricity_score::compile_with` / `compile_text`: it resolves the
-/// clip path a score names (relative to `samples_root`, the repo root that holds `samples/`) by
-/// catalog path or alias, then rebuilds the clip's manifest exactly as the old
-/// `<audio>.apricity.json`: the analysis attachment plus `annotations` from the library's slices
+/// sample path a score names (relative to `samples_root`, the repo root that holds `samples/`) by
+/// catalog path or alias, then rebuilds the sample's manifest exactly as the old
+/// `<audio>.apricity.json`: the analysis attachment plus `annotations` from the library's clips
 /// and markers. The audio is the library's own copy under `files/`.
 pub fn make(library: &mut Library, samples_root: &Path) -> Result<ClipLoader, String> {
     let library_path = library.path().to_path_buf();
@@ -31,33 +31,33 @@ pub fn make(library: &mut Library, samples_root: &Path) -> Result<ClipLoader, St
     };
     let root = absolute_normalized(samples_root)?;
 
-    let clips = fetch_all(library, &identity, "Clip", "list", json!({}))?;
-    let mut entries: Vec<Entry> = Vec::with_capacity(clips.len());
+    let samples = fetch_all(library, &identity, "Sample", "list", json!({}))?;
+    let mut entries: Vec<Entry> = Vec::with_capacity(samples.len());
     let mut by_path: HashMap<String, usize> = HashMap::new();
-    for clip in clips {
-        let id = clip["id"].as_str().ok_or("clip without id")?.to_string();
-        let slices = fetch_all(
+    for sample in samples {
+        let id = sample["id"].as_str().ok_or("sample without id")?.to_string();
+        let clips = fetch_all(
             library,
             &identity,
-            "Slice",
-            "slicesByClip",
-            json!({"key": {"clipId": id}}),
+            "Clip",
+            "clipsBySample",
+            json!({"key": {"sampleId": id}}),
         )?;
         let markers = fetch_all(
             library,
             &identity,
             "Marker",
-            "markersByClip",
-            json!({"key": {"clipId": id}}),
+            "markersBySample",
+            json!({"key": {"sampleId": id}}),
         )?;
         let index = entries.len();
-        let aliases: Vec<String> = clip["aliases"]
+        let aliases: Vec<String> = sample["aliases"]
             .as_array()
             .into_iter()
             .flatten()
             .filter_map(|a| a.as_str().map(String::from))
             .collect();
-        for key in clip["path"]
+        for key in sample["path"]
             .as_str()
             .map(String::from)
             .into_iter()
@@ -66,8 +66,8 @@ pub fn make(library: &mut Library, samples_root: &Path) -> Result<ClipLoader, St
             by_path.insert(key, index);
         }
         entries.push(Entry {
-            clip,
-            slices,
+            sample,
+            clips,
             markers,
         });
     }
@@ -78,7 +78,7 @@ pub fn make(library: &mut Library, samples_root: &Path) -> Result<ClipLoader, St
             .strip_prefix(&root)
             .map_err(|_| {
                 format!(
-                    "Clip path {} is not under {}",
+                    "Sample path {} is not under {}",
                     abs.display(),
                     root.display()
                 )
@@ -88,21 +88,21 @@ pub fn make(library: &mut Library, samples_root: &Path) -> Result<ClipLoader, St
         let index = by_path
             .get(&rel)
             .or_else(|| rel.strip_prefix("samples/").and_then(|p| by_path.get(p)))
-            .ok_or_else(|| format!("Clip not found in library: {rel}"))?;
+            .ok_or_else(|| format!("Sample not found in library: {rel}"))?;
         let entry = &entries[*index];
 
-        let analysis_key = entry.clip["analysis"]["key"]
+        let analysis_key = entry.sample["analysis"]["key"]
             .as_str()
-            .ok_or_else(|| format!("{rel}: clip has no analysis attachment"))?;
+            .ok_or_else(|| format!("{rel}: sample has no analysis attachment"))?;
         let text = std::fs::read_to_string(library_path.join("files").join(analysis_key))
             .map_err(|e| format!("{rel}: reading analysis: {e}"))?;
         let mut manifest: Value =
             serde_json::from_str(&text).map_err(|e| format!("{rel}: analysis is not JSON: {e}"))?;
-        manifest["annotations"] = json!({ "clips": slice_annotations(&entry.slices), "markers": marker_annotations(&entry.markers) });
+        manifest["annotations"] = json!({ "clips": clip_annotations(&entry.clips), "markers": marker_annotations(&entry.markers) });
 
-        let audio_key = entry.clip["audio"]["key"]
+        let audio_key = entry.sample["audio"]["key"]
             .as_str()
-            .ok_or_else(|| format!("{rel}: clip has no audio"))?;
+            .ok_or_else(|| format!("{rel}: sample has no audio"))?;
         let audio = library_path.join("files").join(audio_key);
         if !audio.exists() {
             return Err(format!(
@@ -115,8 +115,8 @@ pub fn make(library: &mut Library, samples_root: &Path) -> Result<ClipLoader, St
 }
 
 /// The manifest's `annotations.clips`, in time order.
-fn slice_annotations(slices: &[Value]) -> Vec<Value> {
-    let mut sorted: Vec<&Value> = slices.iter().collect();
+fn clip_annotations(clips: &[Value]) -> Vec<Value> {
+    let mut sorted: Vec<&Value> = clips.iter().collect();
     sorted.sort_by(|a, b| {
         a["start"]
             .as_f64()

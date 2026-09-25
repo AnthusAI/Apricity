@@ -1,8 +1,8 @@
 @auth
 Feature: Authorization
-  Catalog models (Recording, Clip, Candidate, Job) are readable by members and writable by curators.
-  Personal models (Crate, CrateItem, Score, ScoreRef, Slice, Marker) belong to their owner and are
-  readable by members; curators may also write slices and markers. A Verdict belongs to its judge.
+  Catalog models (Recording, Sample, Candidate, Job) are readable by members and writable by curators.
+  Personal models (Crate, CrateItem, Score, ScoreRef, Clip, Marker) belong to their owner and are
+  readable by members; curators may also write clips and markers. A Verdict belongs to its judge.
   (design/storage.md §1 and §1.1.)
 
   Scenario: The owner is filled in from the caller

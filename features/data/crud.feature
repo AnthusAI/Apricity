@@ -126,8 +126,8 @@ Feature: Create, get, update and delete
     Then the call fails
 
   Scenario: An enum field only takes its values
-    When I create a Slice with:
+    When I create a Clip with:
       """
-      {"id": "slc-1", "clipId": "clp-1", "name": "loop-1", "start": 0, "end": 4, "source": "robot"}
+      {"id": "clp-1", "sampleId": "smp-1", "name": "loop-1", "start": 0, "end": 4, "source": "robot"}
       """
     Then the call fails

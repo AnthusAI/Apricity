@@ -14,8 +14,8 @@ export interface DomainContext {
   putOffCandidate(candidateId: string): Promise<{ data?: unknown; errors?: unknown[] }>;
 
   mergeMarkup(
-    clipId: string,
-    slices: Array<{ kind: string; start: number; end: number; rank?: number; evidence?: unknown }>
+    sampleId: string,
+    clips: Array<{ kind: string; start: number; end: number; rank?: number; evidence?: unknown }>
   ): Promise<{ data?: unknown; errors?: unknown[] }>;
 
   saveScore(scoreId: string, aprText: string): Promise<{ data?: unknown; errors?: unknown[] }>;
@@ -44,9 +44,9 @@ export function createRealDomainContext(): DomainContext {
       return domain.putOffCandidate(candidateId);
     },
 
-    async mergeMarkup(clipId, slices) {
+    async mergeMarkup(sampleId, clips) {
       const domain = await domainPromise;
-      return domain.mergeMarkup(clipId, slices);
+      return domain.mergeMarkup(sampleId, clips);
     },
 
     async saveScore(scoreId, aprText) {

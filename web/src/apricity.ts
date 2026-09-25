@@ -32,7 +32,7 @@ export interface SavedClip {
   end: number;
   source?: "user" | "ml";
   tags?: string[];
-  id?: string; // its Slice record, when it has one
+  id?: string; // its Clip record, when it has one
   retired?: boolean; // no longer proposed, kept for the scores that use it
   candidate?: string;
 }
@@ -169,7 +169,7 @@ export const api = {
     const { saveScore } = await import("./data/domain.js");
     return (await ready()).saveScore(path, text, saveScore);
   },
-  /** Saves the clips (as Slice records); markers and tags are not edited here. */
+  /** Saves the clips (as Clip records); markers and tags are not edited here. */
   saveAnnotations: async (path: string, ann: Manifest["annotations"]) => {
     const r = await (await ready()).saveClips(path, ann?.clips ?? []);
     manifestCache.delete(path);
@@ -217,9 +217,9 @@ export async function extractReferences(
     alias: string;
     source: string;
     catalogPath?: string;
+    sampleId?: string;
+    clipName?: string;
     clipId?: string;
-    sliceName?: string;
-    sliceId?: string;
     kitPad?: string;
   }>;
   errors?: string[];

@@ -330,8 +330,8 @@ pub extern "C" fn rw_engine_swaps() -> f64 {
 
 // ------------------------------------------------------------------ data layer (pure logic)
 
-/// Generate stable IDs for clips, candidates, and curated slices.
-/// Input: `{ "kind": "clip_id" | "stem_clip_id" | "candidate_id" | "curated_slice_id" | "migrated_slice_id" | "position_between", ... }`
+/// Generate stable IDs for samples, candidates, and curated clips.
+/// Input: `{ "kind": "sample_id" | "stem_sample_id" | "candidate_id" | "curated_clip_id" | "migrated_clip_id" | "position_between", ... }`
 /// Output: `{ "data": <id string>, "errors": [] }` or `{ "errors": [message] }`
 ///
 /// # Safety
@@ -343,35 +343,35 @@ pub unsafe extern "C" fn rw_ids(json: *const u8, json_len: usize) {
         Ok(input) => {
             let kind = input.get("kind").and_then(|v| v.as_str()).unwrap_or("");
             match kind {
-                "clip_id" => {
+                "sample_id" => {
                     let audio_sha256 = input.get("audio_sha256").and_then(|v| v.as_str()).unwrap_or("");
-                    let id = ids::clip_id(audio_sha256);
+                    let id = ids::sample_id(audio_sha256);
                     json!({ "data": id, "errors": [] })
                 }
-                "stem_clip_id" => {
+                "stem_sample_id" => {
                     let parent_id = input.get("parent_id").and_then(|v| v.as_str()).unwrap_or("");
                     let stem = input.get("stem").and_then(|v| v.as_str()).unwrap_or("");
                     let model = input.get("model").and_then(|v| v.as_str()).unwrap_or("");
-                    let id = ids::stem_clip_id(parent_id, stem, model);
+                    let id = ids::stem_sample_id(parent_id, stem, model);
                     json!({ "data": id, "errors": [] })
                 }
                 "candidate_id" => {
-                    let clip_id = input.get("clip_id").and_then(|v| v.as_str()).unwrap_or("");
+                    let sample_id = input.get("sample_id").and_then(|v| v.as_str()).unwrap_or("");
                     let start = input.get("start").and_then(|v| v.as_f64()).unwrap_or(0.0);
                     let end = input.get("end").and_then(|v| v.as_f64()).unwrap_or(0.0);
                     let candidate_kind = input.get("kind_val").and_then(|v| v.as_str()).unwrap_or("");
-                    let id = ids::candidate_id(clip_id, start, end, candidate_kind);
+                    let id = ids::candidate_id(sample_id, start, end, candidate_kind);
                     json!({ "data": id, "errors": [] })
                 }
-                "curated_slice_id" => {
+                "curated_clip_id" => {
                     let candidate_id = input.get("candidate_id").and_then(|v| v.as_str()).unwrap_or("");
-                    let id = ids::curated_slice_id(candidate_id);
+                    let id = ids::curated_clip_id(candidate_id);
                     json!({ "data": id, "errors": [] })
                 }
-                "migrated_slice_id" => {
-                    let clip_id = input.get("clip_id").and_then(|v| v.as_str()).unwrap_or("");
+                "migrated_clip_id" => {
+                    let sample_id = input.get("sample_id").and_then(|v| v.as_str()).unwrap_or("");
                     let name = input.get("name").and_then(|v| v.as_str()).unwrap_or("");
-                    let id = ids::migrated_slice_id(clip_id, name);
+                    let id = ids::migrated_clip_id(sample_id, name);
                     json!({ "data": id, "errors": [] })
                 }
                 "position_between" => {
@@ -417,8 +417,8 @@ pub unsafe extern "C" fn rw_rank(json: *const u8, json_len: usize) {
     set_result(result);
 }
 
-/// Plan a markup merge: match proposed ML slices to existing ones, handle names and retirement.
-/// Input: `{ "existing": [{ "id", "name", "kind", "start", "end", "source", "retired" }], "proposed": [{ "kind", "start", "end", "rank"? }], "name_counters": { "kind": count }, "used_by_score": ["slice-id"] }`
+/// Plan a markup merge: match proposed ML clips to existing ones, handle names and retirement.
+/// Input: `{ "existing": [{ "id", "name", "kind", "start", "end", "source", "retired" }], "proposed": [{ "kind", "start", "end", "rank"? }], "name_counters": { "kind": count }, "used_by_score": ["clip-id"] }`
 /// Output: `{ "data": { "keep": [[id, [start, end], rank]], "create": [[name, start, end, rank]], "retire": [id], "delete": [id], "name_counters": {} }, "errors": [] }`
 ///
 /// # Safety
@@ -434,8 +434,8 @@ pub unsafe extern "C" fn rw_markup_merge(json: *const u8, json_len: usize) {
             let used_by_score_val = input.get("used_by_score").cloned().unwrap_or(json!([]));
 
             match (
-                serde_json::from_value::<Vec<markup::ExistingSlice>>(existing_val),
-                serde_json::from_value::<Vec<markup::ProposedSlice>>(proposed_val),
+                serde_json::from_value::<Vec<markup::ExistingClip>>(existing_val),
+                serde_json::from_value::<Vec<markup::ProposedClip>>(proposed_val),
                 serde_json::from_value::<HashMap<String, u32>>(name_counters_val),
                 serde_json::from_value::<Vec<String>>(used_by_score_val),
             ) {
@@ -470,9 +470,9 @@ pub unsafe extern "C" fn rw_markup_merge(json: *const u8, json_len: usize) {
     set_result(result);
 }
 
-/// Extract score references: clips and slices (including kit pads) referenced in a score.
+/// Extract score references: samples and clips (including kit pads) referenced in a score.
 /// Input: `{ "text": "<score text>", "folder": "scores", "file": "x.apr" }`
-/// Output: `{ "data": [{ "idSuffix", "alias", "source", "catalogPath"?, "clipId"?, "sliceName"?, "sliceId"?, "kitPad"? }], "errors": [] }`
+/// Output: `{ "data": [{ "idSuffix", "alias", "source", "catalogPath"?, "sampleId"?, "clipName"?, "clipId"?, "kitPad"? }], "errors": [] }`
 ///
 /// # Safety
 /// UTF-8 (ptr, len) in wasm memory.

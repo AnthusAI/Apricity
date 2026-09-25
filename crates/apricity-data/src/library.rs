@@ -1,5 +1,5 @@
 //! Library: the Apricity data store over the virtuus-amplify engine.
-//! Manages clips, slices, markers, candidates, verdicts, and files.
+//! Manages samples, clips, markers, candidates, verdicts, and files.
 
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -42,13 +42,13 @@ pub struct Identity {
     pub groups: Vec<String>,
 }
 
-/// Clip facade for API access.
-pub struct ClipFacade<'a> {
+/// Sample facade for API access.
+pub struct SampleFacade<'a> {
     library: &'a mut Library,
 }
 
-impl<'a> ClipFacade<'a> {
-    /// Get a clip by ID (direct primary key lookup)
+impl<'a> SampleFacade<'a> {
+    /// Get a sample by ID (direct primary key lookup)
     pub fn get(&mut self, id: &str) -> Result<Option<Value>> {
         let identity = VirtuusIdentity::User {
             sub: self.library.metadata.identity.sub.clone(),
@@ -60,7 +60,7 @@ impl<'a> ClipFacade<'a> {
         let (data, errors) = self
             .library
             .engine
-            .call("Clip", "get", &args, &identity)
+            .call("Sample", "get", &args, &identity)
             .map_err(|e| Error::Engine(e.to_string()))?;
 
         if let Some(error_list) = errors {
@@ -76,7 +76,7 @@ impl<'a> ClipFacade<'a> {
         }
     }
 
-    /// Find clips by path (using clipsByPath GSI)
+    /// Find samples by path (using samplesByPath GSI)
     pub fn by_path(&mut self, path: &str) -> Result<Vec<Value>> {
         let identity = VirtuusIdentity::User {
             sub: self.library.metadata.identity.sub.clone(),
@@ -88,7 +88,49 @@ impl<'a> ClipFacade<'a> {
         let (data, errors) = self
             .library
             .engine
-            .call("Clip", "clipsByPath", &args, &identity)
+            .call("Sample", "samplesByPath", &args, &identity)
+            .map_err(|e| Error::Engine(e.to_string()))?;
+
+        if let Some(error_list) = errors {
+            if !error_list.is_empty() {
+                return Err(Error::Engine(format!("Query errors: {:?}", error_list)));
+            }
+        }
+
+        // Engine::call returns results wrapped in {items: [...], nextToken: ...}
+        let samples = if let Some(items) = data.get("items").and_then(|v| v.as_array()) {
+            items.clone()
+        } else if let Some(arr) = data.as_array() {
+            arr.clone()
+        } else if data.is_null() {
+            vec![]
+        } else {
+            vec![data]
+        };
+
+        Ok(samples)
+    }
+}
+
+/// Clip facade for API access.
+pub struct ClipFacade<'a> {
+    library: &'a mut Library,
+}
+
+impl<'a> ClipFacade<'a> {
+    /// Get clips for a sample (using clipsBySample GSI, optionally sorted by start time)
+    pub fn by_sample(&mut self, sample_id: &str) -> Result<Vec<Value>> {
+        let identity = VirtuusIdentity::User {
+            sub: self.library.metadata.identity.sub.clone(),
+            username: "library-facade".to_string(),
+            groups: self.library.metadata.identity.groups.clone(),
+        };
+
+        let args = json!({ "key": { "sampleId": sample_id } });
+        let (data, errors) = self
+            .library
+            .engine
+            .call("Clip", "clipsBySample", &args, &identity)
             .map_err(|e| Error::Engine(e.to_string()))?;
 
         if let Some(error_list) = errors {
@@ -112,67 +154,25 @@ impl<'a> ClipFacade<'a> {
     }
 }
 
-/// Slice facade for API access.
-pub struct SliceFacade<'a> {
-    library: &'a mut Library,
-}
-
-impl<'a> SliceFacade<'a> {
-    /// Get slices for a clip (using slicesByClip GSI, optionally sorted by start time)
-    pub fn by_clip(&mut self, clip_id: &str) -> Result<Vec<Value>> {
-        let identity = VirtuusIdentity::User {
-            sub: self.library.metadata.identity.sub.clone(),
-            username: "library-facade".to_string(),
-            groups: self.library.metadata.identity.groups.clone(),
-        };
-
-        let args = json!({ "key": { "clipId": clip_id } });
-        let (data, errors) = self
-            .library
-            .engine
-            .call("Slice", "slicesByClip", &args, &identity)
-            .map_err(|e| Error::Engine(e.to_string()))?;
-
-        if let Some(error_list) = errors {
-            if !error_list.is_empty() {
-                return Err(Error::Engine(format!("Query errors: {:?}", error_list)));
-            }
-        }
-
-        // Engine::call returns results wrapped in {items: [...], nextToken: ...}
-        let slices = if let Some(items) = data.get("items").and_then(|v| v.as_array()) {
-            items.clone()
-        } else if let Some(arr) = data.as_array() {
-            arr.clone()
-        } else if data.is_null() {
-            vec![]
-        } else {
-            vec![data]
-        };
-
-        Ok(slices)
-    }
-}
-
 /// Marker facade for API access.
 pub struct MarkerFacade<'a> {
     library: &'a mut Library,
 }
 
 impl<'a> MarkerFacade<'a> {
-    /// Get markers for a clip (using markersByClip GSI, optionally sorted by seconds)
-    pub fn by_clip(&mut self, clip_id: &str) -> Result<Vec<Value>> {
+    /// Get markers for a sample (using markersBySample GSI, optionally sorted by seconds)
+    pub fn by_sample(&mut self, sample_id: &str) -> Result<Vec<Value>> {
         let identity = VirtuusIdentity::User {
             sub: self.library.metadata.identity.sub.clone(),
             username: "library-facade".to_string(),
             groups: self.library.metadata.identity.groups.clone(),
         };
 
-        let args = json!({ "key": { "clipId": clip_id } });
+        let args = json!({ "key": { "sampleId": sample_id } });
         let (data, errors) = self
             .library
             .engine
-            .call("Marker", "markersByClip", &args, &identity)
+            .call("Marker", "markersBySample", &args, &identity)
             .map_err(|e| Error::Engine(e.to_string()))?;
 
         if let Some(error_list) = errors {
@@ -332,14 +332,14 @@ impl Library {
         self.engine
     }
 
+    /// Get a mutable sample facade
+    pub fn samples(&mut self) -> SampleFacade<'_> {
+        SampleFacade { library: self }
+    }
+
     /// Get a mutable clip facade
     pub fn clips(&mut self) -> ClipFacade<'_> {
         ClipFacade { library: self }
-    }
-
-    /// Get a mutable slice facade
-    pub fn slices(&mut self) -> SliceFacade<'_> {
-        SliceFacade { library: self }
     }
 
     /// Get a mutable marker facade
@@ -386,116 +386,116 @@ mod tests {
     }
 
     #[test]
-    fn test_clip_facade_put_get_round_trip() {
+    fn test_sample_facade_put_get_round_trip() {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
-        // Create a clip in the engine
-        let clip_id = "clp_test123";
-        let clip_data = json!({
-            "id": clip_id,
-            "path": "/audio/clip.wav",
+        // Create a sample in the engine
+        let sample_id = "smp_test123";
+        let sample_data = json!({
+            "id": sample_id,
+            "path": "/audio/sample.wav",
             "duration": 45.5,
             "sampleRate": 44100
         });
 
-        // Put the clip into the Clip table using table.put()
-        if let Some(table) = lib.engine_mut().table_mut("Clip") {
-            table.put(clip_data);
+        // Put the sample into the Sample table using table.put()
+        if let Some(table) = lib.engine_mut().table_mut("Sample") {
+            table.put(sample_data);
         }
 
         // Get it back via facade
-        let mut clips_facade = lib.clips();
-        let result = clips_facade.get(clip_id).unwrap();
+        let mut samples_facade = lib.samples();
+        let result = samples_facade.get(sample_id).unwrap();
         assert!(result.is_some());
         let retrieved = result.unwrap();
-        assert_eq!(retrieved["id"], clip_id);
-        assert_eq!(retrieved["path"], "/audio/clip.wav");
+        assert_eq!(retrieved["id"], sample_id);
+        assert_eq!(retrieved["path"], "/audio/sample.wav");
     }
 
     #[test]
-    fn test_clip_facade_get_missing() {
+    fn test_sample_facade_get_missing() {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
-        let mut clips_facade = lib.clips();
-        let result = clips_facade.get("nonexistent_id").unwrap();
+        let mut samples_facade = lib.samples();
+        let result = samples_facade.get("nonexistent_id").unwrap();
         assert!(result.is_none());
     }
 
     #[test]
-    fn test_clip_facade_by_path_hit() {
+    fn test_sample_facade_by_path_hit() {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
         let path = "/audio/song.wav";
-        let clip_data = json!({
-            "id": "clp_song1",
+        let sample_data = json!({
+            "id": "smp_song1",
             "path": path,
             "duration": 120.0,
             "sampleRate": 48000
         });
 
-        if let Some(table) = lib.engine_mut().table_mut("Clip") {
-            table.put(clip_data);
+        if let Some(table) = lib.engine_mut().table_mut("Sample") {
+            table.put(sample_data);
         }
 
-        let mut clips_facade = lib.clips();
-        let results = clips_facade.by_path(path).unwrap();
+        let mut samples_facade = lib.samples();
+        let results = samples_facade.by_path(path).unwrap();
         assert!(!results.is_empty());
         assert_eq!(results[0]["path"], path);
     }
 
     #[test]
-    fn test_clip_facade_by_path_miss() {
+    fn test_sample_facade_by_path_miss() {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
-        let mut clips_facade = lib.clips();
-        let results = clips_facade.by_path("/nonexistent/path.wav").unwrap();
+        let mut samples_facade = lib.samples();
+        let results = samples_facade.by_path("/nonexistent/path.wav").unwrap();
         assert!(results.is_empty());
     }
 
     #[test]
-    fn test_slice_facade_by_clip_ordering() {
+    fn test_clip_facade_by_sample_ordering() {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
-        let clip_id = "clp_test1";
+        let sample_id = "smp_test1";
 
-        // Create slices in non-sequential order
+        // Create clips in non-sequential order
         for (i, start) in vec![30.0, 10.0, 20.0].iter().enumerate() {
-            let slice_data = json!({
-                "id": format!("slc_test{}", i),
-                "clipId": clip_id,
+            let clip_data = json!({
+                "id": format!("clp_test{}", i),
+                "sampleId": sample_id,
                 "start": start,
                 "end": start + 5.0,
             });
-            if let Some(table) = lib.engine_mut().table_mut("Slice") {
-                table.put(slice_data);
+            if let Some(table) = lib.engine_mut().table_mut("Clip") {
+                table.put(clip_data);
             }
         }
 
-        let mut slices_facade = lib.slices();
-        let results = slices_facade.by_clip(clip_id).unwrap();
+        let mut clips_facade = lib.clips();
+        let results = clips_facade.by_sample(sample_id).unwrap();
 
         // Verify results are sorted by start (or at least contain all items)
         assert_eq!(results.len(), 3);
-        assert!(results.iter().all(|s| s["clipId"] == clip_id));
+        assert!(results.iter().all(|s| s["sampleId"] == sample_id));
     }
 
     #[test]
-    fn test_marker_facade_by_clip_ordering() {
+    fn test_marker_facade_by_sample_ordering() {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
-        let clip_id = "clp_test2";
+        let sample_id = "smp_test2";
 
         // Create markers in non-sequential order
         for (i, seconds) in vec![45.5, 10.5, 30.0].iter().enumerate() {
             let marker_data = json!({
                 "id": format!("mrk_test{}", i),
-                "clipId": clip_id,
+                "sampleId": sample_id,
                 "seconds": seconds,
                 "label": format!("Marker {}", i)
             });
@@ -505,11 +505,11 @@ mod tests {
         }
 
         let mut markers_facade = lib.markers();
-        let results = markers_facade.by_clip(clip_id).unwrap();
+        let results = markers_facade.by_sample(sample_id).unwrap();
 
         // Verify results contain all items and are sorted by seconds (or at least present)
         assert_eq!(results.len(), 3);
-        assert!(results.iter().all(|m| m["clipId"] == clip_id));
+        assert!(results.iter().all(|m| m["sampleId"] == sample_id));
     }
 
     #[test]
@@ -517,24 +517,24 @@ mod tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let mut lib = Library::create(temp_dir.path()).unwrap();
 
-        // Create a clip via the facade
-        let clip_id = "clp_alias_test";
+        // Create a sample via the facade
+        let sample_id = "smp_alias_test";
         let primary_path = "/audio/primary.wav";
-        let clip_data = json!({
-            "id": clip_id,
+        let sample_data = json!({
+            "id": sample_id,
             "path": primary_path,
             "duration": 90.0,
             "sampleRate": 48000
         });
 
-        if let Some(table) = lib.engine_mut().table_mut("Clip") {
-            table.put(clip_data);
+        if let Some(table) = lib.engine_mut().table_mut("Sample") {
+            table.put(sample_data);
         }
 
         // Query via the facade using the exact path
-        let mut clips_facade = lib.clips();
-        let results = clips_facade.by_path(primary_path).unwrap();
+        let mut samples_facade = lib.samples();
+        let results = samples_facade.by_path(primary_path).unwrap();
         assert!(!results.is_empty());
-        assert_eq!(results[0]["id"], clip_id);
+        assert_eq!(results[0]["id"], sample_id);
     }
 }

@@ -2,7 +2,7 @@
 
 Kanbus initiative **Storage**. Every storage task cites a section of this file (§0–§7).
 
-Apricity collects structured data it must query (clips and analysis, slices, markers, curation
+Apricity collects structured data it must query (samples and analysis, clips, markers, curation
 candidates, per-person verdicts, crates, scores, provenance). One data model, defined in
 `web/amplify/data/resource.ts`, is served by three backends:
 
@@ -23,16 +23,16 @@ modes** (export/import, no sync); the local web mode is the **Rust** server. Pre
    both A and C; only the endpoint and `amplify_outputs.json` differ, so there's no stand-in data client.
 2. **Generic engine work lives upstream in Virtuus** (it can later replace Plexus's Python proxy).
    Ripple keeps only `apricity-data`: models, domain operations, the compile loader, migration.
-3. **Records hold what's queried; attachments hold arrays and audio.** A clip's analysis arrays
+3. **Records hold what's queried; attachments hold arrays and audio.** A sample's analysis arrays
    (notes, beats, beat_chroma, warp_markers, loudness) are one content-addressed JSON file.
-   Annotations become records (a slice or marker per record), which ends the whole-manifest save race.
+   Annotations become records (a clip or marker per record), which ends the whole-manifest save race.
 4. **Pure logic is written once in Rust** (feed ranking, ids, span validation, markup merge, score
    reference extraction), exposed to the web via wasm, to Python via PyO3, to Swift via UniFFI.
    Multi-step domain operations (`keepCandidate`) are short idempotent sequences of model
    operations, implemented in Rust and TypeScript and kept in step by shared Gherkin specs. No
    Lambdas in phase 1.
-5. **Scores stay `.apr` text.** Clip paths become catalog aliases; ML slice ids and names become
-   stable; a `ScoreRef` table answers "which scores use this clip or slice" and detects drift.
+5. **Scores stay `.apr` text.** Sample paths become catalog aliases; ML clip ids and names become
+   stable; a `ScoreRef` table answers "which scores use this sample or clip" and detects drift.
 
 ## §1 Data model (`web/amplify/data/resource.ts`)
 
@@ -46,7 +46,7 @@ const schema = a.schema({
   Proposer: a.customType({ by: a.string().required(), score: a.float().required(),
                            why: a.string().required(), evidence: a.json(), at: a.datetime().required() }),
   CandidateContext: a.customType({ seconds: a.float(), bpm: a.float(), beats: a.float(), key: a.string(), stem: a.string() }),
-  SliceSource: a.enum(['user', 'ml', 'curated']),
+  ClipSource: a.enum(['user', 'ml', 'curated']),
   Kind: a.enum(['loop', 'break', 'hit', 'phrase', 'section', 'chop', 'other']),
   VerdictValue: a.enum(['keep', 'skip', 'later']),
 
@@ -56,58 +56,58 @@ const schema = a.schema({
     performer: a.string(), composed: a.integer(), recorded: a.string(),
     credit: a.string(), rights: a.string(), sourcePage: a.url(), url: a.url(),
     documents: a.ref('FileRef').array(),            // sheet-music PDFs (sources.json kind:"score")
-    clips: a.hasMany('Clip', 'recordingId'),
+    samples: a.hasMany('Sample', 'recordingId'),
   }).secondaryIndexes(i => [i('collection').sortKeys(['title']).queryField('recordingsByCollection')])
     .authorization(catalog),
 
-  Clip: a.model({
-    id: a.id().required(),        // clp_<sha256(audio)[:20]>; stems: sha256(parentId|stem|model)
+  Sample: a.model({
+    id: a.id().required(),        // smp_<sha256(audio)[:20]>; stems: sha256(parentId|stem|model)
     recordingId: a.id().required(), recording: a.belongsTo('Recording', 'recordingId'),
     path: a.string().required(),  // catalog alias used by scores: "marine-band/stems/Thunderer/drums.wav"
     aliases: a.string().array(),  // the two legacy path forms
     collection: a.string().required(), title: a.string().required(),
     role: a.enum(['source', 'stem', 'excerpt', 'upload']), stem: a.string(), stemModel: a.string(),
-    parentClipId: a.id(), excerptStart: a.float(),
+    parentSampleId: a.id(), excerptStart: a.float(),
     audio: a.ref('FileRef').required(),
-    analysis: a.ref('FileRef'),   // analysis/<clipId>/<sha256>.json = today's manifest minus annotations
+    analysis: a.ref('FileRef'),   // analysis/<sampleId>/<sha256>.json = today's manifest minus annotations
     analysisVersion: a.integer(), analyzedAt: a.datetime(),
     status: a.enum(['pending', 'analyzing', 'ready', 'failed']),
     duration: a.float(), sampleRate: a.integer(), channels: a.integer(),
     bpm: a.float(), bpmStability: a.float(), meter: a.integer(), key: a.string(), camelot: a.string(),
     keysOverTime: a.string().array(), tuningCents: a.float(), noteCount: a.integer(),
     tags: a.string().array(),
-    nameCounters: a.json(),       // {"loop":7,"hit":12}: ML slice names are never reused
-    slices: a.hasMany('Slice', 'clipId'), markers: a.hasMany('Marker', 'clipId'),
-    candidates: a.hasMany('Candidate', 'clipId'),
+    nameCounters: a.json(),       // {"loop":7,"hit":12}: ML clip names are never reused
+    clips: a.hasMany('Clip', 'sampleId'), markers: a.hasMany('Marker', 'sampleId'),
+    candidates: a.hasMany('Candidate', 'sampleId'),
   }).secondaryIndexes(i => [
-    i('recordingId').sortKeys(['path']).queryField('clipsByRecording'),
-    i('collection').sortKeys(['path']).queryField('clipsByCollection'),
-    i('path').queryField('clipsByPath'),              // resolves score references
-    i('parentClipId').queryField('clipsByParent'),
+    i('recordingId').sortKeys(['path']).queryField('samplesByRecording'),
+    i('collection').sortKeys(['path']).queryField('samplesByCollection'),
+    i('path').queryField('samplesByPath'),              // resolves score references
+    i('parentSampleId').queryField('samplesByParent'),
   ]).authorization(catalog),
 
-  Slice: a.model({
-    id: a.id().required(),        // slc_<uuidv7>; curated: slc_<candidate hash>, so keeping twice is idempotent
-    clipId: a.id().required(), clip: a.belongsTo('Clip', 'clipId'),
+  Clip: a.model({
+    id: a.id().required(),        // clp_<uuidv7>; curated: clp_<candidate hash>, so keeping twice is idempotent
+    sampleId: a.id().required(), sample: a.belongsTo('Sample', 'sampleId'),
     name: a.string().required(), start: a.float().required(), end: a.float().required(),
-    source: a.ref('SliceSource').required(), kind: a.ref('Kind'),
+    source: a.ref('ClipSource').required(), kind: a.ref('Kind'),
     tags: a.string().array(), evidence: a.json(),
     rank: a.integer(),            // ML rank (what the name used to encode)
     candidateId: a.id(), retired: a.boolean(), owner: a.string(),
   }).secondaryIndexes(i => [
-    i('clipId').sortKeys(['start']).queryField('slicesByClip'),
-    i('clipId').sortKeys(['name']).queryField('slicesByClipAndName'),
-    i('candidateId').queryField('slicesByCandidate'),
+    i('sampleId').sortKeys(['start']).queryField('clipsBySample'),
+    i('sampleId').sortKeys(['name']).queryField('clipsBySampleAndName'),
+    i('candidateId').queryField('clipsByCandidate'),
   ]).authorization(allow => [...personal(allow), allow.group('curators')]),
 
-  Marker: a.model({ id: a.id().required(), clipId: a.id().required(), clip: a.belongsTo('Clip', 'clipId'),
-    name: a.string().required(), seconds: a.float().required(), source: a.ref('SliceSource'), note: a.string(), owner: a.string() })
-    .secondaryIndexes(i => [i('clipId').sortKeys(['seconds']).queryField('markersByClip')])
+  Marker: a.model({ id: a.id().required(), sampleId: a.id().required(), sample: a.belongsTo('Sample', 'sampleId'),
+    name: a.string().required(), seconds: a.float().required(), source: a.ref('ClipSource'), note: a.string(), owner: a.string() })
+    .secondaryIndexes(i => [i('sampleId').sortKeys(['seconds']).queryField('markersBySample')])
     .authorization(allow => [...personal(allow), allow.group('curators')]),
 
   Candidate: a.model({
-    id: a.id().required(),        // cand_<sha1(clipId|start|end|kind)[:16]>
-    clipId: a.id().required(), clip: a.belongsTo('Clip', 'clipId'), recordingId: a.id().required(),
+    id: a.id().required(),        // cand_<sha1(sampleId|start|end|kind)[:16]>
+    sampleId: a.id().required(), sample: a.belongsTo('Sample', 'sampleId'), recordingId: a.id().required(),
     start: a.float().required(), end: a.float().required(), kind: a.ref('Kind').required(), name: a.string(),
     context: a.ref('CandidateContext'), proposers: a.ref('Proposer').array().required(),
     baseScore: a.float().required(),      // max(proposers.score), copied here so it can be indexed
@@ -116,7 +116,7 @@ const schema = a.schema({
   }).secondaryIndexes(i => [
     i('kind').sortKeys(['baseScore']).queryField('candidatesByKind'),
     i('recordingId').sortKeys(['baseScore']).queryField('candidatesByRecording'),
-    i('clipId').sortKeys(['start']).queryField('candidatesByClip'),
+    i('sampleId').sortKeys(['start']).queryField('candidatesBySample'),
   ]).authorization(catalog),
 
   Verdict: a.model({              // one per (candidate, person); per person in the cloud, judge = "local" locally
@@ -133,7 +133,7 @@ const schema = a.schema({
     .secondaryIndexes(i => [i('owner').sortKeys(['name']).queryField('cratesByOwner')]).authorization(personal),
   CrateItem: a.model({ id: a.id().required(), crateId: a.id().required(), crate: a.belongsTo('Crate', 'crateId'),
     position: a.string().required(),      // fractional rank string: reorder without rewriting
-    candidateId: a.id(), sliceId: a.id(), clipId: a.id(), note: a.string(), owner: a.string() })
+    candidateId: a.id(), clipId: a.id(), sampleId: a.id(), note: a.string(), owner: a.string() })
     .secondaryIndexes(i => [i('crateId').sortKeys(['position']).queryField('crateItemsByCrate'),
                             i('candidateId').queryField('crateItemsByCandidate')]).authorization(personal),
 
@@ -145,13 +145,13 @@ const schema = a.schema({
   ScoreRef: a.model({             // derived when a score is saved
     id: a.id().required(),        // sref_<scoreId>_<alias>[_n]
     scoreId: a.id().required(), score: a.belongsTo('Score', 'scoreId'),
-    clipAlias: a.string().required(), clipId: a.id(), clipPath: a.string(),
-    sliceName: a.string(), sliceId: a.id(), start: a.float(), end: a.float(), owner: a.string() })
+    clipAlias: a.string().required(), sampleId: a.id(), samplePath: a.string(),
+    clipName: a.string(), clipId: a.id(), start: a.float(), end: a.float(), owner: a.string() })
     .secondaryIndexes(i => [i('scoreId').queryField('refsByScore'),
-      i('clipId').sortKeys(['scoreId']).queryField('refsByClip'), i('sliceId').queryField('refsBySlice')])
+      i('sampleId').sortKeys(['scoreId']).queryField('refsBySample'), i('clipId').queryField('refsByClip')])
     .authorization(personal),
 
-  Job: a.model({ id: a.id().required(), kind: a.string().required(), clipId: a.id(),
+  Job: a.model({ id: a.id().required(), kind: a.string().required(), sampleId: a.id(),
     state: a.enum(['queued', 'running', 'done', 'failed']), error: a.string() })   // local analysis jobs
     .secondaryIndexes(i => [i('state').queryField('jobsByState')]).authorization(catalog),
 });
@@ -170,27 +170,27 @@ Copy Papyrus's `amplify/auth/resource.ts` (`/Users/home/Projects/Papyrus/amplify
 
 ### §1.2 Stable ids
 
-- **Clips:** a source's id hashes its audio bytes (survives every path convention). A stem's id
+- **Samples:** a source's id hashes its audio bytes (survives every path convention). A stem's id
   hashes how it was made (`parentId|stem|model`), because demucs output can change between runs.
-- **Candidates:** hash the clip id instead of a path; the old id is kept in `legacyId`.
-- **Slices:** uuidv7; a curated slice's id derives from its candidate's id.
+- **Candidates:** hash the sample id instead of a path; the old id is kept in `legacyId`.
+- **Clips:** uuidv7; a curated clip's id derives from its candidate's id.
 
-### §1.3 Fixing ML slice renames (`apricity-data::markup::merge`, pure; Python calls it via PyO3)
+### §1.3 Fixing ML clip renames (`apricity-data::markup::merge`, pure; Python calls it via PyO3)
 
-1. Each new ML slice is matched to an existing active ML slice of the same kind whose span
+1. Each new ML clip is matched to an existing active ML clip of the same kind whose span
    overlaps by ≥ 0.8 IoU. A match keeps its **id and name**; only span, rank and evidence change.
-2. An unmatched slice is named `{kind}-{n}` with `n` from `Clip.nameCounters`, incremented. Names
+2. An unmatched clip is named `{kind}-{n}` with `n` from `Sample.nameCounters`, incremented. Names
    are never reused; rank moves to the `rank` field.
-3. An ML slice no longer proposed but used by a score (`refsBySlice`) becomes `retired: true`
+3. An ML clip no longer proposed but used by a score (`refsByClip`) becomes `retired: true`
    (hidden in the UI, still resolvable). If no score uses it, it's deleted.
-4. `ScoreRef` stores `sliceId` and the span at save time; the compiler warns when a slice now
+4. `ScoreRef` stores `clipId` and the span at save time; the compiler warns when a clip now
    points to a different span than when the score was saved.
 
 ### §1.4 Verdicts in the cloud and locally
 
 In the cloud each person has their own verdicts (`judge` = Cognito `sub`) and a personal feed. A
-curated **Slice** is shared catalog material, created by the first keep; stars and tags live on
-each person's `Verdict`. A skip removes the Slice only if nobody else keeps it. Locally
+curated **Clip** is shared catalog material, created by the first keep; stars and tags live on
+each person's `Verdict`. A skip removes the Clip only if nobody else keeps it. Locally
 `judge = "local"`, so the same code paths work.
 
 ### §1.5 Ranking
@@ -253,7 +253,7 @@ Specified to match **Amplify/AppSync behaviour**, not GraphQL syntax.
   `errorType: "ValidationException"`.
 - **Relationships:** hasMany returns `ModelXConnection` (filter, sortDirection, limit, nextToken)
   through the index Amplify creates on the foreign key (the engine creates the same implicit
-  index); belongsTo returns an object. In the Rust API, `selectionSet: ["id", "slices.*"]` maps to
+  index); belongsTo returns an object. In the Rust API, `selectionSet: ["id", "clips.*"]` maps to
   Virtuus `include`.
 - **Errors:** `[{ message, errorType, path?, locations?, errorInfo? }]`, types `Unauthorized`,
   `DynamoDB:ConditionalCheckFailedException`, `ValidationException`, `NotFound` (Rust, files only),
@@ -328,19 +328,19 @@ specs `@rust-only` (parity policy for Virtuus core changes: both languages).
 
 - **`crates/apricity-data`** (depends on `virtuus-amplify`, `apricity-score`):
   `Library::open(dir, identity)`, `Library::create(dir)`; typed facades generated from the contract
-  (`lib.models().clip().get(id)`, `.slices_by_clip(clip_id, opts)`); `ids` (`clip_id`,
-  `stem_clip_id`, `candidate_id`, `curated_slice_id`); `domain`: `propose(Vec<Proposal>)`
+  (`lib.models().sample().get(id)`, `.clips_by_sample(sample_id, opts)`); `ids` (`sample_id`,
+  `stem_sample_id`, `candidate_id`, `curated_clip_id`); `domain`: `propose(Vec<Proposal>)`
   (validate, merge by id and proposer), `judge(JudgeInput)` (verdict → crate items → curated
-  slice; idempotent), `rank(&[Candidate], &[Verdict]) -> Vec<Ranked>`, `markup::merge`,
+  clip; idempotent), `rank(&[Candidate], &[Verdict]) -> Vec<Ranked>`, `markup::merge`,
   `save_score(id, text)` (parse, write `ScoreRef`s via `apricity_score::references()`),
   `crate_to_apr`; `loader::make(&Library) -> impl FnMut(&Path) -> Result<Clip, String>` — look up
-  the alias with `clipsByPath` (fallback `aliases`), load the analysis attachment, active and
-  retired slices and markers, rebuild the old manifest JSON with `annotations`, call
+  the alias with `samplesByPath` (fallback `aliases`), load the analysis attachment, active and
+  retired clips and markers, rebuild the old manifest JSON with `annotations`, call
   `Clip::from_json(audio_local_path, json)`. The existing `compile_with` seam and
   `Renderer::new(sr, loader)` don't change. Also `migrate` and `transfer` (§5).
 - **`apricity-score`** gains `pub fn references(score, base_dir) -> Vec<Ref{alias, source, slice:
-  Option<String>, kit_pad: Option<String>}>` (extends `source_paths` to slices referenced from kits)
-  and an optional id form: `clip x = @clp_… slice @slc_…`.
+  Option<String>, kit_pad: Option<String>}>` (extends `source_paths` to clips referenced from kits)
+  and an optional id form: `clip x = @smp_… @clp_…`.
 - **`crates/apricity-ffi`** (UniFFI, Swift):
   ```rust
   #[derive(uniffi::Object)] pub struct ApricityLibrary { .. }
@@ -354,8 +354,8 @@ specs `@rust-only` (parity policy for Virtuus core changes: both languages).
     fn contract_json(&self) -> String;
   }
   ```
-  Generated Swift wrappers mirror the JS client (`try await client.models.clip.get(id:)`,
-  `client.models.slice.slicesByClip(clipId:, options:)`) returning `Result<T>` with `data`,
+  Generated Swift wrappers mirror the JS client (`try await client.models.sample.get(id:)`,
+  `client.models.clip.clipsBySample(sampleId:, options:)`) returning `Result<T>` with `data`,
   `errors`, `nextToken`. `scripts/build-xcframework.sh`: build `aarch64-apple-darwin`,
   `aarch64-apple-ios`, `aarch64-apple-ios-sim` → `uniffi-bindgen generate --library` →
   `xcodebuild -create-xcframework` → SwiftPM `binaryTarget` in `swift/ApricityData/Package.swift`.
@@ -376,8 +376,8 @@ MyLibrary.apricity/
   <Model>/<key>.json          # one JSON file per record, at the library root (Virtuus convention; composite key: <pk>__<sort>.json)
   tables/                     # created empty, unused
   files/                      # exactly the S3 keys
-    audio/<clipId>/<original-filename>
-    analysis/<clipId>/<sha256>.json
+    audio/<sampleId>/<original-filename>
+    analysis/<sampleId>/<sha256>.json
     documents/<recordingId>/<file>.pdf
   .virtuus/                   # derived, deletable: lock, changes.jsonl, index snapshots (gitignored)
 ```
@@ -385,7 +385,7 @@ MyLibrary.apricity/
 ### §3.4 Sync and the bucket layout
 
 The Amplify Storage bucket (S3) is the cloud **hub**: its key space is the library folder layout,
-key for key, using library-relative paths (`files/audio/<clipId>/…`, `files/analysis/…`,
+key for key, using library-relative paths (`files/audio/<sampleId>/…`, `files/analysis/…`,
 `<Model>/<key>.json` for every record Virtuus writes, and so on). Analysis runs on a Mac, then
 `apricity sync push` sends the results; other people `sync pull` or play back from the bucket.
 Nothing analyses in the cloud. Local `apricity serve` serves the library's `files/` folder at
@@ -436,7 +436,7 @@ to 127.0.0.1):
   `storage` sections.
 - `GET/PUT/HEAD/DELETE /files/*key` with **Range** support (30 MB WAVs seek).
 - `POST /jobs/analyze`: creates a `Job` record, runs `python -m apricity_analyze.job --library …
-  --clip …`; status via normal GraphQL queries/subscriptions.
+  --sample …`; status via normal GraphQL queries/subscriptions.
 - Static `web/dist` + wasm with the COOP/COEP headers `server.py` sets today, embedded in the
   binary (as Kanbus's `kbsc` does).
 - `server.py` retired once parity is reached.
@@ -453,10 +453,10 @@ auth and storage facades. One build works in both modes. The data client is the 
 - **Auth facade** `web/src/data/auth.ts` (`getCurrentUser`, `signInWithRedirect({provider:
   'Google'})`, `signOut`, `fetchAuthSession`): locally returns the library's identity; the API key
   maps it to `sub:"local"` with every group, so owner rules resolve to the local user.
-- **Web domain operations** `web/src/data/domain.ts`: `keepCandidate`, `saveSlice`, `saveScore`,
+- **Web domain operations** `web/src/data/domain.ts`: `keepCandidate`, `saveClip`, `saveScore`,
   `applyVerdict` (idempotent sequences over the client; `rank`/`ids` from wasm). The whole-object
-  `api.saveAnnotations` becomes per-slice `Slice.create`/`update`/`delete`. Before compiling a
-  score, fetch clips (`clipsByPath`), analysis (`getUrl`) and slices, then `rw_compile`.
+  `api.saveAnnotations` becomes per-clip `Clip.create`/`update`/`delete`. Before compiling a
+  score, fetch samples (`samplesByPath`), analysis (`getUrl`) and clips, then `rw_compile`.
 - **Subscriptions:** if the Amplify client refuses plain `ws://` for a non-AppSync host, `serve`
   uses TLS with an mkcert certificate. Until realtime ships, the app avoids `observeQuery` and `onCreate`.
 
@@ -471,7 +471,7 @@ Sign-in exists only against the cloud backend; local mode (`apricity serve`) sho
    `apricity:auth-changed`, which the Library and Score views listen for.
 2. **Groups.** The post-confirmation trigger adds every new user to `members` (read access). Nothing adds anyone to
    `admins` or `curators`, so the **first admin is added by hand after signing up**. Records other than Verdict
-   are written through AppSync only by `curators` (plus owners for Slice, Marker, Crate, CrateItem, Score,
+   are written through AppSync only by `curators` (plus owners for Clip, Marker, Crate, CrateItem, Score,
    ScoreRef), and the bucket's `<Model>/*` and `files/*` are writable only by `admins`, so the importing account
    needs both groups:
 
@@ -498,17 +498,17 @@ The Library and Score tabs read only records and library files, the same way in 
 the signed-in Cognito user and the bucket through `aws-amplify/storage`). `apricity.ts` keeps the
 old `api`/`manifest()` shapes on top of a `Catalog`, so the views barely changed:
 
-- **Samples:** `Clip.list` + `Recording.list` (+ `Slice`/`Marker`/`Job` lists for counts and
-  jobs), every page via `nextToken`. The UI's sample path is `samples/<Clip.path>` (the alias
-  scores resolve; `Clip.aliases` also match); titles, credit and rights come from the Recording
+- **Samples:** `Sample.list` + `Recording.list` (+ `Clip`/`Marker`/`Job` lists for counts and
+  jobs), every page via `nextToken`. The UI's sample path is `samples/<Sample.path>` (the alias
+  scores resolve; `Sample.aliases` also match); titles, credit and rights come from the Recording
   (stems: `<recording> · <stem>`).
-- **Manifest** (what `rw_compile` and the waveform take): the `Clip.analysis` attachment
-  (`analysis/<clipId>/<sha>.json`) plus `annotations` rebuilt from `slicesByClip` and
-  `markersByClip`, as `apricity-data::loader` does for the CLI. Audio comes from `Clip.audio.key`
+- **Manifest** (what `rw_compile` and the waveform take): the `Sample.analysis` attachment
+  (`analysis/<sampleId>/<sha>.json`) plus `annotations` rebuilt from `clipsBySample` and
+  `markersBySample`, as `apricity-data::loader` does for the CLI. Audio comes from `Sample.audio.key`
   through `files.ts` `getUrl` (signed URL in the cloud; Range works in both).
 - **Scores:** `Score.list`; a score's path is `<folder>/<title>.<format>` (= `legacyPath` for
   migrated ones), its id `scr_<folder>_<title>_<format>`. Saving creates the record if needed,
-  then calls `domain.ts` `saveScore` (text + `ScoreRef`s). Saving clips edits `Slice` records one
+  then calls `domain.ts` `saveScore` (text + `ScoreRef`s). Saving clips edits `Clip` records one
   by one (create, update, delete), not a whole manifest.
 - **Signed out:** an unauthorized read (no Cognito session, or not a member) shows "Sign in to
   see the library" instead of an error; both views reload on the `apricity:auth-changed` event.
@@ -523,25 +523,25 @@ old `api`/`manifest()` shapes on top of a `Catalog`, so the views barely changed
 idempotent, a second run changes nothing):
 
 1. **Recordings** from `samples/sources.json`: one per Marine Band piece, one per Library of
-   Congress item id for Citizen DJ (e.g. `00694038`, with its excerpt clips). `kind:"score"` PDFs
+   Congress item id for Citizen DJ (e.g. `00694038`, with its excerpt samples). `kind:"score"` PDFs
    become `Recording.documents` under `files/documents/`.
-2. **Clips** from every `*.apricity.json`: id from `source.sha256`; stems use `derived_from` for
-   `parentClipId` and the stem-style id; `path` = samples-relative; `aliases` = the repo-relative
+2. **Samples** from every `*.apricity.json`: id from `source.sha256`; stems use `derived_from` for
+   `parentSampleId` and the stem-style id; `path` = samples-relative; `aliases` = the repo-relative
    and `derived_from.source` forms. Audio is copied with APFS `clonefile` or hard-linked (`--link`),
    so the 430 MB isn't duplicated. Analysis = the manifest minus `annotations`, canonical JSON at
-   `files/analysis/<id>/<sha>.json`; summary fields go on the Clip record.
-3. **Slices and markers** from `annotations`: ids `slc_<sha(clipId|name)>` (idempotent re-runs);
+   `files/analysis/<id>/<sha>.json`; summary fields go on the Sample record.
+3. **Clips and markers** from `annotations`: ids `clp_<sha(sampleId|name)>` (idempotent re-runs);
    `nameCounters` seeded from existing `loop-N`/`hit-N` names.
 4. **Candidates** get new ids (`legacyId` kept), `proposers` copied, `baseScore` computed.
-   **Verdicts** get `judge:"local"`; stars and tags move off the slices. **Crates** → Crate +
-   CrateItem (positions `a0`, `a1`, …). Curated slices get the candidate-derived id.
+   **Verdicts** get `judge:"local"`; stars and tags move off the clips. **Crates** → Crate +
+   CrateItem (positions `a0`, `a1`, …). Curated clips get the candidate-derived id.
 5. **Scores:** `examples/*.apr|yaml` and `scores/*` → Score records (`folder`, `legacyPath`,
    `text`); `save_score` builds `ScoreRef`s. `samples ../samples` resolves to the catalog, so paths
    are looked up as aliases. Anything unresolved is reported and makes the run exit non-zero.
 6. **Check:** every example renders sample-for-sample the same from the files and from the library.
 
-The `.apr` text doesn't change: `clip brk = marine-band/stems/Thunderer/drums.wav slice loop-1`
-resolves by alias, and `loop-1` is now fixed to the slice it named at migration time.
+The `.apr` text doesn't change: `clip brk = marine-band/stems/Thunderer/drums.wav loop-1`
+resolves by alias, and `loop-1` is now fixed to the clip it named at migration time.
 
 **Transfer between modes** (`apricity-data::transfer`): copies all models and files between two
 backends. Local↔local through the engine; either direction with the cloud through GraphQL (the same
@@ -556,7 +556,7 @@ local must give identical tables and file hashes.
 | P0 | `web/amplify/{data,auth,storage}`, the generator, `contract/*` (sandbox later, user-gated) | Typecheck; generator `--check`; deterministic output. |
 | P1 | Virtuus core: Storage, `Result`, O(n²) fix, ordered indexes, key tokens, lock + change log, blobs | Existing suite in both languages; new `storage/`, `pagination/`, `concurrency/multiprocess`; a 50k load scales linearly. |
 | P2 | `virtuus-amplify` | Conformance corpus v1 in-process; every §2.2 row has a scenario. |
-| P3 | `apricity-data`, `references()`, `migrate` | Idempotent migration; identical renders; Rust `rank` = Python `rank`; markup merge keeps ids/names and retires used slices. |
+| P3 | `apricity-data`, `references()`, `migrate` | Idempotent migration; identical renders; Rust `rank` = Python `rank`; markup merge keeps ids/names and retires used clips. |
 | P4a | `virtuus-appsync`, `apricity serve`, web on `generateClient`, `server.py` data endpoints retired | Introspection = SDL; corpus through the real Amplify client against `serve`; Playwright end-to-end. |
 | P4b | Realtime | Subscription scenarios against `serve` (and the sandbox later). |
 | P5 | Python through PyO3 | `analysis/tests` ported and green; concurrent writers lose nothing. |
@@ -581,9 +581,9 @@ both endpoints and diffs normalized responses.
 2. **Realtime without TLS** may be refused by the Amplify client; fallback mkcert. Spike early.
 3. **Getting the SDL offline:** `schema.transform()` / `@aws-amplify/graphql-generator` are
    semi-internal; the sandbox snapshot is the authority, Plexus's static parser the fallback.
-4. **Multi-step operations aren't atomic in the cloud** (keep = Verdict → CrateItem → Slice);
+4. **Multi-step operations aren't atomic in the cloud** (keep = Verdict → CrateItem → Clip);
    derived ids make them safe to repeat. If partial failures appear, move them into an AppSync JS
-   pipeline resolver or a Lambda. Slice-name uniqueness per clip is enforced in domain code only.
+   pipeline resolver or a Lambda. Clip-name uniqueness per sample is enforced in domain code only.
 5. **Domain logic in two languages** (TypeScript and Rust); shared specs limit the risk.
 6. **Size limits:** cloud feed ranking near 50k candidates; cap `proposers` per proposer; Score
    `text` ≤ 300 KB; DynamoDB items ≤ 400 KB.
@@ -595,4 +595,4 @@ both endpoints and diffs normalized responses.
    minor with a deprecation window; consider moving Plexus's proxy onto `virtuus-appsync`.
 10. **Multi-tenancy:** one catalog per deployment, no `libraryId` partition (adding one later needs
     a migration).
-11. **Stem ids** come from how the stem was made; re-separating with another model makes a new clip.
+11. **Stem ids** come from how the stem was made; re-separating with another model makes a new sample.

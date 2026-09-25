@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 use virtuus_amplify::{Engine, Identity};
 
-/// Slice kinds (`Kind` enum in the contract).
+/// Clip kinds (`Kind` enum in the contract).
 const KINDS: [&str; 7] = ["loop", "break", "hit", "phrase", "section", "chop", "other"];
 
 /// Largest score text the contract allows.
@@ -49,8 +49,8 @@ pub type Result<T> = std::result::Result<T, MigrationError>;
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct MigrationReport {
     pub recordings: usize,
+    pub samples: usize,
     pub clips: usize,
-    pub slices: usize,
     pub markers: usize,
     pub candidates: usize,
     pub verdicts: usize,
@@ -69,8 +69,8 @@ pub struct MigrationReport {
 impl MigrationReport {
     pub fn total_changes(&self) -> usize {
         self.recordings
+            + self.samples
             + self.clips
-            + self.slices
             + self.markers
             + self.candidates
             + self.verdicts
@@ -83,10 +83,10 @@ impl MigrationReport {
 
     pub fn display(&self) -> String {
         let mut out = format!(
-            "Migration report (changes this run):\n  Recordings: {}\n  Clips: {}\n  Slices: {}\n  Markers: {}\n  Candidates: {}\n  Verdicts: {}\n  Crates: {}\n  CrateItems: {}\n  Scores: {}\n  ScoreRefs: {}\n  Files: {}",
+            "Migration report (changes this run):\n  Recordings: {}\n  Samples: {}\n  Clips: {}\n  Markers: {}\n  Candidates: {}\n  Verdicts: {}\n  Crates: {}\n  CrateItems: {}\n  Scores: {}\n  ScoreRefs: {}\n  Files: {}",
             self.recordings,
+            self.samples,
             self.clips,
-            self.slices,
             self.markers,
             self.candidates,
             self.verdicts,
@@ -231,7 +231,7 @@ fn str_of<'a>(v: &'a Value, key: &str) -> Option<&'a str> {
 }
 
 /// One `*.apricity.json` found under `samples/`.
-struct ClipPlan {
+struct SamplePlan {
     /// Samples-relative path of the audio: the catalog path scores use.
     rel: String,
     manifest: Value,
@@ -240,7 +240,7 @@ struct ClipPlan {
     parent_id: Option<String>,
 }
 
-/// Where a clip's recording lives: (recording id, collection).
+/// Where a sample's recording lives: (recording id, collection).
 fn recording_key(rel: &str) -> (String, String) {
     let parts: Vec<&str> = rel.split('/').collect();
     let stem_of = |file: &str| {
@@ -324,7 +324,7 @@ pub fn migrate_with_sources(
 
     let mut sources = load_sources(&samples)?;
     sources.extend(extra_sources.iter().cloned());
-    let mut plans = discover_clips(&samples)?;
+    let mut plans = discover_samples(&samples)?;
     assign_ids(&mut plans)?;
 
     migrate_recordings(
@@ -335,7 +335,7 @@ pub fn migrate_with_sources(
         &plans,
         &mut report,
     )?;
-    let catalog = migrate_clips(
+    let catalog = migrate_samples(
         &mut ctx,
         &mut files,
         &sources,
@@ -343,10 +343,10 @@ pub fn migrate_with_sources(
         use_link,
         &mut report,
     )?;
-    let slices = migrate_annotations(&mut ctx, &plans, &catalog, &mut report)?;
+    let clips = migrate_annotations(&mut ctx, &plans, &catalog, &mut report)?;
     let candidates = migrate_candidates(&mut ctx, &repo.join("library"), &catalog, &mut report)?;
     migrate_crates(&mut ctx, &repo.join("library"), &candidates, &mut report)?;
-    migrate_scores(&mut ctx, repo, &catalog, &slices, &mut report)?;
+    migrate_scores(&mut ctx, repo, &catalog, &clips, &mut report)?;
     Ok(report)
 }
 
@@ -362,7 +362,7 @@ fn load_sources(samples: &Path) -> Result<Vec<Value>> {
         .unwrap_or_default())
 }
 
-fn discover_clips(samples: &Path) -> Result<Vec<ClipPlan>> {
+fn discover_samples(samples: &Path) -> Result<Vec<SamplePlan>> {
     let mut manifests = Vec::new();
     walk(samples, &mut |p| {
         if p.to_string_lossy().ends_with(".apricity.json") {
@@ -383,7 +383,7 @@ fn discover_clips(samples: &Path) -> Result<Vec<ClipPlan>> {
             .strip_prefix(samples)
             .map_err(|e| MigrationError::Data(e.to_string()))?;
         let rel = rel_dir.join(file).to_string_lossy().replace('\\', "/");
-        plans.push(ClipPlan {
+        plans.push(SamplePlan {
             rel,
             audio: dir.join(file),
             manifest,
@@ -394,13 +394,13 @@ fn discover_clips(samples: &Path) -> Result<Vec<ClipPlan>> {
     Ok(plans)
 }
 
-/// Sources get `clp_<sha256>`; a stem hashes how it was made (parent id, stem, model).
-fn assign_ids(plans: &mut [ClipPlan]) -> Result<()> {
+/// Sources get `smp_<sha256>`; a stem hashes how it was made (parent id, stem, model).
+fn assign_ids(plans: &mut [SamplePlan]) -> Result<()> {
     for p in plans.iter_mut() {
         if p.manifest.get("derived_from").is_none() {
             let sha = str_of(&p.manifest["source"], "sha256")
                 .ok_or_else(|| MigrationError::Data(format!("{}: no source.sha256", p.rel)))?;
-            p.id = ids::clip_id(sha);
+            p.id = ids::sample_id(sha);
         }
     }
     let by_repo_path: HashMap<String, String> = plans
@@ -423,7 +423,7 @@ fn assign_ids(plans: &mut [ClipPlan]) -> Result<()> {
                 )));
             };
             if let Some(parent) = resolved.get(src) {
-                p.id = ids::stem_clip_id(parent, stem, model);
+                p.id = ids::stem_sample_id(parent, stem, model);
                 p.parent_id = Some(parent.clone());
                 resolved.insert(format!("samples/{}", p.rel), p.id.clone());
                 progress = true;
@@ -435,7 +435,7 @@ fn assign_ids(plans: &mut [ClipPlan]) -> Result<()> {
     }
     if let Some(p) = plans.iter().find(|p| p.id.is_empty()) {
         return Err(MigrationError::Data(format!(
-            "{}: derived_from.source {:?} is not a migrated clip",
+            "{}: derived_from.source {:?} is not a migrated sample",
             p.rel, p.manifest["derived_from"]["source"]
         )));
     }
@@ -447,7 +447,7 @@ fn migrate_recordings(
     files: &mut FsFiles,
     samples: &Path,
     sources: &[Value],
-    plans: &[ClipPlan],
+    plans: &[SamplePlan],
     report: &mut MigrationReport,
 ) -> Result<()> {
     // recording id -> (collection, first audio entry, score documents)
@@ -529,14 +529,14 @@ fn migrate_recordings(
     Ok(())
 }
 
-/// Clip ids by catalog path and by alias, with what the later steps need.
+/// Sample ids by catalog path and by alias, with what the later steps need.
 struct Catalog {
     by_path: HashMap<String, String>,
     recording_of: HashMap<String, String>,
 }
 
 impl Catalog {
-    fn clip_for(&self, path: &str) -> Option<&String> {
+    fn sample_for(&self, path: &str) -> Option<&String> {
         self.by_path.get(path).or_else(|| {
             path.strip_prefix("samples/")
                 .and_then(|p| self.by_path.get(p))
@@ -544,11 +544,11 @@ impl Catalog {
     }
 }
 
-fn migrate_clips(
+fn migrate_samples(
     ctx: &mut Ctx,
     files: &mut FsFiles,
     sources: &[Value],
-    plans: &[ClipPlan],
+    plans: &[SamplePlan],
     link: bool,
     report: &mut MigrationReport,
 ) -> Result<Catalog> {
@@ -563,7 +563,7 @@ fn migrate_clips(
     for p in plans {
         if !p.audio.exists() {
             report.skipped.push(format!(
-                "clip {} has no audio file (run scripts/fetch-samples.py)",
+                "sample {} has no audio file (run scripts/fetch-samples.py)",
                 p.rel
             ));
             continue;
@@ -608,7 +608,7 @@ fn migrate_clips(
             "source"
         };
         let m = &p.manifest;
-        let mut clip = json!({
+        let mut sample = json!({
             "id": p.id, "recordingId": recording_id, "path": p.rel, "aliases": [format!("samples/{}", p.rel)],
             "collection": collection, "title": filename, "role": role, "status": "ready",
             "audio": file_ref_json(&audio), "analysis": file_ref_json(&analysis_ref),
@@ -622,9 +622,9 @@ fn migrate_clips(
             .get("key")
             .and_then(|k| Some(format!("{} {}", str_of(k, "tonic")?, str_of(k, "mode")?)))
         {
-            clip["key"] = json!(k);
+            sample["key"] = json!(k);
         }
-        clip["camelot"] = m["tonal"]["key"]
+        sample["camelot"] = m["tonal"]["key"]
             .get("camelot")
             .cloned()
             .unwrap_or(Value::Null);
@@ -639,39 +639,39 @@ fn migrate_clips(
                     ))
                 })
                 .collect();
-            clip["keysOverTime"] = json!(keys);
+            sample["keysOverTime"] = json!(keys);
         }
         if let Some(n) = m.get("notes").and_then(Value::as_array) {
-            clip["noteCount"] = json!(n.len());
+            sample["noteCount"] = json!(n.len());
         }
         if role == "stem" {
-            clip["stem"] = m["derived_from"]["stem"].clone();
-            clip["stemModel"] = m["derived_from"]["model"].clone();
-            clip["parentClipId"] = json!(p.parent_id);
+            sample["stem"] = m["derived_from"]["stem"].clone();
+            sample["stemModel"] = m["derived_from"]["model"].clone();
+            sample["parentSampleId"] = json!(p.parent_id);
         }
         if let Some(t) = entry
             .and_then(|e| str_of(e, "excerpt_start"))
             .and_then(parse_hms)
         {
-            clip["excerptStart"] = json!(t);
+            sample["excerptStart"] = json!(t);
         }
-        report.clips += ctx.upsert("Clip", clip)? as usize;
+        report.samples += ctx.upsert("Sample", sample)? as usize;
         catalog.by_path.insert(p.rel.clone(), p.id.clone());
         catalog.recording_of.insert(p.id.clone(), recording_id);
     }
     Ok(catalog)
 }
 
-/// Write `analysis/<clipId>/<sha256 of content>.json` unless it is already there.
+/// Write `analysis/<sampleId>/<sha256 of content>.json` unless it is already there.
 fn put_analysis(
     files: &mut FsFiles,
-    clip_id: &str,
+    sample_id: &str,
     bytes: &[u8],
     report: &mut MigrationReport,
 ) -> Result<FileRef> {
     use sha2::{Digest, Sha256};
     let sha = format!("{:x}", Sha256::digest(bytes));
-    let key = format!("analysis/{clip_id}/{sha}.json");
+    let key = format!("analysis/{sample_id}/{sha}.json");
     let path = files.path_of(&key);
     let existing = fs::read(&path).ok();
     if existing.as_deref() != Some(bytes) {
@@ -689,7 +689,7 @@ fn put_analysis(
     })
 }
 
-/// `{"loop": 7}` from existing `loop-N` names: ML slice names are never reused.
+/// `{"loop": 7}` from existing `loop-N` names: ML clip names are never reused.
 fn name_counters(manifest: &Value) -> Value {
     let mut counters: BTreeMap<String, u64> = BTreeMap::new();
     for s in manifest["annotations"]["clips"]
@@ -708,16 +708,16 @@ fn name_counters(manifest: &Value) -> Value {
     json!(counters)
 }
 
-/// Slice ids by clip id then name, for resolving score references.
-type SliceIndex = HashMap<String, HashMap<String, (String, f64, f64)>>;
+/// Clip ids by sample id then name, for resolving score references.
+type ClipIndex = HashMap<String, HashMap<String, (String, f64, f64)>>;
 
 fn migrate_annotations(
     ctx: &mut Ctx,
-    plans: &[ClipPlan],
+    plans: &[SamplePlan],
     catalog: &Catalog,
     report: &mut MigrationReport,
-) -> Result<SliceIndex> {
-    let mut index: SliceIndex = HashMap::new();
+) -> Result<ClipIndex> {
+    let mut index: ClipIndex = HashMap::new();
     for p in plans
         .iter()
         .filter(|p| catalog.by_path.contains_key(&p.rel))
@@ -728,15 +728,15 @@ fn migrate_annotations(
                 (str_of(s, "name"), s["start"].as_f64(), s["end"].as_f64())
             else {
                 return Err(MigrationError::Data(format!(
-                    "{}: slice needs name, start and end: {s}",
+                    "{}: clip needs name, start and end: {s}",
                     p.rel
                 )));
             };
-            let by_clip = index.entry(p.id.clone()).or_default();
-            if by_clip.contains_key(name) {
+            let by_sample = index.entry(p.id.clone()).or_default();
+            if by_sample.contains_key(name) {
                 report
                     .skipped
-                    .push(format!("{}: duplicate slice name {name}", p.rel));
+                    .push(format!("{}: duplicate clip name {name}", p.rel));
                 continue;
             }
             let tags = s.get("tags").cloned().unwrap_or(Value::Null);
@@ -748,21 +748,21 @@ fn migrate_annotations(
             let source = str_of(s, "source")
                 .filter(|s| ["user", "ml", "curated"].contains(s))
                 .unwrap_or("ml");
-            // A curated slice carries the candidate it was kept from; its id derives from the
-            // candidate's new id (clip, span, kind), the same one `migrate_candidates` computes.
+            // A curated clip carries the candidate it was kept from; its id derives from the
+            // candidate's new id (sample, span, kind), the same one `migrate_candidates` computes.
             let (id, candidate) = if str_of(s, "candidate").is_some() {
                 let cid = ids::candidate_id(&p.id, start, end, kind.unwrap_or("other"));
-                (ids::curated_slice_id(&cid), Some(cid))
+                (ids::curated_clip_id(&cid), Some(cid))
             } else {
-                (ids::migrated_slice_id(&p.id, name), None)
+                (ids::migrated_clip_id(&p.id, name), None)
             };
-            let slice = json!({
-                "id": id, "clipId": p.id, "name": name, "start": start, "end": end, "source": source,
+            let clip = json!({
+                "id": id, "sampleId": p.id, "name": name, "start": start, "end": end, "source": source,
                 "kind": kind, "tags": tags, "candidateId": candidate,
                 "evidence": s.get("evidence").map(Value::to_string),
             });
-            report.slices += ctx.upsert("Slice", slice)? as usize;
-            by_clip.insert(name.to_string(), (id, start, end));
+            report.clips += ctx.upsert("Clip", clip)? as usize;
+            by_sample.insert(name.to_string(), (id, start, end));
         }
         for m in ann["markers"].as_array().into_iter().flatten() {
             let (Some(name), Some(seconds)) = (str_of(m, "name"), m["seconds"].as_f64()) else {
@@ -772,7 +772,7 @@ fn migrate_annotations(
                 )));
             };
             let source = str_of(m, "source").filter(|s| ["user", "ml", "curated"].contains(s));
-            let marker = json!({"id": ids::migrated_marker_id(&p.id, name, seconds), "clipId": p.id, "name": name, "seconds": seconds, "source": source, "note": str_of(m, "note")});
+            let marker = json!({"id": ids::migrated_marker_id(&p.id, name, seconds), "sampleId": p.id, "name": name, "seconds": seconds, "source": source, "note": str_of(m, "note")});
             report.markers += ctx.upsert("Marker", marker)? as usize;
         }
     }
@@ -798,10 +798,10 @@ fn migrate_candidates(
     for c in store["candidates"].as_array().into_iter().flatten() {
         let legacy =
             str_of(c, "id").ok_or_else(|| MigrationError::Data("candidate without id".into()))?;
-        let clip_path = str_of(c, "clip").unwrap_or_default();
-        let Some(clip_id) = catalog.clip_for(clip_path) else {
+        let sample_path = str_of(c, "clip").unwrap_or_default();
+        let Some(sample_id) = catalog.sample_for(sample_path) else {
             report.unresolved.push(format!(
-                "candidate {legacy}: clip {clip_path} is not migrated"
+                "candidate {legacy}: sample {sample_path} is not migrated"
             ));
             continue;
         };
@@ -813,20 +813,20 @@ fn migrate_candidates(
         let kind = str_of(c, "kind")
             .filter(|k| KINDS.contains(k))
             .unwrap_or("other");
-        let id = ids::candidate_id(clip_id, start, end, kind);
+        let id = ids::candidate_id(sample_id, start, end, kind);
         index.insert(legacy.to_string(), id.clone());
         let proposers = c["proposers"].as_array().cloned().unwrap_or_default();
         let entry = records.entry(id.clone()).or_default();
         if entry.is_empty() {
             let rec = json!({
-                "id": id, "legacyId": legacy, "clipId": clip_id, "recordingId": catalog.recording_of[clip_id],
+                "id": id, "legacyId": legacy, "sampleId": sample_id, "recordingId": catalog.recording_of[sample_id],
                 "start": start, "end": end, "kind": kind, "name": str_of(c, "name"), "context": c.get("context"),
             });
             *entry = rec.as_object().cloned().unwrap_or_default();
             entry.insert("proposers".into(), Value::Array(Vec::new()));
         } else {
             report.skipped.push(format!(
-                "candidate {legacy} has the same clip, span and kind as {}; proposers merged",
+                "candidate {legacy} has the same sample, span and kind as {}; proposers merged",
                 entry["legacyId"]
             ));
         }
@@ -901,18 +901,18 @@ fn migrate_crates(
                     .push(format!("crate {name}: candidate {legacy} is not migrated"));
                 continue;
             };
-            // A kept candidate's curated slice is the item's slice.
+            // A kept candidate's curated clip is the item's clip.
             let kept = ctx.call(
                 "Verdict",
                 "get",
                 &json!({"candidateId": cid, "judge": "local"}),
             )?;
             let candidate = ctx.call("Candidate", "get", &json!({"id": cid}))?;
-            let slice =
-                (str_of(&kept, "verdict") == Some("keep")).then(|| ids::curated_slice_id(cid));
+            let clip =
+                (str_of(&kept, "verdict") == Some("keep")).then(|| ids::curated_clip_id(cid));
             let item = json!({
                 "id": format!("citm_{crate_id}_{cid}"), "crateId": crate_id, "position": position, "candidateId": cid,
-                "sliceId": slice, "clipId": candidate.get("clipId"),
+                "clipId": clip, "sampleId": candidate.get("sampleId"),
             });
             report.crate_items += ctx.upsert("CrateItem", item)? as usize;
         }
@@ -924,7 +924,7 @@ fn migrate_scores(
     ctx: &mut Ctx,
     repo: &Path,
     catalog: &Catalog,
-    slices: &SliceIndex,
+    clips: &ClipIndex,
     report: &mut MigrationReport,
 ) -> Result<()> {
     let mut paths = Vec::new();
@@ -979,7 +979,7 @@ fn migrate_scores(
 
         let mut wanted = Vec::new();
         for r in refs.unwrap_or_default() {
-            match resolve_ref(&score_id, &r, catalog, slices) {
+            match resolve_ref(&score_id, &r, catalog, clips) {
                 Ok(record) => {
                     wanted.push(record["id"].as_str().unwrap_or_default().to_string());
                     report.score_refs += ctx.upsert("ScoreRef", record)? as usize;
@@ -1007,36 +1007,36 @@ fn resolve_ref(
     score_id: &str,
     r: &CatalogRef,
     catalog: &Catalog,
-    slices: &SliceIndex,
+    clips: &ClipIndex,
 ) -> std::result::Result<Value, String> {
-    let clip_id = match (&r.clip_id, &r.catalog_path) {
+    let sample_id = match (&r.sample_id, &r.catalog_path) {
         (Some(id), _) if catalog.by_path.values().any(|c| c == id) => id.clone(),
-        (Some(id), _) => return Err(format!("no clip {id}")),
+        (Some(id), _) => return Err(format!("no sample {id}")),
         (None, Some(path)) => catalog
-            .clip_for(path)
+            .sample_for(path)
             .cloned()
-            .ok_or_else(|| format!("no clip at {path}"))?,
+            .ok_or_else(|| format!("no sample at {path}"))?,
         (None, None) => return Err("not a catalog path".into()),
     };
-    let by_clip = slices.get(&clip_id);
-    let slice = match (&r.slice_id, &r.slice_name) {
-        (Some(id), _) => by_clip
+    let by_sample = clips.get(&sample_id);
+    let clip = match (&r.clip_id, &r.clip_name) {
+        (Some(id), _) => by_sample
             .and_then(|m| m.values().find(|(sid, ..)| sid == id))
             .cloned()
-            .ok_or_else(|| format!("no slice {id}"))?
+            .ok_or_else(|| format!("no clip {id}"))?
             .into(),
-        (None, Some(name)) => by_clip
+        (None, Some(name)) => by_sample
             .and_then(|m| m.get(name))
             .cloned()
-            .ok_or_else(|| format!("no slice {name} on {clip_id}"))?
+            .ok_or_else(|| format!("no clip {name} on {sample_id}"))?
             .into(),
         (None, None) => None,
     };
-    let slice: Option<(String, f64, f64)> = slice;
+    let clip: Option<(String, f64, f64)> = clip;
     Ok(json!({
-        "id": format!("sref_{score_id}_{}", r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "clipId": clip_id,
-        "clipPath": r.catalog_path, "sliceName": r.slice_name,
-        "sliceId": slice.as_ref().map(|s| &s.0), "start": slice.as_ref().map(|s| s.1), "end": slice.as_ref().map(|s| s.2),
+        "id": format!("sref_{score_id}_{}", r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "sampleId": sample_id,
+        "samplePath": r.catalog_path, "clipName": r.clip_name,
+        "clipId": clip.as_ref().map(|s| &s.0), "start": clip.as_ref().map(|s| s.1), "end": clip.as_ref().map(|s| s.2),
     }))
 }
 

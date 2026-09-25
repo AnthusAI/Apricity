@@ -71,7 +71,7 @@ test("every breakdown bundle: well formed, library keys only, no machine paths",
 
 test("library keys: relative paths only", async () => {
   const { isLibraryKey } = await import("../src/ui/flow/hero-audio.ts");
-  for (const ok of ["hero/b-track.mp3", "audio/clp_1/drums.wav", "a.mp3"]) assert.ok(isLibraryKey(ok), ok);
+  for (const ok of ["hero/b-track.mp3", "audio/smp_1/drums.wav", "a.mp3"]) assert.ok(isLibraryKey(ok), ok);
   for (const bad of ["", "/Users/x/a.mp3", "/hero/a.mp3", "../a.mp3", "hero/../a.mp3", "hero//a.mp3", "./a.mp3", "C:\\a.mp3", "https://x/a.mp3", "hero\\a.mp3", "hero/"]) assert.ok(!isLibraryKey(bad), bad);
 });
 
