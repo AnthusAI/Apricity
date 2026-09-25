@@ -1,0 +1,85 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "snare_OH_Ghost_1.wav",
+  "sha256": "b856339d674b8c92200cdb2aaace161c6b54001e029df7f1f7328c182fc59f0a",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 0.463
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-24T21:30:11+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [],
+  "downbeats": [],
+  "meter": null,
+  "warp_markers": [],
+  "beat_loudness": [],
+  "loudness": [
+   -18.2
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Ab",
+   "mode": "minor",
+   "strength": 0.6347,
+   "camelot": "1A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "C",
+    "mode": "minor",
+    "strength": 0.5551,
+    "camelot": "5A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Ab",
+    "mode": "major",
+    "strength": 0.3826,
+    "camelot": "4B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "E",
+    "mode": "minor",
+    "strength": 0.3487,
+    "camelot": "9A",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 435.45,
+  "tuning_cents": -18.0,
+  "pitch_class_profile": [
+   0.3339,
+   0.2917,
+   0.0696,
+   0.7388,
+   0.2437,
+   0.1399,
+   0.0826,
+   1.0,
+   0.7773,
+   0.147,
+   0.0576,
+   0.8406
+  ],
+  "segments": [],
+  "beat_chroma": []
+ },
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}
