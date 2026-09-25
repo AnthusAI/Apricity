@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-574eb9d8-7e11-4c1f-a719-350ec949d5f5",
+  "title": "Web app uses the cloud backend and bucket in production",
+  "description": "The deployed web app reads amplify_outputs.json from the deployment (AppSync API + Storage bucket, Cognito auth instead of the local API key), fetches audio and metadata from the bucket via the same library-relative keys as local /files/, and the hero plays from the synced assets. Coordinate any web/src/ui change through this issue (the web session owns visuals). Depends on apricitus-25e216 (S3 Files + sync) and apricitus-9bd3ef (hero rewrite).",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T02:28:48.367182Z",
+  "updated_at": "2026-09-25T02:28:48.367204Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

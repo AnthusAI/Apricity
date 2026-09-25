@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-b459746a-43e1-405e-b2a3-afb7640cf22d",
+  "title": "USER: Route 53 zone for anth.us, AWS account/region, production approval",
+  "description": "For the user (rap@endymion.com). Needed before any of this epic can run:\n1. Confirm anth.us is hosted in Route 53 in the AWS account we deploy to (or where DNS lives if elsewhere); Amplify can add apricity.anth.us records only if the hosted zone is in that account, otherwise records must be added by hand.\n2. AWS profile and region for the production Amplify app (see also apricitus-e28a12, which this extends for prod: Google OAuth client, ALLOWED_EMAILS).\n3. Explicit approval to create billable AWS resources and to point apricity.anth.us at them.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T02:28:48.256783Z",
+  "updated_at": "2026-09-25T02:28:48.256804Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

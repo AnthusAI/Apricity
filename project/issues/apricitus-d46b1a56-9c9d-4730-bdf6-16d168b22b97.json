@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-d46b1a56-9c9d-4730-bdf6-16d168b22b97",
+  "title": "Custom domain apricity.anth.us: Amplify domain association, Route 53, TLS",
+  "description": "Associate apricity.anth.us with the Amplify app: ACM certificate validation records and the alias to the CloudFront distribution, in Route 53 (zone from the USER task). Verify with dig and curl -I https://apricity.anth.us (200, valid cert, and the COOP/COEP/CORP headers the wasm app needs, set through Amplify custom headers). Record the exact DNS records in design/storage.md so it is reproducible. Depends on the Amplify Hosting app task.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T02:28:48.312185Z",
+  "updated_at": "2026-09-25T02:28:48.312203Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
