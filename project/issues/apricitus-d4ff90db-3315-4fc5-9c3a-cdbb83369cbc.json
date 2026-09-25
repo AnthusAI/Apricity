@@ -3,17 +3,30 @@
   "title": "Never name Ableton in the project",
   "description": "Reword every mention (README, docs, design, a dsp comment) to generic DAW terms.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "18556e65-0c52-4e20-ae3f-ab371e796458",
+      "author": "home",
+      "text": "Landed and verified on https://apricity.anth.us 2026-09-25 (Amplify job 40; prod-smoke all passed; import 1824 created / 76 updated / 0 failed).",
+      "created_at": "2026-09-25T18:34:33.124894Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-25T17:08:10.999239Z",
-  "updated_at": "2026-09-25T17:08:10.999271Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T18:34:33.146339Z",
+  "closed_at": "2026-09-25T18:34:33.146309Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",

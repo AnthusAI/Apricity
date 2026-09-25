@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f3fecfca-bb2f-4885-8510-c2ffebb575c0",
+  "title": "Drum machine: colour pads by recording, as Flow does",
+  "description": "Pads use PALETTE by row; Flow colours by recording via lineage. Match them.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-25T18:34:33.217564Z",
+  "updated_at": "2026-09-25T18:34:33.217583Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
