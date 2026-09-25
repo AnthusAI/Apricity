@@ -109,8 +109,9 @@ export async function downloadData({
   } else {
     // Cloud mode: use aws-amplify/storage
     const { downloadData: amplifyDownload } = await import("aws-amplify/storage");
-    const result = (await amplifyDownload({ path: cloudPath(path) })) as any;
-    return result.body || result;
+    // Amplify returns a task; the bytes are in its `result`.
+    const result = await amplifyDownload({ path: cloudPath(path) }).result;
+    return result.body.blob();
   }
 }
 
