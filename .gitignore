@@ -37,4 +37,21 @@ project/.overlay/
 
 # conformance run output
 /web/test/conformance/cucumber-report.json
-/samples/salamander-drumkit/
+
+# Downloaded/derived audio in any format (never commit; only manifests under samples/ are tracked)
+/samples/**/*.flac
+/samples/**/*.ogg
+/samples/**/*.opus
+/samples/**/*.m4a
+/samples/**/*.aif
+/samples/**/*.aiff
+/samples/**/*.zip
+/samples/**/*.tar*
+/samples/**/*.tmp
+
+# Apricity libraries (data + files), wherever they are created
+*.apricity/
+
+# Salamander Drumkit files that are not audio (fetched by `apricity sources fetch salamander-drumkit`; its manifests are tracked)
+/samples/salamander-drumkit/*.sfz
+/samples/salamander-drumkit/REAMDE
