@@ -19,6 +19,8 @@ applications:
             - npm run build
             # vite empties dist/, so the wasm is copied in afterwards; it is served at /apricity_web.wasm.
             - cp .cache/apricity_web.wasm dist/apricity_web.wasm
+            # The backend phase wrote amplify_outputs.json next to package.json; the app fetches it at /amplify_outputs.json.
+            - cp amplify_outputs.json dist/amplify_outputs.json
       artifacts:
         baseDirectory: dist
         files:
@@ -30,16 +32,3 @@ applications:
           - .cache/cargo/registry/**/*
           - .cache/rustup/**/*
           - .cache/target/**/*
-    customHeaders:
-      - pattern: '**/*'
-        headers:
-          - key: 'Cross-Origin-Opener-Policy'
-            value: 'same-origin'
-          - key: 'Cross-Origin-Embedder-Policy'
-            value: 'require-corp'
-          - key: 'Cross-Origin-Resource-Policy'
-            value: 'same-origin'
-      - pattern: '/apricity_web.wasm'
-        headers:
-          - key: 'Content-Type'
-            value: 'application/wasm'
