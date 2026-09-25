@@ -4,6 +4,10 @@ import { Library } from "./ui/library";
 import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
+import { bootstrap } from "./data/client";
+
+// Configure the data layer first: /amplify_outputs.json says whether files come from `apricity serve` or the bucket.
+await bootstrap();
 
 const library = new Library(document.querySelector("#library")!);
 const score = new ScoreView(document.querySelector("#score")!);
