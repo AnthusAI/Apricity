@@ -139,3 +139,23 @@ describe("templates", () => {
     for (const [kind, text] of Object.entries(TEMPLATES)) assert.equal(view(text).errors, undefined, `${kind}: ${view(text).errors}`);
   });
 });
+
+import { rebaseSamples } from "../src/ui/templates.ts";
+
+describe("rebaseSamples", () => {
+  it("a template saved into a person's folder still finds the samples", () => {
+    const out = rebaseSamples(TEMPLATES.chords, "scores", "scores/google_123");
+    assert.match(out, /^samples \.\.\/\.\.\/samples$/m);
+    assert.equal(view(out).errors, undefined);
+  });
+  it("a copy of an example keeps pointing at the same folder, comments kept", () => {
+    assert.equal(rebaseSamples("tempo 90\nsamples ../samples   # the library\n", "examples", "scores/ann"), "tempo 90\nsamples ../../samples   # the library\n");
+    assert.equal(rebaseSamples("samples: ../samples\n", "examples", "scores/ann"), "samples: ../../samples\n", "YAML too");
+  });
+  it("same folder, absolute paths and no samples line are left alone", () => {
+    assert.equal(rebaseSamples("samples ../samples\n", "scores", "scores"), "samples ../samples\n");
+    assert.equal(rebaseSamples("samples /data/samples\n", "scores", "scores/ann"), "samples /data/samples\n");
+    assert.equal(rebaseSamples("tempo 90\n", "scores", "scores/ann"), "tempo 90\n");
+  });
+  it("moving back up", () => assert.equal(rebaseSamples("samples ../../samples\n", "scores/ann", "scores"), "samples ../samples\n"));
+});

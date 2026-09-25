@@ -13,7 +13,7 @@ import { api, compile, me, ratings, type Timeline } from "../apricity";
 import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
 import { StarRating } from "./stars";
-import { KIND_LABEL, TEMPLATES } from "./templates";
+import { KIND_LABEL, rebaseSamples, TEMPLATES, TEMPLATE_FOLDER } from "./templates";
 import { player, Superseded } from "../audio/player";
 import { el } from "./dom";
 import { currentAccount } from "../data/auth";
@@ -333,20 +333,25 @@ export class ScoreView {
     return this.who ? "scores" : null; // locally there is one person; a guest has no folder
   }
 
-  private async create(text?: string, suggested?: string) {
+  /** A new score of this tab's kind: the kind's template, or (`from`) a copy of another score's text. */
+  private async create(text?: string, suggested?: string, from?: string) {
     const folder = await this.folder();
     if (!folder) return signIn();
     const one = KIND_LABEL[this.kind].one;
     const name = prompt(`Name for the new ${one} (letters, digits, - and _):`, suggested ?? `my-${one}`)?.trim();
     if (!name) return;
     const safe = name.replace(/[^A-Za-z0-9_-]+/g, "-");
-    const path = `${folder}/${safe}.apr`;
+    const format = from?.endsWith(".yaml") ? "yaml" : "apr";
+    const path = `${folder}/${safe}.${format}`;
+    // The samples folder is relative to the score: keep it pointing at the same place from the new folder.
+    const source = from ? from.split("/").slice(0, -1).join("/") : TEMPLATE_FOLDER;
+    text = rebaseSamples(text ?? TEMPLATES[this.kind], source, folder);
     if (this.items.some((x) => x.path === path)) {
       this.statusEl.textContent = `you already have ${safe}; pick another name`;
       return;
     }
     try {
-      await api.saveScore(path, text ?? TEMPLATES[this.kind], this.kind);
+      await api.saveScore(path, text, this.kind);
     } catch (e) {
       this.statusEl.textContent = `couldn't create ${path}: ${(e as Error).message}`;
       return;
@@ -369,7 +374,7 @@ export class ScoreView {
     if (it && !owns(this.who, it.owner) && !this.who.curator) {
       // Someone else's score: yours is a copy, under your name.
       this.saved = text; // the edits move to the copy
-      return this.create(text, it.title);
+      return this.create(text, it.title, it.path);
     }
     try {
       await api.saveScore(this.path, text);

@@ -76,3 +76,37 @@ export const KIND_LABEL: Record<ScoreKind, { one: string; many: string }> = {
   chords: { one: "chords", many: "chords" },
   melody: { one: "melody", many: "melodies" },
 };
+
+/** Where the templates' `samples ../samples` is written from: a score directly in `scores/`. */
+export const TEMPLATE_FOLDER = "scores";
+
+/** Collapse `a/b/../c` → `a/c` (paths inside the library, `/`-separated; a leading `..` that can't collapse stays). */
+function normalize(parts: string[]): string[] {
+  const out: string[] = [];
+  for (const p of parts) {
+    if (!p || p === ".") continue;
+    if (p === ".." && out.length && out[out.length - 1] !== "..") out.pop();
+    else out.push(p);
+  }
+  return out;
+}
+
+/**
+ * A score's text moved from one folder to another: its `samples` folder (relative to the score) is rewritten so it
+ * still points at the same place. Scores are saved one folder deeper per person (`scores/<username>/`), so a template
+ * or a copy of someone else's score would otherwise look for its samples in the wrong folder. Both the text language
+ * (`samples ../samples`) and YAML (`samples: ../samples`) are handled; an absolute or missing `samples` is left alone.
+ */
+export function rebaseSamples(text: string, fromFolder: string, toFolder: string): string {
+  if (fromFolder === toFolder) return text;
+  return text.replace(/^samples(:?)([ \t]+)(\S+)/m, (all, colon: string, space: string, rel: string) => {
+    if (rel.startsWith("/") || /^[a-z]+:\/\//i.test(rel)) return all;
+    const target = normalize([...fromFolder.split("/"), ...rel.split("/")]);
+    const from = normalize(toFolder.split("/"));
+    let common = 0;
+    while (common < from.length && common < target.length && from[common] === target[common]) common++;
+    const up = from.slice(common).map(() => "..");
+    const rest = target.slice(common);
+    return `samples${colon}${space}${[...up, ...rest].join("/") || "."}`;
+  });
+}
