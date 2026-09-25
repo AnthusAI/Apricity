@@ -10,9 +10,24 @@
   "parent": "apricitus-b5612c2d-0fd1-44d6-a8ee-b48fcb781180",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7a3449cc-5db2-4885-9b59-c28e9dd3b06c",
+      "author": "home",
+      "text": "Amplify web build reproducible: apricity-data storage feature (default on; web uses default-features=false, cli features=[storage]); wasm no longer has virtuus/aws/tokio in its tree. Added amplify.yml, customHttp.yml, scripts/amplify-wasm.sh, scripts/web-only-workspace.sh (Cargo reads sibling Virtuus path manifests even when unbuilt, so CI trims cli + virtuus dep). Verified in a clean clone without ../Virtuus: wasm builds. Not verified on the real Amplify Linux image.",
+      "created_at": "2026-09-25T02:52:12.427313Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "df5e2b10-2684-4bf9-b5dd-f411cfe89b79",
+      "author": "home",
+      "text": "Committed. Reviewer re-ran cargo test (cli+data), wasm npm test, serve-smoke: pass; cargo tree for apricity-web has no virtuus/aws/tokio. UNVERIFIED until first Amplify build: Linux rustup/wasi-sdk steps, submodule fetch, how Amplify treats customHttp.yml vs customHeaders in a monorepo, cache paths relative to appRoot. Rust toolchain is unpinned (stable); needs >=1.85. Task stays open until the app builds on Amplify.",
+      "created_at": "2026-09-25T02:53:16.300908Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-25T02:28:48.286227Z",
-  "updated_at": "2026-09-25T02:28:48.286246Z",
+  "updated_at": "2026-09-25T02:53:16.300933Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
