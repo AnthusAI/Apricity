@@ -67,14 +67,21 @@ function showTab(name: string) {
 tabs.forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab!)));
 brand.addEventListener("click", () => showTab("home"));
 // First visit: the landing page (signed in: the top scores of the week). After that, wherever you were.
-let initial: string | null = null;
+let saved: string | null = null;
 try {
-  initial = localStorage.getItem("apricity.tab");
+  saved = localStorage.getItem("apricity.tab");
 } catch {}
-if (!initial) initial = (await currentAccount().catch(() => null)) ? "scores" : "home";
+const initial = saved ?? "home";
 
-// Signing in takes you to the top scores of the week.
-let wasSignedIn = !!(await currentAccount().catch(() => null));
+// Signing in takes you to the top scores of the week. Nothing here is awaited at the top level: the auth code is a
+// lazily loaded chunk that imports from this one, so awaiting it while this module is still evaluating deadlocks.
+let wasSignedIn = false;
+void currentAccount()
+  .catch(() => null)
+  .then((a) => {
+    wasSignedIn = !!a;
+    if (a && !saved) showTab("scores");
+  });
 document.addEventListener("apricity:auth-changed", async () => {
   const now = !!(await currentAccount().catch(() => null));
   if (now && !wasSignedIn) (score.topOfWeek(), showTab("scores"));
