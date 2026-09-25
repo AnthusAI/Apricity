@@ -37,3 +37,17 @@ project/.overlay/
 
 # conformance run output
 /web/test/conformance/cucumber-report.json
+
+# Downloaded/derived audio in any format (never commit; only manifests under samples/ are tracked)
+/samples/**/*.flac
+/samples/**/*.ogg
+/samples/**/*.opus
+/samples/**/*.m4a
+/samples/**/*.aif
+/samples/**/*.aiff
+/samples/**/*.zip
+/samples/**/*.tar*
+/samples/**/*.tmp
+
+# Apricity libraries (data + files), wherever they are created
+*.apricity/
