@@ -51,3 +51,7 @@ project/.overlay/
 
 # Apricity libraries (data + files), wherever they are created
 *.apricity/
+
+# In-progress `apricity sources fetch` staging (archive download and extraction)
+/samples/**/.extract/
+/samples/**/.archive.part
