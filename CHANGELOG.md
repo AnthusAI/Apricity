@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-09-25)
+
+### Features
+
+- **apricitus-5328b4**: Hero metronome, on until the drums come in
+  ([`0a92901`](https://github.com/AnthusAI/Apricity/commit/0a92901b63976f1ecebff9b5344df4792eb7c829))
+
+
 ## v0.6.0 (2026-09-25)
 
 ### Chores
