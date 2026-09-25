@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.5.2 (2026-09-25)
+
+### Bug Fixes
+
+- **apricitus-4fd2e3**: Wait for the Google redirect before rendering; members/curators read the
+  bucket; account control bottom-left; clearer empty states
+  ([`6e1099d`](https://github.com/AnthusAI/Apricity/commit/6e1099d6c72648e80b72c5eb4e5363a88fe964b8))
+
+
 ## v0.5.1 (2026-09-25)
 
 
