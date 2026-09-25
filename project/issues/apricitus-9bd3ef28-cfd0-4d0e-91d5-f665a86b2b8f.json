@@ -3,7 +3,7 @@
   "title": "Hero demo plays from the library's downloaded assets",
   "description": "Remove bundled hero MP3s from web/public/hero. Hero audio and peaks come from library stems/slices via /files/<library-relative key>, locally (apricity serve) or from the S3 bucket. Regenerate hero-data.json with library-relative paths (no absolute Ripple/samples paths). Expected: hero has no sound on a fresh clone until the fetch utility has downloaded the assets. Web/UI files belong to the web/docs session: coordinate via this issue. Depends on the purge, ae24ae.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,25 @@
       "text": "Script scripts/hero-data.py now takes --library, builds a temp samples folder from library Clip/Slice/Marker records and writes files/hero/{brk-source,horns-source,b-track,h-track}.mp3 into the library; output byte-identical to the purged MP3s; json has library keys only. Next: web side.",
       "created_at": "2026-09-25T02:38:56.254303Z",
       "comment_type": "default"
+    },
+    {
+      "id": "cfabec98-5d12-4e4c-bdfa-579eff1815d1",
+      "author": "home",
+      "text": "Web side done: hero-audio.ts (pure keys/state), sound.ts fetches via files.ts getUrl, landing probes on load and shows a disabled 'Sound needs the audio library' button when missing; tests added (test:flow 9 pass); scripts/hero-smoke.sh all checks pass; design/storage.md note. Awaiting review.",
+      "created_at": "2026-09-25T02:42:03.087382Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "d2388777-124d-4b3d-9f71-0e0d21237e1e",
+      "author": "home",
+      "text": "Reviewed: web build, test:flow, and scripts/hero-smoke.sh re-run by reviewer, all pass; silent fallback checked in the browser pane (button disabled with explanation, animation runs, no console errors). UNVERIFIED: sound playback in a browser with a live library, and cloud mode (needs a signed-in session and a synced bucket).",
+      "created_at": "2026-09-25T02:46:03.420407Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:01:24.457513Z",
-  "updated_at": "2026-09-25T02:38:56.254325Z",
-  "closed_at": null,
+  "updated_at": "2026-09-25T02:46:03.447013Z",
+  "closed_at": "2026-09-25T02:46:03.446973Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
