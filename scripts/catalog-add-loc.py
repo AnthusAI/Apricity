@@ -7,9 +7,9 @@ For each item: download the audio into samples/loc/<collection>/, add it to crat
 catalog/sources.json and samples/sources.json, then analyze it. Noise reduction is ON by default
 (neural:medium, or $APRICITY_DENOISE): the original is kept untouched and the analysis is of the
 `.clean.wav` copy. `--denoise off` skips it; SPEC is BACKEND[+BACKEND][:STRENGTH]. Idempotent."""
-import argparse, hashlib, json, os, pathlib, re, urllib.request
+import argparse, hashlib, json, pathlib, re
 
-from apricity_analyze import cli, denoise
+from apricity_analyze import cli, denoise, loc
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOMAX = dict(id="loc-lomax-1939", dir="lomax-1939",
@@ -25,32 +25,14 @@ JUKEBOX = dict(id="loc-national-jukebox", dir="national-jukebox",
 JUKEBOX_LATE = dict(JUKEBOX, id="loc-national-jukebox-1923-25", title="Library of Congress: National Jukebox, 1923-1925 (curated)",
     rights="Public domain (published 1923-1925; 100 years since publication, Music Modernization Act).")
 
-def get(url):
-    return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Apricity/0.1"})).read()
-
-def audio_url(d):
-    urls = [f for r in d["resources"] for g in r.get("files", []) for f in g if isinstance(f, dict)]
-    for f in urls:  # a directly downloadable mp3, else the storage-service mp3
-        if f.get("canDownload") and f.get("download", "").endswith(".mp3"): return f["download"]
-    for r in d["resources"]:
-        if r.get("filename", "").endswith(".mp3"): return r["filename"]
-        if r.get("derivativeUrl", "").endswith(".mp3"): return r["derivativeUrl"]
-    raise SystemExit("no downloadable mp3 for this item")
-
-def people(item, lomax):
-    out = []
-    for n in item.get("contributor_names", []):
-        if lomax:
-            if "(Performer)" in n: out.append(n.replace(" (Performer)", ""))
-        else:
-            name, _, role = n.partition(" -- ")
-            if not re.search(r"Composer|Lyricist|Author|Arranger", role): out.append(name)
-    return out
+get, audio_url, people = loc.get, loc.audio_url, loc.people
 
 def add(item_id):
-    d = json.loads(get(f"https://www.loc.gov/item/{item_id}/?fo=json"))
+    d = loc.item(item_id)
     item = d["item"]; lomax = item_id.startswith("lomaxbib")
     year = int(item["date"][:4]); title = item["title"]
+    if year > 1925:
+        raise SystemExit(f"{item_id} ({title}, {year}) is not public domain yet; not importing")
     col = LOMAX if lomax else (JUKEBOX if year < 1923 else JUKEBOX_LATE)
     who = people(item, lomax)
     slug = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-")
