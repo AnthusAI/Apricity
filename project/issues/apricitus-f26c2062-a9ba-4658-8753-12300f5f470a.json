@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f26c2062-a9ba-4658-8753-12300f5f470a",
+  "title": "apricity prune: remove one-star rated items via the GraphQL backend",
+  "description": "Utility that signs in as a curator, queries the backend (AppSync/Amplify, web/amplify/data/resource.ts) for the caller's Rating rows with stars=1 on samples and clips, and removes those items. Removal: backend records (Sample, Clip, Candidate, Verdict, CrateItem, Marker, Rating, Comment), bucket files (audio/analysis), local audio, .apricity.json manifest and stems. Items a ScoreRef still uses are retired, not deleted (existing Clip.retired logic). Adds a tombstone list (sha256/catalog path) so 'apricity sources fetch' and future ingests never resurrect pruned audio. Dry run by default; --apply deletes. Findings: Rating is owner-only (allow.owner) so the CLI only sees the signed-in user's ratings; Sample/Clip delete needs curators group; Ratings are cloud-only (import-library.ts CLOUD_ONLY); Rust judge does not validate 1-5 stars. Spec first (features/), Rust only in the CLI, coordinate any web change via the web-session issue.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T17:04:25.943049Z",
+  "updated_at": "2026-09-26T17:04:25.943092Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Sonnet 5",
+    "name": "Library Expansion"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
