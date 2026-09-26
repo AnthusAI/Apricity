@@ -97,3 +97,271 @@ def test_phrases_split_at_pauses_not_breaths():
     assert all(b > a for a, b in got)
     # Dense music with no pauses: nothing to mark.
     assert phrases(talk(5.0)) == []
+
+
+# ================================================================ holds
+
+def test_holds_single_long_clean_note():
+    """A single long clean note gives one hold with exact region and tags."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 60, "velocity": 0.6}
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    assert len(result) == 1
+    assert result[0]["name"] == "hold-1"
+    assert abs(result[0]["start"] - (1.0 - 0.02)) < 0.001
+    assert abs(result[0]["end"] - (2.5 + 0.15)) < 0.001
+    assert "C4" in result[0]["tags"]  # MIDI 60 = C4
+    assert "hold" in result[0]["tags"]
+    assert "1.5s" in result[0]["tags"]
+    assert result[0]["source"] == "ml"
+
+
+def test_holds_long_note_with_louder_notes_inside_is_rejected():
+    """A long note is rejected when a note inside is louder by more than 0.1."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 3.0, "midi": 60, "velocity": 0.5},  # candidate
+        {"start": 1.2, "end": 1.3, "midi": 62, "velocity": 0.61},  # louder by 0.11, rejects
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    # The first note should be rejected
+    assert len(result) == 0
+
+
+def test_holds_held_chord():
+    """Three notes starting together form one hold tagged chord."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 48, "velocity": 0.6},  # lowest
+        {"start": 1.01, "end": 2.4, "midi": 52, "velocity": 0.5},  # within 0.08s
+        {"start": 1.02, "end": 2.3, "midi": 55, "velocity": 0.5},  # within 0.08s
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    assert len(result) == 1
+    assert result[0]["name"] == "hold-1"
+    assert "chord" in result[0]["tags"]
+    assert "C3" in result[0]["tags"]  # lowest note (MIDI 48)
+
+
+def test_holds_two_overlapping_candidates_keeps_higher_rank():
+    """Two overlapping candidates: only the higher duration * velocity one is kept."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 3.0, "midi": 60, "velocity": 0.5},  # duration 2.0, rank = 2.0 * 0.5 = 1.0
+        {"start": 1.5, "end": 4.0, "midi": 62, "velocity": 0.6},  # duration 2.5, rank = 2.5 * 0.6 = 1.5 (higher)
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    assert len(result) == 1
+    assert result[0]["evidence"]["held"] == 62  # D4
+
+
+def test_holds_max_holds_limit():
+    """More than max_holds candidates: exactly max_holds, numbered in time order."""
+    from apricity_analyze.markup import holds
+    
+    notes = []
+    for i in range(20):
+        notes.append({"start": float(i), "end": float(i + 1.0), "midi": 60 + i % 12, "velocity": 0.6})
+    duration = 25.0
+    
+    result = holds(notes, duration, max_holds=5)
+    
+    assert len(result) == 5
+    # Check they're numbered 1-5 and in time order
+    for i, hold in enumerate(result, 1):
+        assert hold["name"] == f"hold-{i}"
+        if i < len(result):
+            assert hold["start"] < result[i]["start"]
+
+
+def test_holds_region_clamped_to_duration():
+    """The region is clamped to [0, duration]."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 0.01, "end": 1.5, "midi": 60, "velocity": 0.6}  # near start
+    ]
+    duration = 1.2
+    
+    result = holds(notes, duration)
+    
+    assert len(result) == 1
+    assert abs(result[0]["start"] - 0.0) < 0.001  # max(0, 0.01 - 0.02) = 0
+    assert abs(result[0]["end"] - 1.2) < 0.001    # min(1.5 + 0.15, 1.2) = 1.2
+
+
+def test_holds_rejects_quiet_candidate_with_loudness_check():
+    """A loud-looking note over quiet beat_loudness is rejected."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 60, "velocity": 0.8}  # high velocity
+    ]
+    beats = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+    beat_loudness = [0.0, 0.0, -30.0, -30.0, -30.0, 0.0, 0.0]  # very quiet around hold
+    duration = 10.0
+    
+    result = holds(notes, duration, beats=beats, beat_loudness=beat_loudness)
+    
+    # Should be rejected because mean loudness is more than 15 dB below median
+    assert len(result) == 0
+
+
+def test_holds_keeps_loud_note_with_loudness_check():
+    """The same note over normal loudness is kept."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 60, "velocity": 0.8}
+    ]
+    beats = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+    beat_loudness = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # normal loudness
+    duration = 10.0
+    
+    result = holds(notes, duration, beats=beats, beat_loudness=beat_loudness)
+    
+    # Should be kept because loudness is OK
+    assert len(result) == 1
+
+
+def test_holds_tags_clean_without_beat_loudness():
+    """Free-time clip without beat_loudness is tagged clean or busy based on notes."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 60, "velocity": 0.6}
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration, beats=None, beat_loudness=None)
+    
+    assert len(result) == 1
+    assert ("clean" in result[0]["tags"] or "busy" in result[0]["tags"])
+
+
+def test_holds_running_twice_gives_same_file():
+    """Running the holds function twice on the same input gives the same result."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 60, "velocity": 0.6},
+        {"start": 4.0, "end": 6.0, "midi": 62, "velocity": 0.5}
+    ]
+    duration = 10.0
+    beats = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]
+    beat_loudness = [0.0] * len(beats)
+    
+    result1 = holds(notes, duration, beats=beats, beat_loudness=beat_loudness)
+    result2 = holds(notes, duration, beats=beats, beat_loudness=beat_loudness)
+    
+    # Should be identical
+    assert result1 == result2
+
+
+def test_holds_busy_candidate_is_kept_and_tagged():
+    """A busy candidate (many notes starting inside) is kept and tagged 'busy'."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 3.0, "midi": 60, "velocity": 0.5},  # candidate (busy)
+        {"start": 1.2, "end": 1.3, "midi": 62, "velocity": 0.49},  # not louder
+        {"start": 1.5, "end": 1.6, "midi": 64, "velocity": 0.48},  # not louder
+        {"start": 2.0, "end": 2.1, "midi": 65, "velocity": 0.47},  # not louder
+        {"start": 2.5, "end": 2.6, "midi": 66, "velocity": 0.46},  # not louder (9+ notes inside is ok)
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    assert len(result) == 1
+    assert "busy" in result[0]["tags"]
+    assert "hold" in result[0]["tags"]
+
+
+def test_holds_rejects_if_note_inside_is_louder_by_more_than_0_1():
+    """Rejects candidate when a note inside is louder by more than 0.1 velocity."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 3.0, "midi": 60, "velocity": 0.5},  # candidate
+        {"start": 1.2, "end": 1.3, "midi": 62, "velocity": 0.61},  # louder by 0.11 (rejects)
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    # Should be rejected
+    assert len(result) == 0
+
+
+def test_holds_keeps_if_note_inside_is_louder_by_0_1_or_less():
+    """Keeps candidate when notes inside are louder by 0.1 or less."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 3.0, "midi": 60, "velocity": 0.5},  # candidate
+        {"start": 1.2, "end": 1.3, "midi": 62, "velocity": 0.6},  # louder by exactly 0.1 (ok)
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration)
+    
+    # Should be kept
+    assert len(result) == 1
+
+
+def test_holds_clean_outranks_longer_busy():
+    """A clean candidate outranks a longer busy one."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 3.0, "midi": 60, "velocity": 0.8},  # longer, will be busy (3 notes inside)
+        {"start": 5.0, "end": 6.0, "midi": 62, "velocity": 0.5},  # shorter, clean
+        {"start": 1.2, "end": 1.3, "midi": 64, "velocity": 0.79},  # inside first
+        {"start": 1.5, "end": 1.6, "midi": 65, "velocity": 0.78},  # inside first
+        {"start": 2.0, "end": 2.1, "midi": 66, "velocity": 0.77},  # inside first (now busy: >2 notes)
+    ]
+    duration = 10.0
+    
+    result = holds(notes, duration, max_holds=1)
+    
+    # Only one hold, should be the clean one at 5.0
+    assert len(result) == 1
+    assert result[0]["start"] > 4.0
+
+
+def test_holds_loudness_check_before_overlap_removal():
+    """A quiet higher-ranked candidate doesn't block a loud overlapping one."""
+    from apricity_analyze.markup import holds
+    
+    notes = [
+        {"start": 1.0, "end": 2.5, "midi": 60, "velocity": 0.8},  # loud, first in rank
+        {"start": 1.5, "end": 3.0, "midi": 62, "velocity": 0.6},  # loud, overlaps
+    ]
+    beats = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+    beat_loudness = [0.0, 0.0, -30.0, -30.0, -30.0, 0.0, 0.0]  # first one is quiet
+    duration = 10.0
+    
+    result = holds(notes, duration, beats=beats, beat_loudness=beat_loudness)
+    
+    # First note should be rejected by loudness, so second note should be kept
+    assert len(result) == 1
+    assert result[0]["start"] > 1.0

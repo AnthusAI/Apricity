@@ -2538,6 +2538,22 @@
     "tags": [
      "hit"
     ]
+   },
+   {
+    "name": "hold-1",
+    "start": 11.016,
+    "end": 12.045,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A#3",
+     "0.86s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 58,
+     "velocity": 0.528
+    }
    }
   ]
  }

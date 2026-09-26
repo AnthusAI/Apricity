@@ -1,4 +1,4 @@
-"""Automatic markup: sections, loops, transients and one-shots, saved as clips and markers in a sample's manifest.
+"""Automatic markup: sections, loops, transients and one-shots, and held notes, saved as clips and markers in a sample's manifest.
 
     PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.markup samples/marine-band
 
@@ -15,6 +15,8 @@ Method (beat-synchronous, so results land on the beat grid):
   same?), steady beat, static harmony and level;
 - transients: onset-strength peaks well above their surroundings, one per few bars at most, each
   also saved as a one-shot clip (`shot-1`, `shot-2`, …);
+- held notes: sustained notes or chords, from attack to release, for pads, bass, and melodies;
+  tagged with the pitch a pitched track hears and numbered in time order (`hold-1`, `hold-2`, …);
 - phrases: what lies between pauses (a quarter second or more well below the clip's speaking
   level). Made for speech (`slice … by phrases` cuts a talk into sentences), but a horn line with
   rests gets its phrases too. Found without a beat grid, so free-time clips get them as well.
@@ -299,6 +301,173 @@ def phrases(audio: np.ndarray) -> list[tuple[float, float]]:
     return out[:MAX_PHRASES] if len(out) >= 2 else []
 
 
+
+
+# ------------------------------------------------------------------ holds
+
+def holds(notes: list[dict], duration: float, beats: list[float] | None = None, beat_loudness: list[float] | None = None, max_holds: int = 12) -> list[dict]:
+    """Sustained notes or chords: from attack to release, tagged by pitch and duration.
+    
+    Candidates are notes lasting >= 0.8 s with velocity >= 0.35. Reject only when a note
+    starting inside the candidate is louder than the candidate by more than 0.1 velocity.
+    
+    Tags: "clean" (≤ 2 notes start inside and none is louder) or "busy" (otherwise).
+    Rank clean candidates first, then all candidates by duration × velocity.
+    
+    Loudness check (applied before ranking): uses beat_loudness if both beats and beat_loudness
+    are provided. Rejects candidate if mean beat loudness over its region is > 15 dB below
+    median sample loudness, or if the region falls outside the beat grid.
+    
+    Region: start = max(0, candidate_start - 0.02), end = min(candidate_end + 0.15, duration).
+    Greedy overlap removal (higher-ranked first). Max max_holds, numbered in time order.
+    
+    Tags: ["hold", <pitch>, "<length>s"], plus "clean" or "busy", plus "chord" when >= 2
+    other notes start within 0.08 s of the start and last >= 70% of the candidate.
+    
+    Pitch is the lowest loud note starting at [clip_start - 0.03, clip_start + 0.12], with
+    velocity >= 0.5 × the loudest note there (mirrors Rust rule: crates/apricity-score/src/manifest.rs:313).
+    """
+    if not notes:
+        return []
+    
+    # Filter candidates: duration >= 0.8 s, velocity >= 0.35
+    candidates = [n for n in notes if (n["end"] - n["start"]) >= 0.8 and n["velocity"] >= 0.35]
+    
+    if not candidates:
+        return []
+    
+    # Prepare loudness check (before ranking)
+    use_loudness_check = beats is not None and beat_loudness is not None and len(beats) > 1 and len(beat_loudness) > 0
+    median_loudness = None
+    if use_loudness_check:
+        median_loudness = np.median(beat_loudness)
+    
+    # Filter by loudness check first, then classify by cleanliness
+    classified_candidates = []
+    for cand in candidates:
+        cand_start, cand_end, cand_midi, cand_vel = cand["start"], cand["end"], cand["midi"], cand["velocity"]
+        region_start = max(0.0, cand_start - 0.02)
+        region_end = min(cand_end + 0.15, duration)
+        
+        # Loudness check first
+        if use_loudness_check:
+            beats_array = np.array(beats)
+            overlapping_beat_indices = []
+            for bi, bt in enumerate(beats_array):
+                if bt >= region_start and bt < region_end and bi < len(beat_loudness):
+                    overlapping_beat_indices.append(bi)
+            
+            if overlapping_beat_indices:
+                region_loudnesses = [beat_loudness[bi] for bi in overlapping_beat_indices]
+                mean_region_loudness = np.mean(region_loudnesses)
+                # Reject if more than 15 dB below median
+                if mean_region_loudness < median_loudness - 15.0:
+                    continue  # Skip this candidate entirely
+            else:
+                # Region falls outside beat grid: reject candidate
+                continue
+        
+        # Classify by cleanliness (new rule: reject only if louder by >0.1 velocity)
+        during = [n for n in notes if cand_start + 0.08 <= n["start"] < cand_end and n["velocity"] >= 0.3]
+        
+        # Reject if any note inside is louder by more than 0.1 velocity
+        too_loud = any(n["velocity"] > cand_vel + 0.1 for n in during)
+        if too_loud:
+            continue  # Skip this candidate
+        
+        # Classify as clean or busy
+        is_clean = len(during) <= 2 and all(n["velocity"] <= cand_vel for n in during)
+        classified_candidates.append((cand, is_clean))
+    
+    if not classified_candidates:
+        return []
+    
+    # Rank: clean candidates first, then by duration * velocity (descending)
+    def rank_key(item):
+        cand, is_clean = item
+        duration = cand["end"] - cand["start"]
+        # Clean sorts first (False < True when negated), then by duration*velocity descending
+        return (not is_clean, -(duration * cand["velocity"]))
+    
+    ranked = sorted(classified_candidates, key=rank_key)
+    
+    # Greedy overlap removal
+    chosen = []
+    for cand, is_clean in ranked:
+        cand_start, cand_end = cand["start"], cand["end"]
+        region_start = max(0.0, cand_start - 0.02)
+        region_end = min(cand_end + 0.15, duration)
+        
+        # Check no overlap with already chosen
+        overlaps = False
+        for chosen_cand, _ in chosen:
+            chosen_start = max(0.0, chosen_cand["start"] - 0.02)
+            chosen_end = min(chosen_cand["end"] + 0.15, duration)
+            if region_start < chosen_end and chosen_start < region_end:
+                overlaps = True
+                break
+        
+        if not overlaps:
+            chosen.append((cand, is_clean))
+            if len(chosen) >= max_holds:
+                break
+    
+    # Sort by time
+    chosen.sort(key=lambda x: x[0]["start"])
+    
+    # Build clips
+    clips = []
+    for i, (cand, is_clean) in enumerate(chosen, 1):
+        cand_start, cand_end, cand_midi, cand_vel = cand["start"], cand["end"], cand["midi"], cand["velocity"]
+        region_start = max(0.0, cand_start - 0.02)
+        region_end = min(cand_end + 0.15, duration)
+        cand_dur = cand_end - cand_start
+        
+        # Determine pitch: of notes starting at [cand_start - 0.03, cand_start + 0.12], 
+        # the lowest with velocity >= 0.5 * loudest (Rust rule: crates/apricity-score/src/manifest.rs:313)
+        onset_start = cand_start - 0.03
+        onset_end = min(cand_start + 0.12, cand_end)
+        onset_notes = [n for n in notes if n["start"] >= onset_start and n["start"] <= onset_end]
+        
+        if onset_notes:
+            loudest = max(n["velocity"] for n in onset_notes)
+            loud_notes = [n for n in onset_notes if n["velocity"] >= loudest * 0.5]
+            pitch_midi = min(n["midi"] for n in loud_notes) if loud_notes else cand_midi
+        else:
+            pitch_midi = cand_midi
+        
+        # Convert MIDI to pitch name
+        def midi_to_pitch(midi):
+            notes_list = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+            octave = (midi // 12) - 1
+            pitch_class = notes_list[midi % 12]
+            return f"{pitch_class}{octave}"
+        
+        pitch_name = midi_to_pitch(pitch_midi)
+        
+        # Check for chord: >= 2 notes starting within 0.08 s of cand_start, lasting >= 70% of cand_dur
+        within_0_08 = [n for n in notes if cand_start <= n["start"] <= cand_start + 0.08 and n != cand]
+        is_chord = sum(1 for n in within_0_08 if (n["end"] - n["start"]) >= 0.7 * cand_dur) >= 2
+        
+        # Tags
+        length_s = f"{cand_dur:.2f}".rstrip('0').rstrip('.')
+        tags = ["hold", pitch_name, f"{length_s}s"]
+        tags.append("clean" if is_clean else "busy")
+        if is_chord:
+            tags.append("chord")
+        
+        clips.append({
+            "name": f"hold-{i}",
+            "start": round(region_start, 3),
+            "end": round(region_end, 3),
+            "source": "ml",
+            "tags": tags,
+            "evidence": {"held": pitch_midi, "velocity": round(cand_vel, 3)}
+        })
+    
+    return clips
+
+
 # ------------------------------------------------------------------ annotations
 
 def markup(audio_path: pathlib.Path) -> dict:
@@ -310,14 +479,22 @@ def markup(audio_path: pathlib.Path) -> dict:
     r, t = m["rhythm"], m["tonal"]
     beats, downbeats = r["beats"], r["downbeats"]
     audio = es.MonoLoader(filename=str(audio_path), sampleRate=SR)()
+    dur = m["source"]["duration"]
+    beat_loudness = r.get("beat_loudness", [])
+    notes = m.get("notes", [])
+    
     phr = [{"name": f"phrase-{i}", "start": a, "end": b, "source": "ml", "tags": ["phrase", f"{b - a:.1f}s"]} for i, (a, b) in enumerate(phrases(audio), 1)]
     if len(beats) < 8:  # free time / fragments / speech: no grid to hang sections or loops on
         hts = hits(audio, beats, max_hits=4) if len(beats) >= 2 else []
         spb = float(np.median(np.diff(beats))) if len(beats) > 1 else 0.5
-        dur = m["source"]["duration"]
+        shot_clips = [{"name": f"shot-{i}", "start": round(h, 3), "end": round(min(h + spb, dur), 3), "source": "ml", "tags": ["shot"], "evidence": {"standout": st}} for i, (h, st) in enumerate(hts, 1) if h < dur]
+        
+        # Add holds for free-time (no beat grid check)
+        hold_clips = holds(notes, dur, beats=None, beat_loudness=None, max_holds=12)
+        
         return {
             "markers": [{"name": "transient", "seconds": round(h, 3), "source": "ml"} for h, _ in hts],
-            "clips": phr + [{"name": f"shot-{i}", "start": round(h, 3), "end": round(min(h + spb, dur), 3), "source": "ml", "tags": ["shot"], "evidence": {"standout": st}} for i, (h, st) in enumerate(hts, 1) if h < dur],
+            "clips": phr + shot_clips + hold_clips,
         }
     f = beat_features(audio, beats, t.get("beat_chroma", []))
     pcps = t.get("beat_chroma", [])
@@ -325,7 +502,7 @@ def markup(audio_path: pathlib.Path) -> dict:
 
     stem = m.get("derived_from", {}).get("stem")
     secs = [] if stem == "drums" else sections(f, beats, downbeats, t["key"], pcps)
-    lps = loops(f, beats, r.get("beat_loudness", []), pcps, down_idx)
+    lps = loops(f, beats, beat_loudness, pcps, down_idx)
     hts = hits(audio, beats, max_hits=max(4, int(len(beats) / 32)))
     spb = float(np.median(np.diff(beats))) if len(beats) > 1 else 0.5
 
@@ -339,9 +516,13 @@ def markup(audio_path: pathlib.Path) -> dict:
         slices.append({"name": f"loop-{i}", "start": round(lp["start"], 3), "end": round(lp["end"], 3), "source": "ml", "tags": ["loop", f"{lp['size']}beats", lp["key"]], "evidence": lp["evidence"]})
     for i, (h, st) in enumerate(hts, 1):
         markers.append({"name": "transient", "seconds": round(h, 3), "source": "ml"})
-        slices.append({"name": f"shot-{i}", "start": round(h, 3), "end": round(min(h + spb, m["source"]["duration"]), 3), "source": "ml", "tags": ["shot"], "evidence": {"standout": st}})
+        slices.append({"name": f"shot-{i}", "start": round(h, 3), "end": round(min(h + spb, dur), 3), "source": "ml", "tags": ["shot"], "evidence": {"standout": st}})
+    
+    # Add holds after shots, but skip for drum stems
+    if stem != "drums":
+        hold_clips = holds(notes, dur, beats=beats, beat_loudness=beat_loudness, max_holds=12)
+        slices.extend(hold_clips)
 
-    dur = m["source"]["duration"]
     slices = [s for s in slices if 0 <= s["start"] < s["end"] <= dur]
     markers = [x for x in markers if 0 <= x["seconds"] <= dur]
     return {"clips": slices, "markers": markers}
@@ -370,6 +551,52 @@ def run(path: pathlib.Path) -> dict:
 
 def main(argv: list[str]) -> int:
     AUDIO = {".wav", ".mp3", ".flac", ".aif", ".aiff", ".ogg", ".m4a"}
+    
+    # Check for --holds flag
+    if argv and argv[0] == "--holds":
+        # Holds refresh mode: update only hold-* ML clips
+        paths = argv[1:] or ["samples"]
+        for root in map(pathlib.Path, paths):
+            files = sorted(p for p in root.rglob("*") if p.suffix.lower() in AUDIO) if root.is_dir() else [root]
+            for p in files:
+                mpath = p.with_name(p.name + ".apricity.json")
+                if not mpath.exists():
+                    continue
+                
+                # Read manifest
+                m = json.loads(mpath.read_text())
+                r = m["rhythm"]
+                dur = m["source"]["duration"]
+                beat_loudness = r.get("beat_loudness", [])
+                notes = m.get("notes", [])
+                beats = r["beats"]
+                
+                # Generate new holds
+                new_holds = holds(notes, dur, beats=beats if len(beats) > 1 else None, beat_loudness=beat_loudness if len(beat_loudness) > 0 else None, max_holds=12)
+                
+                # Merge: keep user clips and non-hold ML clips
+                existing = m.get("annotations", {})
+                keep_clips = [s for s in existing.get("clips", []) if s.get("source") != "ml" or not s["name"].startswith("hold-")]
+                taken_names = {s["name"] for s in keep_clips}
+                
+                # Add new holds, skipping user-taken names
+                merged_clips = keep_clips + [h for h in new_holds if h["name"] not in taken_names]
+                
+                # Validate and write
+                updated_annotations = dict(existing)
+                updated_annotations["clips"] = merged_clips
+                updated_annotations["markers"] = existing.get("markers", [])
+                
+                m["annotations"] = updated_annotations
+                m["apricity_manifest"] = 2
+                validate(m)
+                mpath.write_text(json.dumps(m, indent=1) + "\n")
+                
+                hold_count = len([h for h in new_holds if h["name"] not in taken_names])
+                print(f"  {str(p.relative_to(root.parent if root.is_dir() else p.parent))[:60]:60} {hold_count} holds")
+        return 0
+    
+    # Full analysis mode
     for root in map(pathlib.Path, argv or ["samples"]):
         files = sorted(p for p in root.rglob("*") if p.suffix.lower() in AUDIO) if root.is_dir() else [root]
         for p in files:
@@ -380,8 +607,10 @@ def main(argv: list[str]) -> int:
             form = " ".join(s["name"].removeprefix("sec-") for s in secs)
             nl = sum(1 for s in ann["clips"] if s["name"].startswith("loop-") and s.get("source") == "ml")
             nh = sum(1 for x in ann["markers"] if x["name"] == "transient")
-            print(f"  {str(p.relative_to(root.parent if root.is_dir() else p.parent))[:60]:60} {form or '-':40} {nl} loops, {nh} transients")
+            nh_holds = sum(1 for s in ann["clips"] if s["name"].startswith("hold-") and s.get("source") == "ml")
+            print(f"  {str(p.relative_to(root.parent if root.is_dir() else p.parent))[:60]:60} {form or '-':40} {nl} loops, {nh} transients, {nh_holds} holds")
     return 0
+
 
 
 if __name__ == "__main__":

@@ -2673,6 +2673,22 @@
     "evidence": {
      "standout": 4.5
     }
+   },
+   {
+    "name": "hold-1",
+    "start": 0.967,
+    "end": 2.019,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A#4",
+     "0.88s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 70,
+     "velocity": 0.535
+    }
    }
   ],
   "markers": [
