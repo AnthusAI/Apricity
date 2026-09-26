@@ -44,6 +44,10 @@ type Recording @aws_iam @aws_cognito_user_pools {
   rights: String
   sourcePage: AWSURL
   url: AWSURL
+  license: String
+  licenseUrl: AWSURL
+  author: String
+  attribution: String
   documents: [FileRef]
   samples(filter: ModelSampleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSampleConnection
   createdAt: AWSDateTime!
@@ -515,6 +519,10 @@ input ModelRecordingFilterInput {
   rights: ModelStringInput
   sourcePage: ModelStringInput
   url: ModelStringInput
+  license: ModelStringInput
+  licenseUrl: ModelStringInput
+  author: ModelStringInput
+  attribution: ModelStringInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelRecordingFilterInput]
@@ -596,6 +604,10 @@ input ModelRecordingConditionInput {
   rights: ModelStringInput
   sourcePage: ModelStringInput
   url: ModelStringInput
+  license: ModelStringInput
+  licenseUrl: ModelStringInput
+  author: ModelStringInput
+  attribution: ModelStringInput
   and: [ModelRecordingConditionInput]
   or: [ModelRecordingConditionInput]
   not: ModelRecordingConditionInput
@@ -614,6 +626,10 @@ input CreateRecordingInput {
   rights: String
   sourcePage: AWSURL
   url: AWSURL
+  license: String
+  licenseUrl: AWSURL
+  author: String
+  attribution: String
   documents: [FileRefInput]
 }
 
@@ -628,6 +644,10 @@ input UpdateRecordingInput {
   rights: String
   sourcePage: AWSURL
   url: AWSURL
+  license: String
+  licenseUrl: AWSURL
+  author: String
+  attribution: String
   documents: [FileRefInput]
 }
 
@@ -700,6 +720,10 @@ input ModelSubscriptionRecordingFilterInput {
   rights: ModelSubscriptionStringInput
   sourcePage: ModelSubscriptionStringInput
   url: ModelSubscriptionStringInput
+  license: ModelSubscriptionStringInput
+  licenseUrl: ModelSubscriptionStringInput
+  author: ModelSubscriptionStringInput
+  attribution: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionRecordingFilterInput]

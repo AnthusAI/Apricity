@@ -382,6 +382,8 @@
     "title": "Salamander Drumkit",
     "credit": "Alexander Holm, Salamander Drumkit (Internet Archive).",
     "rights": "CC BY-SA 3.0, Alexander Holm; share-alike applies if you modify the samples. https://creativecommons.org/licenses/by-sa/3.0/",
+    "license": "cc-by-sa-3.0",
+    "author": "Alexander Holm",
     "source_page": "https://archive.org/details/SalamanderDrumkit",
     "archive": {
       "url": "https://archive.org/download/SalamanderDrumkit/salamanderDrumkit.tar.bz2",

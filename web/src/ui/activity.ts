@@ -4,7 +4,7 @@
 // The cards are kept by a Lambda from the tables' streams, so locally (no streams) the page only says so.
 
 import { el } from "./dom";
-import { me } from "../apricity";
+import { api, me } from "../apricity";
 import { mode } from "../data/client";
 import { owns, type Me } from "../data/catalog";
 import { handles, type Handles } from "../data/handles";
@@ -76,12 +76,13 @@ export class ActivityView {
     if (!append) this.next = null;
     this.more.disabled = true;
     try {
-      const [page, who, names] = await Promise.all([cards(this.kind, append ? this.next : null), me().catch(() => null), handles()]);
+      const [page, who, names, hidden] = await Promise.all([cards(this.kind, append ? this.next : null), me().catch(() => null), handles(), api.hiddenIds().catch(() => new Set<string>())]);
       this.who = who;
       this.names = names;
       this.next = page.nextToken;
       if (!append) this.top = page.items[0] ? `${page.items[0].id}@${page.items[0].lastAt}` : null;
-      const els = page.items.map((c) => this.card(c));
+      // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
+      const els = page.items.filter((c) => !hidden.has(c.targetId)).map((c) => this.card(c));
       if (append) this.list.append(...els);
       else this.list.replaceChildren(...(els.length ? els : [el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it.")]));
     } catch (e) {

@@ -57,6 +57,8 @@ fn archive_recordings() -> Vec<serde_json::Value> {
                 "title": s.title,
                 "credit": s.credit,
                 "rights": s.rights,
+                "license": s.license,
+                "author": s.author,
                 "source_page": s.source_page,
                 "url": archive.url,
             }))

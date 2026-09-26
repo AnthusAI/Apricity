@@ -526,3 +526,24 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .act-thread .comments { margin-top: 4px; }
 .act-more { display: block; margin: 16px auto 0; }
 #activity { display: block; overflow: auto; }
+
+/* License and credits (ui/credits.ts): a sample's provenance, and a score's credits. */
+.license, .credits { margin-top: 16px; }
+.license h3, .credits h3 { font-size: 13px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.lic-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lic-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); color: var(--fg); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+.lic-badge.missing { background: color-mix(in srgb, var(--bad, #c0392b) 12%, transparent); border-color: color-mix(in srgb, var(--bad, #c0392b) 50%, var(--line)); color: var(--bad, #c0392b); }
+.lic-asks { margin: 8px 0; padding-left: 18px; font-size: 13px; }
+.lic-cite { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel); font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.lic-actions { display: flex; gap: 8px; margin: 6px 0; }
+.lic-facts { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 10px 0 0; font-size: 12.5px; }
+.lic-facts dt { color: var(--muted); }
+.lic-facts dd { margin: 0; overflow-wrap: anywhere; }
+.lic-edit { margin-top: 12px; font-size: 13px; }
+.lic-edit summary { cursor: pointer; color: var(--muted); }
+.lic-form { display: grid; gap: 8px; margin: 10px 0; }
+.lic-form label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.lic-form input, .lic-form select, .lic-edit select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; font-size: 13px; }
+.lic-sa { font-size: 13px; padding: 6px 10px; border-radius: 6px; background: var(--accent-soft); margin: 0 0 8px; }
+.credit-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 12.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.credit-list li.missing { color: var(--bad, #c0392b); }

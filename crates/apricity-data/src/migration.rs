@@ -486,6 +486,8 @@ fn migrate_recordings(
                 ("recorded", "recorded"),
                 ("credit", "credit"),
                 ("rights", "rights"),
+                ("license", "license"),
+                ("author", "author"),
                 ("source_page", "sourcePage"),
                 ("url", "url"),
             ] {

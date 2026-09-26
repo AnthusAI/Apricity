@@ -14,6 +14,8 @@ import { byline, handles, type Handles } from "../data/handles";
 import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
+import { scoreCredits } from "./credits";
+import { mode } from "../data/client";
 import { StarRating } from "./stars";
 import { KIND_LABEL, rebaseSamples, TEMPLATES, TEMPLATE_FOLDER } from "./templates";
 import { player, Superseded, type LoadProgress } from "../audio/player";
@@ -61,6 +63,9 @@ export class ScoreView {
   private sideEl = el("div", { className: "side" });
   /** The open score's comments, at the bottom of the side panel (kept across recompiles). */
   private commentsHost = el("div", { className: "side-comments" });
+  /** The open score's credits: a citation for every recording it plays (redrawn when its sources change). */
+  private creditsHost = el("div", { className: "side-credits" });
+  private creditsKey = "";
   private thread: { id: string; view: CommentThread } | null = null;
   private chordsEl = el("div", { className: "chords", title: "Click to jump" });
   private head = el("i", { className: "head" });
@@ -117,7 +122,7 @@ export class ScoreView {
         return scores.filter((x) => x.kind === this.kind);
       },
       tallies: async () => (await ratings()).tallies("score"),
-      row: (x) => ({ title: x.title, sub: byline(this.names, x.owner, owns(this.who, x.owner)) }),
+      row: (x) => ({ title: x.title, sub: `${x.undocumented ? "⚠ plays a sample with no license documented · " : ""}${byline(this.names, x.owner, owns(this.who, x.owner))}` }),
       text: (x) => `${x.title} ${byline(this.names, x.owner, false)}`,
       owner: (x) => x.owner,
       me: async () => this.who,
@@ -497,6 +502,7 @@ export class ScoreView {
     }
     this.timeline = r.timeline;
     this.renderSide(r.timeline, [], r.explain);
+    void this.renderCredits(r.timeline);
     this.flow.update(r.timeline);
     if (player.transport.playing) this.send(r.timeline);
   }
@@ -512,6 +518,16 @@ export class ScoreView {
       if (e instanceof Superseded) return; // a newer edit's render will report
       this.statusEl.textContent = `couldn't render: ${(e as Error).message}`;
     }
+  }
+
+  private async renderCredits(tl: Timeline) {
+    const paths = [...new Set(tl.sources.map((s) => s.path))];
+    const key = `${this.path}|${paths.join("|")}`;
+    if (key === this.creditsKey) return;
+    this.creditsKey = key;
+    const [recs, who] = await Promise.all([api.creditsFor(paths).catch(() => []), me().catch(() => null)]);
+    if (key !== this.creditsKey) return;
+    this.creditsHost.replaceChildren(recs.length ? scoreCredits(recs, mode() === "local" || !!who?.curator) : "");
   }
 
   private renderSide(tl: Timeline | null, errors: string[], explain: string) {
@@ -535,7 +551,7 @@ export class ScoreView {
     // Warnings are listed above; don't repeat them at the end of the explanation.
     if (explain) kids.push(el("h2", {}, "How it was solved"), el("pre", { className: "explain" }, explain.split("\nWarnings:")[0].trimEnd()));
     if (!tl && !errors.length) kids.push(el("div", { className: "empty" }, "Open or create a score."));
-    this.sideEl.replaceChildren(...kids, this.commentsHost);
+    this.sideEl.replaceChildren(...kids, this.creditsHost, this.commentsHost);
   }
 
   private drawHead(beat: number) {

@@ -74,6 +74,34 @@
           "isRequired": false,
           "attributes": []
         },
+        "license": {
+          "name": "license",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "licenseUrl": {
+          "name": "licenseUrl",
+          "isArray": false,
+          "type": "AWSURL",
+          "isRequired": false,
+          "attributes": []
+        },
+        "author": {
+          "name": "author",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "attribution": {
+          "name": "attribution",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
         "documents": {
           "name": "documents",
           "isArray": true,

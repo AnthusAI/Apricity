@@ -9,6 +9,7 @@ import { player } from "../audio/player";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
+import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
 import { computePeaks, Waveform } from "./waveform";
@@ -62,7 +63,7 @@ export class Library {
         tallies: async () => (await ratings()).tallies("sample"),
         row: (c) => ({
           title: c.title + (c.excerpt_start ? ` @${c.excerpt_start.replace(/^00:/, "")}` : ""),
-          sub: `${GROUPS[c.group] ?? c.group} · ${keyLabel(c.key)} · ${c.bpm ? Math.round(c.bpm) + " BPM" : "no beat"} · ${fmt(c.duration)}${c.clips ? ` · ${c.clips} clip${c.clips > 1 ? "s" : ""}` : ""}`,
+          sub: `${c.undocumented ? "⚠ no license documented · " : ""}${GROUPS[c.group] ?? c.group} · ${keyLabel(c.key)} · ${c.bpm ? Math.round(c.bpm) + " BPM" : "no beat"} · ${fmt(c.duration)}${c.clips ? ` · ${c.clips} clip${c.clips > 1 ? "s" : ""}` : ""}`,
         }),
         text: (c) => [c.title, c.key, c.camelot, String(Math.round(c.bpm ?? 0)), c.group, GROUPS[c.group] ?? ""].join(" "),
         me: async () => this.who,
@@ -79,7 +80,7 @@ export class Library {
         tallies: async () => (await ratings()).tallies("clip"),
         row: (c) => ({
           title: c.name,
-          sub: `${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${c.source === "ml" && !owns(this.who, c.owner) ? "found by analysis" : byline(this.names, c.owner, owns(this.who, c.owner)) || "made by someone"}`,
+          sub: `${c.undocumented ? "⚠ no license documented · " : ""}${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${c.source === "ml" && !owns(this.who, c.owner) ? "found by analysis" : byline(this.names, c.owner, owns(this.who, c.owner)) || "made by someone"}`,
         }),
         text: (c) => `${c.name} ${c.sampleTitle} ${c.samplePath} ${byline(this.names, c.owner, false)}`,
         owner: (c) => c.owner,
@@ -369,6 +370,27 @@ export class Library {
     const clip = this.mode === "clips" ? this.currentClip : null;
     // Comments on the clip open in Clips, else on the sample.
     const thread = new CommentThread(clip ? { type: "clip", id: clip.id } : { type: "sample", id: c.id });
+    // Where it came from and what its license asks (a clip shows its sample's); curators can write it down.
+    const license = el("div", { className: "license-host" });
+    const curator = !this.cloud() || !!this.who?.curator;
+    const fillLicense = async () => {
+      const p = await api.provenance(path).catch(() => null);
+      if (this.current !== path || !p) return;
+      license.replaceChildren(
+        licensePanel(
+          p.recording,
+          curator
+            ? {
+                recordings: () => api.recordings(),
+                update: (id, fields) => api.updateRecording(id, fields),
+                relink: (recordingId) => api.relinkSample(p.sample.id, recordingId),
+                changed: () => void this.list.refresh().then(fillLicense),
+              }
+            : undefined,
+        ),
+      );
+    };
+    void fillLicense();
     this.detailEl.replaceChildren(
       el("div", { className: "title-row" }, el("h1", {}, clip ? clip.name : c.title), this.stars.el),
       el("div", { className: "credit" }, clip ? `A clip of ${c.title} · ${fmt(clip.start)}–${fmt(clip.end)}` : [c.credit, c.rights].filter(Boolean).join(" ") || path),
@@ -383,6 +405,7 @@ export class Library {
         stat("Length", fmt(buf.duration)),
         stat("Notes found", String(c.notes)),
       ),
+      license,
       el("div", { className: "card" }, wave.canvas),
       el("p", { className: "hint" }, "Play (top right, or space) plays the selection or the selected clip, else the whole sample. Drag to select (snaps to beats; hold ⌥ for free), double-click to play from a point. Drag a clip's edges or body in the lower lane; Delete removes the selected clip."),
       el("div", { className: "toolbar" }, makeClip, save, snippet),

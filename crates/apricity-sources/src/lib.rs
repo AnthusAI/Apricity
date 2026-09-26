@@ -70,6 +70,12 @@ pub struct Source {
     pub title: String,
     pub credit: String,
     pub rights: String,
+    /// A license code the web app knows (`cc-by-sa-3.0`, `public-domain`…); without one it reads `rights`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
+    /// Who a required credit names.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub author: Option<String>,
     pub source_page: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub archive: Option<Archive>,

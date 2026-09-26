@@ -84,7 +84,9 @@ test("a sample record becomes the summary the Library list shows", () => {
     clips: 0,
     markers: 0,
     stem: null,
+    recordingId: "rec_Thunderer",
   });
+  assert.equal(toSummary(upload, recs, sampleMap, counts).undocumented, true, "no license written down");
   const s = toSummary(stem, recs, sampleMap, counts);
   assert.equal(s.title, "The Thunderer · drums");
   assert.equal(s.key, "Cm");
@@ -205,7 +207,7 @@ test("listAll follows nextToken and surfaces errors", async () => {
 });
 
 /** A stub of the generated client: one page per list call, index queries by sampleId. */
-function stubClient(state: { signedIn: boolean; samples: SampleRecord[]; clips: ClipRecord[]; scores: any[] }, calls: string[] = []) {
+function stubClient(state: { signedIn: boolean; samples: SampleRecord[]; clips: ClipRecord[]; scores: any[]; refs?: { scoreId: string; sampleId?: string }[] }, calls: string[] = []) {
   const guard = <T>(name: string, v: () => T) => {
     calls.push(name);
     if (!state.signedIn) return Promise.reject(Object.assign(new Error("No current user"), { name: "NoValidAuthTokens" }));
@@ -225,6 +227,7 @@ function stubClient(state: { signedIn: boolean; samples: SampleRecord[]; clips: 
       },
       Marker: { ...list("Marker", () => []), markersBySample: () => guard("Marker.markersBySample", () => ({ data: [], nextToken: null })) },
       Job: list("Job", () => []),
+      ScoreRef: list("ScoreRef", () => state.refs ?? []),
       Score: {
         ...list("Score", () => state.scores),
         get: ({ id }: { id: string }) => guard("Score.get", () => ({ data: state.scores.find((s) => s.id === id) ?? null })),
@@ -289,4 +292,30 @@ test("the Clips list: every live clip with its sample, and score kinds", async (
   assert.equal(state.scores[0].kind, "chords");
   assert.equal((await cat.scores()).scores[0].kind, "chords", "the list is reloaded after a change");
   await assert.rejects(cat.setScoreKind("examples/nope.apr", "beat"), /no such score/);
+});
+
+test("undocumented samples, their clips and the scores using them: hidden from readers, flagged for curators", async () => {
+  const state = {
+    signedIn: true,
+    samples: [source, upload],
+    clips: [clip("c1", "hook", 0, 1, { sampleId: "smp_up", source: "user" }), clip("c2", "loop-1", 0, 2, { sampleId: "smp_src" })],
+    scores: [{ id: "scr_a", title: "a", folder: "examples", format: "apr", text: "x" }, { id: "scr_b", title: "b", folder: "examples", format: "apr", text: "y" }],
+    refs: [{ scoreId: "scr_a", sampleId: "smp_up" }, { scoreId: "scr_b", sampleId: "smp_src" }],
+  };
+  // The announcer upload has no rights: undocumented. (Its analysis is missing too, so give it one to be listed.)
+  const up = { ...upload, aliases: [], analysis: { key: "analysis/smp_up/a.json" } };
+  state.samples = [source, up];
+  let curator = false;
+  const cat = new Catalog({ client: () => stubClient(state), readText: async () => analysisJson, url: async (k) => k, seesUndocumented: async () => curator });
+  assert.deepEqual((await cat.samples()).samples.map((x) => x.id), ["smp_src"]);
+  assert.deepEqual((await cat.clips()).map((x) => x.id), ["c2"]);
+  assert.deepEqual((await cat.scores()).scores.map((x) => x.id), ["scr_b"]);
+  assert.deepEqual([...(await cat.hiddenIds())].sort(), ["c1", "scr_a", "smp_up"]);
+  curator = true;
+  const all = (await cat.samples()).samples;
+  assert.deepEqual(all.map((x) => [x.id, !!x.undocumented]), [["smp_src", false], ["smp_up", true]]);
+  assert.deepEqual((await cat.scores()).scores.map((x) => [x.id, !!x.undocumented]), [["scr_a", true], ["scr_b", false]]);
+  assert.equal((await cat.hiddenIds()).size, 0);
+  const credits = await cat.creditsFor(["samples/marine-band/Thunderer.mp3", "uploads/announcer.wav", "marine-band/Thunderer.mp3"]);
+  assert.deepEqual(credits.map((r) => r.id), ["rec_Thunderer", "rec_uploads_announcer"], "once per recording");
 });

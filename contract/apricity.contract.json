@@ -1,5 +1,5 @@
 {
-  "version": "ef8dd41bb8c12b44",
+  "version": "7477aed63be05b6a",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -70,6 +70,34 @@
         "url": {
           "name": "url",
           "type": "AWSURL",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "license": {
+          "name": "license",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "licenseUrl": {
+          "name": "licenseUrl",
+          "type": "AWSURL",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "author": {
+          "name": "author",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "attribution": {
+          "name": "attribution",
+          "type": "String",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"

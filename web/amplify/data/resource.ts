@@ -54,6 +54,13 @@ const schema = a.schema({
       rights: a.string(),
       sourcePage: a.url(),
       url: a.url(),
+      // What it may be used for (a code in web/src/data/licenses.ts: "cc-by-sa-3.0", "public-domain"…), who a credit
+      // names, and a curator's own credit line when the generated one won't do. Without `license`, the app reads it
+      // from `rights`.
+      license: a.string(),
+      licenseUrl: a.url(),
+      author: a.string(),
+      attribution: a.string(),
       documents: a.ref("FileRef").array(),
       samples: a.hasMany("Sample", "recordingId"),
     })

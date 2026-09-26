@@ -28,6 +28,9 @@ export interface SampleSummary {
   clips: number; // clips saved with it
   markers: number;
   stem?: string | null;
+  recordingId?: string;
+  /** Its recording's license isn't documented: only curators see it. */
+  undocumented?: boolean;
 }
 
 /** A clip saved with a sample: a named region (yours, or automatic markup's). */
@@ -193,6 +196,8 @@ export async function connectCatalog() {
     // Locally every record is editable (null); in the cloud, the signed-in person.
     me: async () => ((await import("./data/client.js")).mode() === "local" ? null : me()),
     handle: async (who) => (await (await import("./data/handles.js")).handles()).mine(who.owners),
+    // Undocumented samples are for curators to fix; everyone else never sees them. Locally everyone curates.
+    seesUndocumented: async () => ((await import("./data/client.js")).mode() === "local" ? true : !!(await me())?.curator),
   });
   // Sign-in or sign-out changes what may be read: forget what was loaded.
   document.addEventListener("apricity:auth-changed", () => (catalogInstance?.reset(), manifestCache.clear()));
@@ -230,6 +235,12 @@ export const api = {
   samples: async () => (await ready()).samples(),
   scores: async () => (await ready()).scores(),
   clips: async () => (await ready()).clips(),
+  provenance: async (path: string) => (await ready()).provenance(path),
+  creditsFor: async (paths: string[]) => (await ready()).creditsFor(paths),
+  recordings: async () => (await ready()).recordings(),
+  updateRecording: async (id: string, fields: Parameters<Catalog["updateRecording"]>[1]) => (await ready()).updateRecording(id, fields),
+  relinkSample: async (sampleId: string, recordingId: string) => (await ready()).relinkSample(sampleId, recordingId),
+  hiddenIds: async () => (await ready()).hiddenIds(),
   score: async (path: string) => (await ready()).score(path),
   saveScore: async (path: string, text: string, kind?: ScoreKind) => {
     const { saveScore } = await import("./data/domain.js");

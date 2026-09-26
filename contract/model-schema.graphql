@@ -47,6 +47,10 @@ type Recording @model @auth(rules: [{allow: public, provider: identityPool, oper
   rights: String
   sourcePage: AWSURL
   url: AWSURL
+  license: String
+  licenseUrl: AWSURL
+  author: String
+  attribution: String
   documents: [FileRef]
   samples: [Sample] @hasMany(references: ["recordingId"])
 }

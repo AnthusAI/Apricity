@@ -13,6 +13,7 @@
 //   score path        `${Score.folder}/${Score.title}.${Score.format}` (= legacyPath for migrated scores)
 //   score id          scr_<folder with / as _>_<title>_<format> (migration's scheme)
 
+import { documented, type Provenance } from "./licenses.js";
 import type { Manifest, Marker as MarkerAnn, SampleSummary, SavedClip } from "../apricity";
 
 /** Signed out (cloud), or the signed-in user may not read the catalog. */
@@ -100,12 +101,10 @@ export interface SampleRecord {
   tuningCents?: number | null;
   noteCount?: number | null;
 }
-export interface RecordingRecord {
+export interface RecordingRecord extends Provenance {
   id: string;
   title: string;
   collection: string;
-  credit?: string | null;
-  rights?: string | null;
 }
 export interface ClipRecord {
   id: string;
@@ -155,6 +154,8 @@ export interface ScoreItem {
   owner: string | null;
   createdAt: string | null;
   modified: number;
+  /** It plays an undocumented sample (only curators see it). */
+  undocumented?: boolean;
 }
 
 export function toScoreItem(s: ScoreRecord): ScoreItem {
@@ -181,6 +182,8 @@ export interface ClipItem {
   source: "user" | "ml" | "curated";
   owner: string | null;
   createdAt: string | null;
+  /** Its sample's license isn't documented (only curators see it). */
+  undocumented?: boolean;
 }
 export interface JobRecord {
   id: string;
@@ -265,6 +268,9 @@ export function toSummary(sample: SampleRecord, recordings: Map<string, Recordin
     clips: counts.clips.get(sample.id) ?? 0,
     markers: counts.markers.get(sample.id) ?? 0,
     stem: sample.stem ?? null,
+    recordingId: sample.recordingId,
+    // Where it came from and under what license isn't written down: only curators see it (to fix it).
+    ...(documented(rec) ? {} : { undocumented: true }),
   };
 }
 
@@ -420,6 +426,8 @@ export interface CatalogDeps {
   readText: (key: string) => Promise<string>;
   /** A URL for a library file (files.ts getUrl). */
   url: (key: string) => Promise<string>;
+  /** Whether the reader sees undocumented samples (curators; everyone locally). Default: yes. */
+  seesUndocumented?: () => Promise<boolean>;
   /** Who is saving: the owner values their records carry, and whether they curate (may change anyone's). Null locally. */
   me?: () => Promise<Me | null>;
   /** That person's public handle, which names their copies of other people's clips. */
@@ -428,6 +436,9 @@ export interface CatalogDeps {
 
 interface Index {
   samples: SampleRecord[];
+  recordings: Map<string, RecordingRecord>;
+  /** Samples whose recording's license isn't documented. */
+  undocumented: Set<string>;
   byPath: Map<string, SampleRecord>;
   summaries: SampleSummary[];
   jobs: { path: string; state: string; error?: string }[];
@@ -442,6 +453,7 @@ export class Catalog {
   reset() {
     this.index = null;
     this.scoreList = null;
+    this.refList = null;
   }
 
   private get models() {
@@ -472,6 +484,8 @@ export class Catalog {
       const state = (s: JobRecord["state"]) => (s === "running" ? "analyzing" : s ?? "queued");
       return {
         samples,
+        recordings: recs,
+        undocumented: new Set(samples.filter((c) => !documented(recs.get(c.recordingId))).map((c) => c.id)),
         byPath,
         summaries: sortSummaries(analysed.map((c) => toSummary(c, recs, byId, counts))),
         jobs: jobs
@@ -486,9 +500,74 @@ export class Catalog {
     return this.index;
   }
 
+  /** Whoever is looking sees undocumented samples too (curators, and everyone locally): they are there to be fixed. */
+  private async seesAll(): Promise<boolean> {
+    return (await this.deps.seesUndocumented?.()) ?? true;
+  }
+
   async samples() {
+    const [i, all] = await Promise.all([this.load(), this.seesAll()]);
+    return { samples: all ? i.summaries : i.summaries.filter((x) => !x.undocumented), unanalyzed: i.samples.filter((c) => !c.analysis?.key).map(samplePath), jobs: i.jobs };
+  }
+
+  /** The recording a sample path comes from, with the sample's record. */
+  async provenance(path: string): Promise<{ sample: SampleRecord; recording: RecordingRecord | null } | null> {
+    const [i, c] = await Promise.all([this.load(), this.sample(path)]);
+    return c ? { sample: c, recording: i.recordings.get(c.recordingId) ?? null } : null;
+  }
+
+  /** The recordings a score's sources (sample paths) come from, in order, each once. */
+  async creditsFor(paths: string[]): Promise<RecordingRecord[]> {
     const i = await this.load();
-    return { samples: i.summaries, unanalyzed: i.samples.filter((c) => !c.analysis?.key).map(samplePath), jobs: i.jobs };
+    const out = new Map<string, RecordingRecord>();
+    for (const p of paths) {
+      const c = i.byPath.get(p) ?? i.byPath.get(p.replace(/^samples\//, ""));
+      const r = c ? i.recordings.get(c.recordingId) : undefined;
+      if (r && !out.has(r.id)) out.set(r.id, r);
+      else if (c && !r) out.set(`missing:${c.id}`, { id: `missing:${c.id}`, title: fileTitle(c.path), collection: c.collection });
+    }
+    return [...out.values()];
+  }
+
+  /** Every recording, by title (for a curator linking a sample to the recording it came from). */
+  async recordings(): Promise<RecordingRecord[]> {
+    const i = await this.load();
+    return [...i.recordings.values()].sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  /** A curator writes down where a recording came from and under what license. */
+  async updateRecording(id: string, fields: Partial<Omit<Provenance, "id">>) {
+    const r = await this.models.Recording.update({ id, ...fields });
+    if (r.errors?.length) fail(r.errors, true);
+    this.index = null;
+  }
+
+  /** A curator says a sample comes from another recording (e.g. single drum hits uploaded one by one, from a kit). */
+  async relinkSample(sampleId: string, recordingId: string) {
+    const r = await this.models.Sample.update({ id: sampleId, recordingId });
+    if (r.errors?.length) fail(r.errors, true);
+    this.index = null;
+  }
+
+  /**
+   * What a reader who isn't a curator must not see: undocumented samples, their clips, and scores that use them
+   * (by record id). Empty for curators, who see them flagged.
+   */
+  async hiddenIds(): Promise<Set<string>> {
+    if (await this.seesAll()) return new Set();
+    const i = await this.load();
+    const [clips, refs] = await Promise.all([this.clips(true), this.scoreRefs()]);
+    const out = new Set(i.undocumented);
+    for (const c of clips) if (i.undocumented.has(c.sampleId)) out.add(c.id);
+    for (const r of refs) if (r.sampleId && i.undocumented.has(r.sampleId)) out.add(r.scoreId);
+    return out;
+  }
+
+  private refList: Promise<{ scoreId: string; sampleId?: string | null }[]> | null = null;
+  private scoreRefs() {
+    this.refList ??= listAll<{ scoreId: string; sampleId?: string | null }>((nextToken) => this.models.ScoreRef.list({ limit: 1000, nextToken, selectionSet: ["scoreId", "sampleId"] }));
+    this.refList.catch(() => (this.refList = null));
+    return this.refList;
   }
 
   /** The sample record a sample path (or catalog alias) names. */
@@ -523,14 +602,24 @@ export class Catalog {
   }
 
   async scores(): Promise<{ scores: ScoreItem[] }> {
-    const list = await this.listScores();
-    const scores = list.map(toScoreItem);
+    const [list, hidden, all] = await Promise.all([this.listScores(), this.hiddenIds(), this.seesAll()]);
+    // A score playing an undocumented sample: hidden, or flagged for curators.
+    const flagged = all ? await this.flaggedScores() : new Set<string>();
+    const scores = list
+      .filter((x) => !hidden.has(x.id))
+      .map((x) => ({ ...toScoreItem(x), ...(flagged.has(x.id) ? { undocumented: true } : {}) }));
     return { scores: scores.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)) };
   }
 
-  /** Every clip saved with a sample (not retired), with its sample's path and title. */
-  async clips(): Promise<ClipItem[]> {
-    const i = await this.load();
+  /** Scores that use an undocumented sample (to flag them for curators). */
+  private async flaggedScores(): Promise<Set<string>> {
+    const [i, refs] = await Promise.all([this.load(), this.scoreRefs()]);
+    return new Set(refs.filter((r) => r.sampleId && i.undocumented.has(r.sampleId)).map((r) => r.scoreId));
+  }
+
+  /** Every clip saved with a sample (not retired), with its sample's path and title. `all`: undocumented ones too. */
+  async clips(all?: boolean): Promise<ClipItem[]> {
+    const [i, seesAll] = await Promise.all([this.load(), all ? Promise.resolve(true) : this.seesAll()]);
     const byId = new Map(i.samples.map((c) => [c.id, c]));
     const titles = new Map(i.summaries.map((x) => [x.path, x.title]));
     const recs = await listAll<ClipRecord & { createdAt?: string | null }>((nextToken) =>
@@ -540,8 +629,10 @@ export class Catalog {
     for (const r of recs) {
       const smp = byId.get(r.sampleId);
       if (!smp || r.retired) continue;
+      const hidden = i.undocumented.has(smp.id);
+      if (hidden && !seesAll) continue;
       const path = samplePath(smp);
-      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, owner: r.owner ?? null, createdAt: r.createdAt ?? null });
+      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, owner: r.owner ?? null, createdAt: r.createdAt ?? null, ...(hidden ? { undocumented: true } : {}) });
     }
     return out;
   }
