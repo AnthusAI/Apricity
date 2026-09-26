@@ -1,0 +1,199 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "St-Patricks-parade_144941_005_00-03-29.clean.wav",
+  "sha256": "fe32a38af216417690ce0ff7a1ae46376123e6cceaa5013eb9188e44be7b66dd",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 4.412,
+  "denoise": {
+   "backend": "neural",
+   "strength": "medium",
+   "original": "St-Patricks-parade_144941_005_00-03-29.wav"
+  }
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-26T17:58:50+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)",
+   "basic-pitch": "0.4.0"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [
+   0.06
+  ],
+  "downbeats": [
+   0.06
+  ],
+  "meter": null,
+  "warp_markers": [
+   {
+    "seconds": 0.06,
+    "beat": 0.0
+   }
+  ],
+  "beat_loudness": [],
+  "loudness": [
+   -11.2,
+   -15.2,
+   -20.7,
+   -27.5,
+   -14.1,
+   -13.7,
+   -17.0,
+   -19.3,
+   -22.3
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "A",
+   "mode": "major",
+   "strength": 0.7673,
+   "camelot": "11B",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "E",
+    "mode": "major",
+    "strength": 0.596,
+    "camelot": "12B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "A",
+    "mode": "minor",
+    "strength": 0.4895,
+    "camelot": "8A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "E",
+    "mode": "minor",
+    "strength": 0.4323,
+    "camelot": "9A",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 447.17,
+  "tuning_cents": 28.0,
+  "pitch_class_profile": [
+   0.4599,
+   0.6962,
+   0.6655,
+   0.5723,
+   1.0,
+   0.3967,
+   0.4359,
+   0.5806,
+   0.5976,
+   0.7264,
+   0.5083,
+   0.7006
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 4.412,
+    "key": {
+     "tonic": "A",
+     "mode": "major",
+     "strength": 0.7543,
+     "camelot": "11B",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.4649,
+     0.6966,
+     0.6672,
+     0.5718,
+     1.0,
+     0.4001,
+     0.4386,
+     0.5848,
+     0.5822,
+     0.7135,
+     0.515,
+     0.697
+    ]
+   }
+  ],
+  "beat_chroma": []
+ },
+ "notes": [
+  {
+   "start": 0.1045,
+   "end": 0.2554,
+   "midi": 65,
+   "velocity": 0.508
+  },
+  {
+   "start": 0.5921,
+   "end": 0.743,
+   "midi": 71,
+   "velocity": 0.62
+  },
+  {
+   "start": 1.3119,
+   "end": 1.5673,
+   "midi": 62,
+   "velocity": 0.407
+  },
+  {
+   "start": 2.2652,
+   "end": 2.4278,
+   "midi": 62,
+   "velocity": 0.483
+  },
+  {
+   "start": 2.4278,
+   "end": 2.6135,
+   "midi": 63,
+   "velocity": 0.586
+  },
+  {
+   "start": 3.2056,
+   "end": 3.3682,
+   "midi": 63,
+   "velocity": 0.655
+  },
+  {
+   "start": 3.8906,
+   "end": 4.1589,
+   "midi": 67,
+   "velocity": 0.615
+  }
+ ],
+ "annotations": {
+  "clips": [
+   {
+    "name": "phrase-1",
+    "start": 0.0,
+    "end": 1.726,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "1.7s"
+    ]
+   },
+   {
+    "name": "phrase-2",
+    "start": 2.025,
+    "end": 4.356,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "2.3s"
+    ]
+   }
+  ],
+  "markers": []
+ }
+}

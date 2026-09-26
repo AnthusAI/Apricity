@@ -47,6 +47,17 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "Seconds."
+        },
+        "denoise": {
+          "type": "object",
+          "description": "Present when this audio is a noise-reduced copy of another file. The original is untouched.",
+          "required": ["backend", "strength", "original"],
+          "additionalProperties": false,
+          "properties": {
+            "backend": {"type": "string", "description": "Backend chain, e.g. neural or declick+spectral."},
+            "strength": {"enum": ["light", "medium", "strong"]},
+            "original": {"type": "string", "description": "The untouched file this was made from, relative to the manifest."}
+          }
         }
       }
     },

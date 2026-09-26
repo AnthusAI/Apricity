@@ -1,0 +1,176 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "The-band-festival-at-Plum-Center_00694075_004_00-03-55.clean.wav",
+  "sha256": "54bb01d1204eadad4660303853322982e4921543884b839dd3d746100c57e670",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 4.249,
+  "denoise": {
+   "backend": "neural",
+   "strength": "medium",
+   "original": "The-band-festival-at-Plum-Center_00694075_004_00-03-55.wav"
+  }
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-26T17:57:53+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)",
+   "basic-pitch": "0.4.0"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [
+   0.66
+  ],
+  "downbeats": [],
+  "meter": null,
+  "warp_markers": [
+   {
+    "seconds": 0.66,
+    "beat": 0.0
+   }
+  ],
+  "beat_loudness": [],
+  "loudness": [
+   -31.9,
+   -28.3,
+   -35.6,
+   -27.8,
+   -29.0,
+   -30.0,
+   -33.1,
+   -36.9,
+   -35.2
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "F",
+   "mode": "major",
+   "strength": 0.728,
+   "camelot": "7B",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "F",
+    "mode": "minor",
+    "strength": 0.7049,
+    "camelot": "4A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "C",
+    "mode": "major",
+    "strength": 0.5486,
+    "camelot": "8B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "A",
+    "mode": "minor",
+    "strength": 0.4564,
+    "camelot": "8A",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 446.4,
+  "tuning_cents": 25.0,
+  "pitch_class_profile": [
+   1.0,
+   0.4121,
+   0.3503,
+   0.409,
+   0.5342,
+   0.9568,
+   0.377,
+   0.6332,
+   0.6419,
+   0.6854,
+   0.3238,
+   0.3522
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 4.226,
+    "key": {
+     "tonic": "F",
+     "mode": "major",
+     "strength": 0.722,
+     "camelot": "7B",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     1.0,
+     0.4025,
+     0.3483,
+     0.4002,
+     0.5342,
+     0.9418,
+     0.3755,
+     0.6194,
+     0.6318,
+     0.6718,
+     0.3027,
+     0.3405
+    ]
+   }
+  ],
+  "beat_chroma": []
+ },
+ "notes": [
+  {
+   "start": 0.0697,
+   "end": 0.9172,
+   "midi": 60,
+   "velocity": 0.423
+  },
+  {
+   "start": 0.3367,
+   "end": 0.4876,
+   "midi": 72,
+   "velocity": 0.299
+  },
+  {
+   "start": 0.3599,
+   "end": 0.6966,
+   "midi": 48,
+   "velocity": 0.384
+  },
+  {
+   "start": 0.4992,
+   "end": 0.9056,
+   "midi": 72,
+   "velocity": 0.432
+  },
+  {
+   "start": 1.0101,
+   "end": 1.161,
+   "midi": 65,
+   "velocity": 0.529
+  },
+  {
+   "start": 1.5557,
+   "end": 1.7299,
+   "midi": 69,
+   "velocity": 0.371
+  },
+  {
+   "start": 3.5772,
+   "end": 3.821,
+   "midi": 69,
+   "velocity": 0.547
+  }
+ ],
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}

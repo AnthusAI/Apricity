@@ -64,7 +64,8 @@ def _summary(manifest_path: pathlib.Path, credits: dict) -> dict:
     m = json.loads(manifest_path.read_text())
     audio_rel = str(manifest_path.relative_to(ROOT))[: -len(".apricity.json")]
     in_samples = str(manifest_path.relative_to(SAMPLES))[: -len(".apricity.json")]
-    c = credits.get(in_samples, {})
+    dn = m["source"].get("denoise")  # a noise-reduced copy takes its original's credits
+    c = credits.get(in_samples) or (credits.get(str(pathlib.PurePosixPath(in_samples).with_name(dn["original"]))) if dn else None) or {}
     k = m["tonal"]["key"]
     segs = []
     for s in m["tonal"].get("segments", []):
@@ -104,8 +105,13 @@ def samples():
     credits = _credits()
     # Modern, full-length recordings first; then the archive excerpts; then uploads.
     order = {"marine-band": 0, "citizen-dj": 1, "uploads": 2}
-    out = sorted((_summary(p, credits) for p in SAMPLES.rglob("*.apricity.json")), key=lambda c: (order.get(c["group"], 3), c["path"]))
-    pending = [str(p.relative_to(ROOT)) for p in sorted(SAMPLES.rglob("*")) if p.suffix.lower() in AUDIO and not p.with_name(p.name + ".apricity.json").exists()]
+    # A recording with a noise-reduced copy (<name>.clean.wav) shows the copy; the original stays on disk.
+    def superseded(audio: pathlib.Path) -> bool:
+        return ".clean." not in audio.name and audio.with_suffix(".clean.wav").exists()
+
+    out = sorted((_summary(p, credits) for p in SAMPLES.rglob("*.apricity.json")
+                  if not superseded(p.with_name(p.name.removesuffix(".apricity.json")))), key=lambda c: (order.get(c["group"], 3), c["path"]))
+    pending = [str(p.relative_to(ROOT)) for p in sorted(SAMPLES.rglob("*")) if p.suffix.lower() in AUDIO and not superseded(p) and not p.with_name(p.name + ".apricity.json").exists()]
     return {"samples": out, "unanalyzed": pending, "jobs": list(JOBS.values())}
 
 

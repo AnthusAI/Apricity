@@ -26,6 +26,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+# Noise reduction (scripts/catalog-add-loc.py denoises by default). Install `denoiser` with
+# `pip install --no-deps denoiser`: its hydra/omegaconf pins are not needed to run the pretrained model.
+denoise = ["noisereduce"]
 
 [project.scripts]
 apricity-analyze = "apricity_analyze.cli:main"

@@ -3664,5 +3664,136 @@
         "size": 9266
       }
     ]
+  },
+  {
+    "id": "loc-lomax-1939",
+    "title": "Library of Congress: Lomax 1939 Southern States Recording Trip (curated)",
+    "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress.",
+    "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply.",
+    "source_page": "https://www.loc.gov/collections/john-and-ruby-lomax/about-this-collection/",
+    "files": [
+      {
+        "path": "loc/lomax-1939/Cornfield-Song_lomaxbib000296.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02662a1.mp3",
+        "fetch": "http",
+        "title": "Cornfield Song",
+        "size": 6138240,
+        "sha256": "2421ff73786ee7d03cdad286887e2dfccf8c4d34894caede45e1d1544fe7136c"
+      },
+      {
+        "path": "loc/lomax-1939/Steel-driving-song_lomaxbib000283.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02658a1.mp3",
+        "fetch": "http",
+        "title": "Steel-driving song",
+        "size": 10323840,
+        "sha256": "60e4105f9bdfc6d48f0e8eabbad78a69bfb38fe06f5ec3875060f3672625499c"
+      },
+      {
+        "path": "loc/lomax-1939/Cap-n-I-ll-Hide-You_lomaxbib000306.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02664a2.mp3",
+        "fetch": "http",
+        "title": "Cap'n, I'll Hide You",
+        "size": 7495680,
+        "sha256": "479d7a52159dbb660d64cc2f7cbf372f1f9b254a5e316e47de6320ae2f002700"
+      },
+      {
+        "path": "loc/lomax-1939/Hammer-Song_lomaxbib000047.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02599a2.mp3",
+        "fetch": "http",
+        "title": "Hammer Song",
+        "size": 5418240,
+        "sha256": "81068f498d458d929d07309c3a63b5d42d579027e2c493416388240ff108ea90"
+      },
+      {
+        "path": "loc/lomax-1939/Slow-Drag-Work-Song_lomaxbib000010.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02596b1.mp3",
+        "fetch": "http",
+        "title": "Slow Drag Work Song",
+        "size": 2403840,
+        "sha256": "a90a6e74e637fa2df941ca4534db21e2dc4c35850f7299ec9029f4e23509dd68"
+      },
+      {
+        "path": "loc/lomax-1939/Rattle-Rattle-Section_lomaxbib000186.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02640a2.mp3",
+        "fetch": "http",
+        "title": "Rattle, Rattle Section",
+        "size": 1775040,
+        "sha256": "fe0301901e775294241ade5743fc36cf948d40954368805cc26843aade957168"
+      },
+      {
+        "path": "loc/lomax-1939/Black-Betty_lomaxbib000201.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02643b2.mp3",
+        "fetch": "http",
+        "title": "Black Betty",
+        "size": 3752640,
+        "sha256": "486ec4e644ebd43a2a4d47b20e8672801c5cd7bafdd57bdb7a982035fa03e2af"
+      },
+      {
+        "path": "loc/lomax-1939/Wild-Geese_lomaxbib000204.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02644b1.mp3",
+        "fetch": "http",
+        "title": "Wild Geese",
+        "size": 5982720,
+        "sha256": "e7f5246eb83710b8cb162b655a9b5f0985373c57e9738c4610d864db51a3c49f"
+      },
+      {
+        "path": "loc/lomax-1939/Long-Hot-Summer-Day_lomaxbib000042.mp3",
+        "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02597b1.mp3",
+        "fetch": "http",
+        "title": "Long Hot Summer Day",
+        "size": 8261760,
+        "sha256": "742c55e4aaf9d6df522180b1890210e346e9c6c29c5d9a406da0f0c6a610cee5"
+      }
+    ]
+  },
+  {
+    "id": "loc-national-jukebox",
+    "title": "Library of Congress: National Jukebox (curated)",
+    "credit": "National Jukebox, Library of Congress (Victor Talking Machine Company recordings).",
+    "rights": "Public domain (published before 1923; Music Modernization Act).",
+    "source_page": "https://www.loc.gov/collections/national-jukebox/about-this-collection/",
+    "files": [
+      {
+        "path": "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3",
+        "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:ucsb_col_a1822_01_45933_03:ucsb_col_a1822_01_45933_03/full/full/0/full/default.mp3",
+        "fetch": "http",
+        "title": "A ragtime drummer",
+        "size": 6261072,
+        "sha256": "ecbd9c2320b71a13e61c183c29fbd0d57abdeffd6a10f645fb7cd633e1364dd7"
+      },
+      {
+        "path": "loc/national-jukebox/Alexander-s-ragtime-band_jukebox-130931.mp3",
+        "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:dlc_victor_17006_01_b11108_01:dlc_victor_17006_01_b11108_01/full/full/0/full/default.mp3",
+        "fetch": "http",
+        "title": "Alexander's ragtime band",
+        "size": 5036669,
+        "sha256": "a30ea19bca1508ab876a76818fde9805894c972ecba34e2443d0a7becd7c7404"
+      },
+      {
+        "path": "loc/national-jukebox/Ragtime-violin_jukebox-131250.mp3",
+        "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:dlc_victor_17025_01_b11380_02:dlc_victor_17025_01_b11380_02/full/full/0/full/default.mp3",
+        "fetch": "http",
+        "title": "Ragtime violin",
+        "size": 2283358,
+        "sha256": "bfcd27488d9a9bc1759cfb2f45229a46371899d9a16e497e17c27ff7da756d03"
+      }
+    ]
+  },
+  {
+    "id": "loc-national-jukebox-1923-25",
+    "title": "Library of Congress: National Jukebox, 1923-1925 (curated)",
+    "credit": "National Jukebox, Library of Congress (Victor Talking Machine Company recordings).",
+    "rights": "Public domain (published 1923-1925; 100 years since publication, Music Modernization Act).",
+    "source_page": "https://www.loc.gov/collections/national-jukebox/about-this-collection/",
+    "files": [
+      {
+        "path": "loc/national-jukebox/The-ragtime-robin_jukebox-675000.mp3",
+        "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:ucsb_col_265d_01_140180_01:ucsb_col_265d_01_140180_01/full/full/0/full/default.mp3",
+        "fetch": "http",
+        "title": "The ragtime robin",
+        "size": 5981875,
+        "sha256": "bb7c1912937e4b7099f8f6b8ba3fff80201aafbb30a9aebdae6aa45496888ca9"
+      }
+    ]
   }
 ]

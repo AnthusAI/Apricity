@@ -13,9 +13,15 @@ CLIP = "samples/citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_0
 def test_lists_analyzed_samples_with_credits():
     r = client.get("/api/samples").json()
     paths = {c["path"]: c for c in r["samples"]}
-    assert CLIP in paths
-    c = paths[CLIP]
+    c = paths[CLIP.replace(".wav", ".clean.wav")]
     assert c["credit"].startswith("Citizen DJ") and c["bpm"] and c["key"]
+
+
+def test_a_denoised_copy_replaces_its_original_and_keeps_its_credits():
+    paths = {c["path"]: c for c in client.get("/api/samples").json()["samples"]}
+    clean = CLIP.replace(".wav", ".clean.wav")
+    assert clean in paths and CLIP not in paths
+    assert paths[clean]["credit"].startswith("Citizen DJ") and paths[clean]["title"] == "Army bugle calls"
 
 
 def test_isolation_headers_on_every_response():

@@ -1,0 +1,699 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "Rattle-Rattle-Section_lomaxbib000186.clean.wav",
+  "sha256": "45ffc8be5e6700a80d1dbbe4823058cb4e8eba22964a1fe6bc788a084ecd4a51",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 44.376,
+  "denoise": {
+   "backend": "neural",
+   "strength": "medium",
+   "original": "Rattle-Rattle-Section_lomaxbib000186.mp3"
+  }
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-26T18:01:05+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)",
+   "basic-pitch": "0.4.0"
+  }
+ },
+ "rhythm": {
+  "bpm": 45.8,
+  "bpm_stability": 0.504,
+  "beats": [
+   30.34,
+   31.0,
+   32.96
+  ],
+  "downbeats": [
+   32.96
+  ],
+  "meter": null,
+  "warp_markers": [
+   {
+    "seconds": 30.34,
+    "beat": -2.0
+   },
+   {
+    "seconds": 31.0,
+    "beat": -1.0
+   },
+   {
+    "seconds": 32.96,
+    "beat": 0.0
+   }
+  ],
+  "beat_loudness": [
+   -14.9,
+   -18.3
+  ],
+  "loudness": [
+   -31.8,
+   -38.0,
+   -39.3,
+   -39.5,
+   -39.6,
+   -39.8,
+   -19.0,
+   -15.1,
+   -24.4,
+   -23.2,
+   -36.9,
+   -33.4,
+   -15.4,
+   -17.8,
+   -34.2,
+   -39.7,
+   -41.1,
+   -18.3,
+   -14.3,
+   -17.0,
+   -17.1,
+   -19.9,
+   -26.8,
+   -23.5,
+   -34.1,
+   -41.3,
+   -29.4,
+   -26.8,
+   -36.9,
+   -37.6,
+   -41.2,
+   -19.9,
+   -18.4,
+   -21.3,
+   -34.4,
+   -41.6,
+   -21.6,
+   -17.0,
+   -22.0,
+   -18.3,
+   -17.9,
+   -30.6,
+   -25.8,
+   -31.2,
+   -40.4,
+   -43.1,
+   -41.9,
+   -39.4,
+   -35.7,
+   -20.6,
+   -32.4,
+   -38.8,
+   -43.0,
+   -41.3,
+   -15.9,
+   -22.0,
+   -31.3,
+   -31.7,
+   -41.8,
+   -19.5,
+   -14.9,
+   -13.8,
+   -13.2,
+   -24.1,
+   -23.2,
+   -27.3,
+   -35.1,
+   -39.9,
+   -28.2,
+   -37.5,
+   -38.5,
+   -38.3,
+   -39.9,
+   -24.4,
+   -24.2,
+   -35.4,
+   -39.6,
+   -34.8,
+   -16.1,
+   -27.8,
+   -15.0,
+   -16.3,
+   -28.0,
+   -25.1,
+   -30.6,
+   -41.9,
+   -43.0,
+   -41.5,
+   -38.8
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Eb",
+   "mode": "minor",
+   "strength": 0.5573,
+   "camelot": "2A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "Bb",
+    "mode": "major",
+    "strength": 0.4686,
+    "camelot": "6B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Bb",
+    "mode": "minor",
+    "strength": 0.4366,
+    "camelot": "3A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Gb",
+    "mode": "major",
+    "strength": 0.3866,
+    "camelot": "2B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 436.96,
+  "tuning_cents": -12.0,
+  "pitch_class_profile": [
+   0.5278,
+   0.5141,
+   0.6436,
+   0.579,
+   0.4488,
+   1.0,
+   0.5946,
+   0.4774,
+   0.4393,
+   0.433,
+   0.9316,
+   0.9169
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 12.0,
+    "key": {
+     "tonic": "Bb",
+     "mode": "minor",
+     "strength": 0.6016,
+     "camelot": "3A",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.5639,
+     0.5202,
+     0.511,
+     0.5699,
+     0.4536,
+     1.0,
+     0.4225,
+     0.4264,
+     0.3846,
+     0.4311,
+     0.9533,
+     0.7798
+    ]
+   },
+   {
+    "start": 12.0,
+    "end": 44.35,
+    "key": {
+     "tonic": "Eb",
+     "mode": "minor",
+     "strength": 0.551,
+     "camelot": "2A",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.5207,
+     0.5194,
+     0.7363,
+     0.5843,
+     0.4602,
+     0.9482,
+     0.6684,
+     0.5217,
+     0.4759,
+     0.4593,
+     0.9012,
+     1.0
+    ]
+   }
+  ],
+  "beat_chroma": [
+   [
+    0.0155,
+    0.1321,
+    0.1082,
+    0.2747,
+    0.0748,
+    0.505,
+    0.309,
+    0.0962,
+    0.0971,
+    0.067,
+    1.0,
+    0.3141
+   ],
+   [
+    0.447,
+    0.1176,
+    0.3739,
+    0.3715,
+    0.2352,
+    1.0,
+    0.2397,
+    0.164,
+    0.216,
+    0.1314,
+    0.7367,
+    0.4411
+   ]
+  ]
+ },
+ "notes": [
+  {
+   "start": 0.1625,
+   "end": 0.3715,
+   "midi": 47,
+   "velocity": 0.361
+  },
+  {
+   "start": 0.8243,
+   "end": 1.0217,
+   "midi": 47,
+   "velocity": 0.402
+  },
+  {
+   "start": 1.4977,
+   "end": 1.6486,
+   "midi": 47,
+   "velocity": 0.443
+  },
+  {
+   "start": 3.1708,
+   "end": 3.3101,
+   "midi": 58,
+   "velocity": 0.341
+  },
+  {
+   "start": 3.3101,
+   "end": 3.4494,
+   "midi": 58,
+   "velocity": 0.642
+  },
+  {
+   "start": 3.4494,
+   "end": 3.5888,
+   "midi": 57,
+   "velocity": 0.479
+  },
+  {
+   "start": 3.5888,
+   "end": 3.9964,
+   "midi": 58,
+   "velocity": 0.618
+  },
+  {
+   "start": 6.5287,
+   "end": 6.726,
+   "midi": 58,
+   "velocity": 0.658
+  },
+  {
+   "start": 6.726,
+   "end": 6.9002,
+   "midi": 58,
+   "velocity": 0.55
+  },
+  {
+   "start": 9.1422,
+   "end": 9.3279,
+   "midi": 62,
+   "velocity": 0.449
+  },
+  {
+   "start": 9.4208,
+   "end": 10.1419,
+   "midi": 58,
+   "velocity": 0.548
+  },
+  {
+   "start": 10.1535,
+   "end": 10.7108,
+   "midi": 58,
+   "velocity": 0.635
+  },
+  {
+   "start": 10.8153,
+   "end": 10.9662,
+   "midi": 53,
+   "velocity": 0.509
+  },
+  {
+   "start": 11.4422,
+   "end": 11.6396,
+   "midi": 51,
+   "velocity": 0.426
+  },
+  {
+   "start": 14.3821,
+   "end": 14.5331,
+   "midi": 46,
+   "velocity": 0.409
+  },
+  {
+   "start": 15.8566,
+   "end": 16.1597,
+   "midi": 58,
+   "velocity": 0.368
+  },
+  {
+   "start": 16.1597,
+   "end": 16.4616,
+   "midi": 58,
+   "velocity": 0.445
+  },
+  {
+   "start": 16.4616,
+   "end": 16.6009,
+   "midi": 58,
+   "velocity": 0.558
+  },
+  {
+   "start": 16.8447,
+   "end": 17.0073,
+   "midi": 58,
+   "velocity": 0.257
+  },
+  {
+   "start": 17.0073,
+   "end": 17.1698,
+   "midi": 58,
+   "velocity": 0.366
+  },
+  {
+   "start": 17.1698,
+   "end": 17.5646,
+   "midi": 58,
+   "velocity": 0.375
+  },
+  {
+   "start": 19.0635,
+   "end": 19.2028,
+   "midi": 58,
+   "velocity": 0.426
+  },
+  {
+   "start": 19.3422,
+   "end": 19.5511,
+   "midi": 58,
+   "velocity": 0.521
+  },
+  {
+   "start": 19.8066,
+   "end": 19.9704,
+   "midi": 58,
+   "velocity": 0.531
+  },
+  {
+   "start": 19.9704,
+   "end": 20.2026,
+   "midi": 59,
+   "velocity": 0.383
+  },
+  {
+   "start": 21.0501,
+   "end": 21.2359,
+   "midi": 51,
+   "velocity": 0.423
+  },
+  {
+   "start": 24.8259,
+   "end": 24.9769,
+   "midi": 51,
+   "velocity": 0.349
+  },
+  {
+   "start": 27.1492,
+   "end": 27.3117,
+   "midi": 59,
+   "velocity": 0.466
+  },
+  {
+   "start": 27.335,
+   "end": 27.5323,
+   "midi": 58,
+   "velocity": 0.405
+  },
+  {
+   "start": 28.0909,
+   "end": 28.416,
+   "midi": 58,
+   "velocity": 0.498
+  },
+  {
+   "start": 28.416,
+   "end": 28.6366,
+   "midi": 59,
+   "velocity": 0.566
+  },
+  {
+   "start": 28.6366,
+   "end": 28.8688,
+   "midi": 58,
+   "velocity": 0.339
+  },
+  {
+   "start": 30.5767,
+   "end": 30.7276,
+   "midi": 58,
+   "velocity": 0.467
+  },
+  {
+   "start": 30.7276,
+   "end": 31.2849,
+   "midi": 58,
+   "velocity": 0.562
+  },
+  {
+   "start": 31.343,
+   "end": 31.5636,
+   "midi": 58,
+   "velocity": 0.311
+  },
+  {
+   "start": 34.2713,
+   "end": 34.4802,
+   "midi": 51,
+   "velocity": 0.483
+  },
+  {
+   "start": 39.3358,
+   "end": 39.5215,
+   "midi": 58,
+   "velocity": 0.356
+  },
+  {
+   "start": 39.7073,
+   "end": 39.9176,
+   "midi": 59,
+   "velocity": 0.427
+  },
+  {
+   "start": 39.9756,
+   "end": 40.1265,
+   "midi": 58,
+   "velocity": 0.45
+  },
+  {
+   "start": 40.5213,
+   "end": 40.6606,
+   "midi": 58,
+   "velocity": 0.239
+  },
+  {
+   "start": 40.6838,
+   "end": 40.858,
+   "midi": 59,
+   "velocity": 0.391
+  },
+  {
+   "start": 41.3108,
+   "end": 41.5313,
+   "midi": 53,
+   "velocity": 0.365
+  },
+  {
+   "start": 42.5891,
+   "end": 42.7285,
+   "midi": 46,
+   "velocity": 0.484
+  },
+  {
+   "start": 42.7401,
+   "end": 42.9374,
+   "midi": 47,
+   "velocity": 0.576
+  },
+  {
+   "start": 43.3322,
+   "end": 43.5876,
+   "midi": 47,
+   "velocity": 0.428
+  }
+ ],
+ "annotations": {
+  "clips": [
+   {
+    "name": "phrase-1",
+    "start": 0.0,
+    "end": 8.361,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "8.4s"
+    ]
+   },
+   {
+    "name": "phrase-2",
+    "start": 8.503,
+    "end": 12.982,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "4.5s"
+    ]
+   },
+   {
+    "name": "phrase-3",
+    "start": 13.153,
+    "end": 17.643,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "4.5s"
+    ]
+   },
+   {
+    "name": "phrase-4",
+    "start": 18.058,
+    "end": 22.891,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "4.8s"
+    ]
+   },
+   {
+    "name": "phrase-5",
+    "start": 23.097,
+    "end": 25.962,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "2.9s"
+    ]
+   },
+   {
+    "name": "phrase-6",
+    "start": 26.156,
+    "end": 26.734,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "0.6s"
+    ]
+   },
+   {
+    "name": "phrase-7",
+    "start": 26.923,
+    "end": 29.416,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "2.5s"
+    ]
+   },
+   {
+    "name": "phrase-8",
+    "start": 29.57,
+    "end": 42.477,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "12.9s"
+    ]
+   },
+   {
+    "name": "phrase-9",
+    "start": 42.637,
+    "end": 43.203,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "0.6s"
+    ]
+   },
+   {
+    "name": "phrase-10",
+    "start": 43.478,
+    "end": 43.795,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "0.3s"
+    ]
+   },
+   {
+    "name": "phrase-11",
+    "start": 43.972,
+    "end": 44.376,
+    "source": "ml",
+    "tags": [
+     "phrase",
+     "0.4s"
+    ]
+   },
+   {
+    "name": "shot-1",
+    "start": 4.07,
+    "end": 5.38,
+    "source": "ml",
+    "tags": [
+     "shot"
+    ],
+    "evidence": {
+     "standout": 16.2
+    }
+   },
+   {
+    "name": "shot-2",
+    "start": 25.154,
+    "end": 26.464,
+    "source": "ml",
+    "tags": [
+     "shot"
+    ],
+    "evidence": {
+     "standout": 15.1
+    }
+   }
+  ],
+  "markers": [
+   {
+    "name": "transient",
+    "seconds": 4.07,
+    "source": "ml"
+   },
+   {
+    "name": "transient",
+    "seconds": 25.154,
+    "source": "ml"
+   }
+  ]
+ }
+}

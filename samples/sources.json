@@ -465,6 +465,149 @@
       "rights": "Public domain (composition pre-1923; recording is a work of the U.S. Government).",
       "mirror_page": "https://commons.wikimedia.org/wiki/File:Sousa%27s_%22Semper_Fidelis%22_-_United_States_Marine_Band_%282016%29.mp3",
       "recorded": 2016
+    },
+    {
+      "path": "loc/lomax-1939/Cornfield-Song_lomaxbib000296.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02662a1.mp3",
+      "fetch": "http",
+      "title": "Cornfield Song",
+      "performer": "Truvillion, Henry",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000296/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Truvillion, Henry.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Steel-driving-song_lomaxbib000283.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02658a1.mp3",
+      "fetch": "http",
+      "title": "Steel-driving song",
+      "performer": "Truvillion, Henry",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000283/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Truvillion, Henry.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Cap-n-I-ll-Hide-You_lomaxbib000306.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02664a2.mp3",
+      "fetch": "http",
+      "title": "Cap'n, I'll Hide You",
+      "performer": "Truvillion, Henry",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000306/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Truvillion, Henry.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Hammer-Song_lomaxbib000047.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02599a2.mp3",
+      "fetch": "http",
+      "title": "Hammer Song",
+      "performer": "Unidentified performers",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000047/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Unidentified performers.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Slow-Drag-Work-Song_lomaxbib000010.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02596b1.mp3",
+      "fetch": "http",
+      "title": "Slow Drag Work Song",
+      "performer": "Unidentified performers, Woods, Tommy",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000010/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Unidentified performers, Woods, Tommy.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Rattle-Rattle-Section_lomaxbib000186.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02640a2.mp3",
+      "fetch": "http",
+      "title": "Rattle, Rattle Section",
+      "performer": "Howard, Father",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000186/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Howard, Father.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Black-Betty_lomaxbib000201.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02643b2.mp3",
+      "fetch": "http",
+      "title": "Black Betty",
+      "performer": "Platt, Mose \"Clear Rock\"",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000201/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Platt, Mose \"Clear Rock\".",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Wild-Geese_lomaxbib000204.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02644b1.mp3",
+      "fetch": "http",
+      "title": "Wild Geese",
+      "performer": "Platt, Mose \"Clear Rock\"",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000204/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Platt, Mose \"Clear Rock\".",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/lomax-1939/Long-Hot-Summer-Day_lomaxbib000042.mp3",
+      "url": "https://tile.loc.gov/storage-services/media/afc/lomax/afc1939001_02597b1.mp3",
+      "fetch": "http",
+      "title": "Long Hot Summer Day",
+      "performer": "Unidentified performers, Hill, Clyde",
+      "recorded": 1939,
+      "source_page": "https://www.loc.gov/item/lomaxbib000042/",
+      "credit": "John and Ruby Lomax 1939 southern states recording trip (AFC 1939/001), American Folklife Center, Library of Congress. Performer: Unidentified performers, Hill, Clyde.",
+      "rights": "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001); privacy and publicity rights may apply."
+    },
+    {
+      "path": "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3",
+      "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:ucsb_col_a1822_01_45933_03:ucsb_col_a1822_01_45933_03/full/full/0/full/default.mp3",
+      "fetch": "http",
+      "title": "A ragtime drummer",
+      "performer": "Kopp, Howard",
+      "recorded": 1915,
+      "source_page": "https://www.loc.gov/item/jukebox-651958/",
+      "credit": "National Jukebox, Library of Congress (Victor Talking Machine Company recordings). Performer: Kopp, Howard.",
+      "rights": "Public domain (published before 1923; Music Modernization Act)."
+    },
+    {
+      "path": "loc/national-jukebox/Alexander-s-ragtime-band_jukebox-130931.mp3",
+      "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:dlc_victor_17006_01_b11108_01:dlc_victor_17006_01_b11108_01/full/full/0/full/default.mp3",
+      "fetch": "http",
+      "title": "Alexander's ragtime band",
+      "performer": "Victor Military Band",
+      "recorded": 1911,
+      "source_page": "https://www.loc.gov/item/jukebox-130931/",
+      "credit": "National Jukebox, Library of Congress (Victor Talking Machine Company recordings). Performer: Victor Military Band.",
+      "rights": "Public domain (published before 1923; Music Modernization Act)."
+    },
+    {
+      "path": "loc/national-jukebox/Ragtime-violin_jukebox-131250.mp3",
+      "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:dlc_victor_17025_01_b11380_02:dlc_victor_17025_01_b11380_02/full/full/0/full/default.mp3",
+      "fetch": "http",
+      "title": "Ragtime violin",
+      "performer": "American Quartet",
+      "recorded": 1911,
+      "source_page": "https://www.loc.gov/item/jukebox-131250/",
+      "credit": "National Jukebox, Library of Congress (Victor Talking Machine Company recordings). Performer: American Quartet.",
+      "rights": "Public domain (published before 1923; Music Modernization Act)."
+    },
+    {
+      "path": "loc/national-jukebox/The-ragtime-robin_jukebox-675000.mp3",
+      "url": "https://tile.loc.gov/streaming-services/iiif/service:mbrsrs:mbrsjukebox:ucsb_col_265d_01_140180_01:ucsb_col_265d_01_140180_01/full/full/0/full/default.mp3",
+      "fetch": "http",
+      "title": "The ragtime robin",
+      "performer": "Bries, Larry, Green, George Hamilton",
+      "recorded": 1924,
+      "source_page": "https://www.loc.gov/item/jukebox-675000/",
+      "credit": "National Jukebox, Library of Congress (Victor Talking Machine Company recordings). Performer: Bries, Larry, Green, George Hamilton.",
+      "rights": "Public domain (published 1923-1925; 100 years since publication, Music Modernization Act)."
     }
   ]
 }

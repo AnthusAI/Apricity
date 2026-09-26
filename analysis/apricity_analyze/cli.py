@@ -16,6 +16,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-notes", action="store_true", help="skip Basic Pitch note transcription (faster)")
     ap.add_argument("--force", action="store_true", help="re-analyze even if the manifest matches the audio")
     ap.add_argument("--no-markup", action="store_true", help="skip automatic sections/loops/hits markup")
+    ap.add_argument("--denoise", default="off", metavar="SPEC",
+                    help="analyze a noise-reduced copy (<name>.clean.wav, made if missing) instead of the file: "
+                         "BACKEND[+BACKEND][:STRENGTH], e.g. neural:medium; the original is untouched. Default off.")
     args = ap.parse_args(argv)
 
     from .analyze import analyze, manifest_path, write
@@ -26,8 +29,27 @@ def main(argv: list[str] | None = None) -> int:
     for p in args.paths:
         files += sorted(f for f in p.rglob("*") if f.suffix.lower() in AUDIO) if p.is_dir() else [p]
 
-    failed = 0
+    from . import denoise
+
+    spec = denoise.parse_spec(args.denoise)
+    jobs, seen = [], set()  # (file to analyze, its denoise record or None)
     for f in files:
+        rec = None
+        if spec and ".clean." in f.name:
+            continue  # made from its original below
+        if spec:
+            chain, strength = spec
+            clean = denoise.clean_path(f)
+            if not clean.exists():
+                print(f"  denoising   {f.name} ({args.denoise})", flush=True)
+                denoise.clean(f, chain, strength, clean)
+            rec, f = {"backend": "+".join(chain), "strength": strength, "original": f.name}, clean
+        if f not in seen:
+            seen.add(f)
+            jobs.append((f, rec))
+
+    failed = 0
+    for f, rec in jobs:
         mp = manifest_path(f.resolve())
         if not args.force and mp.exists():
             old = json.loads(mp.read_text())
@@ -41,6 +63,8 @@ def main(argv: list[str] | None = None) -> int:
             failed += 1
             print(f"  FAILED      {f}: {e}", file=sys.stderr)
             continue
+        if rec:
+            m["source"]["denoise"] = rec
         write(m, f)
         if not args.no_markup:
             from .markup import run as markup
