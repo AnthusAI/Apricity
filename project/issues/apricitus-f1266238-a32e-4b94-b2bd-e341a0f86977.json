@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f1266238-a32e-4b94-b2bd-e341a0f86977",
+  "title": "Compute and display the combined license of a score's music, with the reason",
+  "description": "Today creditsOf() (web/src/data/licenses.ts) lists credits and reports the first share-alike license it meets. Nothing computes the license the finished music must carry, and 3.0 vs 4.0 share-alike is not reconciled.\n\nAdd a pure combinedLicense() and show it in the credits panel (web/src/ui/credits.ts) as a computed license: say it is computed from the licenses of the sounds the score uses, state what it is, and say why (which sounds drive it). Rules: any share-alike sound => the highest share-alike version among them (CC BY-SA 3.0 permits adapting under a later version with the same elements); else any CC BY => credit required, no other condition; else all public domain/CC0/LoC-free/US-gov => no conditions, credit is a courtesy; any undocumented sound => not determined, name them. Not legal advice; covers sample licenses only. Tests first in web/test/licenses.test.ts. Web-session files with uncommitted edits (library.ts, score.ts, docs.ts, main.ts, route.ts, style.css) are not touched.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T18:28:59.024620Z",
+  "updated_at": "2026-09-26T18:28:59.024657Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Sonnet 5",
+    "name": "Library Expansion"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
