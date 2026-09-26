@@ -57,9 +57,13 @@ export class Landing {
           el(
             "div",
             { className: "hero-inner" },
-            el("div", { className: "eyebrow" }, "The mashup machine"),
+            el("div", { className: "eyebrow" }, "The social mashup machine"),
             el("h1", { className: "wordmark" }, "Apricity"),
-            el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every sample, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
+            el("p", {
+              className: "tagline",
+              innerHTML:
+                "A <em>collaborative, social</em> instrument. Make beats, chords and melodies from real recordings, <em>share them</em>, and <em>build on each other’s</em>. Every sound in it is <em>cleared</em>.",
+            }),
           ),
           new Breakdown(breakdown(HERO)!, { variant: "hero", open: go.open, remember: true }).root,
         ),
@@ -67,7 +71,7 @@ export class Landing {
           "section",
           { className: "band" },
           el("h2", {}, "How it works"),
-          el("p", { className: "lede" }, "Apricity listens to every recording once, then does the fiddly part of a mashup for you: finding the beat, the key and the tuning, and bending each sample to fit the music you describe."),
+          el("p", { className: "lede" }, "Apricity hears the beat, key and tuning of every sample, then warps them to one groove and tunes them to your chords, so they play as one. It does the fiddly part of sampling for you."),
           el(
             "div",
             { className: "steps" },
@@ -77,14 +81,40 @@ export class Landing {
           ),
           el("div", { className: "score" }, el("div", { className: "head" }, el("span", {}, "a 12-bar blues, from an 1889 march"), el("span", {}, ".apr")), el("pre", { innerHTML: highlight(DEMO) })),
         ),
+        el(
+          "section",
+          { className: "band" },
+          el("h2", {}, "Made together"),
+          el("p", { className: "lede" }, "Everything anyone makes here is public: take it apart, rate it, talk about it, and make it yours."),
+          el(
+            "div",
+            { className: "steps" },
+            this.step("♪", "Share", "Your beats, chord progressions, melodies and clips are listed for everyone, ranked by the people who hear them."),
+            this.step("★", "Rate and talk", "Rate anything from zero to five stars, and comment on it in threads. The Activity page shows what's happening now."),
+            this.step("↻", "Build on it", "Open anyone's score and save your own copy; take someone's clip and make it yours. Every copy says where it came from."),
+          ),
+        ),
+        el(
+          "section",
+          { className: "band" },
+          el("h2", {}, "Every sound is cleared"),
+          el("p", { className: "lede" }, "You can use anything you make here, because every sound in Apricity is chosen for it in advance and its paperwork travels with it."),
+          el(
+            "div",
+            { className: "steps" },
+            this.step("1", "Curated in advance", "Only public-domain and openly licensed recordings: the Library of Congress’s Citizen DJ collections, the U.S. Marine Band, and openly licensed drum kits. Nothing goes in without its rights known."),
+            this.step("2", "Provenance documented", "Every sample says where it came from: the recording, its performer and date, its source, and the license it’s under."),
+            this.step("3", "Credits written for you", "Where a license asks for credit, Apricity writes the citation, and every score lists its credits ready to copy, including when a share-alike license applies."),
+          ),
+        ),
         this.gallery(go),
-        el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every sample analyzed and ready to use: the public-domain collection Apricity ships with, plus anything you drop in."), stats),
+        el("section", { className: "band" }, el("h2", {}, "In the library"), el("p", { className: "lede" }, "Every sample analyzed, cleared and ready to use."), stats),
         el(
           "section",
           { className: "band credits" },
           el("p", {
             innerHTML:
-              'Recordings from the <a href="https://citizen-dj.labs.loc.gov/" target="_blank" rel="noopener">Library of Congress Citizen DJ</a> project and “The President’s Own” <a href="https://www.marineband.marines.mil/Audio-Resources/The-Complete-Marches-of-John-Philip-Sousa/" target="_blank" rel="noopener">United States Marine Band</a>, all in the public domain. Drums from the <a href="https://archive.org/details/SalamanderDrumkit" target="_blank" rel="noopener">Salamander Drumkit</a> by Alexander Holm (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>). Time-stretching by Rubber Band; analysis by Essentia, Beat This! and Basic Pitch; stems by Demucs. Apricity is free software under the GPL.',
+              'Each sample’s page shows its license and the credit to give. Time-stretching by Rubber Band; analysis by Essentia, Beat This! and Basic Pitch; stems by Demucs. Apricity is free software under the GPL.',
           }),
         ),
       ),
