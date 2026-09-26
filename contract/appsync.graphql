@@ -107,6 +107,7 @@ type Clip @aws_iam @aws_cognito_user_pools {
   candidateId: ID
   retired: Boolean
   owner: String
+  copyOf: ID
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
@@ -190,6 +191,8 @@ type Score @aws_iam @aws_cognito_user_pools {
   lastErrors: [String]
   legacyPath: String
   owner: String
+  forkOf: ID
+  forkRoot: ID
   refs(filter: ModelScoreRefFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelScoreRefConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
@@ -248,6 +251,7 @@ type Activity @aws_iam @aws_cognito_user_pools {
   lastBy: String
   comments: Int
   ratings: Int
+  forks: Int
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
@@ -260,6 +264,8 @@ type ActivityEvent @aws_iam @aws_cognito_user_pools {
   by: String
   stars: Int
   commentId: ID
+  otherId: ID
+  otherTitle: String
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
@@ -557,6 +563,7 @@ type Query {
   clipsBySample(sampleId: ID!, start: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
   clipsBySampleAndName(sampleId: ID!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
   clipsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
+  clipsByCopyOf(copyOf: ID!, sortDirection: ModelSortDirection, filter: ModelClipFilterInput, limit: Int, nextToken: String): ModelClipConnection @aws_iam @aws_cognito_user_pools
   getMarker(id: ID!): Marker @aws_iam @aws_cognito_user_pools
   listMarkers(id: ID, filter: ModelMarkerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelMarkerConnection @aws_iam @aws_cognito_user_pools
   markersBySample(sampleId: ID!, seconds: ModelFloatKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelMarkerFilterInput, limit: Int, nextToken: String): ModelMarkerConnection @aws_iam @aws_cognito_user_pools
@@ -569,6 +576,7 @@ type Query {
   listScores(id: ID, filter: ModelScoreFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreConnection @aws_iam @aws_cognito_user_pools
   scoresByFolder(folder: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection @aws_iam @aws_cognito_user_pools
   scoresByKind(kind: ScoreKind!, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection @aws_iam @aws_cognito_user_pools
+  scoresByForkOf(forkOf: ID!, sortDirection: ModelSortDirection, filter: ModelScoreFilterInput, limit: Int, nextToken: String): ModelScoreConnection @aws_iam @aws_cognito_user_pools
   getScoreRef(id: ID!): ScoreRef @aws_iam @aws_cognito_user_pools
   listScoreRefs(id: ID, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
@@ -999,6 +1007,7 @@ input ModelClipFilterInput {
   candidateId: ModelIDInput
   retired: ModelBooleanInput
   owner: ModelStringInput
+  copyOf: ModelIDInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelClipFilterInput]
@@ -1019,6 +1028,7 @@ input ModelClipConditionInput {
   candidateId: ModelIDInput
   retired: ModelBooleanInput
   owner: ModelStringInput
+  copyOf: ModelIDInput
   and: [ModelClipConditionInput]
   or: [ModelClipConditionInput]
   not: ModelClipConditionInput
@@ -1040,6 +1050,7 @@ input CreateClipInput {
   candidateId: ID
   retired: Boolean
   owner: String
+  copyOf: ID
 }
 
 input UpdateClipInput {
@@ -1056,6 +1067,7 @@ input UpdateClipInput {
   candidateId: ID
   retired: Boolean
   owner: String
+  copyOf: ID
 }
 
 input DeleteClipInput {
@@ -1075,6 +1087,7 @@ input ModelSubscriptionClipFilterInput {
   rank: ModelSubscriptionIntInput
   candidateId: ModelSubscriptionIDInput
   retired: ModelSubscriptionBooleanInput
+  copyOf: ModelSubscriptionIDInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionClipFilterInput]
@@ -1500,6 +1513,8 @@ input ModelScoreFilterInput {
   lastErrors: ModelStringInput
   legacyPath: ModelStringInput
   owner: ModelStringInput
+  forkOf: ModelIDInput
+  forkRoot: ModelIDInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelScoreFilterInput]
@@ -1516,6 +1531,8 @@ input ModelScoreConditionInput {
   lastErrors: ModelStringInput
   legacyPath: ModelStringInput
   owner: ModelStringInput
+  forkOf: ModelIDInput
+  forkRoot: ModelIDInput
   and: [ModelScoreConditionInput]
   or: [ModelScoreConditionInput]
   not: ModelScoreConditionInput
@@ -1533,6 +1550,8 @@ input CreateScoreInput {
   lastErrors: [String]
   legacyPath: String
   owner: String
+  forkOf: ID
+  forkRoot: ID
 }
 
 input UpdateScoreInput {
@@ -1545,6 +1564,8 @@ input UpdateScoreInput {
   lastErrors: [String]
   legacyPath: String
   owner: String
+  forkOf: ID
+  forkRoot: ID
 }
 
 input DeleteScoreInput {
@@ -1560,6 +1581,8 @@ input ModelSubscriptionScoreFilterInput {
   text: ModelSubscriptionStringInput
   lastErrors: ModelSubscriptionStringInput
   legacyPath: ModelSubscriptionStringInput
+  forkOf: ModelSubscriptionIDInput
+  forkRoot: ModelSubscriptionIDInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionScoreFilterInput]
@@ -1819,6 +1842,7 @@ input ModelActivityFilterInput {
   lastBy: ModelStringInput
   comments: ModelIntInput
   ratings: ModelIntInput
+  forks: ModelIntInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelActivityFilterInput]
@@ -1839,6 +1863,7 @@ input ModelActivityConditionInput {
   lastBy: ModelStringInput
   comments: ModelIntInput
   ratings: ModelIntInput
+  forks: ModelIntInput
   and: [ModelActivityConditionInput]
   or: [ModelActivityConditionInput]
   not: ModelActivityConditionInput
@@ -1860,6 +1885,7 @@ input CreateActivityInput {
   lastBy: String
   comments: Int
   ratings: Int
+  forks: Int
 }
 
 input UpdateActivityInput {
@@ -1876,6 +1902,7 @@ input UpdateActivityInput {
   lastBy: String
   comments: Int
   ratings: Int
+  forks: Int
 }
 
 input DeleteActivityInput {
@@ -1896,6 +1923,7 @@ input ModelSubscriptionActivityFilterInput {
   lastBy: ModelSubscriptionStringInput
   comments: ModelSubscriptionIntInput
   ratings: ModelSubscriptionIntInput
+  forks: ModelSubscriptionIntInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionActivityFilterInput]
@@ -1915,6 +1943,8 @@ input ModelActivityEventFilterInput {
   by: ModelStringInput
   stars: ModelIntInput
   commentId: ModelIDInput
+  otherId: ModelIDInput
+  otherTitle: ModelStringInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelActivityEventFilterInput]
@@ -1929,6 +1959,8 @@ input ModelActivityEventConditionInput {
   by: ModelStringInput
   stars: ModelIntInput
   commentId: ModelIDInput
+  otherId: ModelIDInput
+  otherTitle: ModelStringInput
   and: [ModelActivityEventConditionInput]
   or: [ModelActivityEventConditionInput]
   not: ModelActivityEventConditionInput
@@ -1944,6 +1976,8 @@ input CreateActivityEventInput {
   by: String
   stars: Int
   commentId: ID
+  otherId: ID
+  otherTitle: String
 }
 
 input UpdateActivityEventInput {
@@ -1954,6 +1988,8 @@ input UpdateActivityEventInput {
   by: String
   stars: Int
   commentId: ID
+  otherId: ID
+  otherTitle: String
 }
 
 input DeleteActivityEventInput {
@@ -1968,6 +2004,8 @@ input ModelSubscriptionActivityEventFilterInput {
   by: ModelSubscriptionStringInput
   stars: ModelSubscriptionIntInput
   commentId: ModelSubscriptionIDInput
+  otherId: ModelSubscriptionIDInput
+  otherTitle: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionActivityEventFilterInput]

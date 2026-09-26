@@ -133,9 +133,12 @@ const schema = a.schema({
       candidateId: a.id(),
       retired: a.boolean(),
       owner: a.string(),
+      // Someone's copy of another person's clip (made by changing it): the clip it was copied from.
+      copyOf: a.id(),
     })
     .secondaryIndexes((i) => [
       i("sampleId").sortKeys(["start"]).queryField("clipsBySample"),
+      i("copyOf").queryField("clipsByCopyOf"),
       i("sampleId").sortKeys(["name"]).queryField("clipsBySampleAndName"),
       i("candidateId").queryField("clipsByCandidate"),
     ])
@@ -245,11 +248,16 @@ const schema = a.schema({
       lastErrors: a.string().array(),
       legacyPath: a.string(),
       owner: a.string(),
+      // A fork: the score it was forked from, and the original at the start of the chain. Set when it's made, never
+      // changed after.
+      forkOf: a.id(),
+      forkRoot: a.id(),
       refs: a.hasMany("ScoreRef", "scoreId"),
     })
     .secondaryIndexes((i) => [
       i("folder").sortKeys(["title"]).queryField("scoresByFolder"),
       i("kind").queryField("scoresByKind"),
+      i("forkOf").queryField("scoresByForkOf"),
     ])
     .authorization(made),
 
@@ -321,6 +329,7 @@ const schema = a.schema({
       lastBy: a.string(),
       comments: a.integer(),
       ratings: a.integer(),
+      forks: a.integer(),
     })
     .secondaryIndexes((i) => [i("feed").sortKeys(["lastAt"]).queryField("activityByFeed")])
     .authorization(everyone),
@@ -335,6 +344,9 @@ const schema = a.schema({
       by: a.string(),
       stars: a.integer(),
       commentId: a.id(),
+      /** A fork line: the other score (the fork on the parent's card, the parent on the fork's). */
+      otherId: a.id(),
+      otherTitle: a.string(),
     })
     .secondaryIndexes((i) => [i("targetKey").sortKeys(["at"]).queryField("eventsByTarget")])
     .authorization(everyone),

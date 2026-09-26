@@ -1,7 +1,7 @@
 // Page-side Apricity: compiling scores (wasm) and reading the library through the data layer.
 
 import { instantiate, type Apricity } from "./wasm/shim.js";
-import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut, type Me, type ScoreKind } from "./data/catalog.js";
+import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut, type Fork, type Me, type ScoreKind } from "./data/catalog.js";
 import type { Ratings } from "./data/ratings.js";
 export type { ClipItem } from "./data/catalog.js";
 
@@ -242,9 +242,9 @@ export const api = {
   relinkSample: async (sampleId: string, recordingId: string) => (await ready()).relinkSample(sampleId, recordingId),
   hiddenIds: async () => (await ready()).hiddenIds(),
   score: async (path: string) => (await ready()).score(path),
-  saveScore: async (path: string, text: string, kind?: ScoreKind) => {
+  saveScore: async (path: string, text: string, kind?: ScoreKind, fork?: Fork) => {
     const { saveScore } = await import("./data/domain.js");
-    return (await ready()).saveScore(path, text, saveScore, kind);
+    return (await ready()).saveScore(path, text, saveScore, kind, fork);
   },
   setScoreKind: async (path: string, kind: ScoreKind) => (await ready()).setScoreKind(path, kind),
   /** Saves the clips (as Clip records); markers and tags are not edited here. */

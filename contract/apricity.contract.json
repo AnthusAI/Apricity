@@ -1,5 +1,5 @@
 {
-  "version": "7477aed63be05b6a",
+  "version": "9bcb4878674102ce",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -636,6 +636,13 @@
           "isArray": false,
           "kind": "scalar"
         },
+        "copyOf": {
+          "name": "copyOf",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
@@ -677,6 +684,12 @@
           "name": "clipsByCandidateId",
           "queryField": "clipsByCandidate",
           "partitionField": "candidateId",
+          "sortFields": []
+        },
+        {
+          "name": "clipsByCopyOf",
+          "queryField": "clipsByCopyOf",
+          "partitionField": "copyOf",
           "sortFields": []
         }
       ],
@@ -1507,6 +1520,20 @@
           "isArray": false,
           "kind": "scalar"
         },
+        "forkOf": {
+          "name": "forkOf",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "forkRoot": {
+          "name": "forkRoot",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
         "refs": {
           "name": "refs",
           "type": "ScoreRef",
@@ -1546,6 +1573,12 @@
           "name": "scoresByKind",
           "queryField": "scoresByKind",
           "partitionField": "kind",
+          "sortFields": []
+        },
+        {
+          "name": "scoresByForkOf",
+          "queryField": "scoresByForkOf",
+          "partitionField": "forkOf",
           "sortFields": []
         }
       ],
@@ -2085,6 +2118,13 @@
           "isArray": false,
           "kind": "scalar"
         },
+        "forks": {
+          "name": "forks",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
@@ -2181,6 +2221,20 @@
         "commentId": {
           "name": "commentId",
           "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "otherId": {
+          "name": "otherId",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "otherTitle": {
+          "name": "otherTitle",
+          "type": "String",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"

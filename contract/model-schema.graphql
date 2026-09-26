@@ -113,6 +113,7 @@ type Clip @model @auth(rules: [{allow: public, provider: identityPool, operation
   candidateId: ID @index(queryField: "clipsByCandidate")
   retired: Boolean
   owner: String
+  copyOf: ID @index(queryField: "clipsByCopyOf")
 }
 
 type Marker @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
@@ -201,6 +202,8 @@ type Score @model @auth(rules: [{allow: public, provider: identityPool, operatio
   lastErrors: [String]
   legacyPath: String
   owner: String
+  forkOf: ID @index(queryField: "scoresByForkOf")
+  forkRoot: ID
   refs: [ScoreRef] @hasMany(references: ["scoreId"])
 }
 
@@ -263,6 +266,7 @@ type Activity @model @auth(rules: [{allow: public, provider: identityPool, opera
   lastBy: String
   comments: Int
   ratings: Int
+  forks: Int
 }
 
 type ActivityEvent @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
@@ -275,6 +279,8 @@ type ActivityEvent @model @auth(rules: [{allow: public, provider: identityPool, 
   by: String
   stars: Int
   commentId: ID
+  otherId: ID
+  otherTitle: String
 }
 
 type Handle @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},

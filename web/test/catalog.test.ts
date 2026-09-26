@@ -3,6 +3,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  forkFrom,
+  freeTitle,
   Catalog,
   SignedOut,
   excerptLabel,
@@ -161,8 +163,8 @@ test("planClips only changes your own clips", () => {
     ], mine, "ann"),
     {
       create: [
-        { sampleId: "smp_drums", name: "break-2", start: 0, end: 2, source: "user" },
-        { sampleId: "smp_drums", name: "loop-1-ann", start: 2, end: 3.5, source: "user" },
+        { sampleId: "smp_drums", name: "break-2", start: 0, end: 2, source: "user", copyOf: "t1" },
+        { sampleId: "smp_drums", name: "loop-1-ann", start: 2, end: 3.5, source: "user", copyOf: "m1" },
       ],
       update: [],
       delete: [],
@@ -318,4 +320,18 @@ test("undocumented samples, their clips and the scores using them: hidden from r
   assert.equal((await cat.hiddenIds()).size, 0);
   const credits = await cat.creditsFor(["samples/marine-band/Thunderer.mp3", "uploads/announcer.wav", "marine-band/Thunderer.mp3"]);
   assert.deepEqual(credits.map((r) => r.id), ["rec_Thunderer", "rec_uploads_announcer"], "once per recording");
+});
+
+test("forks: named freely in your folder, linked to their parent and the chain's original", async () => {
+  assert.equal(freeTitle("beat", ["beat", "beat-2", "other"]), "beat-3");
+  assert.equal(freeTitle("beat", []), "beat");
+  assert.deepEqual(forkFrom({ id: "scr_1" }), { forkOf: "scr_1", forkRoot: "scr_1" });
+  assert.deepEqual(forkFrom({ id: "scr_2", forkRoot: "scr_1" }), { forkOf: "scr_2", forkRoot: "scr_1" });
+  const state = { signedIn: true, samples: [source], clips: [], scores: [{ id: "scr_1", title: "a", folder: "examples", format: "apr", text: "x" }] as any[] };
+  const cat = new Catalog({ client: () => stubClient(state), readText: async () => analysisJson, url: async (k) => k });
+  await cat.saveScore("scores/u2/a.apr", "x", async () => ({}), "beat", forkFrom({ id: "scr_1" }));
+  assert.deepEqual([state.scores[1].forkOf, state.scores[1].forkRoot, state.scores[1].kind], ["scr_1", "scr_1", "beat"]);
+  const { scores } = await cat.scores();
+  assert.equal(scores.find((x) => x.id === "scr_1")!.forks, 1);
+  assert.deepEqual([scores.find((x) => x.id !== "scr_1")!.forkOf, scores.find((x) => x.id !== "scr_1")!.forkRoot], ["scr_1", "scr_1"]);
 });

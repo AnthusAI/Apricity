@@ -721,6 +721,13 @@
           "isRequired": false,
           "attributes": []
         },
+        "copyOf": {
+          "name": "copyOf",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
         "createdAt": {
           "name": "createdAt",
           "isArray": false,
@@ -782,6 +789,16 @@
             "queryField": "clipsByCandidate",
             "fields": [
               "candidateId"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "clipsByCopyOf",
+            "queryField": "clipsByCopyOf",
+            "fields": [
+              "copyOf"
             ]
           }
         },
@@ -1749,6 +1766,20 @@
           "isRequired": false,
           "attributes": []
         },
+        "forkOf": {
+          "name": "forkOf",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "forkRoot": {
+          "name": "forkRoot",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
         "refs": {
           "name": "refs",
           "isArray": true,
@@ -1815,6 +1846,16 @@
             "queryField": "scoresByKind",
             "fields": [
               "kind"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "scoresByForkOf",
+            "queryField": "scoresByForkOf",
+            "fields": [
+              "forkOf"
             ]
           }
         },
@@ -2425,6 +2466,13 @@
           "isRequired": false,
           "attributes": []
         },
+        "forks": {
+          "name": "forks",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
         "createdAt": {
           "name": "createdAt",
           "isArray": false,
@@ -2544,6 +2592,20 @@
           "name": "commentId",
           "isArray": false,
           "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "otherId": {
+          "name": "otherId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "otherTitle": {
+          "name": "otherTitle",
+          "isArray": false,
+          "type": "String",
           "isRequired": false,
           "attributes": []
         },

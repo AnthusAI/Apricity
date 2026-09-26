@@ -120,6 +120,7 @@ export interface ClipRecord {
   retired?: boolean | null;
   /** Who made it (`<sub>::<username>`); the importer for the automatic ones. */
   owner?: string | null;
+  copyOf?: string | null;
 }
 export interface MarkerRecord {
   id: string;
@@ -143,6 +144,25 @@ export interface ScoreRecord {
   owner?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  forkOf?: string | null;
+  forkRoot?: string | null;
+}
+
+/** Where a fork came from: the score it was forked from, and the original at the start of the chain. */
+export interface Fork {
+  forkOf: string;
+  forkRoot: string;
+}
+
+/** The fork of a score: its parent is that score, and its root is the parent's root (or the parent, an original). */
+export const forkFrom = (parent: { id: string; forkRoot?: string | null }): Fork => ({ forkOf: parent.id, forkRoot: parent.forkRoot ?? parent.id });
+
+/** A name for a new score of yours: `title`, or `title-2`, `title-3`… when that one is taken in the folder. */
+export function freeTitle(title: string, taken: Iterable<string>): string {
+  const names = new Set(taken);
+  let t = title;
+  for (let n = 2; names.has(t); n++) t = `${title}-${n}`;
+  return t;
 }
 
 /** A score as the lists show it. A score with no kind is a song. */
@@ -156,6 +176,11 @@ export interface ScoreItem {
   modified: number;
   /** It plays an undocumented sample (only curators see it). */
   undocumented?: boolean;
+  /** Forked from (and the chain's original). */
+  forkOf?: string;
+  forkRoot?: string;
+  /** How many scores were forked from it. */
+  forks?: number;
 }
 
 export function toScoreItem(s: ScoreRecord): ScoreItem {
@@ -167,6 +192,7 @@ export function toScoreItem(s: ScoreRecord): ScoreItem {
     owner: s.owner ?? null,
     createdAt: s.createdAt ?? null,
     modified: s.updatedAt ? Date.parse(s.updatedAt) / 1000 : 0,
+    ...(s.forkOf ? { forkOf: s.forkOf, forkRoot: s.forkRoot ?? s.forkOf } : {}),
   };
 }
 
@@ -184,6 +210,8 @@ export interface ClipItem {
   createdAt: string | null;
   /** Its sample's license isn't documented (only curators see it). */
   undocumented?: boolean;
+  /** The clip it was copied from (someone changed another person's clip). */
+  copyOf?: string;
 }
 export interface JobRecord {
   id: string;
@@ -379,9 +407,9 @@ export function planClips(
       if (c.name !== old.name) {
         take(c.name);
         fresh.push(c.name);
-        plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source: "user", ...(c.tags ? { tags: c.tags } : {}) });
+        plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source: "user", copyOf: old.id, ...(c.tags ? { tags: c.tags } : {}) });
       } else {
-        copies.push({ base: `${old.name}-${suffix}`, row: { sampleId, name: "", start: c.start, end: c.end, source: "user", ...(c.tags ? { tags: c.tags } : {}) } });
+        copies.push({ base: `${old.name}-${suffix}`, row: { sampleId, name: "", start: c.start, end: c.end, source: "user", copyOf: old.id, ...(c.tags ? { tags: c.tags } : {}) } });
       }
       continue;
     }
@@ -605,9 +633,11 @@ export class Catalog {
     const [list, hidden, all] = await Promise.all([this.listScores(), this.hiddenIds(), this.seesAll()]);
     // A score playing an undocumented sample: hidden, or flagged for curators.
     const flagged = all ? await this.flaggedScores() : new Set<string>();
+    const forks = new Map<string, number>();
+    for (const x of list) if (x.forkOf) forks.set(x.forkOf, (forks.get(x.forkOf) ?? 0) + 1);
     const scores = list
       .filter((x) => !hidden.has(x.id))
-      .map((x) => ({ ...toScoreItem(x), ...(flagged.has(x.id) ? { undocumented: true } : {}) }));
+      .map((x) => ({ ...toScoreItem(x), ...(flagged.has(x.id) ? { undocumented: true } : {}), ...(forks.get(x.id) ? { forks: forks.get(x.id) } : {}) }));
     return { scores: scores.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)) };
   }
 
@@ -623,7 +653,7 @@ export class Catalog {
     const byId = new Map(i.samples.map((c) => [c.id, c]));
     const titles = new Map(i.summaries.map((x) => [x.path, x.title]));
     const recs = await listAll<ClipRecord & { createdAt?: string | null }>((nextToken) =>
-      this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId", "name", "start", "end", "source", "owner", "retired", "createdAt"] }),
+      this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId", "name", "start", "end", "source", "owner", "retired", "createdAt", "copyOf"] }),
     );
     const out: ClipItem[] = [];
     for (const r of recs) {
@@ -632,7 +662,7 @@ export class Catalog {
       const hidden = i.undocumented.has(smp.id);
       if (hidden && !seesAll) continue;
       const path = samplePath(smp);
-      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, owner: r.owner ?? null, createdAt: r.createdAt ?? null, ...(hidden ? { undocumented: true } : {}) });
+      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, owner: r.owner ?? null, createdAt: r.createdAt ?? null, ...(hidden ? { undocumented: true } : {}), ...(r.copyOf ? { copyOf: r.copyOf } : {}) });
     }
     return out;
   }
@@ -659,7 +689,7 @@ export class Catalog {
    * Save a score's text. A new path first gets its Score record (id, title and folder from the
    * path), then `save` (data/domain.ts saveScore) updates the text and its ScoreRefs.
    */
-  async saveScore(path: string, text: string, save: (id: string, text: string) => Promise<{ errors?: GqlError[] }>, kind?: ScoreKind) {
+  async saveScore(path: string, text: string, save: (id: string, text: string) => Promise<{ errors?: GqlError[] }>, kind?: ScoreKind, fork?: Fork) {
     const k = scoreKey(path);
     const existing = (await this.listScores()).find((s) => scorePath(s) === path);
     const id = existing?.id ?? k.id;
@@ -667,7 +697,7 @@ export class Catalog {
       const got = await this.models.Score.get({ id });
       if (got.errors?.length) fail(got.errors);
       if (!got.data) {
-        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}) });
+        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}), ...(fork ?? {}) });
         if (r.errors?.length) fail(r.errors, true);
       }
     }
