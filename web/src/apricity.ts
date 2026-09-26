@@ -1,7 +1,7 @@
 // Page-side Apricity: compiling scores (wasm) and reading the library through the data layer.
 
 import { instantiate, type Apricity } from "./wasm/shim.js";
-import { Catalog, NEEDS_ANALYSIS_LOCAL, NEEDS_ANALYSIS_SERVER, SignedOut, type Fork, type Me, type ScoreKind } from "./data/catalog.js";
+import { Catalog, SignedOut, type Fork, type Me, type ScoreKind } from "./data/catalog.js";
 import type { Ratings } from "./data/ratings.js";
 export type { ClipItem } from "./data/catalog.js";
 
@@ -255,10 +255,6 @@ export const api = {
     const r = await (await ready()).saveClips(path, ann?.clips ?? []);
     manifestCache.delete(path);
     return r;
-  },
-  upload: async (_file: File): Promise<{ path: string; state: string }> => {
-    const { mode } = await import("./data/client.js");
-    throw new Error(mode() === "cloud" ? NEEDS_ANALYSIS_SERVER : NEEDS_ANALYSIS_LOCAL);
   },
 };
 

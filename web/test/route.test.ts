@@ -20,6 +20,8 @@ test("every page and item round-trips through its URL", () => {
     { page: "samples" },
     { page: "samples", sample: "marine-band/stems/Thunderer/drums" },
     { page: "clips", clip: { sample: "marine-band/stems/Thunderer/drums", name: "loop-1" } },
+    { page: "clips", list: "kind=loop&stars=unrated-by-me" },
+    { page: "clips", clip: { sample: "marine-band/Thunderer", name: "hit-3" }, list: "sort=newest" },
     { page: "help", help: { file: "language.md", anchor: "tracks" } },
     { page: "help", help: { file: "chords.md" } },
   ];

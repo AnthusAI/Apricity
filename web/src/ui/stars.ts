@@ -40,7 +40,10 @@ export class StarRating {
   constructor(
     private rate: (stars: number | null) => Promise<void>,
     private signIn: () => void,
+    /** Small, for a list row: no note beside the stars unless a save fails. */
+    private compact = false,
   ) {
+    this.el.classList.toggle("compact", compact);
     for (let v = 0; v <= 5; v++) {
       const b = el("button", { type: "button", className: v === 0 ? "star zero" : "star", textContent: v === 0 ? "0" : "★" });
       b.setAttribute("role", "radio");
@@ -69,6 +72,7 @@ export class StarRating {
     } catch (e) {
       this.set(before);
       this.note.textContent = `Couldn't save: ${(e as Error).message}`;
+      this.note.classList.add("failed");
     }
   }
 
@@ -82,6 +86,7 @@ export class StarRating {
       b.setAttribute("aria-checked", String(mine === v));
     });
     this.buttons[0].classList.toggle("on", yours && shown === 0);
+    this.note.classList.remove("failed");
     const sum = summaryText(average, count);
     this.note.textContent =
       hover !== undefined && !signedIn ? "Sign in to rate" : mine !== null ? `You: ${mine}${sum ? ` · ${sum}` : ""}` : sum || "Not rated yet";

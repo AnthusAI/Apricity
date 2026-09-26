@@ -24,9 +24,6 @@ export class SignedOut extends Error {
   }
 }
 
-/** Why uploading can't happen from the web app yet: analysis runs on a Mac, never in the cloud (design/storage.md §7.7). */
-export const NEEDS_ANALYSIS_SERVER = "Uploading and re-analysing needs the local analysis server; not available in the cloud yet";
-export const NEEDS_ANALYSIS_LOCAL = "Uploading and re-analysing needs the local analysis server, which apricity serve does not run yet; analyse the file with the analysis tools and migrate it into the library";
 
 type GqlError = { message?: string; errorType?: string };
 type Page<T> = { data?: T[] | null; nextToken?: string | null; errors?: GqlError[] };
@@ -221,6 +218,8 @@ export interface ClipItem {
   start: number;
   end: number;
   source: "user" | "ml" | "curated";
+  /** What analysis found it to be ("loop", "hit", "phrase", "section"), when it did. */
+  kind?: string | null;
   owner: string | null;
   createdAt: string | null;
   /** Its sample's license isn't documented (only curators see it). */
@@ -670,7 +669,7 @@ export class Catalog {
     const byId = new Map(i.samples.map((c) => [c.id, c]));
     const titles = new Map(i.summaries.map((x) => [x.path, x.title]));
     const recs = await listAll<ClipRecord & { createdAt?: string | null }>((nextToken) =>
-      this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId", "name", "start", "end", "source", "owner", "retired", "createdAt", "copyOf"] }),
+      this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId", "name", "start", "end", "source", "kind", "owner", "retired", "createdAt", "copyOf"] }),
     );
     const out: ClipItem[] = [];
     for (const r of recs) {
@@ -679,7 +678,7 @@ export class Catalog {
       const hidden = i.undocumented.has(smp.id);
       if (hidden && !seesAll) continue;
       const path = samplePath(smp);
-      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, owner: r.owner ?? null, createdAt: r.createdAt ?? null, ...(hidden ? { undocumented: true } : {}), ...(r.copyOf ? { copyOf: r.copyOf } : {}) });
+      out.push({ id: r.id, name: r.name, sampleId: r.sampleId, samplePath: path, sampleTitle: titles.get(path) ?? fileTitle(smp.path), start: r.start, end: r.end, source: r.source, ...(r.kind ? { kind: r.kind } : {}), owner: r.owner ?? null, createdAt: r.createdAt ?? null, ...(hidden ? { undocumented: true } : {}), ...(r.copyOf ? { copyOf: r.copyOf } : {}) });
     }
     return out;
   }

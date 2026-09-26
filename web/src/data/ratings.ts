@@ -86,6 +86,13 @@ export class Ratings {
     return this.mine;
   }
 
+  /** Your stars for every item of a kind, by id (empty for a guest). */
+  async mineOf(type: Target): Promise<Map<string, number>> {
+    const out = new Map<string, number>();
+    for (const r of (await this.myRatings()).values()) if (r.targetType === type) out.set(r.targetId, r.stars);
+    return out;
+  }
+
   /** Your stars for an item, or null. */
   async mineFor(type: Target, targetId: string): Promise<number | null> {
     return (await this.myRatings()).get(`${type}#${targetId}`)?.stars ?? null;

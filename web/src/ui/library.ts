@@ -11,8 +11,11 @@ import { reasonOf } from "../audio/pending";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
+import { commentsOn, countOf, threadOf } from "../data/comments";
 import { opened, type Opened } from "./at";
 import { sampleKey } from "../route";
+import { applyClipFilter, CHOICES, CLIP_KINDS, DEFAULT_FILTER, filterQuery, kindOf, KIND_LABEL, parseFilter, type ClipFilter } from "../data/clip-filter";
+import { totals, type Standing } from "../data/rank-window";
 import { columnSplitter } from "./splitter";
 import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
@@ -49,6 +52,14 @@ export class Library {
   private names: Handles | null = null;
   private list: RankedList<SampleSummary> | RankedList<ClipItem>;
   private stars = new StarRating((n) => this.rate(n), signIn);
+  /** Clips: how the list is narrowed and sorted (kept in the URL, and remembered). */
+  private filter: ClipFilter = DEFAULT_FILTER;
+  private filterEl = el("div", { className: "clip-filters" });
+  /** Your stars on clips, by id (for the rows' stars and the "Not rated by me" filter). */
+  private myStars = new Map<string, number>();
+  /** What the audition playing now is (a clip's id, or a row on the sample page), and how its button resets. */
+  private auditionKey: string | null = null;
+  private auditionEnded: (() => void) | null = null;
 
   constructor(
     root: HTMLElement,
@@ -82,7 +93,8 @@ export class Library {
         name: "clips",
         load: async () => {
           await loadSamples();
-          this.clips = await api.clips();
+          [this.clips, this.myStars] = await Promise.all([api.clips(), this.loadMyStars()]);
+          this.renderFilters();
           return this.clips;
         },
         tallies: async () => (await ratings()).tallies("clip"),
@@ -94,22 +106,16 @@ export class Library {
         owner: (c) => c.owner,
         me: async () => this.who,
         open: (c) => ((this.currentClip = c), this.show(c.samplePath, "user")),
+        tools: this.filterEl,
+        refine: (rows) => applyClipFilter(rows, this.filter, { me: this.who, mine: this.myStars, now: new Date() }),
+        extra: (c, standing) => el("div", { className: "row-extra" }, this.playButton(c.id, `Play ${c.name}`, () => this.playClip(c)), this.rowStars(c.id, standing), this.talkButton(c)),
       });
+      try {
+        this.filter = parseFilter(localStorage.getItem("apricity.clips.filter") ?? "");
+      } catch {} // storage can be blocked (private browsing): nothing to report
+      this.renderFilters();
     }
-    const drop = el("div", { className: "drop" }, "Drop audio here to add and analyze it");
-    const pick = el("input", { type: "file", accept: "audio/*", multiple: true, hidden: true });
-    drop.addEventListener("click", () => pick.click());
-    pick.addEventListener("change", () => this.upload([...(pick.files ?? [])]));
-    drop.addEventListener("dragover", (e) => (e.preventDefault(), drop.classList.add("over")));
-    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
-    drop.addEventListener("drop", (e) => {
-      e.preventDefault();
-      drop.classList.remove("over");
-      this.upload([...(e.dataTransfer?.files ?? [])]);
-    });
-    // Uploads need the local analysis server; in the cloud there's nothing to drop onto. Clips are made on a sample.
-    drop.hidden = mode === "clips" || this.cloud();
-    this.list.el.append(this.jobsEl, drop, pick);
+    this.list.el.append(this.jobsEl);
     root.append(this.list.el, this.detailEl);
     columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w - 420) });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
@@ -126,6 +132,123 @@ export class Library {
     if (!p) return " · copied from a clip that's gone";
     const by = byline(this.names, p.owner, owns(this.who, p.owner)).replace(/^by /, "") || (p.source === "ml" ? "analysis" : "someone");
     return ` · copied from ${p.name} by ${by}`;
+  }
+
+  private async loadMyStars(): Promise<Map<string, number>> {
+    return (await ratings()).mineOf("clip").catch((e) => (reportError("load your ratings", e), new Map<string, number>()));
+  }
+
+  /** The list's filter as the URL carries it ({} when it's the default). */
+  private listQuery(): { list?: string } {
+    const q = filterQuery(this.filter);
+    return q ? { list: q } : {};
+  }
+
+  /** Take the filter from a URL (Clips); undefined keeps the one in use. */
+  setFilterQuery(query: string | undefined) {
+    if (query === undefined || this.mode !== "clips") return;
+    this.filter = parseFilter(query);
+    this.renderFilters();
+    this.list.render();
+  }
+
+  /** Say what's open and how the list is filtered (Clips' tab was chosen: the address bar names them). */
+  report() {
+    const c = this.currentClip;
+    opened(c ? { page: "clips", clip: { sample: sampleKey(c.samplePath), name: c.name }, ...this.listQuery() } : { page: "clips", ...this.listQuery() }, "auto", c?.name);
+  }
+
+  private setFilter(f: ClipFilter) {
+    this.filter = f;
+    try {
+      localStorage.setItem("apricity.clips.filter", filterQuery(f));
+    } catch {} // storage can be blocked (private browsing): nothing to report
+    this.renderFilters();
+    this.list.render();
+    this.report();
+  }
+
+  /** The Clips list's filters and sort: one menu each, and Reset when any is set. */
+  private renderFilters() {
+    const f = this.filter;
+    const menu = <K extends keyof ClipFilter>(key: K, label: string, options: readonly (readonly [string, string])[]) => {
+      const s = el("select", { ariaLabel: label, title: label }, ...options.map(([v, text]) => el("option", { value: v, textContent: text })));
+      s.value = f[key];
+      s.classList.toggle("set", f[key] !== DEFAULT_FILTER[key]);
+      s.addEventListener("change", () => this.setFilter({ ...this.filter, [key]: s.value }));
+      return s;
+    };
+    const samples = [...new Map(this.clips.map((c) => [c.samplePath, c.sampleTitle])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    if (f.sample && !samples.some(([p]) => p === f.sample)) samples.unshift([f.sample, f.sample]);
+    const reset = el("button", { type: "button", className: "btn link", hidden: !filterQuery(f) }, "Reset");
+    reset.addEventListener("click", () => this.setFilter(DEFAULT_FILTER));
+    this.filterEl.replaceChildren(
+      menu("sort", "Sort by", CHOICES.sort),
+      menu("stars", "Stars", CHOICES.stars),
+      menu("kind", "Kind", CHOICES.kind),
+      menu("origin", "Made by", CHOICES.origin),
+      menu("length", "Length", CHOICES.length),
+      menu("added", "Added", CHOICES.added),
+      menu("sample", "Sample", [["", "Every sample"], ...samples]),
+      reset,
+    );
+  }
+
+  /** A small ▶ that plays something and turns into ■ while it does. */
+  private playButton(key: string, label: string, play: () => Promise<boolean>): HTMLButtonElement {
+    const b = el("button", { type: "button", className: "row-play", ariaLabel: label, title: label }, this.auditionKey === key ? "■" : "▶");
+    b.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (this.auditionKey === key) return this.stopAudition();
+      if (!(await play())) return;
+      this.auditionKey = key;
+      b.textContent = "■";
+      this.auditionEnded = () => (b.textContent = "▶");
+    });
+    return b;
+  }
+
+  /** Play one clip from the list (without opening it). */
+  private async playClip(c: ClipItem): Promise<boolean> {
+    let buf: AudioBuffer;
+    try {
+      buf = await this.decode(c.samplePath);
+    } catch (e) {
+      this.decoded.delete(c.samplePath);
+      reportError(`play ${c.name}`, e);
+      return false;
+    }
+    const wave = this.current === c.samplePath ? (this.playable?.wave ?? null) : null;
+    return this.startAudition(buf, c.start, c.end, wave);
+  }
+
+  /** 💬 on a list row: open the clip at its comments. */
+  private talkButton(c: ClipItem): HTMLButtonElement {
+    const b = el("button", { type: "button", className: "row-talk", title: "Comments on this clip" }, "💬");
+    b.addEventListener("click", async () => {
+      this.list.current = c.id;
+      this.list.render();
+      this.currentClip = c;
+      await this.show(c.samplePath, "user");
+      this.detailEl.querySelector(".comments")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return b;
+  }
+
+  /** Small stars for a clip in a row: yours, over everyone's average. */
+  private rowStars(id: string, standing: Pick<Standing, "average" | "count">): HTMLElement {
+    const w = new StarRating(
+      async (n) => {
+        await (await ratings()).rate("clip", id, n);
+        if (n === null) this.myStars.delete(id);
+        else this.myStars.set(id, n);
+        if (this.currentClip?.id === id) void this.paintStars();
+      },
+      signIn,
+      true,
+    );
+    w.set({ mine: this.myStars.get(id) ?? null, average: standing.average, count: standing.count, signedIn: !!this.who });
+    return w.el;
   }
 
   /** Open a sample (Samples) or a clip (Clips) by its record id, e.g. from an Activity card. */
@@ -220,17 +343,6 @@ export class Library {
     this.stars.set({ mine, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
   }
 
-  private async upload(files: File[]) {
-    for (const f of files) {
-      try {
-        await api.upload(f);
-      } catch (e) {
-        alert(`${f.name}: ${(e as Error).message}`);
-      }
-    }
-    this.refresh();
-  }
-
   private decode(path: string) {
     if (!this.decoded.has(path)) {
       this.decoded.set(
@@ -249,7 +361,7 @@ export class Library {
     // The address bar follows: the sample, or (in Clips) the clip open on it.
     const clipOpen = this.mode === "clips" ? this.currentClip : null;
     const summary = this.samples.find((x) => x.path === path);
-    if (clipOpen) opened({ page: "clips", clip: { sample: sampleKey(clipOpen.samplePath), name: clipOpen.name } }, how, clipOpen.name);
+    if (clipOpen) opened({ page: "clips", clip: { sample: sampleKey(clipOpen.samplePath), name: clipOpen.name }, ...this.listQuery() }, how, clipOpen.name);
     else if (this.mode === "samples") opened({ page: "samples", sample: sampleKey(path) }, how, summary?.title);
     if (this.mode === "samples") {
       const c = this.samples.find((x) => x.path === path);
@@ -261,6 +373,14 @@ export class Library {
     this.setPlay({ kind: "loading", label: "Loading the sample" });
     const c = this.samples.find((x) => x.path === path);
     let m: Awaited<ReturnType<typeof manifest>>, buf: AudioBuffer;
+    // Everyone's stars and yours on this sample's clips, for their rows (a failure leaves them unrated).
+    const clipStars = Promise.all([
+      ratings()
+        .then((r) => r.tallies("clip"))
+        .then((t) => totals(t, "all", new Date()))
+        .catch(() => new Map<string, { count: number; sum: number }>()),
+      this.loadMyStars(),
+    ]);
     try {
       m = await manifest(path, true);
       if (!c || !m || this.current !== path) return;
@@ -275,6 +395,13 @@ export class Library {
       return;
     }
     if (this.current !== path) return;
+    const [clipTotals, mine] = await clipStars;
+    this.myStars = mine;
+    if (this.current !== path) return;
+    const standingOf = (id: string) => {
+      const t = clipTotals.get(id);
+      return { average: t && t.count ? t.sum / t.count : null, count: t?.count ?? 0 };
+    };
 
     const channels = Array.from({ length: buf.numberOfChannels }, (_, i) => buf.getChannelData(i));
     const clips = structuredClone((m.annotations?.clips ?? []).filter((x) => !x.retired));
@@ -290,7 +417,7 @@ export class Library {
       playhead: null,
     });
     let dirty = false;
-    let showAuto = false;
+    let showAuto = true;
     const errors = el("div", { className: "errors" });
     const save = el("button", { className: "btn primary", type: "button", disabled: true }, "Save clips");
     const makeClip = el("button", { className: "btn", type: "button", disabled: true }, "Make clip from selection");
@@ -310,6 +437,23 @@ export class Library {
       save.disabled = false;
       save.textContent = this.cloud() && !this.who ? "Sign in to save clips" : "Save clips •";
     };
+    // Each saved clip's comments open under its row; the threads (and their counts) outlive a redraw of the table.
+    const threads = new Map<string, CommentThread>();
+    const talkOpen = new Set<string>();
+    const talkCounts = new Map<string, number>();
+    const threadFor = (id: string) => {
+      let t = threads.get(id);
+      if (!t) {
+        t = new CommentThread({ type: "clip", id }, { onCount: (n) => (talkCounts.set(id, n), renderTable()) });
+        threads.set(id, t);
+        void t.load();
+      }
+      return t;
+    };
+    void Promise.all(
+      clips.filter((x) => x.id).map(async (x) => talkCounts.set(x.id!, countOf(threadOf(await commentsOn(x.id!))))),
+    ).then(() => this.current === path && renderTable(), () => {}); // no counts: the buttons still open the threads
+    const COLS = 9;
     const renderTable = () => {
       const s = wave.state;
       makeClip.disabled = !(s.selection && s.selection[1] - s.selection[0] >= 0.05);
@@ -329,7 +473,21 @@ export class Library {
         const del = el("button", { className: "btn", type: "button", ariaLabel: `Delete clip ${sl.name}` }, "Delete");
         del.addEventListener("click", () => (s.clips.splice(i, 1), (s.selected = null), markDirty(), renderTable(), wave.draw()));
         const kind = auto ? el("span", { className: "pill", title: "Found automatically; edit it to make it yours" }, (sl.tags ?? []).filter((t) => !/beats$/.test(t)).join(" · ") || "auto") : el("span", {});
-        const tr = el("tr", {}, el("td", {}, name), el("td", {}, kind), el("td", { className: "mono" }, fmt(sl.start)), el("td", { className: "mono" }, fmt(sl.end)), el("td", { className: "mono" }, `${(sl.end - sl.start).toFixed(2)} s`), el("td", {}, del));
+        // Hear it (and select it on the waveform) without leaving the row; rate it once it's saved.
+        const play = this.playButton(`${path}#${sl.id ?? `${sl.name}@${sl.start}`}`, `Play ${sl.name}`, () => {
+          s.selected = i;
+          s.selection = null;
+          wave.draw();
+          for (const r of table.querySelectorAll("tbody tr")) r.setAttribute("aria-selected", String(r === tr));
+          return this.startAudition(buf, sl.start, sl.end, wave);
+        });
+        const stars = sl.id ? this.rowStars(sl.id, standingOf(sl.id)) : el("span", { className: "hint", title: "Save the clip to rate it" }, "—");
+        const id = sl.id;
+        const n = id ? talkCounts.get(id) : undefined;
+        const talk = el("button", { type: "button", className: "row-talk", disabled: !id, title: id ? "Comments on this clip" : "Save the clip to comment on it" }, `💬${n ? ` ${n}` : ""}`);
+        talk.setAttribute("aria-expanded", String(!!id && talkOpen.has(id)));
+        if (id) talk.addEventListener("click", () => (talkOpen.has(id) ? talkOpen.delete(id) : talkOpen.add(id), renderTable()));
+        const tr = el("tr", {}, el("td", { className: "play-cell" }, play), el("td", {}, name), el("td", {}, kind), el("td", { className: "mono" }, fmt(sl.start)), el("td", { className: "mono" }, fmt(sl.end)), el("td", { className: "mono" }, `${(sl.end - sl.start).toFixed(2)} s`), el("td", {}, stars), el("td", {}, talk), el("td", {}, del));
         tr.setAttribute("aria-selected", String(i === s.selected));
         tr.addEventListener("click", (e) => {
           if ((e.target as HTMLElement).closest("button, input")) return;
@@ -338,26 +496,43 @@ export class Library {
           renderTable();
           wave.draw();
         });
-        return tr;
+        if (!id || !talkOpen.has(id)) return [tr];
+        return [tr, el("tr", { className: "talk" }, el("td", { colSpan: COLS }, threadFor(id).root))];
       };
       // Yours (and new ones), then other people's, then the automatic ones (collapsed).
       const isMine = (sl: SavedClip) => !this.cloud() || !sl.owner || !sl.id || owns(this.who, sl.owner) || !!this.who?.curator;
       const mine = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source !== "ml" && isMine(sl));
       const others = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source !== "ml" && !isMine(sl));
-      const auto = s.clips.map((sl, i) => [sl, i] as const).filter(([sl]) => sl.source === "ml");
-      const head = el("thead", {}, el("tr", {}, ...["Name", "", "Start", "End", "Length", ""].map((h) => el("th", {}, h))));
+      // The automatic ones by kind (loops first, one-shots last), in the order they come in the sample.
+      const kindRank = (sl: SavedClip) => {
+        const k = kindOf({ kind: sl.tags?.find((t) => (CLIP_KINDS as readonly string[]).includes(t)), name: sl.name });
+        return k ? CLIP_KINDS.indexOf(k) : CLIP_KINDS.length;
+      };
+      const auto = s.clips
+        .map((sl, i) => [sl, i] as const)
+        .filter(([sl]) => sl.source === "ml")
+        .sort(([a], [b]) => kindRank(a) - kindRank(b) || a.start - b.start);
+      const head = el("thead", {}, el("tr", {}, ...["", "Name", "", "Start", "End", "Length", "Stars", "", ""].map((h) => el("th", {}, h))));
       const body = el(
         "tbody",
         {},
-        ...(mine.length ? mine.map(([sl, i]) => row(sl, i)) : [el("tr", {}, el("td", { colSpan: 6, className: "hint" }, "No clips of your own yet. Drag across the waveform to select a region, then make it a clip."))]),
-        ...(others.length ? [el("tr", {}, el("td", { colSpan: 6, className: "hint" }, "Other people's clips (editing one saves your own copy):")), ...others.map(([sl, i]) => row(sl, i))] : []),
+        ...(mine.length ? mine.flatMap(([sl, i]) => row(sl, i)) : [el("tr", {}, el("td", { colSpan: COLS, className: "hint" }, "No clips of your own yet. Drag across the waveform to select a region, then make it a clip."))]),
+        ...(others.length ? [el("tr", {}, el("td", { colSpan: COLS, className: "hint" }, "Other people's clips (editing one saves your own copy):")), ...others.flatMap(([sl, i]) => row(sl, i))] : []),
       );
       const autoBody = el("tbody", {});
       if (auto.length) {
         const toggle = el("button", { className: "btn", type: "button" }, `${showAuto ? "Hide" : "Show"} auto markup (${auto.length})`);
         toggle.addEventListener("click", () => ((showAuto = !showAuto), renderTable()));
-        autoBody.append(el("tr", {}, el("td", { colSpan: 6 }, toggle, el("span", { className: "hint" }, "  sections, loops and one-shots found automatically; use one in a score by name, right after the path: clip brk = <sample> loop-1"))));
-        if (showAuto) autoBody.append(...auto.map(([sl, i]) => row(sl, i)));
+        autoBody.append(el("tr", {}, el("td", { colSpan: COLS }, toggle, el("span", { className: "hint" }, "  sections, loops and one-shots found automatically; use one in a score by name, right after the path: clip brk = <sample> loop-1"))));
+        if (showAuto)
+          for (const [n, [sl, i]] of auto.entries()) {
+            const k = kindRank(sl);
+            if (n === 0 || kindRank(auto[n - 1][0]) !== k) {
+              const count = auto.filter(([x]) => kindRank(x) === k).length;
+              autoBody.append(el("tr", { className: "group" }, el("td", { colSpan: COLS }, `${k < CLIP_KINDS.length ? KIND_LABEL[CLIP_KINDS[k]] : "Other"} (${count})`)));
+            }
+            autoBody.append(...row(sl, i));
+          }
       }
       table.replaceChildren(head, body, autoBody);
     };
@@ -463,13 +638,15 @@ export class Library {
     window.onbeforeunload = () => (dirty ? true : null);
   }
 
-  private async startAudition(buf: AudioBuffer, from: number, to: number | null, wave: Waveform) {
+  /** Play `buf` from `from` (to `to`), drawing the playhead on `wave` when there is one; false if it couldn't. */
+  private async startAudition(buf: AudioBuffer, from: number, to: number | null, wave: Waveform | null): Promise<boolean> {
     this.stopAudition();
     if (!player.started) this.setPlay({ kind: "loading", label: "Starting the audio engine" });
     try {
       await player.init();
     } catch (e) {
-      return this.setPlay({ kind: "error", message: reasonOf(e) }); // a click tries again
+      this.setPlay({ kind: "error", message: reasonOf(e) }); // a click tries again
+      return false;
     }
     const ctx = player.ctx!;
     await ctx.resume();
@@ -481,7 +658,7 @@ export class Library {
     this.audition = src;
     this.setPlay({ kind: "playing" });
     const tick = () => {
-      if (this.audition !== src) return;
+      if (this.audition !== src || !wave) return;
       wave.state.playhead = from + (ctx.currentTime - t0);
       wave.draw();
       requestAnimationFrame(tick);
@@ -489,15 +666,20 @@ export class Library {
     tick();
     src.onended = () => {
       if (this.audition === src) this.stopAudition();
+      if (!wave) return;
       wave.state.playhead = null;
       wave.draw();
     };
+    return true;
   }
 
   private stopAudition() {
     const a = this.audition;
     this.audition = null;
     a?.stop();
+    const ended = this.auditionEnded;
+    this.auditionKey = this.auditionEnded = null;
+    ended?.();
     if (a && this.playState.kind === "playing") this.setPlay({ kind: "idle" });
   }
 

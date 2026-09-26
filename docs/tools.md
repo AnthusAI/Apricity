@@ -109,8 +109,10 @@ npm --prefix web run dev                                                 # app, 
 Or `npm --prefix web run build` once and use http://localhost:5181 alone.
 
 - **Library** — every analyzed sample. Drag on the waveform to select (snaps to beats; hold ⌥ for free),
-  make and name clips, and save them with the sample; double-click to audition from a point. Drop audio
-  files on the sidebar to add and analyze them.
+  make and name clips, and save them with the sample; double-click to audition from a point. Every clip
+  row, the automatic ones included, has a play button, stars and comments. The Clips list filters by stars
+  (including "Not rated by me"), kind, who made it, length, date and sample, and sorts by stars, date or
+  length; each row plays and rates in place. New audio is added with the analysis tools, not the web app.
 - **Score** — edit `.apr` or YAML; it compiles as you type, underlines mistakes, shows the chord strip
   and how everything was solved. Play with the button or Space; edits land at the next bar; ⌘S saves.
 - **Flow** (under the score, toggled by the **Flow** button): where every sound comes from. Top to

@@ -4,7 +4,8 @@
 //   /activity                      Activity
 //   /scores  /beats  /chords  /melodies     the lists; a score is under the tab of its kind:
 //   /beats/examples/salamander-beat         (its folder and name; ".apr" left off, ".yaml" kept) and ?play plays it
-//   /clips  /clips/<sample>/<clip name>     a clip, by its sample (path without its extension) and its name
+//   /clips  /clips/<sample>/<clip name>     a clip, by its sample (path without its extension) and its name;
+//                                  ?kind=loop&stars=4… narrows and sorts the list (see data/clip-filter.ts)
 //   /samples  /samples/<sample>             a sample, by its path without its extension
 //   /help  /help/<page>#<section>           a Help page ("language" for language.md), and a heading on it
 //
@@ -25,6 +26,8 @@ export interface Route {
   sample?: string;
   /** A clip: its sample (as above) and its name. */
   clip?: { sample: string; name: string };
+  /** Clips: how the list is narrowed and sorted, as a query ("kind=loop&stars=4"; see data/clip-filter.ts). */
+  list?: string;
   /** A Help page (its file, "language.md") and a heading on it. */
   help?: { file: string; anchor?: string };
 }
@@ -51,7 +54,9 @@ export function parse(pathname: string, search = "", hash = ""): Route {
   } catch {
     return { page }; // a malformed escape: just the page
   }
-  if (!rest.length || !safe(rest)) return { page };
+  const list = page === "clips" ? search.replace(/^\?/, "") : "";
+  const listed = list ? { list } : {};
+  if (!rest.length || !safe(rest)) return { page, ...listed };
   if (KIND_OF_PAGE[page]) {
     const last = rest[rest.length - 1];
     const file = /\.(apr|yaml)$/.test(last) ? last : `${last}.apr`;
@@ -59,12 +64,12 @@ export function parse(pathname: string, search = "", hash = ""): Route {
     return { page, score, ...(new URLSearchParams(search).has("play") ? { play: true } : {}) };
   }
   if (page === "samples") return { page, sample: rest.join("/") };
-  if (page === "clips" && rest.length >= 2) return { page, clip: { sample: rest.slice(0, -1).join("/"), name: rest[rest.length - 1] } };
+  if (page === "clips" && rest.length >= 2) return { page, clip: { sample: rest.slice(0, -1).join("/"), name: rest[rest.length - 1] }, ...listed };
   if (page === "help") {
     const anchor = decodeURIComponent(hash.replace(/^#/, ""));
     return { page, help: { file: `${rest.join("/")}.md`, ...(anchor ? { anchor } : {}) } };
   }
-  return { page };
+  return { page, ...listed };
 }
 
 /** The URL of a route (path, and ?play or #section when there is one). */
@@ -75,9 +80,10 @@ export function href(r: Route): string {
     return `/${r.page}/${enc(parts)}${r.play ? "?play" : ""}`;
   }
   if (r.page === "samples" && r.sample) return `/samples/${enc(r.sample.split("/"))}`;
-  if (r.page === "clips" && r.clip) return `/clips/${enc([...r.clip.sample.split("/"), r.clip.name])}`;
+  const list = r.page === "clips" && r.list ? `?${r.list}` : "";
+  if (r.page === "clips" && r.clip) return `/clips/${enc([...r.clip.sample.split("/"), r.clip.name])}${list}`;
   if (r.page === "help" && r.help) return `/help/${enc(r.help.file.replace(/\.md$/, "").split("/"))}${r.help.anchor ? `#${encodeURIComponent(r.help.anchor)}` : ""}`;
-  return `/${r.page}`;
+  return `/${r.page}${list}`;
 }
 
 /** The tab a route shows (Help is the "docs" view). */

@@ -27,6 +27,12 @@ export interface RankedSource<T extends Rankable> {
   /** Who is signed in (null for a guest). */
   me(): Promise<Me | null>;
   open(item: T): void;
+  /** More controls under the time range (Clips: its filters and sort). */
+  tools?: HTMLElement;
+  /** Narrow and reorder the ranked rows (Clips: its filters and sort). */
+  refine?(rows: Array<{ item: T; standing: Standing }>): Array<{ item: T; standing: Standing }>;
+  /** Controls on a row beside its link (Clips: play and rate it right there). */
+  extra?(item: T, standing: Standing): HTMLElement;
   /** The New button; absent for lists people can't add to. */
   create?: { label: string; run(): void };
 }
@@ -104,7 +110,7 @@ export class RankedList<T extends Rankable> {
       add.addEventListener("click", () => src.create!.run());
       searchRow.push(add);
     }
-    const kids: HTMLElement[] = [el("div", { className: "search" }, ...searchRow), tools, this.noteEl, this.listEl];
+    const kids: HTMLElement[] = [el("div", { className: "search" }, ...searchRow), tools, ...(src.tools ? [src.tools] : []), this.noteEl, this.listEl];
     this.el = el("aside", { className: "sidebar ranked" }, ...kids);
   }
 
@@ -151,12 +157,13 @@ export class RankedList<T extends Rankable> {
     this.mineBtn.classList.toggle("on", this.mine);
     this.mineBtn.setAttribute("aria-pressed", String(this.mine));
     const shown = filterItems(this.items, { query: this.query, mine: this.mine, me: this.me }, (i) => this.src.text(i), this.src.owner);
-    const r = (this.ranked = rank(shown, this.tallies, this.window, new Date()));
+    const ranked = rank(shown, this.tallies, this.window, new Date());
+    const r = (this.ranked = this.src.refine ? { ...ranked, rows: this.src.refine(ranked.rows) } : ranked);
     const note = widenedNote(r);
     this.noteEl.hidden = !note;
     this.noteEl.textContent = note ?? "";
     if (!r.rows.length) {
-      const msg = this.mine && !this.me ? `Sign in to see your ${this.label}.` : this.mine ? `You haven't made any ${this.label} yet.` : this.query ? "Nothing matches." : `No ${this.label} yet.`;
+      const msg = this.mine && !this.me ? `Sign in to see your ${this.label}.` : this.mine ? `You haven't made any ${this.label} yet.` : this.query || shown.length ? "Nothing matches." : `No ${this.label} yet.`;
       this.listEl.replaceChildren(el("div", { className: "empty" }, msg));
       return;
     }
@@ -173,7 +180,10 @@ export class RankedList<T extends Rankable> {
         );
         row.setAttribute("aria-current", String(item.id === this.current));
         row.addEventListener("click", () => this.open(item));
-        return row;
+        if (!this.src.extra) return row;
+        const wrap = el("div", { className: "row-wrap" }, row, this.src.extra(item, standing));
+        wrap.setAttribute("aria-current", String(item.id === this.current));
+        return wrap;
       }),
     );
   }

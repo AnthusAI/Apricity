@@ -95,8 +95,6 @@ main { flex: 1; min-height: 0; }
 .row .t { font-weight: 520; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .k { font-family: var(--mono); font-size: 12px; }
 .row .sub { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
-.drop { margin: 10px; padding: 12px; border: 1.5px dashed var(--line); border-radius: var(--radius); color: var(--muted); font-size: 13px; text-align: center; }
-.drop.over { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
 
 .detail { overflow: auto; padding: 20px 24px 40px; min-width: 0; }
 .detail h1 { font-size: 20px; margin: 0 0 2px; font-weight: 620; }
@@ -272,6 +270,24 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .seg button { flex: 1; border: 0; background: none; padding: 5px 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-selected="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 560; }
+/* Clips: filters and sort for curating, and play and rate on each row. */
+.clip-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.clip-filters select { flex: 1 1 calc(50% - 6px); min-width: 0; padding: 4px 6px; font-size: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--muted); }
+.clip-filters select.set { color: var(--fg); border-color: var(--accent); background: var(--accent-soft); }
+.clip-filters .btn.link { flex: 0 0 auto; font-size: 12px; padding: 4px 6px; }
+.row-wrap { border-left: 3px solid transparent; }
+.row-wrap .row { border-left: 0; padding-bottom: 2px; }
+.row-wrap[aria-current="true"] { background: var(--accent-soft); border-left-color: var(--accent); }
+.row-wrap[aria-current="true"] .row { background: none; }
+.row-extra { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px calc(12px + 2.2ch + 8px); }
+.row-play { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 50%; width: 24px; height: 24px; padding: 0; font-size: 10px; line-height: 1; flex: none; cursor: pointer; }
+.row-play:hover { border-color: var(--accent); color: var(--accent); }
+.stars.compact .star { font-size: 15px; padding: 0 1px; }
+.stars.compact .star.zero { width: 15px; height: 15px; font-size: 9px; margin-right: 2px; }
+.stars.compact .stars-note { display: none; }
+.stars.compact .stars-note.failed { display: inline; color: var(--bad); }
+.slices tr.group td { padding-top: 12px; font-size: 12px; font-weight: 560; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.slices td.play-cell { width: 24px; padding-right: 0; }
 .btn.mine { padding: 5px 10px; font-size: 12px; }
 .btn.mine.on { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 .rank-note { font-size: 12px; color: var(--muted); padding: 6px 12px; background: color-mix(in srgb, var(--warn) 8%, transparent); border-bottom: 1px solid var(--line); }
@@ -591,3 +607,9 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .notice-action { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 7px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
 .notice-close { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
 .account .acct-pill.local { cursor: default; }
+.row-talk { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 1px 7px; font-size: 11px; color: var(--muted); white-space: nowrap; cursor: pointer; }
+.row-talk:disabled { opacity: 0.4; cursor: default; }
+.row-talk[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--fg); }
+.slices tr.talk td { background: color-mix(in srgb, var(--fg) 3%, transparent); padding: 4px 12px 12px 36px; }
+.slices tr.talk .comments { margin: 0; }
+.slices .pill, .slices td.mono { white-space: nowrap; }

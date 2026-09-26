@@ -95,12 +95,14 @@ async function follow(r: Route) {
   // An item named in the URL is opened below; the tab needn't open the top of its list first.
   if (r.sample) loaded.add("samples");
   if (r.clip) loaded.add("clips");
+  if (r.page === "clips") clips.setFilterQuery(r.list);
   showTab(tabOf(r));
   if (r.score) await openScore(r.score, !!r.play, "route");
   else if (r.sample) await samples.openKey(r.sample, undefined, "route");
   else if (r.clip) await clips.openKey(r.clip.sample, r.clip.name, "route");
   else if (r.help) docs.open(r.help.file, r.help.anchor, "route");
   else if (r.page === "help") docs.report();
+  else if (r.page === "clips") clips.report();
   else document.title = titleOf(r); // an item's view titles the page with its name
 }
 /** Go somewhere: a new history entry (or, `replace`, this one), then show it. */
