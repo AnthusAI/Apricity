@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-025764c7-c56c-4a34-8c40-1e50b3398f59",
+  "title": "seed-library.sh: rebuild the curated library on a fresh machine from git",
+  "description": "Goal: one command that reproduces the curated library from a clone, as an alternative to cloning production. The user hand-curates, so the catalog (crates/apricity-sources/catalog/sources.json + samples/sources.json) is the record of what was approved; the seed must rebuild everything else from it.\n\nSteps to chain: (1) apricity sources fetch --all (sha256-verified); (2) denoise + analyze the LoC/CC folders with apricity_analyze --denoise (neural:medium default); (3) apricity migrate --from . --to <library> (deterministic, idempotent); (4) optionally apricity sync push --library <dir> --bucket <b>, then the admin runs Import library from bucket.\n\nGaps to close first/along the way: \n- apricitus-b16b5d: migration does not map loc/... or .clean.wav paths (new imports would land in uploads).\n- Pin the denoiser model version/checksum (dns64 weights are fetched unpinned) and record it, so clean copies are reproducible; record the recipe (already in manifest source.denoise).\n- ccMixter/Internet Archive importer does not exist yet; ccMixter audio needs a Referer of ccmixter.org (403 otherwise).\n- .clean.wav files are gitignored derived audio: the seed regenerates them.\nVerify by seeding into a scratch dir and diffing against the working library (scripts/check-migration.sh already renders example scores from a migrated library). Spec first, scripts + docs/tools.md entry.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T19:10:59.160487Z",
+  "updated_at": "2026-09-26T19:10:59.160526Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Sonnet 5",
+    "name": "Library Expansion"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
