@@ -253,8 +253,8 @@ body.col-resizing iframe, body.col-resizing canvas { pointer-events: none; }
 .account .acct-email { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acct-menu { position: absolute; left: 0; bottom: calc(100% + 6px); min-width: 210px; display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
 .acct-menu[hidden] { display: none; }
-body[data-tab="home"] .account { top: 10px; right: 16px; left: auto; bottom: auto; }
-body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: auto; right: 0; }
+body[data-tab="about"] .account { top: 10px; right: 16px; left: auto; bottom: auto; }
+body[data-tab="about"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: auto; right: 0; }
 .acct-who { padding: 6px 10px; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .account .acct-item { border: 0; background: none; text-align: left; padding: 7px 10px; border-radius: 6px; }
 .account .acct-item:hover { background: var(--accent-soft); }
@@ -666,3 +666,16 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .act-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .act-all-tags { font-size: 12px; color: var(--muted); margin-left: 4px; }
 .act-local { margin: 0 0 14px; }
+
+/* ---- home: the best-rated songs */
+#home { overflow: auto; }
+#home { display: block; }
+.home-intro { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 18px; margin-bottom: 18px; border-radius: 14px; background: color-mix(in srgb, #f59e5b 12%, var(--panel)); border: 1px solid color-mix(in srgb, #f59e5b 30%, var(--line)); }
+.home-intro p { margin: 0; flex: 1 1 380px; font-size: 15px; line-height: 1.5; }
+.home-intro-actions { display: flex; gap: 8px; }
+.home-intro-actions .btn { text-decoration: none; color: var(--fg); }
+.home-more { font-size: 13px; color: var(--accent); text-decoration: none; }
+.home-more:hover { text-decoration: underline; }
+.home-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center; margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; }
+.home-foot a { color: var(--muted); text-decoration: none; }
+.home-foot a:hover { color: var(--fg); text-decoration: underline; }
