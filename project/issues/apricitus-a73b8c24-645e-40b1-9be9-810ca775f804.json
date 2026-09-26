@@ -3,17 +3,25 @@
   "title": "Activity and comments",
   "description": "A social Activity page (one card per item, bumped by anything new: made, changed, rated, commented) and threaded comments on every sample, clip and score.",
   "type": "epic",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a74aa66e-46ba-4e2f-8100-6ab6e80d5d4d",
+      "author": "home",
+      "text": "Done: all its tasks shipped (Amplify job 53): Activity page, comments, the activity Lambda, backfill.",
+      "created_at": "2026-09-26T16:24:35.685254Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T14:37:58.661124Z",
-  "updated_at": "2026-09-26T14:37:58.661152Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:24:35.713411Z",
+  "closed_at": "2026-09-26T16:24:35.713376Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

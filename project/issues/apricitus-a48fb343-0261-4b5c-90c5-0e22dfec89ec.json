@@ -3,7 +3,7 @@
   "title": "First cloud sync and production smoke test",
   "description": "Run apricity sync push from the analysis Mac to the production bucket, then a smoke test against https://apricity.anth.us: sign in, list clips, range-request a stem (206), play the hero with sound, and a second allowed user sees the same library. Add scripts/prod-smoke.sh (read-only checks: TLS, headers, unauthenticated GraphQL rejected, authenticated call works given a token) so it is repeatable. Record cost expectations and teardown steps in the design doc.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Library synced: apricity sync push of ~/Apricity-Library (Recording/Clip/Slice/Marker/Candidate/Score/ScoreRef records + files/audio + files/hero) to the bucket: 1953 files, 448688938 bytes, status shows 1953 in sync, 0 conflicts. sync needed aws-config feature credentials-login for 'aws login' sessions (added). Hero verified live as a signed-out guest: cognito guest identity, S3 ranged 206 then 200 for all four files, sound plays. NOT done: scripts/prod-smoke.sh; loader to DynamoDB (368367); Library/Score screens on the cloud data layer.",
       "created_at": "2026-09-25T04:15:15.487762Z",
       "comment_type": "default"
+    },
+    {
+      "id": "981e4647-01a8-47ac-906a-4d1f3da6d83d",
+      "author": "home",
+      "text": "Done: the library was synced and imported; scripts/prod-smoke.sh passes on every deploy.",
+      "created_at": "2026-09-26T16:24:34.998165Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.396842Z",
-  "updated_at": "2026-09-25T04:15:15.487781Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:24:35.031898Z",
+  "closed_at": "2026-09-26T16:24:35.031866Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

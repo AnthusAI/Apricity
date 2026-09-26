@@ -3,7 +3,7 @@
   "title": "Production auth: Cognito callback URLs and Google OAuth for apricity.anth.us",
   "description": "Set Cognito callback and logout URLs to https://apricity.anth.us (and localhost for dev); add the Google OAuth authorized redirect (Cognito domain /oauth2/idpresponse) and JavaScript origin for the production client; set Amplify secrets GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and ALLOWED_EMAILS for the production branch. Verify: an allowed email signs in end to end; a non-allowed email is rejected by the pre-sign-up trigger. Guide: /Users/home/Projects/Papyrus/docs/google-oauth-setup.md.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -38,11 +38,18 @@
       "text": "2026-09-25: Google-only auth is LIVE (Amplify job 17). Secrets stored by the owner in SSM /amplify/shared/d2n7w4kwqyfwn4/GOOGLE_CLIENT_ID|SECRET. Findings: Amplify requires email or phone on the pool even with Google, so email stays as an attribute and the pre-sign-up trigger refuses native sign-ups when APRICITY_GOOGLE_AUTH=true; defineAuth does not support domainPrefix in this version, so the Cognito domain is the generated 017d1deb91f43f32da66.auth.us-east-1.amazoncognito.com (added to the Google client's origins and redirect URIs alongside the apricity-anthus ones). Remaining: owner signs in with Google once; then add groups admins+curators; then Import library from bucket.",
       "created_at": "2026-09-25T12:28:32.124712Z",
       "comment_type": "default"
+    },
+    {
+      "id": "e0bf889e-52d6-4017-bdb6-9143442ef163",
+      "author": "home",
+      "text": "Done: Cognito callback/logout URLs and Google OAuth work for https://apricity.anth.us.",
+      "created_at": "2026-09-26T16:24:34.853030Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T02:28:48.338842Z",
-  "updated_at": "2026-09-25T12:28:32.124759Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:24:34.889736Z",
+  "closed_at": "2026-09-26T16:24:34.889697Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

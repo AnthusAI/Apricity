@@ -3,7 +3,7 @@
   "title": "Vocabulary: storage contract (Clip→Sample, Slice→Clip, Crate→Collection)",
   "description": "See design/vocabulary.md §Samples. Apply it to design/storage.md, the Amplify schema and apricity-data before the first cloud deploy. Owner: storage session; it sets the timing.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,10 +12,18 @@
     "vocabulary"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "89ace73d-4b4a-4eba-aebb-214d56069c17",
+      "author": "home",
+      "text": "Done as decided by the user: Clip→Sample and Slice→Clip in the schema, tables and code; Crate/Collection was dropped.",
+      "created_at": "2026-09-26T16:24:35.477798Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-24T16:41:48.146295Z",
-  "updated_at": "2026-09-24T16:41:48.146330Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:24:35.505733Z",
+  "closed_at": "2026-09-26T16:24:35.505698Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

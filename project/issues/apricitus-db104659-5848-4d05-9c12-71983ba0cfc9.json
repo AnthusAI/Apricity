@@ -3,7 +3,7 @@
   "title": "Sign-in UI for the deployed app (Cognito email, allow-listed)",
   "description": "The deployed app has no sign-in screen (web/src/data/auth.ts has the functions; nothing in web/src/ui calls them). Library, Score and every record are readable only by signed-in group members (userPools), so without sign-in the cloud Library/Score tabs cannot show anything. Build the flow: sign up / confirm code / sign in / sign out with Cognito email (Google later, see ff09d9), postConfirmation adds the user to a group, only APRICITY_ALLOWED_EMAILS may sign up. Visual/UX belongs to the web session: coordinate here. Verify by the owner signing up at https://apricity.anth.us (agents must not create accounts or enter passwords).",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -24,11 +24,18 @@
       "text": "Reviewed and committed 2026-09-25: tsc, test:flow (57 pass), contract:check, auth tests, build pass; Library and Score tabs verified in the browser against a migrated library via apricity serve. Cloud mode is unit-tested only until someone signs in.",
       "created_at": "2026-09-25T04:36:52.418096Z",
       "comment_type": "default"
+    },
+    {
+      "id": "f33f27db-7a7a-42f0-85fd-e85ebd204d51",
+      "author": "home",
+      "text": "Done: the header account control signs in with Google (the allow-list was later removed: the site is public).",
+      "created_at": "2026-09-26T16:24:34.925038Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T04:16:57.492064Z",
-  "updated_at": "2026-09-25T04:36:52.418118Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:24:34.962976Z",
+  "closed_at": "2026-09-26T16:24:34.962940Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
