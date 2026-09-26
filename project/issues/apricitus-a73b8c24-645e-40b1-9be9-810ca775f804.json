@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-a73b8c24-645e-40b1-9be9-810ca775f804",
+  "title": "Activity and comments",
+  "description": "A social Activity page (one card per item, bumped by anything new: made, changed, rated, commented) and threaded comments on every sample, clip and score.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T14:37:58.661124Z",
+  "updated_at": "2026-09-26T14:37:58.661152Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
