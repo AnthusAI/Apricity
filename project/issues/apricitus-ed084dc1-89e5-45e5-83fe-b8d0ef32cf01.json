@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-ed084dc1-89e5-45e5-83fe-b8d0ef32cf01",
+  "title": "Curate next LoC batches by preview (blocked: loc.gov rate limit)",
+  "description": "PENDING, in progress. The user hand-curates: audition candidates first, import a dozen, never whole collections.\n\n**Tool built:** scripts/loc-preview.py writes renders/loc-preview/<title>.html, players stream from loc.gov (nothing downloaded), checkboxes yield ids for scripts/catalog-add-loc.py (denoises neural:medium by default). Shared client in analysis/apricity_analyze/loc.py. Page generation tested offline only; NOT yet run against live loc.gov.\n\n**Blocked:** loc.gov answers HTTP 429 to all item/search requests (no Retry-After; documented blocks can last up to an hour). Retry later, gently (importer/loc.py already pause 1.5s and back off).\n\n**Resume with:**\n1. Gershwin preview, National Jukebox: 24 candidate ids verified as Gershwin-credited (22 checked, 2 by title): jukebox-62918 71249 36933 675477 70335 70342 669192 817339 662873 61580 41783 72268 70632 42309 48837 72267 42562 67610 35323 188521 36113 63880 668476 37013. User wanted them all imported and denoised, then preferred to audition first. A queued auto-import was STOPPED on purpose; ask before importing.\n2. Tony Schwartz children's games/rhymes (Citizen DJ item https://citizen-dj.labs.loc.gov/items/loc-tony-schwartz/286021/, free to use and reuse).\n3. Remaining 1939 Lomax songs (Driving Levee, January February, ...); Lomax 1933 prison songs only after reading their rights per item.\n4. Jukebox jazz (Original Dixieland Jass Band), Fisk Jubilee spirituals, Uncle Josh patter: leads, unverified.\n\n**Also open:** beat detector fails on a cappella chants and reads ragtime at double time (Alexander's ragtime band, The ragtime robin ~230 BPM); one-star prune utility is apricitus-f26c20; licence label for LoC 'no known restrictions' wording and loc/ + .clean.wav path mapping (apricitus-b16b5d) still to do.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T18:20:55.913710Z",
+  "updated_at": "2026-09-26T18:21:04.192590Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Sonnet 5",
+    "name": "Library Expansion"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
