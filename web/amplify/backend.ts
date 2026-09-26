@@ -7,6 +7,11 @@ import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
+import { voiceRequest } from "./functions/voice-request/resource";
+import { voiceIngest } from "./functions/voice-ingest/resource";
+import { Rule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
+import { SpeechRenderer } from "@anthusai/auritus-construct";
 
 export const backend = defineBackend({
   auth,
@@ -14,6 +19,8 @@ export const backend = defineBackend({
   storage,
   tally,
   activity,
+  voiceRequest,
+  voiceIngest,
 });
 
 // Ratings are private; their public tallies are kept by the tally Lambda, fed by the Rating table's stream (Amplify
@@ -78,3 +85,49 @@ for (const model of fed) {
   });
   m.node.addDependency(activityStreams);
 }
+
+// Voice lines: a curator asks for one (requestVoiceLine), Auritus renders it on a GPU in this
+// account (its SpeechRenderer: AWS Batch that scales to zero), and voice-ingest turns the result
+// into a generated Sample with phrase clips. The worker image is the Auritus release this pins.
+const AURITUS_VERSION = "0.27.1";
+const voiceStack = backend.createStack("Voice");
+const files = backend.storage.resources.bucket;
+const renderer = new SpeechRenderer(voiceStack, "Renderer", {
+  name: "apricity-voice",
+  image: `${voiceStack.account}.dkr.ecr.${voiceStack.region}.amazonaws.com/auritus-worker:${AURITUS_VERSION}`,
+  outputBucket: files,
+  outputPrefix: "voice-renders/",
+  allowedBackends: ["kokoro"],
+  // Tag-scoped to the renderer's GPUs; needs the auritus:renderer cost allocation tag activated.
+  dailyBudgetUsd: 10,
+});
+
+const voiceReq = backend.voiceRequest.resources.lambda;
+backend.voiceRequest.addEnvironment("JOB_TABLE", tables["Job"].tableName);
+backend.voiceRequest.addEnvironment("SAMPLE_TABLE", tables["Sample"].tableName);
+backend.voiceRequest.addEnvironment("STATE_MACHINE_ARN", renderer.stateMachine.stateMachineArn);
+tables["Job"].grantWriteData(voiceReq);
+tables["Sample"].grantReadData(voiceReq);
+renderer.grantStartExecution(voiceReq);
+
+const voiceIng = backend.voiceIngest.resources.lambda;
+backend.voiceIngest.addEnvironment("BUCKET", files.bucketName);
+backend.voiceIngest.addEnvironment("RENDER_PREFIX", renderer.outputPrefix);
+for (const m of ["Job", "Recording", "Sample", "Clip"]) {
+  backend.voiceIngest.addEnvironment(`${m.toUpperCase()}_TABLE`, tables[m].tableName);
+}
+tables["Job"].grantReadWriteData(voiceIng);
+for (const m of ["Recording", "Sample", "Clip"]) tables[m].grantWriteData(voiceIng);
+files.grantRead(voiceIng, `${renderer.outputPrefix}*`);
+for (const prefix of ["files/audio/*", "files/analysis/*", "Recording/*", "Sample/*", "Clip/*"]) files.grantPut(voiceIng, prefix);
+new Rule(Stack.of(voiceIng), "VoiceRenderFinished", {
+  eventPattern: {
+    source: ["aws.states"],
+    detailType: ["Step Functions Execution Status Change"],
+    detail: {
+      stateMachineArn: [renderer.stateMachine.stateMachineArn],
+      status: ["SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"],
+    },
+  },
+  targets: [new LambdaFunction(voiceIng, { retryAttempts: 4 })],
+});
