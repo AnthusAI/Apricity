@@ -40,9 +40,6 @@ jobs:
           submodules: recursive
       - name: Install system libraries
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-wasip1
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
@@ -51,9 +48,10 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
         working-directory: web
+      # The beat, chords and melody tests load the real engine. Built as Amplify builds it (the rust-toolchain.toml
+      # channel and this platform's wasi-sdk), into target/ where the tests look.
       - name: Build the wasm module
-        run: npm run wasm
-        working-directory: web
+        run: RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="$HOME/.cargo" CARGO_TARGET_DIR="$PWD/target" sh scripts/amplify-wasm.sh
       - name: Type-check
         run: npx tsc --noEmit
         working-directory: web
