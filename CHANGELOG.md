@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.11.0 (2026-09-26)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`10638cf`](https://github.com/AnthusAI/Apricity/commit/10638cf77b146ca22438e0436794976ac65ff3ca))
+
+
 ## v0.10.0 (2026-09-26)
 
 
