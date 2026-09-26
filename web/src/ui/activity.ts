@@ -82,6 +82,8 @@ export class ActivityView {
   private async load() {
     const seq = ++this.seq;
     this.fresh.hidden = true;
+    // Timings for the browser's performance panel: activity:start … activity:shown.
+    performance.mark("activity:start");
     // The top tags fill in when the scores have listed; nothing waits for them.
     void api
       .scores()
@@ -97,18 +99,25 @@ export class ActivityView {
       // once. (Listing every score and sample first took the page seconds to start.)
       let next: string | null = null;
       const first = cards(this.kind);
-      const [who, names, hidden] = await Promise.all([me().catch(() => null), handles(), api.hiddenIds().catch(() => new Set<string>())]);
+      const [who, names, hidden] = await Promise.all([
+        me().catch(() => null).finally(() => performance.mark("activity:me")),
+        handles().finally(() => performance.mark("activity:handles")),
+        api.hiddenIds().catch(() => new Set<string>()).finally(() => performance.mark("activity:hidden")),
+      ]);
       const deps: FeedDeps = { who, names };
       const page = async (got: Promise<{ items: Card[]; nextToken: string | null }>, isFirst: boolean) => {
         const { items, nextToken } = await got;
+        performance.mark("activity:cards");
         next = nextToken;
         if (isFirst) this.top = items[0] ? `${items[0].id}@${items[0].lastAt}` : null;
         // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
         const made = await Promise.all(items.filter((c) => !hidden.has(c.targetId)).map((c) => this.item(c, deps).catch(() => null)));
+        performance.mark("activity:items");
         return made.filter((x): x is FeedItem => !!x).map((x) => new FeedCard(x, deps).root);
       };
       const els = await page(first, true);
       if (seq !== this.seq) return;
+      performance.mark("activity:shown");
       this.body.replaceChildren(
         els.length
           ? feedGrid(els, async () => (next && seq === this.seq ? page(cards(this.kind, next), false) : []))
