@@ -80,7 +80,9 @@ const schema = a.schema({
       aliases: a.string().array(),
       collection: a.string().required(),
       title: a.string().required(),
-      role: a.enum(["source", "stem", "excerpt", "upload"]),
+      role: a.enum(["source", "stem", "excerpt", "upload", "generated"]),
+      /** How a generated sample was made (engine, version, backend, model, voice, text, options, request key, requester). */
+      generator: a.json(),
       stem: a.string(),
       stemModel: a.string(),
       parentSampleId: a.id(),
@@ -244,6 +246,8 @@ const schema = a.schema({
       folder: a.string().required(),
       format: a.enum(["apr", "yaml"]),
       kind: a.ref("ScoreKind"),
+      // Its owner's tags ("techno", "deep-house"; see src/data/tags.ts): each has a leaderboard at /tags/<tag>.
+      tags: a.string().array(),
       text: a.string().required(),
       lastErrors: a.string().array(),
       legacyPath: a.string(),
@@ -380,6 +384,8 @@ const schema = a.schema({
     .model({
       id: a.id().required(),
       kind: a.string().required(),
+      /** What the job was asked to do, e.g. a voice line's name, text and voice. */
+      input: a.json(),
       sampleId: a.id(),
       state: a.enum(["queued", "running", "done", "failed"]),
       error: a.string(),

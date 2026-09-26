@@ -9,12 +9,23 @@ Feature: Predefined sources
       | demo/b.wav      | BBBB    | http  |        |
       | demo/score.pdf  | PDF     | manual |       |
 
+  # The catalog grows with every curated import: the specs name what it must include and the rules every source
+  # keeps, never how many sources or files there are.
   Scenario: List sources
     When I list the sources
-    Then the catalog has source "loc-edison" with 15 files
-    And the catalog has source "loc-tony-schwartz" with 6 files
-    And the catalog has source "marine-band" with 15 files
-    And the catalog has 6 sources
+    Then the catalog includes source "loc-edison"
+    And the catalog includes source "loc-tony-schwartz"
+    And the catalog includes source "marine-band"
+    And the catalog includes source "loc-lomax-1939"
+    And the catalog includes source "loc-national-jukebox"
+    And the catalog includes source "salamander-drumkit"
+
+  Scenario: Every source can be fetched and credited
+    When I list the sources
+    Then every source in the catalog has files, a credit, rights and a source page
+    And the catalog's source ids and file paths are unique
+    And every source in the catalog under a CC BY license names its author
+    And every file in the catalog fetched over http has a url
 
   Scenario: Status of an empty directory
     When I check the status

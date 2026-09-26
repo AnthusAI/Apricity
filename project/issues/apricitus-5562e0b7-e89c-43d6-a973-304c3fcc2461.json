@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+  "title": "DAW integration: kits as drum rack presets and markup as a browsable clip folder",
+  "description": "## Intent\n\nAs a beatmaker, I want an Apricity kit exported as a drum rack preset (.adg, one sampler per pad), so that a crate of curated breaks and hits becomes a playable instrument in one drag. And I want automatic markup (sections, loops, one-shots) exported as a folder of pre-cut clips named by section letter and key, so that Apricity's markup can be browsed in the DAW's browser.\n\n## Scope\n\n- `apricity export --kit k` writes an `.adg` with pads 1..16 mapped to chops, root and transpose set.\n- `apricity export --clips sample` writes one `.alc` per section / loop / shot, named like `A-1bar-Fm.alc`.\n- Crates export as a folder of the above.\n\n## Definition of done\n\n- The preset loads with the right pad order and pitches; a step pattern in the score sounds the same on the rack.\n- Stories and tests for the preset XML and the naming scheme.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T20:14:35.643301Z",
+  "updated_at": "2026-09-26T20:14:35.643345Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Ideas"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

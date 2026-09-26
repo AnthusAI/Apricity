@@ -151,6 +151,8 @@ export interface ScoreRecord {
   folder: string;
   format?: "apr" | "yaml" | null;
   kind?: ScoreKind | null;
+  /** Its owner's tags (see ./tags.ts). */
+  tags?: (string | null)[] | null;
   text: string;
   legacyPath?: string | null;
   owner?: string | null;
@@ -183,6 +185,8 @@ export interface ScoreItem {
   path: string;
   title: string;
   kind: ScoreKind;
+  /** Its tags ("techno"), each a leaderboard at /tags/<tag>. */
+  tags: string[];
   owner: string | null;
   createdAt: string | null;
   modified: number;
@@ -201,6 +205,7 @@ export function toScoreItem(s: ScoreRecord): ScoreItem {
     path: scorePath(s),
     title: s.title,
     kind: s.kind ?? "song",
+    tags: (s.tags ?? []).filter((t): t is string => !!t),
     owner: s.owner ?? null,
     createdAt: s.createdAt ?? null,
     modified: s.updatedAt ? Date.parse(s.updatedAt) / 1000 : 0,
@@ -692,6 +697,15 @@ export class Catalog {
     this.scoreList = null;
   }
 
+  /** Set a score's tags (normalized by the caller; see ./tags.ts). Only its owner (or a curator) may. */
+  async setScoreTags(path: string, tags: string[]) {
+    const found = (await this.listScores()).find((s) => scorePath(s) === path);
+    if (!found) throw new Error(`${path}: no such score`);
+    const r = await this.models.Score.update({ id: found.id, tags });
+    if (r.errors?.length) fail(r.errors, true);
+    this.scoreList = null;
+  }
+
   async score(path: string): Promise<string> {
     const found = (await this.listScores()).find((s) => scorePath(s) === path);
     if (found) return found.text;
@@ -713,7 +727,9 @@ export class Catalog {
       const got = await this.models.Score.get({ id });
       if (got.errors?.length) fail(got.errors);
       if (!got.data) {
-        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}), ...(fork ?? {}) });
+        // A fork starts with its original's tags.
+        const tags = fork ? (await this.listScores()).find((s) => s.id === fork.forkOf)?.tags?.filter((t): t is string => !!t) : undefined;
+        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}), ...(fork ?? {}), ...(tags?.length ? { tags } : {}) });
         if (r.errors?.length) fail(r.errors, true);
       }
     }

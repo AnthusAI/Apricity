@@ -282,6 +282,13 @@
           "isRequired": false,
           "attributes": []
         },
+        "generator": {
+          "name": "generator",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
         "stem": {
           "name": "stem",
           "isArray": false,
@@ -1737,6 +1744,14 @@
           "isRequired": false,
           "attributes": []
         },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
         "text": {
           "name": "text",
           "isArray": false,
@@ -2924,6 +2939,13 @@
           "isRequired": true,
           "attributes": []
         },
+        "input": {
+          "name": "input",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
         "sampleId": {
           "name": "sampleId",
           "isArray": false,
@@ -3083,7 +3105,8 @@
         "source",
         "stem",
         "excerpt",
-        "upload"
+        "upload",
+        "generated"
       ]
     },
     "SampleStatus": {

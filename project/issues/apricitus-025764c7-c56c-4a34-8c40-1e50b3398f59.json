@@ -10,9 +10,22 @@
   "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a69d3bb9-652f-4466-8e73-eabd6bde7228",
+      "author": "home",
+      "text": "ccMixter imports are catalogued with fetch: manual because the Rust downloader cannot send the Referer (https://ccmixter.org/...) that ccMixter requires; without it every file is 403. A fresh seed therefore cannot fetch them until crates/apricity-sources/src/http.rs (or the catalog file schema) supports a per-source/per-file referer, spec first in features/sources. Interim: catalog-add-loc.py re-downloads with the Referer. Each ccMixter track is its own catalog source (author + license per track).",
+      "created_at": "2026-09-26T19:52:48.223724Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
+    }
+  ],
   "created_at": "2026-09-26T19:10:59.160487Z",
-  "updated_at": "2026-09-26T19:10:59.160526Z",
+  "updated_at": "2026-09-26T19:52:48.223755Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

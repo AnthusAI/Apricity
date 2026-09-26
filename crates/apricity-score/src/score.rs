@@ -62,6 +62,19 @@ pub struct MasterSpec {
     pub loudness: Option<f64>,
 }
 
+/// Automation: a parameter changing over time on a track, group, or return.
+#[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AutomationSpec {
+    /// The parameter being automated, e.g. `eq.highcut`, `volume`, `pan`, `send.plate`.
+    pub target: String,
+    /// Step mode: hold each value until the next point instead of ramping.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub step: bool,
+    /// Breakpoints: (bar or "bar:beat", value in the parameter's natural units).
+    pub points: Vec<(String, f64)>,
+}
+
 /// A group track: its tracks (and groups) sum into it, run through its effects, and go on to its
 /// own `group` or the master.
 #[derive(Debug, Clone, Default, PartialEq, Deserialize, serde::Serialize)]
@@ -75,6 +88,9 @@ pub struct GroupSpec {
     /// The group it sits in, if any (otherwise it plays into the master).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub group: Option<String>,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automate: Vec<AutomationSpec>,
 }
 
 /// A return track: what tracks and groups send to it runs through its effects into the master.
@@ -86,6 +102,9 @@ pub struct ReturnSpec {
     /// The return's fader, dB.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub volume: f64,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automate: Vec<AutomationSpec>,
 }
 
 /// `time: 4/4` ⇄ beats per bar.
@@ -279,6 +298,9 @@ pub struct CompSpec {
     /// Key the compressor from another track (ducking): it listens to that track, not its input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sidechain: Option<String>,
+    /// Parallel compression mix, 0–1 (default: 1.0 = fully compressed).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mix: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
@@ -581,6 +603,9 @@ pub struct TrackSpec {
     /// The octave a pitched track plays in: where the chord root (or degree 1) sits; default nearest the clip's own pitch.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub octave: Option<i32>,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automate: Vec<AutomationSpec>,
 }
 
 impl TrackSpec {

@@ -252,7 +252,7 @@ test("signed out: the views get SignedOut (their empty state), and reload after 
   cat.reset();
   const { samples } = await cat.samples();
   assert.deepEqual(samples.map((s) => s.path), ["samples/marine-band/Thunderer.mp3", "samples/marine-band/stems/Thunderer/drums.wav"]);
-  assert.deepEqual((await cat.scores()).scores, [{ id: "scr_examples_a_apr", path: "examples/a.apr", title: "a", kind: "song", owner: null, createdAt: null, modified: 0 }]);
+  assert.deepEqual((await cat.scores()).scores, [{ id: "scr_examples_a_apr", path: "examples/a.apr", title: "a", kind: "song", tags: [], owner: null, createdAt: null, modified: 0 }]);
   assert.equal(await cat.score("examples/a.apr"), "tempo 90");
 });
 

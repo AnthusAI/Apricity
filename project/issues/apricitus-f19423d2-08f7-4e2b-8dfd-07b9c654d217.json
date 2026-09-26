@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-f19423d2-08f7-4e2b-8dfd-07b9c654d217",
+  "title": "DAW integration: a device that keeps a sample track sounding the chords you play",
+  "description": "## Intent\n\nAs a producer, I want a device inside the DAW that embeds the Apricity engine, reads the set's key and the chords played on a MIDI track, and keeps a chosen clip from the library warped and transposed to sound those chords in real time, so that I can play chords on a keyboard and a loop follows.\n\n## Scope\n\n- Max device (or a native plugin) hosting the engine; the harmony solver already does the hard part.\n- Inputs: MIDI chords, set tempo and key. Output: audio, re-rendered ahead and swapped at the bar.\n- Pushes the set's tempo and key into the Apricity editor so a score is always written against the set it lives in.\n\n## Depends on\n\n- Transport and tempo sync initiative.\n\n## Definition of done\n\n- Holding a chord changes the loop's transposition on the next bar with no dropout.\n- Stories for chord change, key change, tempo change.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T20:14:35.706152Z",
+  "updated_at": "2026-09-26T20:14:35.706204Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Ideas"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
