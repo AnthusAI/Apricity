@@ -118,6 +118,10 @@ export class Library {
     this.list.el.append(this.jobsEl);
     root.append(this.list.el, this.detailEl);
     columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w - 420) });
+    // Your stars on clips, wherever you rated them (the other tab, a list row), for rows and "Not rated by me".
+    document.addEventListener("apricity:rated", (e) => {
+      if ((e as CustomEvent<{ type: string }>).detail.type === "clip") void this.loadMyStars().then((m) => (this.myStars = m));
+    });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
   }
 
@@ -149,6 +153,11 @@ export class Library {
     if (query === undefined || this.mode !== "clips") return;
     this.filter = parseFilter(query);
     this.renderFilters();
+    this.list.render();
+  }
+
+  /** Draw the list again with what it knows now (its tab came back into view). */
+  relist() {
     this.list.render();
   }
 

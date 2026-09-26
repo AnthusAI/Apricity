@@ -82,7 +82,7 @@ function showTab(name: string) {
   else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
     loaded.add(name);
     void (name === "clips" ? clips : samples).refresh();
-  }
+  } else if (name === "clips" || name === "samples") (name === "clips" ? clips : samples).relist(); // stars rated since show
   try {
     localStorage.setItem("apricity.tab", name);
   } catch {} // storage can be blocked (private browsing): nothing to report
