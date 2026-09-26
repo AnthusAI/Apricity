@@ -6,6 +6,7 @@
 import "./breakdown.css";
 import { highlightApr } from "../apr-highlight";
 import { el } from "../dom";
+import { PlayButton } from "../play-button";
 import type { FlowData, FlowRecording } from "../flow/model";
 import { readTheme } from "../flow/paint";
 import { rememberSound, soundRemembered, soundView, stateAfterProbe, type SoundState } from "../flow/hero-audio";
@@ -38,7 +39,9 @@ export class Breakdown {
   private raf = 0;
   private shown = { chapter: -1, caption: "" };
   private sound: StorySound | null;
-  private soundBtn = el("button", { type: "button", className: "sound" });
+  /** The same play button as the rest of the site: sound on (it plays along with the pictures) or off. */
+  private play = new PlayButton("breakdown's sound", () => void this.toggleSound());
+  private probe: Promise<void> = Promise.resolve();
   private metronomeBox = el("input", { type: "checkbox", checked: true });
   private soundState: SoundState = "checking";
   private tab: "story" | "code" = "story";
@@ -51,7 +54,7 @@ export class Breakdown {
     this.stillT = this.story.still;
     this.sound = data.audio ? new StorySound(data.audio, this.story.cues(), this.story.loop, (data.beats * 60) / data.tempo, this.story.metronome()) : null;
     this.root = this.build();
-    void this.probeSound();
+    this.probe = this.probeSound();
     new IntersectionObserver(([e]) => {
       this.visible = e.isIntersecting;
       this.sound?.hold(!this.visible);
@@ -83,27 +86,28 @@ export class Breakdown {
     nav.append(...this.chapterButtons);
 
     this.soundButton("checking");
-    this.soundBtn.addEventListener("click", () => this.toggleSound());
     this.metronomeBox.addEventListener("change", () => this.sound && (this.sound.clicks = this.metronomeBox.checked));
     const hasKit = d.sources.some((s) => s.kind === "kit");
     const metronome = el("label", { className: "metronome", title: hasKit ? "Click the beat until the drums come in" : "Click the beat" }, this.metronomeBox, "Metronome");
 
-    // Tabs: the story, or the score that made it.
+    // Tabs on the left: the story, or the code that made it. The play button on the right.
     const tabs = el("div", { className: "bd-tabs", role: "tablist" });
     const tabStory = el("button", { type: "button", role: "tab", className: "on" }, "Breakdown");
-    const tabCode = el("button", { type: "button", role: "tab" }, "Score");
+    const tabCode = el("button", { type: "button", role: "tab" }, "Code");
     tabStory.addEventListener("click", () => this.show("story"));
     tabCode.addEventListener("click", () => this.show("code"));
     tabs.append(tabStory, tabCode);
-    const head = el("div", { className: "bd-head" }, tabs);
+    const head = el("div", { className: "bd-head" }, tabs, el("span", { className: "bd-spacer" }), ...(this.sound ? [this.play.root] : []));
     if (variant === "card" && d.title) head.prepend(el("div", { className: "bd-title" }, el("b", {}, d.title)));
+    const pre = el("pre", { className: "bd-source", innerHTML: highlightApr(d.code ?? "") });
+    pre.setAttribute("aria-label", `The score: ${d.score}`);
+    const code = el("div", { className: "bd-code", hidden: true });
     if (this.opts.open) {
       const open = el("button", { type: "button", className: "bd-open" }, `Open “${d.title ?? d.score}” in Score`);
       open.addEventListener("click", () => this.opts.open!(d.score));
-      head.append(open);
+      code.append(el("div", { className: "bd-code-bar" }, el("span", {}, d.score), open));
     }
-    const code = el("pre", { className: "bd-code", hidden: true, innerHTML: highlightApr(d.code ?? "") });
-    code.setAttribute("aria-label", `The score: ${d.score}`);
+    code.append(pre);
 
     const steps = el("ol", { className: "sr-only" }, ...this.story.chapters.map((c) => el("li", {}, c.label)));
     const fig = el(
@@ -112,7 +116,7 @@ export class Breakdown {
       head,
       this.stage,
       code,
-      el("figcaption", {}, ...(this.sound ? [el("div", { className: "sound-controls" }, this.soundBtn, metronome)] : []), this.info, nav),
+      el("figcaption", {}, ...(this.sound ? [el("div", { className: "sound-controls" }, metronome)] : []), this.info, nav),
       ...(variant === "card" && d.blurb ? [el("p", { className: "bd-blurb" }, d.blurb)] : []),
       this.provenance(),
       steps,
@@ -165,7 +169,7 @@ export class Breakdown {
     const state = stateAfterProbe(status);
     this.soundButton(state);
     // Say why, so a missing sound can be told apart from a denied one (403) or no connection.
-    if (state === "missing") this.soundBtn.title = `${soundView(state).hint} (${status ?? "no connection"})`;
+    if (state === "missing") this.play.set({ kind: "unavailable", why: `${soundView(state).hint} (${status ?? "no connection"})` });
     if (state === "ready" && this.opts.remember && soundRemembered()) this.resumeRemembered();
   }
 
@@ -187,19 +191,19 @@ export class Breakdown {
     document.addEventListener("keydown", start, true);
   }
 
-  private soundButton(state: SoundState) {
+  private soundButton(state: SoundState, progress?: { done: number; total: number }) {
     this.soundState = state;
-    const on = state === "on";
     const v = soundView(state);
-    const icon = on
-      ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
-      : '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="currentColor"/><path d="M13.5 8l4 4m0-4l-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-    this.soundBtn.innerHTML = `${icon}<span>${v.label}</span>`;
-    this.soundBtn.setAttribute("aria-pressed", String(v.pressed));
-    this.soundBtn.title = v.hint;
-    this.soundBtn.setAttribute("aria-label", v.hint);
-    this.soundBtn.classList.toggle("on", on);
-    this.soundBtn.disabled = v.disabled;
+    this.play.set(
+      state === "on"
+        ? { kind: "playing" }
+        : state === "loading"
+          ? { kind: "loading", label: "Loading sounds", ...progress }
+          : state === "missing"
+            ? { kind: "unavailable", why: v.hint }
+            : { kind: "idle" }, // checking, ready, armed: a click plays (once the check is done)
+    );
+    if (state === "armed") this.play.button.title = v.hint;
   }
 
   /** Turn this breakdown's sound off (another one is starting). */
@@ -211,6 +215,7 @@ export class Breakdown {
   }
 
   private async toggleSound() {
+    if (this.soundState === "checking") await this.probe;
     if (!this.sound || this.soundState === "missing" || this.soundState === "checking" || this.soundState === "loading") return;
     if (this.sound.on) {
       this.silence();
@@ -221,7 +226,7 @@ export class Breakdown {
     playing = this;
     this.soundButton("loading");
     try {
-      await this.sound.enable(this.storyT);
+      await this.sound.enable(this.storyT, (done, total) => this.soundButton("loading", { done, total }));
       this.paused = false;
       this.soundButton("on");
       if (this.opts.remember) rememberSound(true);
