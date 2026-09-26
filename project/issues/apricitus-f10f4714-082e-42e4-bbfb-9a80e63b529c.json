@@ -10,9 +10,22 @@
   "parent": "apricitus-5a367ce3-8dab-441c-84b2-0bfadecc59f6",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "42802d21-dd64-422c-a97f-8bdff1868fd3",
+      "author": "home",
+      "text": "Landed in PR #3 (squash 7958c12). Library and S3 are done:\n- Backed up `~/Apricity-Library` to `~/Apricity-Library.bak-2026-09-26` (APFS clone).\n- Migrated from a clean root: develop's tree, symlinked real samples, excluding another session's untracked `samples/loc` Lomax WIP and its uncommitted sources.json. A trial on a clone showed exactly 1 sample, 10 clips, 2 markers, 10 candidates, the score and its refs.\n- Retired old `smp_30a881a48deb9081db1d` (8 clips, 8 candidates, the sample) through GraphQL on the running `apricity serve` (port 5190), and removed its files.\n- The render from the library is bit-identical to the verified render.\n- `sync push` sent 42 changes. That included other pending local edits (the saints, minor-line, melody-demo and stab-demo scores and a rating), with the user's OK. Then I removed exactly the old announcer's 19 S3 keys. hero.breakdown_yaml was left untouched.\n\n**Remaining:** DynamoDB still has the old announcer's Sample/Clip/Candidate rows; the in-app import doesn't prune. The serve on 5190 needs a restart to see the new sample.",
+      "created_at": "2026-09-26T17:56:29.688591Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
   "created_at": "2026-09-26T17:26:28.938504Z",
-  "updated_at": "2026-09-26T17:26:28.938543Z",
+  "updated_at": "2026-09-26T17:56:29.688635Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
@@ -21,5 +34,8 @@
   },
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
 }
