@@ -549,30 +549,10 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .cmt-flat { display: grid; gap: 10px; }
 
 /* The Activity page (ui/activity.ts): one card per item, newest activity first. */
-.act { max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; }
-.act-head h1 { margin: 0 0 4px; font-size: 26px; }
-.act-head .hint { margin: 0 0 16px; }
-.act-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.act-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .act-chips button { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
 .act-chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: white; }
-.act-fresh { display: block; margin: 0 auto 12px; border: 0; border-radius: 999px; padding: 6px 14px; background: var(--accent); color: white; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px -6px var(--accent); }
-.act-list { display: grid; gap: 12px; }
-.act-card { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
-.act-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.act-kind { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.act-title { border: 0; background: none; padding: 0; font: inherit; font-size: 16px; font-weight: 600; color: var(--fg); cursor: pointer; text-align: left; }
-.act-title:hover { color: var(--accent); text-decoration: underline; }
-.act-by { font-size: 12.5px; color: var(--muted); }
-.act-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
-.act-lines b { font-weight: 600; }
-.act-ago, .act-when { color: var(--muted); font-size: 12px; }
-.act-preview { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 8px; overflow-wrap: anywhere; }
-.act-preview:empty { display: none; }
-.act-preview b { color: var(--fg); }
-.act-foot { display: flex; align-items: center; justify-content: space-between; }
-.act-talk { border: 0; background: none; padding: 0; color: var(--accent); font-size: 13px; cursor: pointer; }
-.act-thread .comments { margin-top: 4px; }
-.act-more { display: block; margin: 16px auto 0; }
+.act-fresh { border: 0; border-radius: 999px; padding: 6px 14px; background: var(--accent); color: white; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px -6px var(--accent); }
 #activity { display: block; overflow: auto; }
 
 /* License and credits (ui/credits.ts): a sample's provenance, and a score's credits. */
@@ -610,7 +590,6 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .forks h3 { font-size: 13px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .forks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
 .lic-based { font-size: 13px; margin: 0 0 8px; font-style: italic; }
-.act-forks { font-size: 13px; color: var(--muted); margin-left: 12px; }
 
 /* The editor's two views (ui/score.ts): the code, and how the compiler solved it. */
 .editor .code-tabs { display: flex; gap: 2px; padding: 4px 10px; border-bottom: 1px solid var(--line); background: var(--panel); }
@@ -646,3 +625,44 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .tag-input { width: 9ch; border: 1px dashed var(--line); border-radius: 999px; background: none; padding: 1px 8px; font-size: 12px; }
 .tag-input:focus { width: 16ch; border-style: solid; border-color: var(--accent); outline: none; }
 .editor > .tag-editor { display: flex; padding: 5px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+
+/* ---- feed pages (Activity, tags): cards that play, filling the width */
+#tags { display: block; overflow: auto; }
+.feed-page { padding: 16px 20px 60px; }
+.feed-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 14px; }
+.feed-tag { font-size: 22px; font-weight: 650; margin: 0; letter-spacing: -.01em; }
+.feed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); gap: 16px; align-items: start; }
+.feed-end { height: 1px; }
+.feed-card { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; display: flex; flex-direction: column; }
+.feed-stage { position: relative; background: color-mix(in srgb, var(--fg) 3%, var(--panel)); border-bottom: 1px solid var(--line); }
+.feed-canvas { display: block; width: 100%; height: 132px; }
+.feed-stage .playctl { position: absolute; right: 12px; bottom: 12px; flex-direction: row-reverse; }
+.feed-stage .playctl .play { width: 44px; height: 44px; box-shadow: 0 4px 14px color-mix(in srgb, var(--play) 35%, transparent); }
+.feed-stage .playctl .play svg { width: 44px; height: 44px; }
+.feed-stage .play-status { background: var(--panel); padding: 2px 8px; border-radius: 999px; font-size: 12px; max-width: 30ch; }
+.feed-body { padding: 12px 14px 14px; display: grid; gap: 8px; min-width: 0; }
+.feed-head { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.feed-rank { font: 700 20px/1.1 var(--mono); color: var(--muted); min-width: 1.4ch; }
+.feed-titles { flex: 1; min-width: 0; }
+.feed-title { font-size: 16px; font-weight: 620; color: var(--fg); text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed-title:hover { text-decoration: underline; }
+.feed-by { font-size: 12.5px; color: var(--muted); }
+.feed-kind { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-right: 2px; }
+.feed-note { font-size: 12.5px; color: var(--muted); }
+.feed-talk { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.feed-comment { font-size: 13.5px; line-height: 1.4; }
+.feed-comment p { margin: 2px 0 0; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.feed-ago { color: var(--muted); font-size: 12px; }
+.feed-talk-open { justify-self: start; border: 0; background: none; padding: 0; color: var(--accent); font-size: 13px; cursor: pointer; }
+.feed-talk-open:hover { text-decoration: underline; }
+.feed-talk .comments { margin: 0; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.tag-count .tag { font-size: 15px; padding: 3px 12px; }
+.feed-more-tags { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+@media (max-width: 600px) { .feed-page { padding: 12px 12px 48px; } }
+
+/* Activity: one slim bar (what to show, new activity, the top tags), then the cards. */
+.act-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0; margin: -16px 0 12px; border-bottom: 1px solid var(--line); }
+.act-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.act-all-tags { font-size: 12px; color: var(--muted); margin-left: 4px; }
+.act-local { margin: 0 0 14px; }
