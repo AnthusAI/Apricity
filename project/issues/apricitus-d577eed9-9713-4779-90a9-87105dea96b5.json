@@ -3,7 +3,7 @@
   "title": "Save reference drum rack presets and clips from the DAW into a fixture folder",
   "description": "## Intent\n\nGet ground truth: reference files saved by the DAW itself, so every later spec compares Apricity's output with what the DAW writes, not with guesses.\n\n## Steps (the owner does the DAW part; an agent annotates)\n\n1. In the DAW, build a drum rack with four pads, each a sampler holding a short WAV from the library:\n   - pad 1 untouched (C1);\n   - pad 2 with root key moved, transpose +3 st and detune -20 cents;\n   - pad 3 with sample start/end narrowed and volume -6 dB;\n   - pad 4 warped (warp on, two warp markers moved), playback in classic mode with a short release.\n2. Save it as a preset: `kit-reference.adg`. Save a second copy after changing only pad 2's receiving note (to isolate the note encoding).\n3. Save two clips: `clip-warped.alc` (a loop, named, with an info text) and `clip-unwarped.alc` (warp off).\n4. Use the tiny test WAVs from the sidecar initiative's generator (apricitus-2831a6) as the audio, so both spikes share one recipe. Copy the files into `crates/apricity-daw/tests/fixtures/reference/` with a `README.md` listing what each one holds and the DAW version that wrote it. No audio: the files only reference audio paths.\n\n## Out of scope\n\nWriting any product code; the `.alc` anatomy in depth (sidecar initiative apricitus-d7746d).\n\n## Verification\n\n```sh\nfor f in crates/apricity-daw/tests/fixtures/reference/*.{adg,alc}; do gzip -t \"$f\" && gunzip -c \"$f\" | xmllint --noout - ; done\ngit check-ignore -q crates/apricity-daw/tests/fixtures/reference/*.wav && echo \"no audio tracked\"\n```\n\nManual: the owner reopens each file in the DAW and it loads as saved.\n\n## Release\n\n`chore(<this task id>): reference presets and clips saved by the DAW`. Not breaking.\n\n## Log\n\nRecord in comments: the DAW version, anything the DAW changed on save, any file that would not load.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,9 +12,25 @@
     "daw"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "32ba2189-be58-4ad6-a20f-c4f281c7cd28",
+      "author": "home",
+      "text": "Started (Spike Drum Rack Presets). The DAW is not installed here; per the epic's 'Not blocked on the DAW' comment I am gathering public .adg/.alc files from permissively licensed git repositories as provisional ground truth, and writing the exact list of files the owner saves in the licensed install. Scratch work in the session scratchpad; fixtures go under crates/apricity-daw/tests/fixtures/reference/presets/. (Status set without agent flags: kbs refuses to overwrite the issue's existing agent metadata.)",
+      "created_at": "2026-09-26T23:00:26.894847Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
   "created_at": "2026-09-26T21:59:38.976131Z",
-  "updated_at": "2026-09-26T22:12:30.520772Z",
+  "updated_at": "2026-09-26T23:00:26.894885Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

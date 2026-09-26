@@ -3,7 +3,7 @@
   "title": "Owner saves reference .asd and .alc files from the DAW for the generated test WAVs",
   "description": "## Intent\nReal-format fixtures: sidecar files saved by the DAW itself, for the generated test WAVs. A machine cannot do this; the owner (or an agent driving the owner's DAW with permission) does, once.\n\n## Steps (manual, in the DAW)\n1. Generate the audio: `python3 scripts/daw-fixture-audio.py --out ~/daw-fixtures`.\n2. For each WAV, drag it into an audio track, then:\n   - `steady-120.wav`: warp on, mode Complex, set markers so beat 1.1.1 is the first downbeat (pickup before it); press the clip view's Save → `steady-120.wav.asd`. Drag the clip to the browser → `steady-120.alc`.\n   - `steady-120.wav` again, edited: move the marker at bar 3 beat 1 later by about 100 ms, Save → `steady-120-edited.wav.asd` (rename after saving).\n   - `tempo-change.wav`: markers at each beat including the one at beat 6.5; Save → `.asd`; also export `.alc`.\n   - `detuned.wav`: mode Beats, detune -30 cents, loop 2 bars → `.alc`.\n   - `free-time.wav`: warp off → `.asd` and `.alc`.\n3. Write down the DAW version and, for each file, the markers the DAW shows (seconds, beat) in `fixtures/README.md` (table).\n4. Put the sidecars (never the WAVs) in a folder the spike can read; M1 moves them into `crates/apricity-daw/tests/fixtures/`.\n\n## Done when\nEvery file above exists, the README table lists the markers the DAW showed, and the DAW version is recorded. Comment the folder path here.\n\n## Depends on\nThe fixture audio generator chore (same epic).",
   "type": "chore",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -19,7 +19,7 @@
   ],
   "comments": [],
   "created_at": "2026-09-26T21:59:43.889122Z",
-  "updated_at": "2026-09-26T22:06:35.171630Z",
+  "updated_at": "2026-09-26T23:00:13.798867Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

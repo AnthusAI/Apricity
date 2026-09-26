@@ -3,7 +3,7 @@
   "title": "Spike: hand-write a minimal .alc from Apricity's warp markers and test it in the DAW",
   "description": "## Intent\nAnswer M0 questions 3, 4 and 5 for the `.alc`: the smallest document the DAW accepts, and how it references audio.\n\n## Steps\n1. Unzip the owner's reference `.alc` files; list every element the AudioClip needs (WarpMarkers, CurrentStart/End, Loop, WarpMode, IsWarped, PitchCoarse/PitchFine, Name, SampleRef/FileRef with its size/checksum/date fields).\n2. Hand-write a minimal `.alc` for `steady-120.wav` from Apricity's analysis (its warp markers); drag it from the DAW's browser into a track. Does it play on the grid? Does it need the checksum/size fields, or does it accept zeros?\n3. Try: a negative beat (pickup), markers only over part of the audio, a relative path after moving the folder, detune -70 cents.\n4. Note the warp-mode numbers and which Apricity modes they map to (Tones and Complex Pro have no Apricity peer).\n\n## Output\nThe `.alc` section of `design/daw-sidecars.md` §Formats with a minimal annotated example document (no audio).\n\n## Verify (manual)\nThe hand-written `.alc` opens in the DAW and plays on the grid; the result for each variation in step 3 is recorded with the DAW version.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -19,7 +19,7 @@
   ],
   "comments": [],
   "created_at": "2026-09-26T21:59:44.073216Z",
-  "updated_at": "2026-09-26T22:06:35.314410Z",
+  "updated_at": "2026-09-26T23:00:13.739758Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
