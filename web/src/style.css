@@ -479,3 +479,50 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
   .roll { grid-column: auto; --key-w: 76px; }
   #score .roll { order: 1; }
 }
+
+/* Comments (ui/comments.ts): threads under a score, a sample or a clip, and on Activity cards. */
+.comments { margin-top: 18px; }
+.comments h3 { font-size: 13px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.cmt-compose { display: grid; gap: 6px; margin: 0 0 12px; }
+.cmt-compose textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 54px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-size: 13.5px; }
+.cmt-compose textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cmt-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cmt-actions .link { border: 0; background: none; padding: 0; color: var(--muted); font-size: 12px; cursor: pointer; }
+.cmt-actions .link:hover { color: var(--fg); text-decoration: underline; }
+.cmt-err { color: var(--bad, #c0392b); font-size: 12px; }
+.cmt-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cmt-list.replies { margin-top: 10px; padding-left: 14px; border-left: 2px solid var(--line); }
+.cmt { display: grid; gap: 3px; }
+.cmt-meta { font-size: 12px; color: var(--muted); }
+.cmt-meta b { color: var(--fg); font-weight: 600; }
+.cmt-body { font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cmt-body.gone { color: var(--muted); font-style: italic; }
+.cmt-slot:not(:empty) { margin-top: 6px; }
+.cmt-flat { display: grid; gap: 10px; }
+
+/* The Activity page (ui/activity.ts): one card per item, newest activity first. */
+.act { max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; }
+.act-head h1 { margin: 0 0 4px; font-size: 26px; }
+.act-head .hint { margin: 0 0 16px; }
+.act-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.act-chips button { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.act-chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: white; }
+.act-fresh { display: block; margin: 0 auto 12px; border: 0; border-radius: 999px; padding: 6px 14px; background: var(--accent); color: white; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px -6px var(--accent); }
+.act-list { display: grid; gap: 12px; }
+.act-card { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; }
+.act-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.act-kind { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.act-title { border: 0; background: none; padding: 0; font: inherit; font-size: 16px; font-weight: 600; color: var(--fg); cursor: pointer; text-align: left; }
+.act-title:hover { color: var(--accent); text-decoration: underline; }
+.act-by { font-size: 12.5px; color: var(--muted); }
+.act-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
+.act-lines b { font-weight: 600; }
+.act-ago, .act-when { color: var(--muted); font-size: 12px; }
+.act-preview { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 8px; overflow-wrap: anywhere; }
+.act-preview:empty { display: none; }
+.act-preview b { color: var(--fg); }
+.act-foot { display: flex; align-items: center; justify-content: space-between; }
+.act-talk { border: 0; background: none; padding: 0; color: var(--accent); font-size: 13px; cursor: pointer; }
+.act-thread .comments { margin-top: 4px; }
+.act-more { display: block; margin: 16px auto 0; }
+#activity { display: block; overflow: auto; }

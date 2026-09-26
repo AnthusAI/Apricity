@@ -5,6 +5,7 @@ import { Library } from "./ui/library";
 import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
+import { ActivityView } from "./ui/activity";
 import { bootstrap, mode } from "./data/client";
 import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
@@ -37,13 +38,14 @@ const score = new ScoreView(document.querySelector("#score")!);
 const clips = new Library(document.querySelector("#clips")!, "clips");
 const samples = new Library(document.querySelector("#samples")!, "samples");
 const docs = new DocsView(document.querySelector("#docs")!);
+const activity = new ActivityView(document.querySelector("#activity")!);
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
 // ---- tabs (remembered per browser)
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB: Record<string, ScoreKind> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
 const TAB_OF_KIND: Record<ScoreKind, string> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
-const TABS = ["home", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "activity", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tabs button")];
 const brand = document.querySelector<HTMLButtonElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
@@ -64,7 +66,8 @@ function showTab(name: string) {
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
-  document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home";
+  document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home" || name === "activity";
+  activity.show(name === "activity");
   syncTransport();
   if (kind) score.setKind(kind);
   else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
@@ -84,18 +87,18 @@ try {
 } catch {}
 const initial = saved ?? "home";
 
-// Signing in takes you to the top scores of the week. Nothing here is awaited at the top level: the auth code is a
+// Signing in takes you to Activity. Nothing here is awaited at the top level: the auth code is a
 // lazily loaded chunk that imports from this one, so awaiting it while this module is still evaluating deadlocks.
 let wasSignedIn = false;
 void currentAccount()
   .catch(() => null)
   .then((a) => {
     wasSignedIn = !!a;
-    if (a && !saved) showTab("scores");
+    if (a && !saved) showTab("activity");
   });
 document.addEventListener("apricity:auth-changed", async () => {
   const now = !!(await currentAccount().catch(() => null));
-  if (now && !wasSignedIn) (score.topOfWeek(), showTab("scores"));
+  if (now && !wasSignedIn) showTab("activity");
   wasSignedIn = now;
 });
 
@@ -108,6 +111,20 @@ async function openScore(path: string, play: boolean) {
   for (let i = 0; i < 100 && !(score.timeline && score.path === path); i++) await new Promise((r) => setTimeout(r, 100));
   if (score.timeline && score.path === path && !player.transport.playing) void togglePlay();
 }
+
+// An item opened from elsewhere (an Activity card): a score in its tab, a sample in Samples, a clip in Clips.
+document.addEventListener("apricity:open-item", async (e) => {
+  const { type, id } = (e as CustomEvent<{ type: "score" | "sample" | "clip"; id: string }>).detail;
+  if (type === "score") {
+    const path = await score.pathOf(id);
+    if (path) await openScore(path, false);
+    return;
+  }
+  const tab = type === "clip" ? "clips" : "samples";
+  loaded.add(tab); // openId loads the list itself
+  showTab(tab);
+  await (type === "clip" ? clips : samples).openId(id);
+});
 
 // Deep links: #score=<path>[&play] (a breakdown's "Open in Score", or a shared link).
 async function followRoute() {

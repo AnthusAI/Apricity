@@ -24,6 +24,7 @@
     <header class="topbar">
       <button class="brand link" type="button" data-tab="home" title="Home"><span class="logo" aria-hidden="true"></span>Apricity</button>
       <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="activity" aria-selected="false">Activity</button>
         <button role="tab" data-tab="scores" aria-selected="true">Scores</button>
         <button role="tab" data-tab="beats" aria-selected="false">Beats</button>
         <button role="tab" data-tab="chords" aria-selected="false">Chords</button>
@@ -37,6 +38,7 @@
     <div class="account" id="account" hidden></div>
     <main>
       <section id="home" class="view" data-view="home" hidden></section>
+      <section id="activity" class="view" data-view="activity" hidden></section>
       <!-- Scores, Beats, Chords and Melodies are one view: a score of that kind. -->
       <section id="score" class="view" data-view="score"></section>
       <section id="clips" class="view library" data-view="clips" hidden></section>
