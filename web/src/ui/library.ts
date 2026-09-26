@@ -9,6 +9,7 @@ import { player } from "../audio/player";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
+import { columnSplitter } from "./splitter";
 import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
@@ -103,6 +104,7 @@ export class Library {
     drop.hidden = mode === "clips" || this.cloud();
     this.list.el.append(this.jobsEl, drop, pick);
     root.append(this.list.el, this.detailEl);
+    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w * 0.5) });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
   }
 

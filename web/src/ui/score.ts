@@ -14,6 +14,7 @@ import { byline, handles, type Handles } from "../data/handles";
 import { forkFrom, freeTitle, owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
+import { columnSplitter } from "./splitter";
 import { scoreCredits } from "./credits";
 import { basedOn } from "../data/licenses";
 import { timeAgo } from "./time";
@@ -160,6 +161,9 @@ export class ScoreView {
       this.sideEl,
       ...this.dockPanels(),
     );
+    // The list and the side panel are as wide as you drag them.
+    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: "score-list", min: 180, max: (w) => Math.min(480, w * 0.35) });
+    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 260, max: (w) => w * 0.6 });
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     document.addEventListener("apricity:auth-changed", () => this.loadList());
     this.list.rename(KIND_LABEL[this.kind].many, `New ${KIND_LABEL[this.kind].one}`);

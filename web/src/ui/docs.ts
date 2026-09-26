@@ -2,6 +2,7 @@
 // with in-app links between pages, a table of contents, heading search, and highlighted
 // `apricity` code blocks.
 
+import { columnSplitter } from "./splitter";
 import { marked } from "marked";
 import { breakdown } from "../breakdowns";
 import { routeFor } from "../route";
@@ -56,7 +57,9 @@ export class DocsView {
       if (e.key === "Enter") (this.results.querySelector("button") as HTMLButtonElement | null)?.click();
       if (e.key === "Escape") (this.search.value = ""), this.renderResults();
     });
-    root.append(el("aside", { className: "sidebar docs-side" }, el("div", { className: "search" }, this.search), this.results, this.nav), el("div", { className: "docs-scroll" }, this.article));
+    const side = el("aside", { className: "sidebar docs-side" }, el("div", { className: "search" }, this.search), this.results, this.nav);
+    root.append(side, el("div", { className: "docs-scroll" }, this.article));
+    columnSplitter({ view: root, panel: side, edge: "right", prop: "--nav-w", key: "docs-nav", min: 180, max: (w) => Math.min(480, w * 0.45) });
     let start = this.current;
     try {
       start = localStorage.getItem("apricity.docs") ?? start;
