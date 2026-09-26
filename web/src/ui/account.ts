@@ -7,6 +7,7 @@ import type { Account, AuthStep } from "../data/auth";
 import { el } from "./dom";
 import { displayName, initial } from "./account-state";
 import type { ImportProgress, ImportSummary } from "../data/import-library";
+import { HANDLE_MAX, handleProblem, normalizeHandle, suggestHandle } from "../data/handles";
 
 export interface AccountDeps {
   cloud: () => boolean;
@@ -21,7 +22,14 @@ export interface AccountDeps {
   signOutAccount: () => Promise<void>;
   importLibrary: (o: { onProgress: (p: ImportProgress) => void; signal: AbortSignal }) => Promise<ImportSummary>;
   announce: () => void;
+  /** The person's public handle, if they have one. */
+  myHandle: (owners: string[]) => Promise<string | undefined>;
+  handleFree: (handle: string) => Promise<boolean>;
+  claimHandle: (handle: string, owners: string[]) => Promise<{ ok: true; handle: string } | { ok: false; why: string }>;
 }
+
+/** The owner values AppSync may have stamped for this account (see `me()`). */
+const ownersOf = (a: Account) => [a.username, `${a.sub}::${a.username}`];
 
 /** The real thing: the data-layer wrappers, and the import module loaded only when an admin asks for it. */
 export function realDeps(isCloud: () => boolean): AccountDeps {
@@ -38,14 +46,19 @@ export function realDeps(isCloud: () => boolean): AccountDeps {
     signOutAccount: auth.signOutAccount,
     importLibrary: async (o) => (await import("../data/import-library")).importLibraryFromBucket(o),
     announce: () => document.dispatchEvent(new CustomEvent("apricity:auth-changed")),
+    myHandle: async (owners) => (await (await import("../data/handles")).handles()).mine(owners),
+    handleFree: async (h) => (await import("../data/handles")).handleFree(h),
+    claimHandle: async (h, owners) => (await import("../data/handles")).claimHandle(h, owners),
   };
 }
 
-type View = "signin" | "signup" | "confirm" | "account" | "import";
+type View = "signin" | "signup" | "confirm" | "account" | "import" | "handle";
 
 export class AccountControl {
   private dlg = el("dialog", { className: "acct-dialog" });
   private account: Account | null = null;
+  private handle: string | undefined;
+  private askedForHandle = false; // once per page load; it asks again next time until a handle is chosen
   private view: View = "signin";
   private email = "";
   private pendingPassword = ""; // only between "create account" and the code, so we can sign in afterwards
@@ -76,18 +89,28 @@ export class AccountControl {
     } catch {
       this.account = null;
     }
+    try {
+      this.handle = this.account ? await this.deps.myHandle(ownersOf(this.account)) : undefined;
+    } catch {
+      this.handle = undefined;
+    }
     this.host.replaceChildren(
       ...(this.account ? this.pill(this.account) : [el("button", { className: "acct-in", type: "button", onclick: () => this.open("signin") }, "Sign in")]),
     );
+    // First sign-in (or any visit until one is chosen): ask for the public handle.
+    if (this.account && !this.handle && !this.askedForHandle && !this.dlg.open) {
+      this.askedForHandle = true;
+      this.open("handle");
+    }
   }
 
   private pill(a: Account): HTMLElement[] {
-    const name = displayName(a);
+    const name = this.handle ? `@${this.handle}` : displayName(a);
     const menu = el("div", { className: "acct-menu", role: "menu", hidden: true });
     const btn = el(
       "button",
       { className: "acct-pill", type: "button", title: "Account", ariaHasPopup: "menu", ariaExpanded: "false" },
-      el("span", { className: "acct-avatar", ariaHidden: "true" }, initial(a)),
+      el("span", { className: "acct-avatar", ariaHidden: "true" }, this.handle ? this.handle[0]!.toUpperCase() : initial(a)),
       el("span", { className: "acct-email" }, name),
     );
     const close = () => {
@@ -96,7 +119,8 @@ export class AccountControl {
     };
     const item = (label: string, fn: () => void) => el("button", { className: "acct-item", type: "button", role: "menuitem", onclick: () => (close(), fn()) }, label);
     menu.append(
-      el("div", { className: "acct-who" }, name),
+      el("div", { className: "acct-who" }, name, ...(this.handle ? [el("small", {}, displayName(a))] : [])),
+      item(this.handle ? "Change handle" : "Choose your handle", () => this.open("handle")),
       item("Account settings", () => this.open("account")),
       ...(a.admin ? [item("Import library from bucket", () => this.open("import"))] : []),
       item("Sign out", () => void this.signOut()),
@@ -281,19 +305,83 @@ export class AccountControl {
           "div",
           { className: "acct-form" },
           el("h2", { id: "acct-title" }, "Account"),
-          el("p", { className: "acct-note" }, a ? displayName(a) : ""),
+          el("p", { className: "acct-note" }, this.handle ? `@${this.handle} · ` : "", a ? displayName(a) : "", " (only you see your email)"),
           el("p", { className: "acct-groups" }, a?.groups.length ? `Groups: ${a.groups.join(", ")}` : "No groups yet."),
           el(
             "div",
             { className: "acct-actions" },
-            ...(a?.admin ? [el("button", { className: "btn primary", type: "button", onclick: () => this.go("import") }, "Import library from bucket")] : []),
+            el("button", { className: "btn primary", type: "button", onclick: () => this.go("handle") }, this.handle ? "Change handle" : "Choose your handle"),
+            ...(a?.admin ? [el("button", { className: "btn", type: "button", onclick: () => this.go("import") }, "Import library from bucket")] : []),
             el("button", { className: "btn", type: "button", onclick: () => this.dlg.close() }, "Close"),
           ),
         ),
       );
+    } else if (this.view === "handle") {
+      this.renderHandle();
     } else {
       this.renderImport();
     }
+  }
+
+  /** Choose (or change) the public handle, checking availability as the person types. */
+  private renderHandle() {
+    const a = this.account;
+    if (!a) return this.dlg.close();
+    const first = !this.handle;
+    const input = el("input", {
+      name: "handle",
+      type: "text",
+      autocomplete: "off",
+      spellcheck: false,
+      maxLength: HANDLE_MAX + 1,
+      required: true,
+      value: this.handle ?? suggestHandle(a.email),
+    }) as HTMLInputElement;
+    const status = el("p", { className: "acct-note", role: "status" });
+    let seq = 0;
+    const check = async () => {
+      const mine = ++seq;
+      const h = normalizeHandle(input.value);
+      const problem = handleProblem(h);
+      if (problem || h === this.handle) return void (status.textContent = problem ?? "That's your handle now.");
+      status.textContent = "Checking…";
+      try {
+        const free = await this.deps.handleFree(h);
+        if (mine === seq) status.textContent = free ? `@${h} is free.` : `@${h} is taken.`;
+      } catch {
+        if (mine === seq) status.textContent = "";
+      }
+    };
+    input.addEventListener("input", () => void check());
+    this.dlg.replaceChildren(
+      this.form(
+        first ? "Choose your handle" : "Change your handle",
+        [
+          el(
+            "p",
+            { className: "acct-note" },
+            first
+              ? "Pick the name people see on what you make and share, like @ryan. Your email stays private."
+              : "Your scores and clips will show the new handle. Clip names you already made keep theirs.",
+          ),
+          el("label", { className: "acct-field" }, "Handle", el("span", { className: "acct-handle" }, "@", input)),
+          status,
+        ],
+        first ? "Use this handle" : "Change handle",
+        async (d) => {
+          const r = await this.deps.claimHandle(String(d.get("handle")), ownersOf(a));
+          if (!r.ok) throw new Error(r.why);
+          this.handle = r.handle;
+          this.dlg.close();
+          await this.refresh();
+        },
+      ),
+    );
+    if (first) {
+      const later = this.dlg.querySelector<HTMLButtonElement>(".acct-actions button:not(.primary)");
+      if (later) later.textContent = "Later";
+    }
+    void check();
   }
 
   private async afterStep(step: AuthStep) {

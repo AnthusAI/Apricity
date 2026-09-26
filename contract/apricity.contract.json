@@ -1,5 +1,5 @@
 {
-  "version": "ad0c92d6f62a5fa6",
+  "version": "b1435a16a6d1e0c2",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -1835,6 +1835,95 @@
         "owner"
       ]
     },
+    "Handle": {
+      "name": "Handle",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "handlesByOwner",
+          "queryField": "handlesByOwner",
+          "partitionField": "owner",
+          "sortFields": []
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "operations": [
+            "create",
+            "read",
+            "delete"
+          ],
+          "identityClaim": "cognito:username"
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "groups": [
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
     "Tally": {
       "name": "Tally",
       "fields": {
@@ -2534,6 +2623,47 @@
         ]
       }
     ],
+    "Handle": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "operations": [
+          "create",
+          "read",
+          "delete"
+        ],
+        "identityClaim": "cognito:username"
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "groups": [
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
     "Tally": [
       {
         "provider": "iam",
@@ -2735,6 +2865,19 @@
       {
         "path": "Rating/*",
         "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Handle/*",
+        "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",

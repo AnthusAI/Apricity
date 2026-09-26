@@ -67,8 +67,8 @@ export interface ImportDeps {
   concurrency?: number;
 }
 
-/** Models that live only in the cloud, never in a library: people's ratings, and the tallies derived from them. */
-export const CLOUD_ONLY = new Set(["Rating", "Tally"]);
+/** Models that live only in the cloud, never in a library: ratings, the tallies derived from them, and handles. */
+export const CLOUD_ONLY = new Set(["Rating", "Tally", "Handle"]);
 
 /** Models parents-first: a model comes after every model it `belongsTo`. Stable in contract order. */
 export function importOrder(contract: Contract = CONTRACT): string[] {

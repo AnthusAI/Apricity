@@ -218,6 +218,13 @@ type Rating {
   updatedAt: AWSDateTime!
 }
 
+type Handle @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  owner: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
 type Tally @aws_iam @aws_cognito_user_pools {
   id: ID!
   targetType: RatingTarget!
@@ -517,6 +524,9 @@ type Query {
   refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsBySample(sampleId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsByClip(clipId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  getHandle(id: ID!): Handle @aws_iam @aws_cognito_user_pools
+  listHandles(id: ID, filter: ModelHandleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelHandleConnection @aws_iam @aws_cognito_user_pools
+  handlesByOwner(owner: String!, sortDirection: ModelSortDirection, filter: ModelHandleFilterInput, limit: Int, nextToken: String): ModelHandleConnection @aws_iam @aws_cognito_user_pools
   getTally(id: ID!): Tally @aws_iam @aws_cognito_user_pools
   listTallies(id: ID, filter: ModelTallyFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelTallyConnection @aws_iam @aws_cognito_user_pools
   talliesByTypeAndDay(targetType: RatingTarget!, day: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelTallyFilterInput, limit: Int, nextToken: String): ModelTallyConnection @aws_iam @aws_cognito_user_pools
@@ -608,6 +618,9 @@ type Mutation {
   createRating(input: CreateRatingInput!, condition: ModelRatingConditionInput): Rating
   updateRating(input: UpdateRatingInput!, condition: ModelRatingConditionInput): Rating
   deleteRating(input: DeleteRatingInput!, condition: ModelRatingConditionInput): Rating
+  createHandle(input: CreateHandleInput!, condition: ModelHandleConditionInput): Handle
+  updateHandle(input: UpdateHandleInput!, condition: ModelHandleConditionInput): Handle
+  deleteHandle(input: DeleteHandleInput!, condition: ModelHandleConditionInput): Handle
   createTally(input: CreateTallyInput!, condition: ModelTallyConditionInput): Tally
   updateTally(input: UpdateTallyInput!, condition: ModelTallyConditionInput): Tally
   deleteTally(input: DeleteTallyInput!, condition: ModelTallyConditionInput): Tally
@@ -667,6 +680,9 @@ type Subscription {
   onCreateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["createScoreRef"]) @aws_iam @aws_cognito_user_pools
   onUpdateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["updateScoreRef"]) @aws_iam @aws_cognito_user_pools
   onDeleteScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["deleteScoreRef"]) @aws_iam @aws_cognito_user_pools
+  onCreateHandle(filter: ModelSubscriptionHandleFilterInput, owner: String): Handle @aws_subscribe(mutations: ["createHandle"]) @aws_iam @aws_cognito_user_pools
+  onUpdateHandle(filter: ModelSubscriptionHandleFilterInput, owner: String): Handle @aws_subscribe(mutations: ["updateHandle"]) @aws_iam @aws_cognito_user_pools
+  onDeleteHandle(filter: ModelSubscriptionHandleFilterInput, owner: String): Handle @aws_subscribe(mutations: ["deleteHandle"]) @aws_iam @aws_cognito_user_pools
   onCreateTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["createTally"]) @aws_iam @aws_cognito_user_pools
   onUpdateTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["updateTally"]) @aws_iam @aws_cognito_user_pools
   onDeleteTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["deleteTally"]) @aws_iam @aws_cognito_user_pools
@@ -1614,6 +1630,53 @@ input ModelSubscriptionRatingFilterInput {
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionRatingFilterInput]
   or: [ModelSubscriptionRatingFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelHandleConnection @aws_iam @aws_cognito_user_pools {
+  items: [Handle]!
+  nextToken: String
+}
+
+input ModelHandleFilterInput {
+  id: ModelIDInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelHandleFilterInput]
+  or: [ModelHandleFilterInput]
+  not: ModelHandleFilterInput
+}
+
+input ModelHandleConditionInput {
+  owner: ModelStringInput
+  and: [ModelHandleConditionInput]
+  or: [ModelHandleConditionInput]
+  not: ModelHandleConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateHandleInput {
+  id: ID
+  owner: String
+}
+
+input UpdateHandleInput {
+  id: ID!
+  owner: String
+}
+
+input DeleteHandleInput {
+  id: ID!
+}
+
+input ModelSubscriptionHandleFilterInput {
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionHandleFilterInput]
+  or: [ModelSubscriptionHandleFilterInput]
   owner: ModelStringInput
 }
 

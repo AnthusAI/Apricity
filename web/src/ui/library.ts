@@ -3,6 +3,7 @@
 
 import { api, audioUrl, manifest, me, ratings, type SampleSummary, type SavedClip } from "../apricity";
 import { owns, SignedOut, type ClipItem, type Me } from "../data/catalog";
+import { byline, handles, type Handles } from "../data/handles";
 import { mode } from "../data/client";
 import { player } from "../audio/player";
 import { el } from "./dom";
@@ -30,6 +31,7 @@ export class Library {
   private audition: AudioBufferSourceNode | null = null;
   private jobsTimer = 0;
   private who: Me | null = null;
+  private names: Handles | null = null;
   private list: RankedList<SampleSummary> | RankedList<ClipItem>;
   private stars = new StarRating((n) => this.rate(n), signIn);
 
@@ -39,8 +41,9 @@ export class Library {
   ) {
     this.root = root;
     const loadSamples = async () => {
-      const [r, who] = await Promise.all([api.samples(), me().catch(() => null)]);
+      const [r, who, names] = await Promise.all([api.samples(), me().catch(() => null), handles()]);
       this.who = who;
+      this.names = names;
       this.samples = r.samples;
       this.jobs = r.jobs;
       this.renderJobs();
@@ -70,9 +73,9 @@ export class Library {
         tallies: async () => (await ratings()).tallies("clip"),
         row: (c) => ({
           title: c.name,
-          sub: `${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${owns(this.who, c.owner) ? "yours" : c.source === "ml" ? "found by analysis" : "made by someone"}`,
+          sub: `${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${c.source === "ml" && !owns(this.who, c.owner) ? "found by analysis" : byline(this.names, c.owner, owns(this.who, c.owner)) || "made by someone"}`,
         }),
-        text: (c) => `${c.name} ${c.sampleTitle} ${c.samplePath}`,
+        text: (c) => `${c.name} ${c.sampleTitle} ${c.samplePath} ${byline(this.names, c.owner, false)}`,
         owner: (c) => c.owner,
         me: async () => this.who,
         open: (c) => ((this.currentClip = c), this.show(c.samplePath)),

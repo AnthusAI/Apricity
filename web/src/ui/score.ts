@@ -10,6 +10,7 @@ import { Compartment } from "@codemirror/state";
 import { aprLanguage } from "./apr-lang";
 import { tags as t } from "@lezer/highlight";
 import { api, compile, me, ratings, type Timeline } from "../apricity";
+import { byline, handles, type Handles } from "../data/handles";
 import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
 import { StarRating } from "./stars";
@@ -49,6 +50,7 @@ export class ScoreView {
   private language = new Compartment();
   private items: ScoreItem[] = [];
   private who: Me | null = null;
+  private names: Handles | null = null;
   private list: RankedList<ScoreItem>;
   private stars = new StarRating((n) => this.rate(n), signIn);
   private kindSel = el("select", { className: "kind", ariaLabel: "What this score is" });
@@ -102,19 +104,21 @@ export class ScoreView {
     this.list = new RankedList<ScoreItem>({
       name: "scores",
       load: async () => {
-        const [{ scores }, who] = await Promise.all([api.scores(), me().catch(() => null)]);
+        const [{ scores }, who, names] = await Promise.all([api.scores(), me().catch(() => null), handles()]);
         this.items = scores;
         this.who = who;
+        this.names = names;
         return scores.filter((x) => x.kind === this.kind);
       },
       tallies: async () => (await ratings()).tallies("score"),
-      row: (x) => ({ title: x.title, sub: owns(this.who, x.owner) ? `yours · ${x.path}` : x.path }),
-      text: (x) => `${x.title} ${x.path}`,
+      row: (x) => ({ title: x.title, sub: byline(this.names, x.owner, owns(this.who, x.owner)) }),
+      text: (x) => `${x.title} ${byline(this.names, x.owner, false)}`,
       owner: (x) => x.owner,
       me: async () => this.who,
       open: (x) => this.open(x.path),
       create: { label: "New score", run: () => this.create() },
     });
+    document.addEventListener("apricity:handles-changed", () => void this.list.refresh());
     this.chordsEl.addEventListener("click", (e) => {
       if (!this.timeline) return;
       const r = this.chordsEl.getBoundingClientRect();
@@ -312,7 +316,7 @@ export class ScoreView {
   }
 
   async open(path: string) {
-    if (this.dirty() && !confirm(`Discard unsaved changes to ${this.path}?`)) return;
+    if (this.dirty() && !confirm(`Discard unsaved changes to ${this.item()?.title ?? this.path}?`)) return;
     if (!this.items.length) await this.list.refresh();
     let text: string;
     try {
@@ -365,6 +369,7 @@ export class ScoreView {
       this.statusEl.textContent = `couldn't create ${path}: ${(e as Error).message}`;
       return;
     }
+    this.statusEl.textContent = "";
     this.saved = "";
     this.path = null; // nothing unsaved to warn about: open the new one
     await this.loadList(path);

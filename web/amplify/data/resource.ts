@@ -280,6 +280,17 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.owner()]),
 
+  // A person's public name. The id is the handle itself (lowercase), so a create for a taken handle fails, even when
+  // two people ask at once. The owner is set by AppSync, so the handle → person link can be trusted; changing a handle
+  // is create-new-then-delete-old, and the newest one wins if both are briefly there. Curators can remove one.
+  Handle: a
+    .model({
+      id: a.id().required(),
+      owner: a.string(),
+    })
+    .secondaryIndexes((i) => [i("owner").queryField("handlesByOwner")])
+    .authorization((allow) => [...everyone(allow), allow.owner().to(["create", "read", "delete"]), allow.group("curators")]),
+
   // The public side of ratings: per item, the count and star sum for one UTC day (`YYYY-MM-DD`) or for all time
   // (`all`). Written only by the tally Lambda from the Rating table's stream (amplify/functions/tally).
   Tally: a

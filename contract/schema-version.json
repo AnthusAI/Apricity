@@ -1,7 +1,7 @@
 {
-  "contractVersion": "ad0c92d6f62a5fa6",
+  "contractVersion": "b1435a16a6d1e0c2",
   "sha256Hashes": {
-    "web/amplify/data/resource.ts": "abc53f24428ddcfa335a0ff0225c09ded41d7cc22a65a6f13060ca66a0c267b6",
+    "web/amplify/data/resource.ts": "c562e8d23195ea884393a298c5f8b5ccfae8db76b50e449207b72c7d83268a69",
     "web/amplify/auth/resource.ts": "8ff448aac9f7bc85845a90d4dca9efd4395e95efe14455a2784e1162ee247505",
     "web/amplify/storage/resource.ts": "5150f91fd0f7f617f57d28ed13b2da1090e11648ec5e4e9d3927a22a33bbbad2"
   }

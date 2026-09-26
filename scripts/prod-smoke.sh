@@ -95,6 +95,10 @@ gql 'query { listScores(limit: 5) { items { id title } } }'
 [ "$(field 'len(d["data"]["listScores"]["items"])')" -gt 0 ] 2>/dev/null; check "a guest lists scores" $?
 gql 'mutation { createScore(input: {title: "smoke", folder: "smoke", format: apr, text: "tempo 90"}) { id } }'
 field '"Unauthorized" in json.dumps(d.get("errors", ""))' | grep -q True; check "a guest cannot create a score" $?
+gql 'query { listHandles(limit: 5) { items { id owner } } }'
+field 'isinstance(d["data"]["listHandles"]["items"], list)' | grep -q True; check "a guest reads handles" $?
+gql 'mutation { createHandle(input: {id: "smoke-guest"}) { id } }'
+field '"Unauthorized" in json.dumps(d.get("errors", ""))' | grep -q True; check "a guest cannot take a handle" $?
 
 # --- the bucket as a guest: public data reads, private records do not
 if [ -n "$AUDIO_KEY" ]; then s3get "files/$AUDIO_KEY"; check "guest can read a sample's audio (files/$AUDIO_KEY)" $?; fi

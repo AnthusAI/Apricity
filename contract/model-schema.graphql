@@ -228,6 +228,15 @@ type Rating @model @auth(rules: [{allow: owner, ownerField: "owner"}])
   owner: String
 }
 
+type Handle @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]},
+  {allow: owner, operations: [create, read, delete], ownerField: "owner"},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  owner: String @index(queryField: "handlesByOwner")
+}
+
 type Tally @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
   {allow: private, operations: [read]}])
 {
