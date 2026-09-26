@@ -8,6 +8,7 @@ import { audioUrl, stepsView, type ClipItem, type Timeline } from "../../apricit
 import { pickClip } from "../clip-picker";
 import { player } from "../../audio/player";
 import { PALETTE } from "../flow/view";
+import { lineage, padRecordings } from "../flow/lineage";
 import { addPad, off, readBeat, setBars, setCell, setSwing, setTempo, writeBeat, type Beat, type Cell, type StepsView } from "./model";
 
 export interface BeatDeps {
@@ -142,8 +143,10 @@ export class BeatView {
       head.push(h);
     }
     this.cells = [];
+    // Colored by recording, as Flow colors its tiles; a pad the timeline doesn't know yet keeps a color by row.
+    const recs = this.timeline ? padRecordings(this.timeline, lineage(this.timeline), b.kit) : new Map<string, number>();
     const rows = b.rows.map((r, ri) => {
-      const color = PALETTE[ri % PALETTE.length];
+      const color = PALETTE[(recs.get(r.pad) ?? ri) % PALETTE.length];
       const mute = el("button", { type: "button", className: "ms", title: "Mute (only while listening; not saved)" }, "M");
       const solo = el("button", { type: "button", className: "ms", title: "Solo (only while listening; not saved)" }, "S");
       mute.setAttribute("aria-pressed", String(this.muted.has(r.pad)));

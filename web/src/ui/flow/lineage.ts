@@ -150,3 +150,23 @@ export function lineage(tl: Timeline): Lineage {
 
   return { recordings, pieces, rows, lanes, eventPiece };
 }
+
+/**
+ * The recording each pad of a kit plays, as Flow numbers recordings (so a pad has the color of its tiles there): from
+ * the events of the pad's track (`track drums.kick`), keyed by the pad's name.
+ */
+export function padRecordings(tl: Timeline, lin: Lineage, kit: string): Map<string, number> {
+  const byTrack = new Map<string, number>();
+  tl.events.forEach((e, i) => {
+    const pc = lin.pieces[lin.eventPiece[i]];
+    if (pc && !byTrack.has(e.track)) byTrack.set(e.track, pc.recording);
+  });
+  const out = new Map<string, number>();
+  for (const t of tl.tracks) {
+    const r = byTrack.get(t.name);
+    if (r === undefined) continue;
+    const pad = t.clip.startsWith(`${kit}.`) ? t.clip.slice(kit.length + 1) : t.clip;
+    if (!out.has(pad)) out.set(pad, r);
+  }
+  return out;
+}

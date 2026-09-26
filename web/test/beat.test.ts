@@ -174,3 +174,15 @@ describe("rebaseSamples", () => {
   });
   it("moving back up", () => assert.equal(rebaseSamples("samples ../../samples\n", "scores/ann", "scores"), "samples ../samples\n"));
 });
+
+it("pads take the color of their recording, as Flow's tiles do", async () => {
+  const { padRecordings } = await import("../src/ui/flow/lineage.ts");
+  const tl = {
+    tracks: [{ name: "drums.kick", clip: "drums.kick" }, { name: "drums.snare", clip: "drums.snare" }, { name: "drums.ghost", clip: "drums.ghost" }, { name: "horn", clip: "horn" }, { name: "drums.hat", clip: "drums.hat" }],
+    events: [{ track: "drums.kick" }, { track: "drums.snare" }, { track: "drums.ghost" }, { track: "horn" }],
+  };
+  const piece = (recording: number) => ({ recording, from: 0, to: 1, label: "", clip: "", row: 0, events: [] });
+  const lin = { recordings: [], rows: [], lanes: [], pieces: [piece(0), piece(1), piece(2)], eventPiece: [0, 1, 1, 2] };
+  const m = padRecordings(tl as any, lin as any, "drums");
+  assert.deepEqual([m.get("kick"), m.get("snare"), m.get("ghost"), m.get("horn"), m.get("hat")], [0, 1, 1, 2, undefined], "one file, one color; no hits yet, no color");
+});
