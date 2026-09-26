@@ -24,10 +24,24 @@
         "name": "Project improvement audit",
         "settings": {}
       }
+    },
+    {
+      "id": "99db940b-bc27-43b6-8ffb-f4db0fa86d7b",
+      "author": "unknown",
+      "text": "Project-management machinery: added .claude/hooks/session-start.sh, registered in .claude/settings.json, which installs the Kanbus CLI (kanbus + cffi from PyPI) in Claude Code on the web sessions. Verified by uninstalling kanbus and rerunning the hook. No separate issue per CONTRIBUTING_AGENT.md.",
+      "created_at": "2026-09-26T05:46:36.735822Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude",
+        "name": "Project improvement audit",
+        "settings": {}
+      }
     }
   ],
   "created_at": "2026-09-26T05:35:17.883530Z",
-  "updated_at": "2026-09-26T05:43:06.721582Z",
+  "updated_at": "2026-09-26T05:46:36.735962Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
