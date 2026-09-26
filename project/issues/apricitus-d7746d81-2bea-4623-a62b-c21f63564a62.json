@@ -27,10 +27,22 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "a0de787a-3981-42d7-8ee0-eeea405828bb",
+      "author": "home",
+      "text": "## Decisions on the open questions (2026-09-26, orchestrator, on the owner's behalf)\n\n1. **Writing `.asd`:** accept M0's go/no-go. On no-go, `.asd` is dropped (not deferred) and an `.alc` beside the sample is the deliverable. A proprietary binary we can't verify is not worth the risk of corrupting the DAW's cache.\n2. **Where sidecars go:** beside the library audio in `files/audio/<id>/`, excluded from sync, because drag-from-library is the whole point. Add `--out <dir>` for a separate export folder.\n3. **Ownership of per-sample `.alc` export and naming:** yes, M3 here (apricitus-f5b805) is the single owner. apricitus-5562e0 adds only the folder layout and is already blocked on the naming function and the writer.\n4. **Cloud fallback:** user warp markers live in the sample manifest, so they are shared like everything else in the manifest. A sample with user markers uses them for everyone; the analysis grid is the fallback only when there are none. No per-user grids.\n5. **Stems:** markers belong to the recording. Importing on any stem sets the recording's grid, which the parent and every sibling stem share. No flag.\n6. **Command names:** `export --sidecars`, `import --markers`, `--reset-markers`: approved.",
+      "created_at": "2026-09-26T22:19:46.767141Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
     }
   ],
   "created_at": "2026-09-26T20:14:35.611246Z",
-  "updated_at": "2026-09-26T22:07:02.520091Z",
+  "updated_at": "2026-09-26T22:19:46.767182Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

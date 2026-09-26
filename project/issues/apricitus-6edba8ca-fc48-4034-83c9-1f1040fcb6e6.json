@@ -27,10 +27,22 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "7938d19b-8fa4-4b19-a53f-aff293ad43b5",
+      "author": "home",
+      "text": "## Decisions on the open questions (2026-09-26, orchestrator, on the owner's behalf)\n\nThe owner asked me to decide. These are binding for the plan unless M0 proves one impossible; in that case revise it in the spike's design note and comment here.\n\n1. **DAW version:** target the current major version installed on the owner's machine. M0 captures reference sets from that install and its header sets the version we write. No support for older versions.\n2. **Overlapping notes:** yes, a group track named after the Apricity track, holding numbered audio tracks named `<track> 1`, `<track> 2`, … The mix goes on the group.\n3. **Locators:** at each chord change, named with the compiler's chord label.\n4. **Warp mode:** `beats` → Beats, `texture` → Texture, `repitch` → Re-Pitch, `complex` → Complex Pro (the higher-quality mode, matching the Rubber Band quality Apricity renders with).\n5. **Reverse:** a pre-reversed copy of the audio in the set folder. It matches `apricity render` exactly and doesn't depend on the DAW's reverse semantics.\n6. **Loudness:** measured by default (export is a one-off and fidelity to the render is the point); `--no-measure` skips it.\n7. **Cloud export:** out of scope for this initiative. M5's endpoint on `apricity serve` covers local. Cloud export becomes its own epic once the storage backend lands.\n8. **Manual checks:** the owner will save reference files when a spike asks. Every M0 task and every manual check must include exact step-by-step instructions (menu, click, filename, where to put it) so no DAW knowledge is assumed.",
+      "created_at": "2026-09-26T22:19:46.661094Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
     }
   ],
   "created_at": "2026-09-26T20:14:35.579925Z",
-  "updated_at": "2026-09-26T22:07:57.398630Z",
+  "updated_at": "2026-09-26T22:19:46.661135Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

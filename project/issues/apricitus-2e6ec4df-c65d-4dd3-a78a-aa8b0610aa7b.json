@@ -27,10 +27,22 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "0327b774-029b-4c26-8578-f7287f3e3184",
+      "author": "home",
+      "text": "## Decisions on the open questions (2026-09-26, orchestrator, on the owner's behalf)\n\n1. **Tolerances:** 3 ms native, 10 ms browser, measured as beat-phase error at 120 BPM over the 10-minute run. M0 may tighten them, never loosen without a comment here.\n2. **Start/stop sync:** on by default; `--no-start-stop` opts out. A performer pressing play in the DAW expects Apricity to start.\n3. **Cloud app:** local-only. `apricity serve --link` is the only browser path in this initiative; the cloud app gets no Link.\n4. **iOS:** out of scope. Build `apricity-link` with no desktop assumptions so it can be reused, but plan no iOS work here; licensing stays with apricitus-874f56.\n5. **CI:** the 10-minute harnesses do not run in CI (they need real network peers). CI runs a short deterministic test against a simulated clock; the harnesses are a script run before closing M4 and recorded in its log.\n6. **Lone peer:** yes, `apricity play --link` starts a session at the score's tempo when alone, if M0 confirms a joining DAW adopts it.",
+      "created_at": "2026-09-26T22:19:46.847904Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
     }
   ],
   "created_at": "2026-09-26T20:14:35.674508Z",
-  "updated_at": "2026-09-26T22:08:18.734334Z",
+  "updated_at": "2026-09-26T22:19:46.847958Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
