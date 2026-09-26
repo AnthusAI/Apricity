@@ -12,12 +12,12 @@ import urllib.request
 UA = {"User-Agent": "Apricity/0.1"}
 
 
-def get(url: str, pause: float = 1.5) -> bytes:
+def get(url: str, pause: float = 1.5, headers: dict | None = None) -> bytes:
     """Fetch with a pause and backoff: loc.gov answers 429 to fast callers."""
     for wait in (2, 15, 45, 120, 0):
         time.sleep(pause)
         try:
-            return urllib.request.urlopen(urllib.request.Request(url, headers=UA)).read()
+            return urllib.request.urlopen(urllib.request.Request(url, headers={**UA, **(headers or {})})).read()
         except urllib.error.HTTPError as e:
             if e.code not in (429, 503) or not wait:
                 raise

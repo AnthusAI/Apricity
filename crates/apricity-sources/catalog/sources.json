@@ -3795,5 +3795,1012 @@
         "sha256": "bb7c1912937e4b7099f8f6b8ba3fff80201aafbb30a9aebdae6aa45496888ca9"
       }
     ]
+  },
+  {
+    "id": "ccmixter-15924",
+    "title": "Hornet (ccMixter)",
+    "credit": "George_Ellinas, “Hornet”, ccMixter.",
+    "rights": "CC BY 3.0, George_Ellinas; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "George_Ellinas",
+    "source_page": "https://ccmixter.org/files/George_Ellinas/15924",
+    "files": [
+      {
+        "path": "ccmixter/George-Ellinas/Hornet_15924.mp3",
+        "url": "https://ccmixter.org/content/George_Ellinas/George_Ellinas_-_Hornet.mp3",
+        "fetch": "manual",
+        "title": "Hornet",
+        "size": 9515251,
+        "sha256": "8e53bb106422b12dfd3ab481a8d4bb74ccdb89707911ddc591fef04e8a3dd6b4"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-18701",
+    "title": "Colbert and Lessig on REMIX (ccMixter)",
+    "credit": "Lessig, “Colbert and Lessig on REMIX”, ccMixter.",
+    "rights": "CC BY 3.0, Lessig; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Lessig",
+    "source_page": "https://ccmixter.org/files/lessig/18701",
+    "files": [
+      {
+        "path": "ccmixter/lessig/Colbert-and-Lessig-on-REMIX_18701.mp3",
+        "url": "https://ccmixter.org/content/lessig/lessig_-_Colbert_and_Lessig_on_REMIX.mp3",
+        "fetch": "manual",
+        "title": "Colbert and Lessig on REMIX",
+        "size": 7569048,
+        "sha256": "e6752e17a650bb087546a6215cbd3855b99ac0c97cbabeb5ead560d2ace8d308"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-18763",
+    "title": "Remixing is Okay (Lessig and Colbert on 45) (ccMixter)",
+    "credit": "spinmeister, “Remixing is Okay (Lessig and Colbert on 45)”, ccMixter.",
+    "rights": "CC BY 3.0, spinmeister; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "spinmeister",
+    "source_page": "https://ccmixter.org/files/spinmeister/18763",
+    "files": [
+      {
+        "path": "ccmixter/spinmeister/Remixing-is-Okay-Lessig-and-Colbert-on-45_18763.mp3",
+        "url": "https://ccmixter.org/content/spinmeister/spinmeister_-_Remixing_is_Okay_(Lessig_and_Colbert_on_45).mp3",
+        "fetch": "manual",
+        "title": "Remixing is Okay (Lessig and Colbert on 45)",
+        "size": 4562130,
+        "sha256": "f82fd69963a27f16feef253d326bfaa9335d5d26b55bee79b93599ae367bd25d"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-22537",
+    "title": "Once (ccMixter)",
+    "credit": "DoKashiteru, “Once”, ccMixter.",
+    "rights": "CC BY 3.0, DoKashiteru; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "DoKashiteru",
+    "source_page": "https://ccmixter.org/files/DoKashiteru/22537",
+    "files": [
+      {
+        "path": "ccmixter/DoKashiteru/Once_22537.mp3",
+        "url": "https://ccmixter.org/content/DoKashiteru/DoKashiteru_-_Once.mp3",
+        "fetch": "manual",
+        "title": "Once",
+        "size": 5792959,
+        "sha256": "67e62b63d6227e921e1a30fa336911534d4ea08aa358e524d024c490682eebdd"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-23690",
+    "title": "The White Cube (ccMixter)",
+    "credit": "SackJo22, “The White Cube”, ccMixter.",
+    "rights": "CC BY 3.0, SackJo22; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "SackJo22",
+    "source_page": "https://ccmixter.org/files/SackJo22/23690",
+    "files": [
+      {
+        "path": "ccmixter/SackJo22/The-White-Cube_23690.mp3",
+        "url": "https://ccmixter.org/content/SackJo22/SackJo22_-_The_White_Cube.mp3",
+        "fetch": "manual",
+        "title": "The White Cube",
+        "size": 1668955,
+        "sha256": "c237e44d4ba985c883f68fcebac32454f051032235845d6be7e222d8cd05f48b"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-23781",
+    "title": "And Then We Take Them Down Again (ccMixter)",
+    "credit": "DoKashiteru, “And Then We Take Them Down Again”, ccMixter.",
+    "rights": "CC BY 3.0, DoKashiteru; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "DoKashiteru",
+    "source_page": "https://ccmixter.org/files/DoKashiteru/23781",
+    "files": [
+      {
+        "path": "ccmixter/DoKashiteru/And-Then-We-Take-Them-Down-Again_23781.mp3",
+        "url": "https://ccmixter.org/content/DoKashiteru/DoKashiteru_-_And_Then_We_Take_Them_Down_Again.mp3",
+        "fetch": "manual",
+        "title": "And Then We Take Them Down Again",
+        "size": 2621693,
+        "sha256": "55e26f7a6c0a05ac73ed3007fa54ae5291ab5b39961091a38096e294673c2f01"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-23846",
+    "title": "Put You Hands Up- Rude Boy Remix (ccMixter)",
+    "credit": "J.Lang, “Put You Hands Up- Rude Boy Remix”, ccMixter.",
+    "rights": "CC BY 3.0, J.Lang; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "J.Lang",
+    "source_page": "https://ccmixter.org/files/djlang59/23846",
+    "files": [
+      {
+        "path": "ccmixter/djlang59/Put-You-Hands-Up-Rude-Boy-Remix_23846.mp3",
+        "url": "https://ccmixter.org/content/djlang59/djlang59_-_Put_You_Hands_Up-_Rude_Boy_Remix.mp3",
+        "fetch": "manual",
+        "title": "Put You Hands Up- Rude Boy Remix",
+        "size": 3606607,
+        "sha256": "64e86b7a9736605b4b9043c5fb8c45cd9109631d37729d19cfbbdb625dc5be3e"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-24069",
+    "title": "Stretch At The Grave (ccMixter)",
+    "credit": "Scott Altham, “Stretch At The Grave”, ccMixter.",
+    "rights": "CC BY 3.0, Scott Altham; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Scott Altham",
+    "source_page": "https://ccmixter.org/files/scottaltham/24069",
+    "files": [
+      {
+        "path": "ccmixter/scottaltham/Stretch-At-The-Grave_24069.mp3",
+        "url": "https://ccmixter.org/content/scottaltham/scottaltham_-_Stretch_At_The_Grave.mp3",
+        "fetch": "manual",
+        "title": "Stretch At The Grave",
+        "size": 6266089,
+        "sha256": "19dd4052957286fb7b2c4d1b137cfa06fe177113a4a9a15c012f556a86eb07b5"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27808",
+    "title": "Dear Mr Williams (ccMixter)",
+    "credit": "loveshadow, “Dear Mr Williams”, ccMixter.",
+    "rights": "CC BY 3.0, loveshadow; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "loveshadow",
+    "source_page": "https://ccmixter.org/files/Loveshadow/27808",
+    "files": [
+      {
+        "path": "ccmixter/Loveshadow/Dear-Mr-Williams_27808.mp3",
+        "url": "https://ccmixter.org/content/Loveshadow/Loveshadow_-_Dear_Mr_Williams.mp3",
+        "fetch": "manual",
+        "title": "Dear Mr Williams",
+        "size": 4658913,
+        "sha256": "d666cd8b7672e3318f909e801fb64a2c43b1a0fe828907fa02c1df29915794cc"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27821",
+    "title": "We Hold These Truths (ccMixter)",
+    "credit": "essesq, “We Hold These Truths”, ccMixter.",
+    "rights": "CC BY 3.0, essesq; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "essesq",
+    "source_page": "https://ccmixter.org/files/essesq/27821",
+    "files": [
+      {
+        "path": "ccmixter/essesq/We-Hold-These-Truths_27821.mp3",
+        "url": "https://ccmixter.org/content/essesq/essesq_-_We_Hold_These_Truths.mp3",
+        "fetch": "manual",
+        "title": "We Hold These Truths",
+        "size": 2813537,
+        "sha256": "c45ac5fca3b3bedd8347746465481fa106ae9206387d8ce5d1a0d947687a58b0"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27835",
+    "title": "Freedom in my Voice (ccMixter)",
+    "credit": "SackJo22, “Freedom in my Voice”, ccMixter.",
+    "rights": "CC BY 3.0, SackJo22; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "SackJo22",
+    "source_page": "https://ccmixter.org/files/SackJo22/27835",
+    "files": [
+      {
+        "path": "ccmixter/SackJo22/Freedom-in-my-Voice_27835.mp3",
+        "url": "https://ccmixter.org/content/SackJo22/SackJo22_-_Freedom_in_my_Voice.mp3",
+        "fetch": "manual",
+        "title": "Freedom in my Voice",
+        "size": 1556942,
+        "sha256": "3e3b3fd5cbc5cfcd96b944e93ebdc7f34bd0d5bea1b262be426cff9c3c7315eb"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27844",
+    "title": "Copyright ? (ccMixter)",
+    "credit": "loveshadow, “Copyright ?”, ccMixter.",
+    "rights": "CC BY 3.0, loveshadow; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "loveshadow",
+    "source_page": "https://ccmixter.org/files/Loveshadow/27844",
+    "files": [
+      {
+        "path": "ccmixter/Loveshadow/Copyright_27844.mp3",
+        "url": "https://ccmixter.org/content/Loveshadow/Loveshadow_-_Copyright_.mp3",
+        "fetch": "manual",
+        "title": "Copyright ?",
+        "size": 2104501,
+        "sha256": "23b7fa9449d3eaaf70e3150a5dcbc3aa47aa870c0f1f1c7b3968960a34a0053c"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27870",
+    "title": "Dear Mr Williams (Snowflake Adaptation) (ccMixter)",
+    "credit": "Madam Snowflake, “Dear Mr Williams (Snowflake Adaptation)”, ccMixter.",
+    "rights": "CC BY 3.0, Madam Snowflake; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Madam Snowflake",
+    "source_page": "https://ccmixter.org/files/snowflake/27870",
+    "files": [
+      {
+        "path": "ccmixter/snowflake/Dear-Mr-Williams-Snowflake-Adaptation_27870.mp3",
+        "url": "https://ccmixter.org/content/snowflake/snowflake_-_Dear_Mr_Williams_(Snowflake_Adaptation).mp3",
+        "fetch": "manual",
+        "title": "Dear Mr Williams (Snowflake Adaptation)",
+        "size": 2173433,
+        "sha256": "9d42dd2dfeede0c9f63ebdbfa0ae19f44cd5f17f6fe2b38b0f66c81f5afc357d"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27905",
+    "title": "Freedom in my Voice (ccMixter)",
+    "credit": "ditto ditto, “Freedom in my Voice”, ccMixter.",
+    "rights": "CC BY 3.0, ditto ditto; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "ditto ditto",
+    "source_page": "https://ccmixter.org/files/ditto/27905",
+    "files": [
+      {
+        "path": "ccmixter/ditto/Freedom-in-my-Voice_27905.mp3",
+        "url": "https://ccmixter.org/content/ditto/ditto_-_Freedom_in_my_Voice.mp3",
+        "fetch": "manual",
+        "title": "Freedom in my Voice",
+        "size": 7004204,
+        "sha256": "6b22b1b8472fef2cf0d33d25f8548d305bee21eb3c0a9572acb0091845a71796"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27917",
+    "title": "The Remixin' Blues (ccMixter)",
+    "credit": "Admiral Bob, “The Remixin' Blues”, ccMixter.",
+    "rights": "CC BY 3.0, Admiral Bob; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Admiral Bob",
+    "source_page": "https://ccmixter.org/files/admiralbob77/27917",
+    "files": [
+      {
+        "path": "ccmixter/admiralbob77/The-Remixin-Blues_27917.mp3",
+        "url": "https://ccmixter.org/content/admiralbob77/admiralbob77_-_The_Remixin_Blues.mp3",
+        "fetch": "manual",
+        "title": "The Remixin' Blues",
+        "size": 3081240,
+        "sha256": "a6213fa8945d1bbbd9f4a397d0cea830879c763bfe8ac92b2e3df50f8e622c41"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-27918",
+    "title": "Why? (ccMixter)",
+    "credit": "Admiral Bob, “Why?”, ccMixter.",
+    "rights": "CC BY 3.0, Admiral Bob; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Admiral Bob",
+    "source_page": "https://ccmixter.org/files/admiralbob77/27918",
+    "files": [
+      {
+        "path": "ccmixter/admiralbob77/Why_27918.mp3",
+        "url": "https://ccmixter.org/content/admiralbob77/admiralbob77_-_Why_.mp3",
+        "fetch": "manual",
+        "title": "Why?",
+        "size": 2245930,
+        "sha256": "cf1ad067aa11cddefbecbd80d46942798af71bc935ccce9e719d83d0d8fc58b0"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-28107",
+    "title": "Mine + Yours = Ours (ccMixter)",
+    "credit": "George_Ellinas, “Mine + Yours = Ours”, ccMixter.",
+    "rights": "CC BY 3.0, George_Ellinas; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "George_Ellinas",
+    "source_page": "https://ccmixter.org/files/George_Ellinas/28107",
+    "files": [
+      {
+        "path": "ccmixter/George-Ellinas/Mine-Yours-Ours_28107.mp3",
+        "url": "https://ccmixter.org/content/George_Ellinas/George_Ellinas_-_Mine_Yours_Ours.mp3",
+        "fetch": "manual",
+        "title": "Mine + Yours = Ours",
+        "size": 8938102,
+        "sha256": "474ae9561d61d0ea86fd25ad2da3e322a0be2db688ed3a93f6e5407db60d6b96"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-28153",
+    "title": "Love Will Open Your Heart_ Dance Mix (ccMixter)",
+    "credit": "J.Lang, “Love Will Open Your Heart_ Dance Mix”, ccMixter.",
+    "rights": "CC BY 3.0, J.Lang; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "J.Lang",
+    "source_page": "https://ccmixter.org/files/djlang59/28153",
+    "files": [
+      {
+        "path": "ccmixter/djlang59/Love-Will-Open-Your-Heart-Dance-Mix_28153.mp3",
+        "url": "https://ccmixter.org/content/djlang59/djlang59_-_Love_Will_Open_Your_Heart_Dance_Mix.mp3",
+        "fetch": "manual",
+        "title": "Love Will Open Your Heart_ Dance Mix",
+        "size": 4543677,
+        "sha256": "2e6c808878bafb6a6b082eb48b4ca4d67fad8dd0d6ca7637a59d38216f028fad"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-29186",
+    "title": "260809 Funky Nurykabe (ccMixter)",
+    "credit": "spinningmerkaba, “260809 Funky Nurykabe”, ccMixter.",
+    "rights": "CC BY 3.0, spinningmerkaba; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "spinningmerkaba",
+    "source_page": "https://ccmixter.org/files/jlbrock44/29186",
+    "files": [
+      {
+        "path": "ccmixter/jlbrock44/260809-Funky-Nurykabe_29186.mp3",
+        "url": "https://ccmixter.org/content/jlbrock44/jlbrock44_-_260809_Funky_Nurykabe.mp3",
+        "fetch": "manual",
+        "title": "260809 Funky Nurykabe",
+        "size": 4482446,
+        "sha256": "ac85892df398374adbefc29c585dbf0f02a09efb97eb41add41cf9548d48ad66"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30090",
+    "title": "Emerge in Love (ccMixter)",
+    "credit": "SackJo22, “Emerge in Love”, ccMixter.",
+    "rights": "CC BY 3.0, SackJo22; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "SackJo22",
+    "source_page": "https://ccmixter.org/files/SackJo22/30090",
+    "files": [
+      {
+        "path": "ccmixter/SackJo22/Emerge-in-Love_30090.mp3",
+        "url": "https://ccmixter.org/content/SackJo22/SackJo22_-_Emerge_in_Love.mp3",
+        "fetch": "manual",
+        "title": "Emerge in Love",
+        "size": 2443643,
+        "sha256": "fb83eace8b5f7111d9c74689c2779b9b3956a018ddcfe50e1ed368b8ba935ab4"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30097",
+    "title": "Emergence (ccMixter)",
+    "credit": "Madam Snowflake, “Emergence”, ccMixter.",
+    "rights": "CC BY 3.0, Madam Snowflake; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Madam Snowflake",
+    "source_page": "https://ccmixter.org/files/snowflake/30097",
+    "files": [
+      {
+        "path": "ccmixter/snowflake/Emergence_30097.mp3",
+        "url": "https://ccmixter.org/content/snowflake/snowflake_-_Emergence.mp3",
+        "fetch": "manual",
+        "title": "Emergence",
+        "size": 1749204,
+        "sha256": "bdb9e98143e48641e8651290a18f59d8fbea6764526acb4734f2cb626a5d7a2d"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30132",
+    "title": "Emerge (ccMixter)",
+    "credit": "Alex, “Emerge”, ccMixter.",
+    "rights": "CC BY 3.0, Alex; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Alex",
+    "source_page": "https://ccmixter.org/files/AlexBeroza/30132",
+    "files": [
+      {
+        "path": "ccmixter/AlexBeroza/Emerge_30132.mp3",
+        "url": "https://ccmixter.org/content/AlexBeroza/AlexBeroza_-_Emerge.mp3",
+        "fetch": "manual",
+        "title": "Emerge",
+        "size": 7245785,
+        "sha256": "cdb5f85507540a9a04f97ca329190516a204831840ab40cb52dff33009276e0c"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30239",
+    "title": "Emerge In Love (ccMixter)",
+    "credit": "Alex, “Emerge In Love”, ccMixter.",
+    "rights": "CC BY 3.0, Alex; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Alex",
+    "source_page": "https://ccmixter.org/files/AlexBeroza/30239",
+    "files": [
+      {
+        "path": "ccmixter/AlexBeroza/Emerge-In-Love_30239.mp3",
+        "url": "https://ccmixter.org/content/AlexBeroza/AlexBeroza_-_Emerge_In_Love.mp3",
+        "fetch": "manual",
+        "title": "Emerge In Love",
+        "size": 9298591,
+        "sha256": "cd0d073584833b397a75e9e3e47e6883868d56678204b33d6bb4401baa4c20f6"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30285",
+    "title": "Come Up For Air (ccMixter)",
+    "credit": "SackJo22, “Come Up For Air”, ccMixter.",
+    "rights": "CC BY 3.0, SackJo22; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "SackJo22",
+    "source_page": "https://ccmixter.org/files/SackJo22/30285",
+    "files": [
+      {
+        "path": "ccmixter/SackJo22/Come-Up-For-Air_30285.mp3",
+        "url": "https://ccmixter.org/content/SackJo22/SackJo22_-_Come_Up_For_Air.mp3",
+        "fetch": "manual",
+        "title": "Come Up For Air",
+        "size": 5381478,
+        "sha256": "520bb570d09091a44b1790cceb620976a6afddf67990cec9a181d49a47d33a9c"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30378",
+    "title": "Stay (for this Moment) (ccMixter)",
+    "credit": "Madam Snowflake, “Stay (for this Moment)”, ccMixter.",
+    "rights": "CC BY 3.0, Madam Snowflake; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Madam Snowflake",
+    "source_page": "https://ccmixter.org/files/snowflake/30378",
+    "files": [
+      {
+        "path": "ccmixter/snowflake/Stay-for-this-Moment_30378.mp3",
+        "url": "https://ccmixter.org/content/snowflake/snowflake_-_Stay_(for_this_Moment).mp3",
+        "fetch": "manual",
+        "title": "Stay (for this Moment)",
+        "size": 3285204,
+        "sha256": "5e91fe8462ec2e4c7f255d62db0c868d01e47f1717a98e4362ac2f07d30a300b"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-30395",
+    "title": "L.T.H. (AA's Refix) (ccMixter)",
+    "credit": "Abstract Audio, “L.T.H. (AA's Refix)”, ccMixter.",
+    "rights": "CC BY 3.0, Abstract Audio; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Abstract Audio",
+    "source_page": "https://ccmixter.org/files/Citizen_X0/30395",
+    "files": [
+      {
+        "path": "ccmixter/Citizen-X0/L-T-H-AA-s-Refix_30395.mp3",
+        "url": "https://ccmixter.org/content/Citizen_X0/Citizen_X0_-_L.T.H._(AA_s_Refix).mp3",
+        "fetch": "manual",
+        "title": "L.T.H. (AA's Refix)",
+        "size": 7556955,
+        "sha256": "bedced4011a26cbd40d9e1601a88325aaabd7c1e0bbbd202ba7acab7cdc1cc3c"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-31367",
+    "title": "WE DONT Even Dream (ccMixter)",
+    "credit": "loveshadow, “WE DONT Even Dream”, ccMixter.",
+    "rights": "CC BY 3.0, loveshadow; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "loveshadow",
+    "source_page": "https://ccmixter.org/files/Loveshadow/31367",
+    "files": [
+      {
+        "path": "ccmixter/Loveshadow/WE-DONT-Even-Dream_31367.mp3",
+        "url": "https://ccmixter.org/content/Loveshadow/Loveshadow_-_WE_DONT_Even_Dream.mp3",
+        "fetch": "manual",
+        "title": "WE DONT Even Dream",
+        "size": 7178974,
+        "sha256": "f11be871a206d15c507ad3e6cacd7948291ce422a6f8f329567e1b83416141a8"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-31546",
+    "title": "The Power (ccMixter)",
+    "credit": "Abstract Audio, “The Power”, ccMixter.",
+    "rights": "CC BY-SA 3.0, Abstract Audio; credit required; share-alike applies if you modify the samples. http://creativecommons.org/licenses/by-sa/3.0/",
+    "license": "cc-by-sa-3.0",
+    "author": "Abstract Audio",
+    "source_page": "https://ccmixter.org/files/Citizen_X0/31546",
+    "files": [
+      {
+        "path": "ccmixter/Citizen-X0/The-Power_31546.mp3",
+        "url": "https://ccmixter.org/content/Citizen_X0/Citizen_X0_-_The_Power.mp3",
+        "fetch": "manual",
+        "title": "The Power",
+        "size": 10921317,
+        "sha256": "16a7831a399f6b38588f0cbce7404a2b01dfeabff84263b11d775e58205c458b"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-31698",
+    "title": "Give It Up-Urban Mix (ccMixter)",
+    "credit": "J.Lang, “Give It Up-Urban Mix”, ccMixter.",
+    "rights": "CC BY 3.0, J.Lang; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "J.Lang",
+    "source_page": "https://ccmixter.org/files/djlang59/31698",
+    "files": [
+      {
+        "path": "ccmixter/djlang59/Give-It-Up-Urban-Mix_31698.mp3",
+        "url": "https://ccmixter.org/content/djlang59/djlang59_-_Give_It_Up-Urban_Mix.mp3",
+        "fetch": "manual",
+        "title": "Give It Up-Urban Mix",
+        "size": 4139093,
+        "sha256": "0d9960bb2b04cc42d864eda4227dc2558dd262414e5c50006bdd1e22c94e2979"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-32217",
+    "title": "just sway (ccMixter)",
+    "credit": "rocavaco, “just sway”, ccMixter.",
+    "rights": "CC BY 3.0, rocavaco; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "rocavaco",
+    "source_page": "https://ccmixter.org/files/rocavaco/32217",
+    "files": [
+      {
+        "path": "ccmixter/rocavaco/just-sway_32217.mp3",
+        "url": "https://ccmixter.org/content/rocavaco/rocavaco_-_just_sway.mp3",
+        "fetch": "manual",
+        "title": "just sway",
+        "size": 9078117,
+        "sha256": "a09a316d08becae9c15ab9fbc5e1d5c8657d4399e873f7fb8b75ee1ed4bf3282"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-32859",
+    "title": "we lived and learned and loved and chose (ccMixter)",
+    "credit": "CSoul, “we lived and learned and loved and chose”, ccMixter.",
+    "rights": "CC BY 3.0, CSoul; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "CSoul",
+    "source_page": "https://ccmixter.org/files/CSoul/32859",
+    "files": [
+      {
+        "path": "ccmixter/CSoul/we-lived-and-learned-and-loved-and-chose_32859.mp3",
+        "url": "https://ccmixter.org/content/CSoul/CSoul_-_we_lived_and_learned_and_loved_and_chose.mp3",
+        "fetch": "manual",
+        "title": "we lived and learned and loved and chose",
+        "size": 4113389,
+        "sha256": "3472af7d2ed48162c382b0236a46f6d3c92f790570068964e45d85947724ae3b"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-33065",
+    "title": "Where You Are Now (ccMixter)",
+    "credit": "Alex, “Where You Are Now”, ccMixter.",
+    "rights": "CC BY 3.0, Alex; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Alex",
+    "source_page": "https://ccmixter.org/files/AlexBeroza/33065",
+    "files": [
+      {
+        "path": "ccmixter/AlexBeroza/Where-You-Are-Now_33065.mp3",
+        "url": "https://ccmixter.org/content/AlexBeroza/AlexBeroza_-_Where_You_Are_Now.mp3",
+        "fetch": "manual",
+        "title": "Where You Are Now",
+        "size": 7230738,
+        "sha256": "28e13916d5ce34f643753bef3f524bdd0fe3ab927fa0735841f6f32befb79768"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-34409",
+    "title": "Ave (ccMixter)",
+    "credit": "Alex, “Ave”, ccMixter.",
+    "rights": "CC BY 3.0, Alex; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Alex",
+    "source_page": "https://ccmixter.org/files/AlexBeroza/34409",
+    "files": [
+      {
+        "path": "ccmixter/AlexBeroza/Ave_34409.mp3",
+        "url": "https://ccmixter.org/content/AlexBeroza/AlexBeroza_-_Ave.mp3",
+        "fetch": "manual",
+        "title": "Ave",
+        "size": 8838836,
+        "sha256": "bf7406f79a781a2861ac4ae357ea78def2078be5497908e54945e5c95a540c45"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-34714",
+    "title": "December Nights (ccMixter)",
+    "credit": "cdk, “December Nights”, ccMixter.",
+    "rights": "CC BY 3.0, cdk; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "cdk",
+    "source_page": "https://ccmixter.org/files/cdk/34714",
+    "files": [
+      {
+        "path": "ccmixter/cdk/December-Nights_34714.mp3",
+        "url": "https://ccmixter.org/content/cdk/cdk_-_December_Nights.mp3",
+        "fetch": "manual",
+        "title": "December Nights",
+        "size": 9572354,
+        "sha256": "c1c7342e3027dae512099360db588452f4cff12c58d16d16884ff2337b4e75f6"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-35259",
+    "title": "Di Me (ccMixter)",
+    "credit": "shagrugge, “Di Me”, ccMixter.",
+    "rights": "CC BY 3.0, shagrugge; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "shagrugge",
+    "source_page": "https://ccmixter.org/files/shagrugge/35259",
+    "files": [
+      {
+        "path": "ccmixter/shagrugge/Di-Me_35259.mp3",
+        "url": "https://ccmixter.org/content/shagrugge/shagrugge_-_Di_Me.mp3",
+        "fetch": "manual",
+        "title": "Di Me",
+        "size": 9388453,
+        "sha256": "0327d517536c57d691cd476b2dfc38dba3192482b52f3a1aa261b512f214da10"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-36991",
+    "title": "household hits (ccMixter)",
+    "credit": "Speck, “household hits”, ccMixter.",
+    "rights": "CC BY 3.0, Speck; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Speck",
+    "source_page": "https://ccmixter.org/files/speck/36991",
+    "files": [
+      {
+        "path": "ccmixter/speck/household-hits_36991.mp3",
+        "url": "https://ccmixter.org/content/speck/speck_-_household_hits.mp3",
+        "fetch": "manual",
+        "title": "household hits",
+        "size": 1029504,
+        "sha256": "4678f51a248eb300663a0adeccc3fd69b5749cc6a842952577e94243e6ae2383"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-37764",
+    "title": "Like A Sycamore (ccMixter)",
+    "credit": "Madam Snowflake, “Like A Sycamore”, ccMixter.",
+    "rights": "CC BY 3.0, Madam Snowflake; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Madam Snowflake",
+    "source_page": "https://ccmixter.org/files/snowflake/37764",
+    "files": [
+      {
+        "path": "ccmixter/snowflake/Like-A-Sycamore_37764.mp3",
+        "url": "https://ccmixter.org/content/snowflake/snowflake_-_Like_A_Sycamore.mp3",
+        "fetch": "manual",
+        "title": "Like A Sycamore",
+        "size": 4771467,
+        "sha256": "e63a9ec20dd4899c5d6e8d74cff2d61c335c73902dca4d84d710977d909347bb"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-37792",
+    "title": "Drops of H2O ( The Filtered Water Treatment ) (ccMixter)",
+    "credit": "J.Lang, “Drops of H2O ( The Filtered Water Treatment )”, ccMixter.",
+    "rights": "CC BY 3.0, J.Lang; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "J.Lang",
+    "source_page": "https://ccmixter.org/files/djlang59/37792",
+    "files": [
+      {
+        "path": "ccmixter/djlang59/Drops-of-H2O-The-Filtered-Water-Treatment_37792.mp3",
+        "url": "https://ccmixter.org/content/djlang59/djlang59_-_Drops_of_H2O_(_The_Filtered_Water_Treatment_).mp3",
+        "fetch": "manual",
+        "title": "Drops of H2O ( The Filtered Water Treatment )",
+        "size": 5045646,
+        "sha256": "def40d19a7308ba01fe5aa46d2eb9084567efb8ece863361d0c972acb864ddf4"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-38104",
+    "title": "Free Music and Free Beer (ccMixter)",
+    "credit": "Admiral Bob, “Free Music and Free Beer”, ccMixter.",
+    "rights": "CC BY 3.0, Admiral Bob; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Admiral Bob",
+    "source_page": "https://ccmixter.org/files/admiralbob77/38104",
+    "files": [
+      {
+        "path": "ccmixter/admiralbob77/Free-Music-and-Free-Beer_38104.mp3",
+        "url": "https://ccmixter.org/content/admiralbob77/admiralbob77_-_Free_Music_and_Free_Beer.mp3",
+        "fetch": "manual",
+        "title": "Free Music and Free Beer",
+        "size": 4025648,
+        "sha256": "6fae17d9fa3ae18ef2daf4f070189ec03db8de667303f8d9fedca102c7a483b2"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-39441",
+    "title": "Musical Fence 1 (ccMixter)",
+    "credit": "debbizo, “Musical Fence 1”, ccMixter.",
+    "rights": "CC BY 3.0, debbizo; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "debbizo",
+    "source_page": "https://ccmixter.org/files/debbizo/39441",
+    "files": [
+      {
+        "path": "ccmixter/debbizo/Musical-Fence-1_39441.mp3",
+        "url": "https://ccmixter.org/content/debbizo/debbizo_-_Musical_Fence_1.mp3",
+        "fetch": "manual",
+        "title": "Musical Fence 1",
+        "size": 913285,
+        "sha256": "826e144fc30ca939c127761568cefd3bf8f26f91d1f750064eca099cecd5e6b1"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-39513",
+    "title": "Percussive Fences (ccMixter)",
+    "credit": "Ivan Chew, “Percussive Fences”, ccMixter.",
+    "rights": "CC BY 3.0, Ivan Chew; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Ivan Chew",
+    "source_page": "https://ccmixter.org/files/ramblinglibrarian/39513",
+    "files": [
+      {
+        "path": "ccmixter/ramblinglibrarian/Percussive-Fences_39513.mp3",
+        "url": "https://ccmixter.org/content/ramblinglibrarian/ramblinglibrarian_-_Percussive_Fences.mp3",
+        "fetch": "manual",
+        "title": "Percussive Fences",
+        "size": 2278746,
+        "sha256": "ae6687367ec3e56739653aafa0996a63e2e1ddab75a8f39d9f4e887d3e41cceb"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-40097",
+    "title": "Zoo Music (ccMixter)",
+    "credit": "Clarence Simpson, “Zoo Music”, ccMixter.",
+    "rights": "CC BY 3.0, Clarence Simpson; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Clarence Simpson",
+    "source_page": "https://ccmixter.org/files/casimps1/40097",
+    "files": [
+      {
+        "path": "ccmixter/casimps1/Zoo-Music_40097.mp3",
+        "url": "https://ccmixter.org/content/casimps1/casimps1_-_Zoo_Music.mp3",
+        "fetch": "manual",
+        "title": "Zoo Music",
+        "size": 1607299,
+        "sha256": "1a6cf1a958ed3eeb5cae599240dc2baf86059f8cb69e085f33ecaf735cd91798"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-41323",
+    "title": "The Haunted Hotel (ccMixter)",
+    "credit": "SackJo22, “The Haunted Hotel”, ccMixter.",
+    "rights": "CC BY 3.0, SackJo22; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "SackJo22",
+    "source_page": "https://ccmixter.org/files/SackJo22/41323",
+    "files": [
+      {
+        "path": "ccmixter/SackJo22/The-Haunted-Hotel_41323.mp3",
+        "url": "https://ccmixter.org/content/SackJo22/SackJo22_-_The_Haunted_Hotel.mp3",
+        "fetch": "manual",
+        "title": "The Haunted Hotel",
+        "size": 3958272,
+        "sha256": "45105c218f045e3aec3cc745650e900638dc695e824ed52d2c652e043ea9433d"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-42993",
+    "title": "America Mad & Naked (ccMixter)",
+    "credit": "Calling Sister Midnight, “America Mad & Naked”, ccMixter.",
+    "rights": "CC BY-SA 3.0, Calling Sister Midnight; credit required; share-alike applies if you modify the samples. http://creativecommons.org/licenses/by-sa/3.0/",
+    "license": "cc-by-sa-3.0",
+    "author": "Calling Sister Midnight",
+    "source_page": "https://ccmixter.org/files/romancito/42993",
+    "files": [
+      {
+        "path": "ccmixter/romancito/America-Mad-Naked_42993.mp3",
+        "url": "https://ccmixter.org/content/romancito/romancito_-_America_Mad_Naked.mp3",
+        "fetch": "manual",
+        "title": "America Mad & Naked",
+        "size": 3892596,
+        "sha256": "3650c2d23c8e283cc405133d1fb1aa264bf63d1b856ea5ff4960679ab0a373c1"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-43098",
+    "title": "Drive (ccMixter)",
+    "credit": "Alex, “Drive”, ccMixter.",
+    "rights": "CC BY 3.0, Alex; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Alex",
+    "source_page": "https://ccmixter.org/files/AlexBeroza/43098",
+    "files": [
+      {
+        "path": "ccmixter/AlexBeroza/Drive_43098.mp3",
+        "url": "https://ccmixter.org/content/AlexBeroza/AlexBeroza_-_Drive.mp3",
+        "fetch": "manual",
+        "title": "Drive",
+        "size": 7627800,
+        "sha256": "dc1372e18312b6e194d5a9eff8aa4a0ea03b07000859bc4847ff9e8543e8282a"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-43483",
+    "title": "Spheres (Hip Hop Instrumental) (ccMixter)",
+    "credit": "Robbero, “Spheres (Hip Hop Instrumental)”, ccMixter.",
+    "rights": "CC BY 3.0, Robbero; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Robbero",
+    "source_page": "https://ccmixter.org/files/Robbero/43483",
+    "files": [
+      {
+        "path": "ccmixter/Robbero/Spheres-Hip-Hop-Instrumental_43483.mp3",
+        "url": "https://ccmixter.org/content/Robbero/Robbero_-_Spheres_(Hip_Hop_Instrumental).mp3",
+        "fetch": "manual",
+        "title": "Spheres (Hip Hop Instrumental)",
+        "size": 10833546,
+        "sha256": "6ade5e23a3b1f909cfdedc27f9dab8fbb0d69059b9e70c298ab252efacb3547b"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-45578",
+    "title": "Absolutely Clear (ft Jeris & Goldfish) (ccMixter)",
+    "credit": "SackJo22, “Absolutely Clear (ft Jeris & Goldfish)”, ccMixter.",
+    "rights": "CC BY 3.0, SackJo22; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "SackJo22",
+    "source_page": "https://ccmixter.org/files/SackJo22/45578",
+    "files": [
+      {
+        "path": "ccmixter/SackJo22/Absolutely-Clear-ft-Jeris-Goldfish_45578.mp3",
+        "url": "https://ccmixter.org/content/SackJo22/SackJo22_-_Absolutely_Clear_(ft_Jeris_Goldfish).mp3",
+        "fetch": "manual",
+        "title": "Absolutely Clear (ft Jeris & Goldfish)",
+        "size": 4762194,
+        "sha256": "ac3c80eaba771cd9478dfd8fb9933bff02095c0a936c6900c113a1a7f2294c9a"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-46727",
+    "title": "h2oBeat002 (ccMixter)",
+    "credit": "My Free Mickey, “h2oBeat002”, ccMixter.",
+    "rights": "CC BY 3.0, My Free Mickey; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "My Free Mickey",
+    "source_page": "https://ccmixter.org/files/myfreemickey/46727",
+    "files": [
+      {
+        "path": "ccmixter/myfreemickey/h2oBeat002_46727.mp3",
+        "url": "https://ccmixter.org/content/myfreemickey/myfreemickey_-_h2oBeat002.mp3",
+        "fetch": "manual",
+        "title": "h2oBeat002",
+        "size": 3438570,
+        "sha256": "79965ed82b03c967865aa1155e1a2ac1271562730a2d7a34d436008532ffa48f"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-47985",
+    "title": "Break Dance (ccMixter)",
+    "credit": "Scott Altham, “Break Dance”, ccMixter.",
+    "rights": "CC BY 3.0, Scott Altham; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Scott Altham",
+    "source_page": "https://ccmixter.org/files/scottaltham/47985",
+    "files": [
+      {
+        "path": "ccmixter/scottaltham/Break-Dance_47985.mp3",
+        "url": "https://ccmixter.org/content/scottaltham/scottaltham_-_Break_Dance.mp3",
+        "fetch": "manual",
+        "title": "Break Dance",
+        "size": 6316416,
+        "sha256": "e097c987e1351d32265933fa33d924ae2b7e635582162c6d9d88735cad7088bd"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-49842",
+    "title": "Paint The Sky (ccMixter)",
+    "credit": "MissJudged, “Paint The Sky”, ccMixter.",
+    "rights": "CC BY 3.0, MissJudged; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "MissJudged",
+    "source_page": "https://ccmixter.org/files/MissJudged/49842",
+    "files": [
+      {
+        "path": "ccmixter/MissJudged/Paint-The-Sky_49842.mp3",
+        "url": "https://ccmixter.org/content/MissJudged/MissJudged_-_Paint_The_Sky.mp3",
+        "fetch": "manual",
+        "title": "Paint The Sky",
+        "size": 1039748,
+        "sha256": "1af10ba619aabc83bf3d046632880e7645a071700b7faa6690c612aad4e3dbcf"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-50718",
+    "title": "Paint the Sky (ccMixter)",
+    "credit": "Hans Atom, “Paint the Sky”, ccMixter.",
+    "rights": "CC BY 3.0, Hans Atom; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Hans Atom",
+    "source_page": "https://ccmixter.org/files/hansatom/50718",
+    "files": [
+      {
+        "path": "ccmixter/hansatom/Paint-the-Sky_50718.mp3",
+        "url": "https://ccmixter.org/content/hansatom/hansatom_-_Paint_the_Sky.mp3",
+        "fetch": "manual",
+        "title": "Paint the Sky",
+        "size": 6359710,
+        "sha256": "3e9a8d32658be8b79b5de721f9d8b701ee023020a7adf1a7f307e1e71d3886a6"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-58955",
+    "title": "I lost the Blues (ccMixter)",
+    "credit": "reiswerk, “I lost the Blues”, ccMixter.",
+    "rights": "CC BY 3.0, reiswerk; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "reiswerk",
+    "source_page": "https://ccmixter.org/files/Reiswerk/58955",
+    "files": [
+      {
+        "path": "ccmixter/Reiswerk/I-lost-the-Blues_58955.mp3",
+        "url": "https://ccmixter.org/content/Reiswerk/Reiswerk_-_I_lost_the_Blues.mp3",
+        "fetch": "manual",
+        "title": "I lost the Blues",
+        "size": 6452289,
+        "sha256": "320897b15c6fe510765c566e8b4c8b1cd915baab36ba075f610885ad3d699262"
+      }
+    ]
+  },
+  {
+    "id": "ccmixter-64751",
+    "title": "Send Me Fresh Eyes (ccMixter)",
+    "credit": "Speck, “Send Me Fresh Eyes”, ccMixter.",
+    "rights": "CC BY 3.0, Speck; credit required. http://creativecommons.org/licenses/by/3.0/",
+    "license": "cc-by-3.0",
+    "author": "Speck",
+    "source_page": "https://ccmixter.org/files/speck/64751",
+    "files": [
+      {
+        "path": "ccmixter/speck/Send-Me-Fresh-Eyes_64751.mp3",
+        "url": "https://ccmixter.org/content/speck/speck_-_Send_Me_Fresh_Eyes.mp3",
+        "fetch": "manual",
+        "title": "Send Me Fresh Eyes",
+        "size": 5345373,
+        "sha256": "6640c5242f2b22a2027328d2549158bd53ef3734206aea4a8f1e6c6cf6da7d9e"
+      }
+    ]
   }
 ]
