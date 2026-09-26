@@ -36,6 +36,8 @@ export class Breakdown {
   private last = 0;
   private paused = false;
   private visible = false;
+  /** It starts the first time it's seen, and from then on keeps going (its sound too) when scrolled out of view. */
+  private started = false;
   private raf = 0;
   private shown = { chapter: -1, caption: "" };
   private sound: StorySound | null;
@@ -55,10 +57,11 @@ export class Breakdown {
     this.sound = data.audio ? new StorySound(data.audio, this.story.cues(), this.story.loop, (data.beats * 60) / data.tempo, this.story.metronome()) : null;
     this.root = this.build();
     this.probe = this.probeSound();
+    // Leaving the page stops its sound, like the rest of the app (the story itself carries on).
+    document.addEventListener("apricity:page-changed", () => this.silence());
     new IntersectionObserver(([e]) => {
       this.visible = e.isIntersecting;
-      this.sound?.hold(!this.visible);
-      if (this.visible && !this.raf) this.loop();
+      if (this.visible) this.start();
     }).observe(this.stage);
   }
 
@@ -230,7 +233,7 @@ export class Breakdown {
       this.paused = false;
       this.soundButton("on");
       if (this.opts.remember) rememberSound(true);
-      if (!this.raf && this.visible) this.loop();
+      this.start();
     } catch {
       // The library answered the probe but the sound could not be played: silent, and says so.
       this.soundButton("missing");
@@ -243,9 +246,15 @@ export class Breakdown {
   /** Hold still frames for reduced motion, unless the reader turned the sound on (then it plays). */
   private still = () => this.reduced() && !this.sound?.on;
 
+  /** Begin (or carry on): the story runs from its start the first time it's seen. */
+  private start() {
+    if (!this.started) (this.started = true), (this.last = 0);
+    if (!this.raf) this.loop();
+  }
+
   private loop = () => {
     this.raf = 0;
-    if (!this.visible) return;
+    if (!this.started) return;
     this.frame();
     if (!this.still()) this.raf = requestAnimationFrame(this.loop);
   };
@@ -256,7 +265,8 @@ export class Breakdown {
     this.last = now;
     if (this.sound?.on) this.storyT = this.sound.now();
     else if (!this.paused) this.storyT = (this.storyT + dt) % this.story.loop;
-    this.draw(this.still() ? this.stillT : this.storyT, this.still());
+    // Out of view it keeps time (and plays), but there's nothing to draw.
+    if (this.visible) this.draw(this.still() ? this.stillT : this.storyT, this.still());
   }
 
   private draw(t: number, still: boolean) {

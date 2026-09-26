@@ -59,6 +59,7 @@ function showTab(name: string) {
     if (player.transport.playing) player.pause();
     clips.silence();
     samples.silence();
+    document.dispatchEvent(new CustomEvent("apricity:page-changed")); // breakdowns fall silent
   }
   document.body.dataset.tab = name;
   const kind = KIND_OF_TAB[name];
