@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-eca77204-ffd2-4990-8bf6-935d91ee16e2",
+  "title": "Star filters miss ratings made after the list loaded",
+  "description": "The Clips list kept its first tallies, and Samples and Clips each kept their own copy of your ratings, so ★ N+ and Not rated by me missed ratings made since. Any rating now tells lists to re-read tallies and your stars; a tab redraws when shown.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T18:48:10.829336Z",
+  "updated_at": "2026-09-26T18:48:12.442027Z",
+  "closed_at": "2026-09-26T18:48:12.441996Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
