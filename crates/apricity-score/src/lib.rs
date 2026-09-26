@@ -10,6 +10,6 @@ pub mod manifest;
 pub mod melody;
 pub mod score;
 
-pub use compile::{compile, compile_file, compile_text, compile_with, parse_score, normalize, source_paths, references, ChordSpan, Event, Timeline, TrackInfo};
+pub use compile::{compile, compile_file, compile_text, compile_with, parse_score, normalize, source_paths, references, ChordSpan, Event, Timeline, TrackInfo, BusInfo};
 pub use manifest::Clip;
-pub use score::{Score, Ref};
+pub use score::{Score, Ref, AutomationSpec};

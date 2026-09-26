@@ -8,6 +8,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use apricity_dsp::space::{Delay, DelayParams, Reverb, ReverbKind, ReverbParams};
 use apricity_score::score::{CompSpec, DelaySpec, Effect, EqSpec, ReverbSpec, ReverbType};
+use crate::automation::{Curve, scale_for};
+use apricity_score::compile::Lane;
 
 /// Most stages a chain may have.
 pub const MAX_STAGES: usize = 8;
@@ -82,6 +84,95 @@ pub fn params(effects: &[Effect], safety_limit: bool) -> MasterParams {
         p.stages[n] = Some(Stage::Limit { ceiling_db: -1.0, release_ms: 50.0 });
     }
     p
+}
+
+/// Map effect automation lanes to curves, one Vec per effect index.
+/// Returns Vec<Vec<(target_name, Curve)>> where each inner vec has the curves for that effect.
+/// "eq.X" targets the 1st Eq, "eq2.X" targets the 2nd Eq, etc.
+pub fn chain_curves(
+    effects: &[Effect],
+    lanes: &[Lane],
+    sr: f64,
+    secs_per_beat: f64,
+    offset_beats: f64,
+) -> Vec<Vec<(String, Curve)>> {
+    let mut result = vec![Vec::new(); effects.len()];
+
+    // Build a map of (effect_type_prefix, number) → effect_index
+    let mut eq_indices = Vec::new();
+    let mut comp_indices = Vec::new();
+    let mut reverb_indices = Vec::new();
+    let mut delay_indices = Vec::new();
+
+    for (idx, effect) in effects.iter().enumerate() {
+        match effect {
+            Effect::Eq(_) => eq_indices.push(idx),
+            Effect::Comp(_) => comp_indices.push(idx),
+            Effect::Reverb(_) => reverb_indices.push(idx),
+            Effect::Delay(_) => delay_indices.push(idx),
+            _ => {}
+        }
+    }
+
+    for lane in lanes {
+        let target = &lane.target;
+        let effect_idx = if target == "width" {
+            // Find the Width effect (if it exists)
+            effects.iter().position(|e| matches!(e, Effect::Width(_)))
+        } else if target.starts_with("eq.") || target.starts_with("eq2.") || target.starts_with("eq3.") || target.starts_with("eq4.") || target.starts_with("eq5.") {
+            // Parse eq prefix
+            let (eq_num, _) = if target.starts_with("eq2.") {
+                (2, "eq2.")
+            } else if target.starts_with("eq3.") {
+                (3, "eq3.")
+            } else if target.starts_with("eq4.") {
+                (4, "eq4.")
+            } else if target.starts_with("eq5.") {
+                (5, "eq5.")
+            } else {
+                (1, "eq.")
+            };
+            eq_indices.get(eq_num - 1).copied()
+        } else if target.starts_with("comp.") || target.starts_with("comp2.") || target.starts_with("comp3.") || target.starts_with("comp4.") || target.starts_with("comp5.") {
+            // Parse comp prefix
+            let (comp_num, _) = if target.starts_with("comp2.") {
+                (2, "comp2.")
+            } else if target.starts_with("comp3.") {
+                (3, "comp3.")
+            } else if target.starts_with("comp4.") {
+                (4, "comp4.")
+            } else if target.starts_with("comp5.") {
+                (5, "comp5.")
+            } else {
+                (1, "comp.")
+            };
+            comp_indices.get(comp_num - 1).copied()
+        } else if target.starts_with("reverb.") || target.starts_with("reverb2.") {
+            let (reverb_num, _) = if target.starts_with("reverb2.") {
+                (2, "reverb2.")
+            } else {
+                (1, "reverb.")
+            };
+            reverb_indices.get(reverb_num - 1).copied()
+        } else if target.starts_with("delay.") || target.starts_with("delay2.") {
+            let (delay_num, _) = if target.starts_with("delay2.") {
+                (2, "delay2.")
+            } else {
+                (1, "delay.")
+            };
+            delay_indices.get(delay_num - 1).copied()
+        } else {
+            None
+        };
+
+        if let Some(idx) = effect_idx {
+            let points: Vec<(f64, f64)> = lane.points.iter().map(|p| (p[0], p[1])).collect();
+            let curve = Curve::from_lane(points, lane.step, scale_for(target), sr, secs_per_beat, offset_beats);
+            result[idx].push((target.clone(), curve));
+        }
+    }
+
+    result
 }
 
 enum State {
@@ -258,12 +349,64 @@ pub type Keys = HashMap<String, Arc<[Vec<f32>; 2]>>;
 /// labelled like the score (`comp 4:1 -14dB`).
 pub type Reductions = Vec<(String, f64)>;
 
+/// Create an automated version of an effect by applying curve values to its spec fields.
+fn automated_effect(e: &Effect, curves: &[(String, Curve)], frame: u64) -> Effect {
+    match e {
+        Effect::Eq(spec) => {
+            let mut s = spec.clone();
+            for (target, curve) in curves {
+                let v = curve.value_at(frame);
+                if target.contains("highcut") {
+                    s.highcut = Some(v);
+                } else if target.contains("lowcut") {
+                    s.lowcut = Some(v);
+                } else if target.contains("low") && !target.contains("lowcut") {
+                    if let Some([_, hz]) = s.low {
+                        s.low = Some([v, hz]);
+                    } else {
+                        s.low = Some([v, 200.0]);
+                    }
+                } else if target.contains("high") && !target.contains("highcut") {
+                    if let Some([_, hz]) = s.high {
+                        s.high = Some([v, hz]);
+                    } else {
+                        s.high = Some([v, 3000.0]);
+                    }
+                }
+            }
+            Effect::Eq(s)
+        }
+        Effect::Comp(spec) => {
+            let mut s = spec.clone();
+            for (target, curve) in curves {
+                if target.contains("threshold") {
+                    let v = curve.value_at(frame);
+                    s.threshold = v;
+                }
+            }
+            Effect::Comp(s)
+        }
+        Effect::Width(_) => {
+            for (target, curve) in curves {
+                if target == "width" {
+                    let v = curve.value_at(frame);
+                    return Effect::Width(v);
+                }
+            }
+            e.clone()
+        }
+        _ => e.clone(),
+    }
+}
+
 /// Run an effect chain over a loop, offline, so the loop joins seamlessly: the loop is processed
 /// for as many cycles as the tails need (at least two) and the last cycle is kept, so the reverb
 /// and echoes from the end ring on into the start, and compressors start already settled.
 /// `wet` is the reverb/delay mix when the effect doesn't set one (1 on a bus, 0.25 on a track).
 /// A comp with `sidechain` listens to that track's stem in `keys` (silence if it isn't there).
-pub fn process_chain(buf: &[Vec<f32>; 2], effects: &[Effect], sr: f64, frames_per_beat: f64, wet: f64, keys: &Keys) -> ([Vec<f32>; 2], Reductions) {
+/// `lanes` are the chain's automation lanes (e.g. `eq.highcut`, `comp.mix`, `reverb.mix`), evaluated at
+/// score time: the loop frame plus `offset_beats` (the start of a `--bars` render).
+pub fn process_chain(buf: &[Vec<f32>; 2], effects: &[Effect], sr: f64, frames_per_beat: f64, wet: f64, keys: &Keys, lanes: &[Lane], offset_beats: f64) -> ([Vec<f32>; 2], Reductions) {
     let n = buf[0].len();
     let mut reductions = Vec::new();
     if effects.is_empty() || n == 0 {
@@ -275,22 +418,31 @@ pub fn process_chain(buf: &[Vec<f32>; 2], effects: &[Effect], sr: f64, frames_pe
     let mut b: [Vec<f32>; 2] = [buf[0].iter().copied().cycle().take(n * cycles).collect(), buf[1].iter().copied().cycle().take(n * cycles).collect()];
     let mut lat = 0;
     let label = |c: &CompSpec| format!("comp {}:1 {}dB{}", c.ratio, c.threshold, c.sidechain.as_ref().map_or(String::new(), |k| format!(" sidechain {k}")));
-    for e in effects {
+
+    let effect_curves = chain_curves(effects, lanes, sr, frames_per_beat / sr, offset_beats);
+    // A lane's curve for effect `ei` whose target ends in `.{param}` (e.g. "reverb.mix").
+    let curve_for = |ei: usize, param: &str| effect_curves[ei].iter().find(|(t, _)| t.rsplit('.').next() == Some(param)).map(|(_, c)| c);
+
+    for (ei, e) in effects.iter().enumerate() {
         let mix = |x: f32, w: f64, m: f64| (x as f64 * (1.0 - m) + w * m) as f32;
         let [l, r] = &mut b;
         match e {
             Effect::Reverb(spec) => {
                 let m = spec.mix.unwrap_or(wet);
+                let curve = curve_for(ei, "mix");
                 let mut rv = Reverb::new(reverb_params(spec), sr);
-                for (a, b) in l.iter_mut().zip(r.iter_mut()) {
+                for (i, (a, b)) in l.iter_mut().zip(r.iter_mut()).enumerate() {
+                    let m = curve.map_or(m, |c| c.value_at((i % n) as u64));
                     let (wl, wr) = rv.tick(*a as f64, *b as f64);
                     (*a, *b) = (mix(*a, wl, m), mix(*b, wr, m));
                 }
             }
             Effect::Delay(spec) => {
                 let m = spec.mix.unwrap_or(wet);
+                let curve = curve_for(ei, "mix");
                 let mut d = Delay::new(delay_params(spec, frames_per_beat, sr), sr);
-                for (a, b) in l.iter_mut().zip(r.iter_mut()) {
+                for (i, (a, b)) in l.iter_mut().zip(r.iter_mut()).enumerate() {
+                    let m = curve.map_or(m, |c| c.value_at((i % n) as u64));
                     let (wl, wr) = d.tick(*a as f64, *b as f64);
                     (*a, *b) = (mix(*a, wl, m), mix(*b, wr, m));
                 }
@@ -328,15 +480,58 @@ pub fn process_chain(buf: &[Vec<f32>; 2], effects: &[Effect], sr: f64, frames_pe
                 reductions.push((label(c), comp.take_max_reduction()));
             }
             rt => {
-                let mut chain = MasterChain::new(sr);
-                chain.set(params(std::slice::from_ref(rt), false));
-                chain.process(&mut l[..last], &mut r[..last]);
-                chain.take_reduction();
-                chain.process(&mut l[last..], &mut r[last..]);
-                if let Effect::Comp(c) = rt {
-                    reductions.push((label(c), chain.take_reduction()));
+                let has_curves = !effect_curves[ei].is_empty();
+                // A comp's dry/wet: its `mix` lane, else its static `mix`; None means all wet.
+                let comp_mix = match rt {
+                    Effect::Comp(c) => curve_for(ei, "mix").map(|c| Err(c)).or(c.mix.filter(|m| *m < 1.0).map(Ok)),
+                    _ => None,
+                };
+
+                if has_curves || comp_mix.is_some() {
+                    // Process with automation: 32-frame blocks
+                    const BLOCK_SIZE: usize = 32;
+                    let mut chain = MasterChain::new(sr);
+
+                    for block_start in (0..l.len()).step_by(BLOCK_SIZE) {
+                        let block_end = (block_start + BLOCK_SIZE).min(l.len());
+                        let frame_in_loop = block_start % n;
+
+                        let auto_effect = automated_effect(rt, &effect_curves[ei], frame_in_loop as u64);
+                        chain.set(params(std::slice::from_ref(&auto_effect), false));
+                        let dry = comp_mix.map(|_| (l[block_start..block_end].to_vec(), r[block_start..block_end].to_vec()));
+                        chain.process(&mut l[block_start..block_end], &mut r[block_start..block_end]);
+                        if let (Some(m), Some((dl, dr))) = (comp_mix, dry) {
+                            for (j, i) in (block_start..block_end).enumerate() {
+                                let m = match m {
+                                    Ok(m) => m,
+                                    Err(c) => c.value_at((i % n) as u64),
+                                };
+                                l[i] = mix(dl[j], l[i] as f64, m);
+                                r[i] = mix(dr[j], r[i] as f64, m);
+                            }
+                        }
+
+                        if block_start < last && block_end >= last {
+                            chain.take_reduction();
+                        }
+                    }
+
+                    if let Effect::Comp(c) = rt {
+                        reductions.push((label(c), chain.take_reduction()));
+                    }
+                    lat += chain.latency();
+                } else {
+                    // No automation: use original path unchanged
+                    let mut chain = MasterChain::new(sr);
+                    chain.set(params(std::slice::from_ref(rt), false));
+                    chain.process(&mut l[..last], &mut r[..last]);
+                    chain.take_reduction();
+                    chain.process(&mut l[last..], &mut r[last..]);
+                    if let Effect::Comp(c) = rt {
+                        reductions.push((label(c), chain.take_reduction()));
+                    }
+                    lat += chain.latency();
                 }
-                lat += chain.latency();
             }
         }
     }
@@ -407,8 +602,8 @@ mod tests {
         // A compressor on a steady tone: with no wrap, the first frames would be uncompressed (the
         // detector starting from rest); the two-cycle render makes the start already settled.
         let mut buf = [vec![0.5f32; 48_000], vec![0.5f32; 48_000]];
-        let comp = Effect::Comp(CompSpec { ratio: 4.0, threshold: -20.0, attack_ms: Some(5.0), release_ms: Some(100.0), knee: None, makeup: None, sidechain: None });
-        buf = process_chain(&buf, &[comp], SR, 24_000.0, INSERT_WET, &Keys::new()).0;
+        let comp = Effect::Comp(CompSpec { ratio: 4.0, threshold: -20.0, attack_ms: Some(5.0), release_ms: Some(100.0), knee: None, makeup: None, sidechain: None, mix: None });
+        buf = process_chain(&buf, &[comp], SR, 24_000.0, INSERT_WET, &Keys::new(), &[], 0.0).0;
         let (start, mid) = (buf[0][10], buf[0][24_000]);
         assert!((start - mid).abs() < 1e-3, "start {start} vs middle {mid}");
         assert!(mid < 0.2, "and it compressed: {mid}");
@@ -426,5 +621,109 @@ mod timing {
         let t = std::time::Instant::now();
         let g = super::loudness_gain(&mix, super::params(&[], true), 48_000.0, -16.0);
         eprintln!("16 s loop: {:.1} ms (gain {g:.2})", t.elapsed().as_secs_f64() * 1e3);
+    }
+}
+
+#[cfg(test)]
+mod automation_tests {
+    use super::*;
+    use apricity_score::score::FilterSpec;
+
+    const SR: f64 = 48_000.0;
+    const FPB: f64 = 24_000.0; // 120 BPM
+    const N: usize = 8 * 24_000; // two bars
+
+    fn noise() -> [Vec<f32>; 2] {
+        let mut s: u64 = 42;
+        let mut next = || {
+            s = s.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            ((s >> 40) as f32 / (1u64 << 24) as f32 - 0.5) * 0.2
+        };
+        let l: Vec<f32> = (0..N).map(|_| next()).collect();
+        [l.clone(), l]
+    }
+
+    fn tone(amp: f32) -> [Vec<f32>; 2] {
+        let l: Vec<f32> = (0..N).map(|i| amp * (2.0 * std::f64::consts::PI * 220.0 * i as f64 / SR).sin() as f32).collect();
+        [l.clone(), l]
+    }
+
+    /// Energy (dB) of `x` above 5 kHz.
+    fn highs_db(x: &[f32]) -> f64 {
+        let mut y = x.to_vec();
+        crate::render::biquad(&mut y, FilterSpec::Highpass(5000.0), SR);
+        10.0 * (y.iter().map(|v| (*v as f64).powi(2)).sum::<f64>() / y.len() as f64 + 1e-20).log10()
+    }
+
+    fn lane(target: &str, step: bool, points: &[[f64; 2]]) -> Lane {
+        Lane { target: target.into(), step, points: points.to_vec() }
+    }
+
+    fn run(buf: &[Vec<f32>; 2], fx: &[Effect], lanes: &[Lane], offset: f64) -> [Vec<f32>; 2] {
+        process_chain(buf, fx, SR, FPB, INSERT_WET, &Keys::new(), lanes, offset).0
+    }
+
+    #[test]
+    fn an_eq_highcut_lane_closes_the_highs_over_the_loop() {
+        let eq = Effect::Eq(EqSpec { highcut: Some(20_000.0), ..Default::default() });
+        let out = run(&noise(), &[eq], &[lane("eq.highcut", false, &[[0.0, 20_000.0], [8.0, 1_000.0]])], 0.0);
+        let (first, last) = (highs_db(&out[0][..12_000]), highs_db(&out[0][N - 12_000..]));
+        assert!(last < first - 15.0, "highs {first:.1} dB at the start, {last:.1} dB at the end");
+    }
+
+    #[test]
+    fn an_effect_lane_reaches_its_own_effect_after_a_delay() {
+        // The eq is the second effect; its lane must not be looked up by a count of real-time effects.
+        let fx = [Effect::Delay(DelaySpec { beats: Some(0.5), mix: Some(0.0), ..Default::default() }), Effect::Eq(EqSpec { highcut: Some(20_000.0), ..Default::default() })];
+        let input = noise();
+        let out = run(&input, &fx, &[lane("eq.highcut", false, &[[0.0, 1_000.0]])], 0.0);
+        let (dry, wet) = (highs_db(&input[0][24_000..48_000]), highs_db(&out[0][24_000..48_000]));
+        assert!(wet < dry - 15.0, "highs {dry:.1} dB in, {wet:.1} dB out");
+    }
+
+    #[test]
+    fn a_comp_mix_lane_is_dry_until_it_opens() {
+        let comp = Effect::Comp(CompSpec { ratio: 8.0, threshold: -30.0, attack_ms: Some(1.0), release_ms: Some(50.0), knee: None, makeup: None, sidechain: None, mix: None });
+        let input = tone(0.9);
+        let out = run(&input, &[comp], &[lane("comp.mix", true, &[[0.0, 0.0], [4.0, 1.0]])], 0.0);
+        for i in [0, 1_000, 50_000, 95_999] {
+            assert!((out[0][i] - input[0][i]).abs() < 1e-6, "frame {i}: {} vs dry {}", out[0][i], input[0][i]);
+        }
+        let peak_after = out[0][100_000..].iter().fold(0f32, |m, v| m.max(v.abs()));
+        assert!(peak_after < 0.6, "compressed after beat 4, peak {peak_after}");
+    }
+
+    #[test]
+    fn a_static_comp_mix_blends_dry_and_wet() {
+        let spec = CompSpec { ratio: 8.0, threshold: -30.0, attack_ms: Some(1.0), release_ms: Some(50.0), knee: None, makeup: None, sidechain: None, mix: None };
+        let input = tone(0.9);
+        let wet = run(&input, &[Effect::Comp(spec.clone())], &[], 0.0);
+        let half = run(&input, &[Effect::Comp(CompSpec { mix: Some(0.5), ..spec })], &[], 0.0);
+        for i in [10_000, 60_000, 150_000] {
+            let want = 0.5 * input[0][i] + 0.5 * wet[0][i];
+            assert!((half[0][i] - want).abs() < 1e-3, "frame {i}: {} vs {}", half[0][i], want);
+        }
+    }
+
+    #[test]
+    fn a_reverb_mix_lane_is_dry_until_it_opens() {
+        let rv = Effect::Reverb(ReverbSpec { mix: Some(0.3), ..Default::default() });
+        let input = tone(0.5);
+        let out = run(&input, &[rv], &[lane("reverb.mix", true, &[[0.0, 0.0], [4.0, 1.0]])], 0.0);
+        for i in [0, 30_000, 95_999] {
+            assert!((out[0][i] - input[0][i]).abs() < 1e-6, "frame {i}");
+        }
+        assert!((96_000..N).any(|i| (out[0][i] - input[0][i]).abs() > 1e-3), "wet after beat 4");
+    }
+
+    #[test]
+    fn effect_lanes_follow_the_bars_offset() {
+        // Rendering from beat 4: the step lane is already open at the first frame.
+        let rv = Effect::Reverb(ReverbSpec { mix: Some(0.3), ..Default::default() });
+        let input = tone(0.5);
+        let from_start = run(&input, &[rv.clone()], &[lane("reverb.mix", true, &[[0.0, 0.0], [4.0, 1.0]])], 0.0);
+        let from_beat_4 = run(&input, &[rv], &[lane("reverb.mix", true, &[[0.0, 0.0], [4.0, 1.0]])], 4.0);
+        assert!((from_start[0][10] - input[0][10]).abs() < 1e-6);
+        assert!((from_beat_4[0][10] - input[0][10]).abs() > 1e-4, "wet at frame 10 when rendering from beat 4");
     }
 }

@@ -1744,6 +1744,14 @@
           "isRequired": false,
           "attributes": []
         },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
         "text": {
           "name": "text",
           "isArray": false,

@@ -257,6 +257,16 @@ fn recording_key(rel: &str) -> (String, String) {
             let item = loc_item(file).unwrap_or_else(|| stem_of(file));
             (format!("rec_{coll}_{item}"), format!("citizen-dj/{coll}"))
         }
+        // `Title_<item id>.mp3` (Lomax `lomaxbib000283`, Jukebox `jukebox-651958`), or its `.clean.wav` copy.
+        ["loc", coll, file] => (
+            format!("rec_{coll}_{}", trailing_id(file)),
+            format!("loc/{coll}"),
+        ),
+        // `Title_<upload id>.mp3`, grouped by author.
+        ["ccmixter", author, file] => (
+            format!("rec_ccmixter_{}", trailing_id(file)),
+            format!("ccmixter/{author}"),
+        ),
         _ => (
             format!(
                 "rec_uploads_{}",
@@ -265,6 +275,25 @@ fn recording_key(rel: &str) -> (String, String) {
             "uploads".into(),
         ),
     }
+}
+
+/// The id after the last underscore of `Title_<id>.mp3` or `Title_<id>.clean.wav`.
+fn trailing_id(file: &str) -> String {
+    let stem = file.split_once('.').map_or(file, |(s, _)| s); // drop every extension, `.clean.wav` included
+    stem.rsplit('_').next().unwrap_or(stem).to_string()
+}
+
+/// The `sources.json` entry for a sample. A denoised copy (`X.clean.wav`) has none of its own: it takes
+/// the credits and excerpt start of the original it was made from, whatever that file's extension.
+fn source_entry<'a>(entries: &HashMap<&str, &'a Value>, rel: &str) -> Option<&'a Value> {
+    if let Some(e) = entries.get(rel) {
+        return Some(e);
+    }
+    let base = rel.strip_suffix(".clean.wav")?;
+    entries
+        .iter()
+        .find(|(path, _)| path.rsplit_once('.').is_some_and(|(stem, _)| stem == base))
+        .map(|(_, e)| *e)
 }
 
 /// The Library of Congress item id in a Citizen DJ excerpt name:
@@ -599,7 +628,7 @@ fn migrate_samples(
         let analysis_ref = put_analysis(files, &p.id, &analysis_bytes, report)?;
 
         let (recording_id, collection) = recording_key(&p.rel);
-        let entry = entries.get(p.rel.as_str());
+        let entry = source_entry(&entries, p.rel.as_str());
         let role = if p.parent_id.is_some() {
             "stem"
         } else if entry.is_some_and(|e| e.get("excerpt_start").is_some()) {
@@ -1072,5 +1101,53 @@ mod recording_key_tests {
                 ("rec_salamander-drumkit".to_string(), "salamander-drumkit".to_string())
             );
         }
+    }
+
+    fn key(rel: &str) -> (String, String) {
+        recording_key(rel)
+    }
+
+    #[test]
+    fn library_of_congress_items_outside_citizen_dj_get_their_own_recordings() {
+        assert_eq!(
+            key("loc/lomax-1939/Steel-driving-song_lomaxbib000283.mp3"),
+            ("rec_lomax-1939_lomaxbib000283".to_string(), "loc/lomax-1939".to_string())
+        );
+        assert_eq!(
+            key("loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3"),
+            ("rec_national-jukebox_jukebox-651958".to_string(), "loc/national-jukebox".to_string())
+        );
+    }
+
+    #[test]
+    fn ccmixter_tracks_are_recordings_grouped_by_author() {
+        assert_eq!(
+            key("ccmixter/admiralbob77/The-Remixin-Blues_27917.mp3"),
+            ("rec_ccmixter_27917".to_string(), "ccmixter/admiralbob77".to_string())
+        );
+    }
+
+    #[test]
+    fn a_denoised_copy_belongs_to_its_originals_recording() {
+        for original in [
+            "loc/lomax-1939/Steel-driving-song_lomaxbib000283.mp3",
+            "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3",
+            "ccmixter/admiralbob77/The-Remixin-Blues_27917.mp3",
+            "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
+        ] {
+            let clean = format!("{}.clean.wav", original.rsplit_once('.').unwrap().0);
+            assert_eq!(key(&clean), key(original), "{clean}");
+        }
+    }
+
+    #[test]
+    fn a_denoised_copy_finds_its_originals_source_entry() {
+        use serde_json::json;
+        use std::collections::HashMap;
+        let orig = json!({"path": "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3", "title": "A ragtime drummer"});
+        let entries: HashMap<&str, &serde_json::Value> = [("loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3", &orig)].into();
+        let found = super::source_entry(&entries, "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.clean.wav");
+        assert_eq!(found.unwrap()["title"], "A ragtime drummer");
+        assert!(super::source_entry(&entries, "loc/national-jukebox/Other_jukebox-1.clean.wav").is_none());
     }
 }

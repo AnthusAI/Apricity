@@ -1130,6 +1130,70 @@
      "phrase",
      "1.7s"
     ]
+   },
+   {
+    "name": "hold-1",
+    "start": 16.894,
+    "end": 18.122,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Ab3",
+     "1.06s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 56,
+     "velocity": 0.667
+    }
+   },
+   {
+    "name": "hold-2",
+    "start": 41.989,
+    "end": 43.401,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Ab3",
+     "1.24s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 56,
+     "velocity": 0.744
+    }
+   },
+   {
+    "name": "hold-3",
+    "start": 47.855,
+    "end": 48.919,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Ab3",
+     "0.89s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 56,
+     "velocity": 0.565
+    }
+   },
+   {
+    "name": "hold-4",
+    "start": 57.392,
+    "end": 58.667,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "E1",
+     "1.1s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 28,
+     "velocity": 0.372
+    }
    }
   ],
   "markers": []

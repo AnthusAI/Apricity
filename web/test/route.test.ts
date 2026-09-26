@@ -24,6 +24,9 @@ test("every page and item round-trips through its URL", () => {
     { page: "clips", clip: { sample: "marine-band/Thunderer", name: "hit-3" }, list: "sort=newest" },
     { page: "help", help: { file: "language.md", anchor: "tracks" } },
     { page: "help", help: { file: "chords.md" } },
+    { page: "tags" },
+    { page: "tags", tag: "deep-house" },
+    { page: "tags", tag: "techno", list: "kind=beat&window=month" },
   ];
   for (const r of routes) assert.deepEqual(url(r), r, href(r));
 });

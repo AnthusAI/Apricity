@@ -300,9 +300,55 @@ fn catalog_has(w: &mut W, id: String, n: usize) {
     assert_eq!(s.files.len(), n);
 }
 
-#[then(expr = "the catalog has {int} sources")]
-fn catalog_count(w: &mut W, n: usize) {
-    assert_eq!(w.listed.len(), n);
+// The catalog grows with every curated import, so the specs name sources it must include and rules every source
+// keeps, never how many there are.
+#[then(expr = "the catalog includes source {string}")]
+fn catalog_includes(w: &mut W, id: String) {
+    let s = w.listed.iter().find(|s| s.id == id).unwrap_or_else(|| panic!("no source {id}"));
+    assert!(!s.files.is_empty(), "{id} has no files");
+}
+
+#[then("every source in the catalog has files, a credit, rights and a source page")]
+fn catalog_complete(w: &mut W) {
+    assert!(!w.listed.is_empty());
+    for s in &w.listed {
+        assert!(!s.files.is_empty(), "{} has no files", s.id);
+        for (what, v) in [("credit", &s.credit), ("rights", &s.rights), ("source page", &s.source_page)] {
+            assert!(!v.trim().is_empty(), "{} has no {what}", s.id);
+        }
+    }
+}
+
+#[then("the catalog's source ids and file paths are unique")]
+fn catalog_unique(w: &mut W) {
+    let mut ids = std::collections::HashSet::new();
+    let mut paths = std::collections::HashSet::new();
+    for s in &w.listed {
+        assert!(ids.insert(&s.id), "source {} listed twice", s.id);
+        for f in &s.files {
+            assert!(paths.insert(&f.path), "file {} listed twice", f.path);
+        }
+    }
+}
+
+#[then("every source in the catalog under a CC BY license names its author")]
+fn catalog_attributed(w: &mut W) {
+    for s in &w.listed {
+        if s.license.as_deref().is_some_and(|l| l.starts_with("cc-by")) {
+            assert!(s.author.as_deref().is_some_and(|a| !a.trim().is_empty()), "{} needs its author for the credit", s.id);
+        }
+    }
+}
+
+#[then("every file in the catalog fetched over http has a url")]
+fn catalog_fetchable(w: &mut W) {
+    for s in &w.listed {
+        for f in &s.files {
+            if matches!(f.fetch, FetchKind::Http) {
+                assert!(!f.url.trim().is_empty(), "{} has no url", f.path);
+            }
+        }
+    }
 }
 
 #[then(expr = "the status of {string} is {word}")]

@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+  "title": "DAW integration: export a score as a DAW set (.als)",
+  "description": "## Intent\n\nAs a producer, I want to export a compiled Apricity score as a DAW set file, so that I can finish a piece with the DAW's instruments and plugins after Apricity has done the digging, warping and harmony.\n\n## Why this first\n\nThe set format is gzipped XML, so this needs no vendor SDK, only a file writer. It is the point where Apricity stops being a demo and becomes part of a real session.\n\n## Mapping\n\n| Apricity | In the set |\n|---|---|\n| track | audio track |\n| note (each time a clip sounds) | arrangement clip with warp markers, transpose and gain set |\n| chord per bar | a locator per bar named with the chord |\n| group / return track, sends, volume, pan | the same |\n| effects (EQ, compressor + sidechain, drive, lo-fi, gate, width, reverb, delay) | the DAW's stock devices where one matches |\n| master loudness target | master chain (Utility/Limiter) |\n\n## Not included\n\n- Live sync or playback (see the transport-sync initiative).\n- Round-tripping a set back into a score.\n\n## Definition of done\n\n- `apricity export --daw-set score.apr` writes a set that opens in the DAW and plays the same arrangement the engine renders.\n- Every mapped feature above has a Gherkin story and a test that inspects the written XML.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T20:14:35.579925Z",
+  "updated_at": "2026-09-26T20:14:35.579983Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Ideas"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

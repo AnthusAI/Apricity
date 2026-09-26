@@ -2202,6 +2202,22 @@
     "evidence": {
      "standout": 6.9
     }
+   },
+   {
+    "name": "hold-1",
+    "start": 2.594,
+    "end": 3.832,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A4",
+     "1.07s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 69,
+     "velocity": 0.5
+    }
    }
   ],
   "markers": [

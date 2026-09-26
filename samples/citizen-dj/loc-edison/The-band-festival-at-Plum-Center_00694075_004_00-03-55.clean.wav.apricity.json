@@ -170,7 +170,24 @@
   }
  ],
  "annotations": {
-  "clips": [],
+  "clips": [
+   {
+    "name": "hold-1",
+    "start": 0.05,
+    "end": 1.067,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "C4",
+     "0.85s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 60,
+     "velocity": 0.423
+    }
+   }
+  ],
   "markers": []
  }
 }

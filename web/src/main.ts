@@ -7,6 +7,8 @@ import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
 import { ActivityView } from "./ui/activity";
+import { TagsView } from "./ui/tags";
+import { stopFeed } from "./audio/feed-audio";
 import { bootstrap, bootstrapError, mode } from "./data/client";
 import { mountNotices, notify } from "./ui/notices";
 import { watchAuth } from "./data/auth";
@@ -47,13 +49,14 @@ const clips = new Library(document.querySelector("#clips")!, "clips");
 const samples = new Library(document.querySelector("#samples")!, "samples");
 const docs = new DocsView(document.querySelector("#docs")!);
 const activity = new ActivityView(document.querySelector("#activity")!);
+const tagsView = new TagsView(document.querySelector("#tags")!);
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
 // ---- tabs (remembered per browser)
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB = KIND_OF_PAGE as Record<string, ScoreKind>;
 const TAB_OF_KIND = PAGE_OF_KIND as Record<ScoreKind, string>;
-const TABS = ["home", "activity", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "activity", "tags", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
@@ -67,6 +70,7 @@ function showTab(name: string) {
     if (player.transport.playing) player.pause();
     clips.silence();
     samples.silence();
+    stopFeed(); // a card on Activity or a tag's page
     document.dispatchEvent(new CustomEvent("apricity:page-changed")); // breakdowns fall silent
   }
   document.body.dataset.tab = name;
@@ -75,7 +79,8 @@ function showTab(name: string) {
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
-  document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home" || name === "activity";
+  // (Cards on Activity and the tag pages have their own play buttons.)
+  document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home" || name === "activity" || name === "tags";
   activity.show(name === "activity");
   syncTransport();
   if (kind) score.setKind(kind);
@@ -103,6 +108,10 @@ async function follow(r: Route) {
   else if (r.help) docs.open(r.help.file, r.help.anchor, "route");
   else if (r.page === "help") docs.report();
   else if (r.page === "clips") clips.report();
+  else if (r.page === "tags") {
+    document.title = titleOf(r, r.tag ? `#${r.tag}` : undefined);
+    await tagsView.show(r.tag ?? null, r.list);
+  }
   else document.title = titleOf(r); // an item's view titles the page with its name
 }
 /** Go somewhere: a new history entry (or, `replace`, this one), then show it. */

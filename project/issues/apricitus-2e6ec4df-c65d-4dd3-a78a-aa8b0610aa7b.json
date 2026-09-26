@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-2e6ec4df-c65d-4dd3-a78a-aa8b0610aa7b",
+  "title": "DAW integration: transport and tempo sync (Link)",
+  "description": "## Intent\n\nAs a performer, I want Apricity to follow the DAW's tempo and transport over Link, so that the web app or the Swift app becomes a synced sampler beside my set: a score edit re-renders and drops in on the next bar while the DAW keeps playing.\n\n## Why it fits\n\nThe engine already renders ahead and swaps arrangements at the bar line with a crossfade, so it is built for a clock it does not own. The DAW leads; Apricity follows.\n\n## Scope\n\n- Link peer in the native engine (Rust binding); phase-aligned start at the next bar.\n- Tempo changes re-warp the arrangement ahead of the beat.\n- Browser: Link is not reachable from a page, so the local server hosts the peer and streams clock to the AudioWorklet.\n\n## Not included\n\n- Sending audio into the DAW (routing is the user's system audio / a loopback driver).\n\n## Definition of done\n\n- Two peers stay within one beat-phase tolerance over a 10-minute run (measured in a test harness).\n- Stories for start-on-bar, tempo change, and stop.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T20:14:35.674508Z",
+  "updated_at": "2026-09-26T20:14:35.674549Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Ideas"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

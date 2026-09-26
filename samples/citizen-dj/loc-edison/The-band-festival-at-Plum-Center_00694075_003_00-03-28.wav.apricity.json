@@ -1469,6 +1469,70 @@
     "tags": [
      "hit"
     ]
+   },
+   {
+    "name": "hold-1",
+    "start": 1.547,
+    "end": 2.52,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "C4",
+     "0.8s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 60,
+     "velocity": 0.485
+    }
+   },
+   {
+    "name": "hold-2",
+    "start": 5.161,
+    "end": 6.493,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "G3",
+     "1.16s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 55,
+     "velocity": 0.559
+    }
+   },
+   {
+    "name": "hold-3",
+    "start": 15.779,
+    "end": 16.762,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "G4",
+     "0.81s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 67,
+     "velocity": 0.443
+    }
+   },
+   {
+    "name": "hold-4",
+    "start": 21.902,
+    "end": 22.92,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A3",
+     "0.85s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 57,
+     "velocity": 0.681
+    }
    }
   ]
  }
