@@ -10,9 +10,22 @@
   "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "929fdb19-6a64-4b8d-a7af-d7b34ffd8997",
+      "author": "home",
+      "text": "General rule added: no recording over 10 minutes enters the library (previews hide >8 min on all sources; catalog-add-loc.py refuses >10 min before touching catalogs; apricity_analyze skips >10 min; --max-minutes 0 overrides). ccMixter audio needs Referer ccmixter.org; previews cache copies in renders/preview/audio. Committed.",
+      "created_at": "2026-09-26T19:14:53.805400Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
+    }
+  ],
   "created_at": "2026-09-26T18:20:55.913710Z",
-  "updated_at": "2026-09-26T18:21:04.192590Z",
+  "updated_at": "2026-09-26T19:14:53.805524Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
