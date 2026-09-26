@@ -603,6 +603,12 @@ pub struct TrackSpec {
     /// The octave a pitched track plays in: where the chord root (or degree 1) sits; default nearest the clip's own pitch.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub octave: Option<i32>,
+    /// Fade each note in from silence over this time (ms), raised-cosine, capped at the note's length. 0–2000.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack: Option<f64>,
+    /// Keep each note sounding past its written end for this time (ms), fading to silence, raised-cosine. 0–5000.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub release: Option<f64>,
     /// Automation lanes.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub automate: Vec<AutomationSpec>,

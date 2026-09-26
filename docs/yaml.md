@@ -170,6 +170,8 @@ tracks:
 | `filter` | `{lowpass: Hz}` · `{highpass: Hz}` | 12 dB/octave filter, 20–20000 Hz. | `filter lp 800` |
 | `gate` | number, above 0 and up to 1 | Cut each note to this fraction. | `gate 50%` |
 | `stutter` | whole number, 1–64 | Replay each note's start this many times. | `stutter 4` |
+| `attack` | number (ms), 0–2000 | Fade each note in from silence over this time. | `attack 30ms` |
+| `release` | number (ms), 0–5000 | Keep each note sounding past its written end, fading out; the extra audio is the source's own continuation, at the note's own speed and pitch. With `gate`, the release starts at the gated end. | `release 400ms` |
 | `bars` | `"a-b"` or a bar number | Only in these bars (1-based, inclusive). | `bars 13-24` |
 | `volume` | number (dB) | Level relative to the other tracks: the track's fader. Default `0`. | `volume -2` |
 | `effects` | list of [effects](#mixing) | The track's effects, in order. | indented `eq`, `comp`, … lines |

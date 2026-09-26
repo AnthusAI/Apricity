@@ -18,6 +18,29 @@ use std::sync::Arc;
 const FADE_S: f64 = 0.004;
 const FILTER_UPDATE_FRAMES: usize = 32;
 
+/// An event's release, in output frames at `out_sr` (0 when it has none).
+fn release_frames(e: &Event, out_sr: f64) -> usize {
+    (e.release_s.unwrap_or(0.0) * out_sr).round().max(0.0) as usize
+}
+
+/// The gain at output frame `i` of `len` total frames: a raised-cosine (half-Hann) fade in over the
+/// first `attack_frames`, full volume in between, then a raised-cosine fade to silence starting at
+/// `release_start` over `release_frames`. Either envelope is skipped when its frame count is 0.
+/// `len` isn't used in the shape itself (both windows are anchored to their own edge) but documents
+/// the buffer the caller applies this over.
+pub fn envelope_gain(i: usize, len: usize, attack_frames: usize, release_start: usize, release_frames: usize) -> f32 {
+    let _ = len;
+    let mut g = 1.0f64;
+    if attack_frames > 0 && i < attack_frames {
+        g *= 0.5 - 0.5 * (std::f64::consts::PI * i as f64 / attack_frames as f64).cos();
+    }
+    if release_frames > 0 && i >= release_start {
+        let t = (i - release_start) as f64;
+        g *= if t >= release_frames as f64 { 0.0 } else { 0.5 + 0.5 * (std::f64::consts::PI * t / release_frames as f64).cos() };
+    }
+    g as f32
+}
+
 /// Apply filter automation to a stereo track buffer in-place.
 /// Creates two biquad instances (L/R channels) and updates coefficients every 32 frames.
 /// `lowpass`: true for lowpass, false for highpass.
@@ -92,7 +115,7 @@ pub struct Audio {
     pub channels: Vec<Vec<f32>>,
 }
 
-type CacheKey = (usize, u64, u64, u64, i32, i64, u8, bool, i64);
+type CacheKey = (usize, u64, u64, u64, i32, i64, u8, bool, i64, u64, u64);
 
 fn cache_key(source: usize, e: &Event) -> CacheKey {
     let q = |x: f64| (x * 1e5).round() as u64;
@@ -101,7 +124,19 @@ fn cache_key(source: usize, e: &Event) -> CacheKey {
         Some(FilterSpec::Lowpass(h)) => h.round() as i64,
         Some(FilterSpec::Highpass(h)) => -(h.round() as i64),
     };
-    (source, q(e.src_start), q(e.src_end), q(e.dur_beats * 1e3), e.semitones, (e.tuning_cents * 10.0).round() as i64, e.mode as u8, e.reverse, filter)
+    (
+        source,
+        q(e.src_start),
+        q(e.src_end),
+        q(e.dur_beats * 1e3),
+        e.semitones,
+        (e.tuning_cents * 10.0).round() as i64,
+        e.mode as u8,
+        e.reverse,
+        filter,
+        q(e.attack_s.unwrap_or(0.0)),
+        q(e.release_s.unwrap_or(0.0)),
+    )
 }
 
 pub struct Renderer {
@@ -166,7 +201,7 @@ impl Renderer {
         let mut keys = Vec::with_capacity(events.len());
         for e in &events {
             let (id, audio) = self.source(&tl.sources[e.source].path)?;
-            let out_len = (e.dur_beats * fpb).round() as usize;
+            let out_len = (e.dur_beats * fpb).round() as usize + release_frames(e, sr);
             let key = (cache_key(id, e), out_len);
             if !self.cache.contains_key(&key) && !jobs.iter().any(|j| j.0 == key) {
                 jobs.push((key, e, audio));
@@ -314,72 +349,125 @@ fn render_all(jobs: &[((CacheKey, usize), &Event, Arc<Audio>)], fpb: f64, sr: u3
     jobs.iter().map(|(key, e, audio)| (*key, render_event(e, audio, fpb, sr, key.1))).collect()
 }
 
-/// Warp + transpose one event to stereo at `out_sr`, exactly `out_len` frames.
+/// Warp + transpose one event to stereo at `out_sr`, exactly `out_len` frames (the note's own
+/// length, plus its release when it has one — see `release_frames`).
 pub fn render_event(e: &Event, src: &Audio, frames_per_beat: f64, out_sr: u32, out_len: usize) -> Stereo {
+    let rel = release_frames(e, out_sr as f64).min(out_len);
+    let body_len = out_len - rel;
     let sr_in = src.sr as f64;
     let n = src.channels[0].len();
     let a = ((e.src_start * sr_in).floor().max(0.0) as usize).min(n);
     let b = ((e.src_end * sr_in).ceil() as usize).min(n);
-    if b <= a || out_len == 0 {
-        return [vec![0.0; out_len], vec![0.0; out_len]];
-    }
-    if e.mode == WarpModeSpec::Repitch {
+    let mut body: Stereo = if b <= a || body_len == 0 {
+        [vec![0.0; body_len], vec![0.0; body_len]]
+    } else if e.mode == WarpModeSpec::Repitch {
         // Unwarped: varispeed straight from the source (speed, pitch and any rate change in one
         // band-limited read), no Rubber Band.
         let start = e.src_start * sr_in;
-        let step = (e.src_end - e.src_start) * sr_in / out_len as f64;
-        let mut chans: Vec<Vec<f32>> = src.channels.iter().take(2).map(|c| apricity_dsp::resample::varispeed(c, start, step, out_len)).collect();
+        let step = (e.src_end - e.src_start) * sr_in / body_len as f64;
+        let mut chans: Vec<Vec<f32>> = src.channels.iter().take(2).map(|c| apricity_dsp::resample::varispeed(c, start, step, body_len)).collect();
         let right = chans.get(1).cloned().unwrap_or_else(|| chans[0].clone());
-        return finish([std::mem::take(&mut chans[0]), right], e, out_sr, out_len);
-    }
-    let input: Vec<Vec<f32>> = src.channels.iter().take(2).map(|c| c[a..b].to_vec()).collect();
-    // Key frames put each source beat at its score beat. Output positions are in out_sr samples
-    // while Rubber Band runs at the source rate, so the rate change is folded into the stretch
-    // (positions) and the pitch (sr_in / out_sr): resampling happens in the same pass.
-    let key_frames: Vec<(usize, usize)> = e
-        .warp
-        .iter()
-        .map(|&(sec, beat)| (((sec * sr_in).round() as usize).saturating_sub(a), (beat * frames_per_beat).round() as usize))
-        .filter(|&(i, o)| i > 0 && o > 0 && i < b - a && o < out_len)
-        .collect();
-    let params = StretchParams {
-        time_ratio: out_len as f64 / (b - a) as f64,
-        semitones: e.semitones as f64 + e.tuning_cents / 100.0 + 12.0 * (sr_in / out_sr as f64).log2(),
-        key_frames,
-        mode: match e.mode {
-            WarpModeSpec::Beats => WarpMode::Beats,
-            WarpModeSpec::Complex => WarpMode::Complex,
-            WarpModeSpec::Texture | WarpModeSpec::Repitch => WarpMode::Texture,
-        },
-        preserve_formants: false,
+        [std::mem::take(&mut chans[0]), right]
+    } else {
+        let input: Vec<Vec<f32>> = src.channels.iter().take(2).map(|c| c[a..b].to_vec()).collect();
+        // Key frames put each source beat at its score beat. Output positions are in out_sr samples
+        // while Rubber Band runs at the source rate, so the rate change is folded into the stretch
+        // (positions) and the pitch (sr_in / out_sr): resampling happens in the same pass.
+        let key_frames: Vec<(usize, usize)> = e
+            .warp
+            .iter()
+            .map(|&(sec, beat)| (((sec * sr_in).round() as usize).saturating_sub(a), (beat * frames_per_beat).round() as usize))
+            .filter(|&(i, o)| i > 0 && o > 0 && i < b - a && o < body_len)
+            .collect();
+        let params = StretchParams {
+            time_ratio: body_len as f64 / (b - a) as f64,
+            semitones: e.semitones as f64 + e.tuning_cents / 100.0 + 12.0 * (sr_in / out_sr as f64).log2(),
+            key_frames,
+            mode: match e.mode {
+                WarpModeSpec::Beats => WarpMode::Beats,
+                WarpModeSpec::Complex => WarpMode::Complex,
+                WarpModeSpec::Texture | WarpModeSpec::Repitch => WarpMode::Texture,
+            },
+            preserve_formants: false,
+        };
+        let mut out = stretch_offline(&input, src.sr, &params);
+        for c in out.iter_mut() {
+            c.resize(body_len, 0.0);
+        }
+        let right = out.get(1).cloned().unwrap_or_else(|| out[0].clone());
+        [std::mem::take(&mut out[0]), right]
     };
-    let mut out = stretch_offline(&input, src.sr, &params);
-    for c in out.iter_mut() {
-        c.resize(out_len, 0.0);
-    }
-    let right = out.get(1).cloned().unwrap_or_else(|| out[0].clone());
-    finish([std::mem::take(&mut out[0]), right], e, out_sr, out_len)
-}
 
-/// After warping: the flips (filter, then reverse) and click-free edges.
-fn finish(mut lr: Stereo, e: &Event, out_sr: u32, out_len: usize) -> Stereo {
-    // Flips applied after warping: filter, then reverse (the edge fades below keep both click-free).
+    // Flips applied to the body, before the release tail is appended and before the envelope: filter,
+    // then reverse. So the envelope (below) always lands at the start/end as heard, whichever way the
+    // clip plays, and the tail (never itself reversed — it's what plays *after* the reversed note) is
+    // unaffected by it.
     if let Some(f) = e.filter {
-        for c in lr.iter_mut() {
+        for c in body.iter_mut() {
             biquad(c, f, out_sr as f64);
         }
     }
     if e.reverse {
-        for c in lr.iter_mut() {
+        for c in body.iter_mut() {
             c.reverse();
         }
     }
-    let fade = ((FADE_S * out_sr as f64) as usize).min(out_len / 2);
+
+    if rel == 0 {
+        return finish(body, e, out_sr, out_len, body_len);
+    }
+    // The release tail: the source's own continuation past `src_end`, read forward at the same
+    // rate the body was played at (so a pitched or `warp repitch` note's tail keeps its pitch/speed).
+    // Reading past the end of the source (`n`) naturally yields silence (varispeed has nothing to
+    // read there), which is exactly the "sample runs out" case.
+    let rate = if b > a && body_len > 0 { (b - a) as f64 / body_len as f64 } else { 1.0 };
+    let mut tail: Vec<Vec<f32>> = src.channels.iter().take(2).map(|c| apricity_dsp::resample::varispeed(c, b as f64, rate, rel)).collect();
+    if let Some(f) = e.filter {
+        for c in tail.iter_mut() {
+            biquad(c, f, out_sr as f64);
+        }
+    }
+    let tail_r = tail.get(1).cloned().unwrap_or_else(|| tail[0].clone());
+    let full: Stereo = [[body[0].clone(), std::mem::take(&mut tail[0])].concat(), [body[1].clone(), tail_r].concat()];
+    finish(full, e, out_sr, out_len, body_len)
+}
+
+/// The click-free edges: the attack/release envelope when the event has one (else the old 4 ms
+/// fade on both edges, bit-identical to a score with no envelope). When only one of attack/release
+/// is set, the other edge keeps its 4 ms fade so there's still no click there.
+fn finish(mut lr: Stereo, e: &Event, out_sr: u32, out_len: usize, body_len: usize) -> Stereo {
+    if e.attack_s.is_none() && e.release_s.is_none() {
+        let fade = ((FADE_S * out_sr as f64) as usize).min(out_len / 2);
+        for c in lr.iter_mut() {
+            for i in 0..fade {
+                let g = i as f32 / fade as f32;
+                c[i] *= g;
+                c[out_len - 1 - i] *= g;
+            }
+        }
+        return lr;
+    }
+    let attack_frames = ((e.attack_s.unwrap_or(0.0) * out_sr as f64).round() as usize).min(body_len);
+    let rel = out_len - body_len;
     for c in lr.iter_mut() {
-        for i in 0..fade {
-            let g = i as f32 / fade as f32;
-            c[i] *= g;
-            c[out_len - 1 - i] *= g;
+        for (i, v) in c.iter_mut().enumerate() {
+            *v *= envelope_gain(i, out_len, attack_frames, body_len, rel);
+        }
+    }
+    if e.attack_s.is_none() {
+        let fade = ((FADE_S * out_sr as f64) as usize).min(out_len / 2);
+        for c in lr.iter_mut() {
+            for i in 0..fade {
+                c[i] *= i as f32 / fade as f32;
+            }
+        }
+    }
+    if e.release_s.is_none() {
+        let fade = ((FADE_S * out_sr as f64) as usize).min(out_len / 2);
+        for c in lr.iter_mut() {
+            for i in 0..fade {
+                c[out_len - 1 - i] *= i as f32 / fade as f32;
+            }
         }
     }
     lr
@@ -416,6 +504,153 @@ mod tests {
 
     fn rms(x: &[f32]) -> f64 {
         (x.iter().map(|v| (*v as f64).powi(2)).sum::<f64>() / x.len() as f64).sqrt()
+    }
+
+    /// A minimal event: `Repitch` mode (plain varispeed, no Rubber Band) so tests can reason about
+    /// exact sample positions. `src_start`/`src_end` span one second 1:1 at 48 kHz by default.
+    fn base_event() -> Event {
+        Event {
+            track: "t".into(),
+            source: 0,
+            start_beat: 0.0,
+            dur_beats: 1.0,
+            src_start: 0.0,
+            src_end: 1.0,
+            warp: Vec::new(),
+            semitones: 0,
+            tuning_cents: 0.0,
+            gain_db: 0.0,
+            mode: WarpModeSpec::Repitch,
+            reverse: false,
+            filter: None,
+            piece: 0,
+            velocity: None,
+            attack_s: None,
+            release_s: None,
+        }
+    }
+
+    fn audio(sr: u32, channels: Vec<f32>) -> Audio {
+        Audio { sr, channels: vec![channels.clone(), channels] }
+    }
+
+    #[test]
+    fn envelope_gain_exact_values() {
+        // Attack: raised-cosine ramp from 0 (i=0) up to (not including) full volume at i=attack_frames.
+        let (attack, len) = (4, 100);
+        assert_eq!(envelope_gain(0, len, attack, len, 0), 0.0);
+        assert!((envelope_gain(1, len, attack, len, 0) - 0.14644661).abs() < 1e-6);
+        assert!((envelope_gain(2, len, attack, len, 0) - 0.5).abs() < 1e-6);
+        assert!((envelope_gain(3, len, attack, len, 0) - 0.85355339).abs() < 1e-6);
+        assert_eq!(envelope_gain(4, len, attack, len, 0), 1.0); // past the attack window: full volume
+        assert_eq!(envelope_gain(99, len, attack, len, 0), 1.0);
+
+        // Release: raised-cosine fade from full volume at the release start down toward 0.
+        let (release_start, release, len) = (100, 4, 104);
+        assert_eq!(envelope_gain(50, len, 0, release_start, release), 1.0); // before release: untouched
+        assert_eq!(envelope_gain(100, len, 0, release_start, release), 1.0); // release_start itself: still full
+        assert!((envelope_gain(101, len, 0, release_start, release) - 0.85355339).abs() < 1e-6);
+        assert!((envelope_gain(102, len, 0, release_start, release) - 0.5).abs() < 1e-6);
+        assert!((envelope_gain(103, len, 0, release_start, release) - 0.14644661).abs() < 1e-6);
+
+        // Both windows combine multiplicatively (only matters when they'd overlap on a tiny note):
+        // attack 6 frames, release starting at 4 for 4 frames, at i=5 both are partway through.
+        assert!((envelope_gain(5, 10, 6, 4, 4) - 0.796_375).abs() < 1e-4);
+    }
+
+    #[test]
+    fn no_attack_or_release_is_bit_identical_to_the_old_edge_fade() {
+        let src = audio(48000, vec![0.7; 48000]);
+        let e = base_event();
+        let got = render_event(&e, &src, 48000.0, 48000, 48000);
+
+        // Reproduce the pre-envelope path by hand: the same varispeed body, then the old symmetric
+        // 4 ms edge fade (no attack/release at all).
+        let mut want = apricity_dsp::resample::varispeed(&src.channels[0], 0.0, 1.0, 48000);
+        let fade = (FADE_S * 48000.0) as usize;
+        for i in 0..fade {
+            let g = i as f32 / fade as f32;
+            want[i] *= g;
+            want[47999 - i] *= g;
+        }
+        assert_eq!(got[0], want);
+        assert_eq!(got[1], want);
+    }
+
+    #[test]
+    fn attack_ramps_a_constant_source_in_from_silence() {
+        let src = audio(48000, vec![1.0; 96000]);
+        let mut e = base_event();
+        e.src_end = 1.0; // 1 second body, 1:1
+        e.attack_s = Some(0.1); // 100 ms
+        let out = render_event(&e, &src, 48000.0, 48000, 48000);
+        let first_10ms = rms(&out[0][..480]);
+        let at_150ms = rms(&out[0][7200..7680]);
+        assert!(at_150ms > 0.9, "past the attack the level should be ~1.0, got {at_150ms}");
+        let db = 20.0 * (first_10ms / at_150ms).log10();
+        assert!(db <= -20.0, "first 10ms ({first_10ms}) should be at least 20dB below 150ms ({at_150ms}), got {db}dB");
+    }
+
+    #[test]
+    fn release_extends_the_note_with_the_sources_own_continuation() {
+        // A 440 Hz tone long enough that the body (1s) and the release tail (300ms) both read real
+        // source audio, so the tail is a genuine continuation, not silence.
+        let src_len = 80_000;
+        // A non-round frequency, so no probed sample happens to land on a zero crossing.
+        let tone: Vec<f32> = (0..src_len).map(|i| (2.0 * std::f64::consts::PI * 442.7 * i as f64 / 48000.0).sin() as f32).collect();
+        let src = audio(48000, tone.clone());
+        let mut e = base_event();
+        e.src_end = 1.0; // body: source[0..48000), 1:1
+        e.release_s = Some(0.3); // 300 ms = 14400 frames
+        let body_len = 48000;
+        let release_frames_expected = 14400;
+        let out_len = body_len + release_frames_expected;
+        let out = render_event(&e, &src, 48000.0, 48000, out_len);
+
+        // The rendered note is exactly 300ms (14400 frames) longer than its written length.
+        assert_eq!(out[0].len(), body_len + release_frames_expected);
+
+        // 100ms past the written end (frame 52800): non-silent, and matches the source's own
+        // continuation (tone[52800]) scaled by the release envelope at that point.
+        let idx = body_len + 4800; // 100ms into the release
+        let g = envelope_gain(idx, out_len, 0, body_len, release_frames_expected);
+        assert!(out[0][idx].abs() > 1e-3, "should be non-silent 100ms into the release, got {}", out[0][idx]);
+        assert!((out[0][idx] - tone[idx] * g).abs() < 1e-3, "got {} want ~{}", out[0][idx], tone[idx] * g);
+
+        // The last 1 ms (48 frames) is below -60 dBFS.
+        let tail_rms = rms(&out[0][out_len - 48..]);
+        assert!(tail_rms < 10f64.powf(-60.0 / 20.0), "last 1ms should be below -60dBFS, rms {tail_rms}");
+    }
+
+    #[test]
+    fn release_running_off_the_sample_end_gives_silence_without_panicking() {
+        // A very short sample: the release asks for far more tail than the source has left.
+        let src = audio(48000, vec![1.0; 4800]); // 100ms, exactly the body's length
+        let mut e = base_event();
+        e.src_end = 0.1; // body: source[0..4800), all of it
+        e.release_s = Some(0.5); // 500ms tail requested; nothing left to read
+        let body_len = 4800;
+        let release_frames = 24000;
+        let out = render_event(&e, &src, 48000.0, 48000, body_len + release_frames);
+        assert_eq!(out[0].len(), body_len + release_frames);
+        assert!(out[0].iter().all(|v| v.is_finite()), "no NaN/inf reading past the source's end");
+        // The interpolation kernel blurs a handful of frames right at the edge; well past that (100
+        // frames in), there's nothing left to read and it's exactly silent.
+        assert!(out[0][body_len + 100..].iter().all(|&v| v == 0.0), "running off the end should settle to silence, not garbage");
+    }
+
+    #[test]
+    fn cache_key_distinguishes_notes_that_differ_only_in_release() {
+        let mut a = base_event();
+        let mut b = base_event();
+        a.release_s = Some(0.1);
+        b.release_s = Some(0.4);
+        assert_ne!(cache_key(0, &a), cache_key(0, &b));
+        let mut c = base_event();
+        let mut d = base_event();
+        c.attack_s = Some(0.01);
+        d.attack_s = Some(0.05);
+        assert_ne!(cache_key(0, &c), cache_key(0, &d));
     }
 
     #[test]

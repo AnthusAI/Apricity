@@ -398,6 +398,60 @@ tracks:
 }
 
 #[test]
+fn attack_and_release_carry_onto_events_and_yaml_round_trips() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips: { horn: { source: horn.wav, beats: [0, 16] } }
+tracks:
+  - { clip: horn, name: env, attack: 30, release: 400 }
+  - { clip: horn, name: plain }
+"#)
+    .unwrap();
+    let e = tl.events.iter().find(|e| e.track == "env").unwrap();
+    assert_eq!((e.attack_s, e.release_s), (Some(0.03), Some(0.4)));
+    let p = tl.events.iter().find(|e| e.track == "plain").unwrap();
+    assert_eq!((p.attack_s, p.release_s), (None, None));
+
+    let score: Score = serde_yaml::from_str(&format!(
+        "{GROOVE}tracks: [ {{ clip: horn, name: env, attack: 30, release: 400 }} ]\n"
+    ))
+    .unwrap();
+    assert_eq!((score.tracks[0].attack, score.tracks[0].release), (Some(30.0), Some(400.0)));
+    let back = serde_yaml::to_string(&score).unwrap();
+    assert!(back.contains("attack: 30") && back.contains("release: 400"), "{back}");
+    assert_eq!(serde_yaml::from_str::<Score>(&back).unwrap(), score);
+}
+
+#[test]
+fn attack_and_release_range_errors() {
+    let errs = run(&format!(
+        "{GROOVE}tracks: [ {{ clip: horn, attack: 3000 }}, {{ clip: horn, name: b, release: 6000 }} ]\n"
+    ))
+    .unwrap_err();
+    assert!(errs.iter().any(|e| e.contains("tracks[0].attack: 3000ms is outside 0ms to 2000ms")), "{errs:?}");
+    assert!(errs.iter().any(|e| e.contains("tracks[1].release: 6000ms is outside 0ms to 5000ms")), "{errs:?}");
+}
+
+#[test]
+fn no_attack_or_release_renders_the_old_path_bit_identical() {
+    // Compile-level check that omitting attack/release leaves the event untouched (engine bit-identity is
+    // covered separately in apricity-engine, but the Event fields feeding it must be None here).
+    let tl = run(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips: { horn: { source: horn.wav, beats: [0, 16] } }
+tracks: [ { clip: horn } ]
+"#)
+    .unwrap();
+    assert!(tl.events.iter().all(|e| e.attack_s.is_none() && e.release_s.is_none()));
+}
+
+#[test]
 fn kits_sliced_at_transients() {
     let tl = run(r#"
 apricity: 0.1

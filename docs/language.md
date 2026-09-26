@@ -190,6 +190,7 @@ list is in [Chords and keys](chords.md).
 track horns  as riff  follow  bars 13-24  volume -2
 track b      steps "1 _ 2 _ 3 _ 3 4"  swing 58  transpose 0
 track h.3    every 1bar  reverse  filter lp 800
+track pad    voicing seventh  attack 30ms  release 400ms
 ```
 
 `track` is followed by what to play:
@@ -230,6 +231,8 @@ Then any options. Each time a track sounds is a **note**: each repeat of a loop,
 | `filter lp <Hz>` / `filter hp <Hz>` | `filter lp 800`, `filter hp 250` | 12 dB/octave low-pass or high-pass filter, 20–20000 Hz. (`lowpass`, `highpass` also work.) | |
 | `gate <fraction>` | `gate 50%`, `gate 0.5` | Cut each note to that fraction of its length (a number above 1 is read as a percentage). | |
 | `stutter <n>` | `stutter 4` | Replay the start of each note *n* times within it, 1–64. | |
+| `attack <time>` | `attack 30ms`, `attack 0.25s` | Fade each note in from silence over this time (raised-cosine), capped at the note's own length. 0–2000ms. | none (a 4ms click-free edge) |
+| `release <time>` | `release 400ms`, `release 1.5s` | Keep each note sounding past its written end for this long, fading to silence (raised-cosine). The extra audio is the source's own continuation, read at the note's own speed and pitch; if the sample runs out first, silence fills the rest. With `gate`, the release starts at the gated (shortened) end. 0–5000ms. | none (a 4ms click-free edge) |
 | `bars <a>-<b>` | `bars 13-24`, `bars 5` | Only play in these bars (1-based, inclusive). | the whole piece |
 | `volume <dB>` | `volume -3` | The track's fader: its level relative to the other tracks (every track is level-matched first). | `0` |
 | `group <name>` | `group beat` | Play into a group track instead of straight into the master. See [group and return tracks](#group-and-return-tracks). | the master |
@@ -316,7 +319,9 @@ stretching, so a horn stays a horn and a short hit stays short. A note ends at i
 or at the clip's end if that comes first. A clip with `warp repitch` plays like a classic sampler
 instead: faster and brighter to go up, slower to go down, so higher notes run shorter. A pitched
 track plays one clip (not a kit), sits out of the harmony solver (it plays exact tones), and
-refuses a note more than two octaves from the clip's own pitch.
+refuses a note more than two octaves from the clip's own pitch. `attack` and `release` work the same
+as on any track: the release tail plays on at the tone's own pitch (and, with `warp repitch`, its own
+speed).
 
 ## Groove
 
@@ -562,6 +567,7 @@ track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER 
             | "grid" INTEGER | "swing" PERCENT [ "1/" INTEGER ] | "half" | "double" | "speed" NUMBER
             | "velocity" INTEGER | "humanize" HUMANIZE | "seed" INTEGER
             | "reverse" | "filter" ( "lp" | "hp" ) NUMBER | "gate" PERCENT | "stutter" INTEGER
+            | "attack" TIME | "release" TIME
             | "bars" BARS | "volume" NUMBER | "group" NAME ;
 
 track-line  = effect | "pan" NUMBER | "send" NAME LEVEL { NAME LEVEL } | automate ;

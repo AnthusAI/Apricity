@@ -726,6 +726,17 @@ pub struct Event {
     /// Its velocity (1–127), when not 100; already counted in `gain_db`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub velocity: Option<f64>,
+    /// Fade in from silence over this many seconds (raised-cosine), capped at the note's length.
+    #[serde(default, skip_serializing_if = "is_zero_or_none")]
+    pub attack_s: Option<f64>,
+    /// Keep sounding past `src_end`/the note's end for this many seconds (raised-cosine fade out).
+    #[serde(default, skip_serializing_if = "is_zero_or_none")]
+    pub release_s: Option<f64>,
+}
+
+/// Skip serializing an `Option<f64>` that's absent or zero (attack/release with no audible effect).
+fn is_zero_or_none(x: &Option<f64>) -> bool {
+    x.map_or(true, |v| v <= 0.0)
 }
 
 /// One sound a track can play: its clip's region, one slice, or one pad, and where it is recorded.
@@ -814,6 +825,11 @@ pub struct TrackInfo {
     /// Static filter: lowpass or highpass. Can be automated if a filter lane exists.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub filter: Option<FilterSpec>,
+    /// Attack/release on each note, in seconds, for `explain` (mirrors the events' `attack_s`/`release_s`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_s: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub release_s: Option<f64>,
 }
 
 fn master_name() -> String {
@@ -1479,6 +1495,16 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         if tr.stutter.is_some_and(|n| n == 0 || n > 64) {
             errors.push(format!("{at}.stutter: must be 1–64 repeats"));
         }
+        if let Some(a) = tr.attack {
+            if !(0.0..=2000.0).contains(&a) {
+                errors.push(format!("{at}.attack: {a}ms is outside 0ms to 2000ms"));
+            }
+        }
+        if let Some(r) = tr.release {
+            if !(0.0..=5000.0).contains(&r) {
+                errors.push(format!("{at}.release: {r}ms is outside 0ms to 5000ms"));
+            }
+        }
         check_groove(&format!("{at}."), tr.swing, tr.swing_base, tr.velocity, tr.humanize, &mut errors);
         if let Some(f) = tr.filter {
             let hz = match f {
@@ -1819,6 +1845,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             automation: std::mem::take(&mut track_lanes[ti]),
             automation_specs: std::mem::take(&mut track_automate_specs[ti]),
             filter: tr.filter,
+            attack_s: tr.attack.filter(|&a| a > 0.0).map(|a| a / 1000.0),
+            release_s: tr.release.filter(|&r| r > 0.0).map(|r| r / 1000.0),
         });
         piece_levels.push(levels);
         // A pitched track plays its clip from the clip's own pitch: pinned (`root Bb2`), heard from its notes, or guessed.
@@ -1959,6 +1987,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 reverse: tr.reverse,
                 filter: event_filter,
                 piece: h.piece,
+                attack_s: tr.attack.map(|a| a / 1000.0),
+                release_s: tr.release.map(|r| r / 1000.0),
             });
         }
     }
@@ -2056,6 +2086,8 @@ fn pitched_events(h: PitchedHit, root: i32, spans: &[(f64, f64, Option<Chord>, S
             reverse: h.tr.reverse,
             filter: h.tr.filter,
             piece: h.piece_index,
+            attack_s: h.tr.attack.map(|a| a / 1000.0),
+            release_s: h.tr.release.map(|r| r / 1000.0),
         });
     }
 }
@@ -2174,17 +2206,21 @@ impl Timeline {
         for t in &self.tracks {
             // A kit's pads levelled together, by where they come from.
             let groups: String = t.level_groups.iter().map(|g| format!("  {:<14} {:<10} {} pad{} from {} levelled together: {:+.1} dB\n", "", "", g.pads, if g.pads == 1 { "" } else { "s" }, g.from, g.level_db)).collect();
+            let env = match (t.attack_s, t.release_s) {
+                (None, None) => String::new(),
+                (a, r) => format!("  attack {}ms release {}ms", a.map_or(0.0, |x| x * 1000.0).round(), r.map_or(0.0, |x| x * 1000.0).round()),
+            };
             if let Some(v) = t.varispeed {
-                s += &format!("  {:<14} {:<10} seconds {:>6.1}–{:<6.1} re-pitched, plays as recorded at {v}× (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0 * 60.0 * v / (self.tempo * t.beat_ratio), t.region_beats.1 * 60.0 * v / (self.tempo * t.beat_ratio), t.level_db);
+                s += &format!("  {:<14} {:<10} seconds {:>6.1}–{:<6.1} re-pitched, plays as recorded at {v}× (not in the harmony)  level {:+.1} dB{env}\n", t.name, t.clip, t.region_beats.0 * 60.0 * v / (self.tempo * t.beat_ratio), t.region_beats.1 * 60.0 * v / (self.tempo * t.beat_ratio), t.level_db);
                 s += &groups;
                 continue;
             }
             if let Some(p) = &t.pitch {
-                s += &format!("  {:<14} {:<10} one sound at {p}, played at the pitches it's given (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.level_db);
+                s += &format!("  {:<14} {:<10} one sound at {p}, played at the pitches it's given (not in the harmony)  level {:+.1} dB{env}\n", t.name, t.clip, t.level_db);
                 s += &groups;
                 continue;
             }
-            s += &format!("  {:<14} {:<10} clip beats {:>6.1}–{:<6.1} (×{}) sounds in {:<5} stretch {:<7} retune {:+.0}¢  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0, t.region_beats.1, t.beat_ratio, t.region_key,
+            s += &format!("  {:<14} {:<10} clip beats {:>6.1}–{:<6.1} (×{}) sounds in {:<5} stretch {:<7} retune {:+.0}¢  level {:+.1} dB{env}\n", t.name, t.clip, t.region_beats.0, t.region_beats.1, t.beat_ratio, t.region_key,
                 t.stretch.map_or("?".into(), |x| format!("{x:.3}×")), t.retune_cents, t.level_db);
             s += &groups;
         }
