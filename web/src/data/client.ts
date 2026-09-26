@@ -4,6 +4,13 @@ import { Amplify } from "aws-amplify";
 import { generateClient } from "aws-amplify/api";
 import type { Schema } from "../../amplify/data/resource";
 
+/** Who `apricity serve` says is working locally (`custom.apricity.identity` in its outputs). */
+export interface LocalIdentity {
+  sub: string;
+  username?: string;
+  groups?: string[];
+}
+
 interface AmplifyOutputs {
   data?: {
     url: string;
@@ -16,12 +23,13 @@ interface AmplifyOutputs {
   custom?: {
     apricity?: {
       mode?: "local" | "cloud";
-      identity?: { sub: string; username?: string; groups?: string[] };
+      identity?: LocalIdentity;
     };
   };
 }
 
 let cachedMode: "local" | "cloud" = "cloud";
+let cachedIdentity: LocalIdentity | null = null;
 let cachedClient: any = null;
 let signedIn: Promise<boolean> | null = null;
 
@@ -40,8 +48,9 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     // Configure Amplify
     Amplify.configure(outputs as any);
 
-    // Determine mode
+    // Determine mode. Amplify.configure keeps only the parts of `custom` it knows, so the local identity is kept here.
     cachedMode = outputs.custom?.apricity?.mode ?? "cloud";
+    cachedIdentity = outputs.custom?.apricity?.identity ?? null;
     // Who is signed in decides how the cloud API is called; forget it whenever that changes. (Registered here, before
     // any view listens for the same event, so a view that reloads on it already reads with the new session.)
     if (typeof document !== "undefined") document.addEventListener("apricity:auth-changed", () => (signedIn = null));
@@ -51,6 +60,11 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     cachedMode = "cloud"; // Default to cloud mode on error
     return cachedMode;
   }
+}
+
+/** The local identity from the outputs (null in the cloud, or before bootstrap). */
+export function localIdentity(): LocalIdentity | null {
+  return cachedIdentity;
 }
 
 /**

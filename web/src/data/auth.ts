@@ -2,7 +2,7 @@
 
 import { Hub } from "aws-amplify/utils";
 import { Amplify } from "aws-amplify";
-import { mode } from "./client.js";
+import { localIdentity, mode } from "./client.js";
 
 interface AuthUser {
   userId: string;
@@ -27,26 +27,17 @@ let cachedIdentity: CurrentUser | null = null;
 
 /**
  * Get the current user's identity.
- * Local mode: returns the identity from outputs.custom.apricity.identity
+ * Local mode: returns the identity from outputs.custom.apricity.identity (kept by bootstrap)
  * Cloud mode: delegates to aws-amplify/auth
  */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (mode() === "local") {
-    // Local mode: return cached identity from Amplify config
     if (cachedIdentity) return cachedIdentity;
-
-    const config = Amplify.getConfig();
-    const customConfig = (config as any).custom?.apricity;
-    const identity = customConfig?.identity;
-    if (identity) {
-      cachedIdentity = {
-        sub: identity.sub,
-        username: identity.username,
-        groups: identity.groups,
-      };
-      return cachedIdentity;
-    }
-    return null;
+    const identity = localIdentity();
+    if (!identity) return null;
+    // The owner the local server stores is `sub::username`; without a username it is the sub on both sides.
+    cachedIdentity = { sub: identity.sub, username: identity.username ?? identity.sub, groups: identity.groups ?? [] };
+    return cachedIdentity;
   } else {
     // Cloud mode: use aws-amplify/auth
     const { getCurrentUser: amplifyGetCurrentUser } = await import("aws-amplify/auth");
