@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-be83fac4-c6d1-48ff-b240-9f0d068c5391",
+  "title": "A malformed or unsupported sidecar is rejected with its line or byte offset",
+  "description": "## Behavior\nApricity is strict: a sidecar it cannot trust is rejected with where the problem is (element path and line for `.alc`, byte offset for `.asd`) and what to do.\n\n```gherkin\nFeature: Malformed sidecars are rejected with their location\n\n  Scenario: Warp markers out of order in an .alc\n    Given an .alc whose 4th warp marker is earlier in seconds than its 3rd\n    When I read it\n    Then reading fails with \"line 57: WarpMarkers/WarpMarker[4]: 12.40 s (beat 7) is before marker 3 (12.52 s, beat 6); markers must increase in both seconds and beats\"\n\n  Scenario: Warping on with fewer than two markers\n    Given an .alc with warping on and one warp marker\n    When I read it\n    Then reading fails with a message naming the WarpMarkers element and \"needs at least two warp markers\"\n\n  Scenario: A truncated .asd\n    Given the reference \"steady-120.wav.asd\" cut short at byte 4000\n    When I read it\n    Then reading fails with \"byte 4000: file ends inside the warp marker list\"\n\n  Scenario: An .asd from a version Apricity cannot read\n    Given an .asd whose version marker is one Apricity does not know\n    When I read it\n    Then reading fails naming the version found and the versions supported\n    And the message suggests saving the clip as an .alc instead\n\n  Scenario: Not a sidecar at all\n    Given a file named \"x.alc\" that is not gzip-compressed XML\n    When I read it\n    Then reading fails with \"x.alc: not an .alc (expected gzip-compressed XML)\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:27.396780Z",
+  "updated_at": "2026-09-26T22:01:27.396824Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

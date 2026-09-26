@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-1410ff84-870f-41f4-b8bf-5a3466735c87",
+  "title": "Route GET /export/daw-set/{scoreId} on apricity serve, zipped, with located errors",
+  "description": "## Intent\n\nThe export route on the local server.\n\n## Steps\n\n- Specs first: the scenarios of \"apricity serve hands out DAW sets\" in `features/serve/serve.feature`, as Rust tests in `crates/apricity-cli/src/serve.rs` (its test fixture library, with generated WAVs); watch them fail.\n- `GET /export/daw-set/{scoreId}`: API key like `/graphql`; load the score and its samples from the library (the loader `compile_from_library` uses); run the same export as `apricity export --daw-set` (shared code in `crates/apricity-cli/src/export.rs`) into a temp folder; stream a zip (add the `zip` crate); `422` with `{problems: [...]}` carrying the CLI's located messages; `404` for an unknown score; warnings in a response header.\n- `design/storage.md` §4: list the route.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-cli serve`; `scripts/serve-smoke.sh` still passes.\n\n## Release\n\n`feat(<this task's id>): apricity serve exports DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-3e535c11-3d31-4864-ae05-ee20ecfb622a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-08cb9dab-5629-45c0-bbcf-b72314677dcd",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:29.646126Z",
+  "updated_at": "2026-09-26T22:06:51.655353Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

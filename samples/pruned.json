@@ -1,0 +1,19 @@
+{
+  "about": "Samples the curators pruned (one star). Importers refuse these.",
+  "pruned": [
+    {
+      "path": "ccmixter/admiralbob77/Why_27918.mp3",
+      "sha256": "cf1ad067aa11cddefbecbd80d46942798af71bc935ccce9e719d83d0d8fc58b0",
+      "title": "Why_27918.mp3",
+      "reason": "rated one star by the curators",
+      "at": "2026-09-26"
+    },
+    {
+      "path": "ccmixter/Loveshadow/Dear-Mr-Williams_27808.mp3",
+      "sha256": "d666cd8b7672e3318f909e801fb64a2c43b1a0fe828907fa02c1df29915794cc",
+      "title": "Dear-Mr-Williams_27808.mp3",
+      "reason": "rated one star by the curators",
+      "at": "2026-09-26"
+    }
+  ]
+}

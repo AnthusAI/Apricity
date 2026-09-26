@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-c185b957-02c4-49a8-8ea2-865ff7901d8d",
+  "title": "Design note §Your grid, concepts and glossary for warp markers of yours",
+  "description": "## Intent\nRecord the decision and explain it to people.\n\n## Scope\n- `design/daw-sidecars.md` §Your grid (the decision block of the M4 epic, with the diagram); `design/vocabulary.md`: **Warp marker** row notes \"yours or the analysis's\".\n- `docs/concepts.md` \"Samples and analysis\": warp markers of yours, how they replace the analysis grid, how to go back (M5's reset).\n- `docs/glossary.md` \"warp marker\" updated.\n\n## Verify\nDocs render in the Docs tab; wording matches the scenarios' messages.\n\nCommit: `docs(<this id>): warp markers of yours`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0297cb89-801b-4961-bc6b-a7e1fb8bedb6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-75c39cfb-62e4-485a-9103-91240d75eafd",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:56.048078Z",
+  "updated_at": "2026-09-26T22:06:36.915818Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

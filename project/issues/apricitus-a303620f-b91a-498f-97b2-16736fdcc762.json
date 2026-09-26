@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-a303620f-b91a-498f-97b2-16736fdcc762",
+  "title": "apricity-cli: --steps <track> on export --kit, with help, errors and docs",
+  "description": "## Intent\n\nExpose the MIDI export on the command line and document it.\n\n## Scope\n\n- `--steps <track>` on `apricity export --kit` (crates/apricity-cli/src/export.rs): writes `<track>.mid` next to the preset (or next to `-o`); `--force` covers both files; nothing written if either would fail.\n- `--help` line and example; errors and warnings as in the story; success line `wrote b.adg (8 pads) and b.mid (16 notes)`.\n- Docs: docs/tools.md (the flag and how to use the two files together in the DAW), docs/glossary.md (\"MIDI file\" only if not already defined), `design/daw-presets.md` MIDI section and the \"what cannot travel\" table.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-cli --test export_cli\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test conformance\n```\nAll M2 scenarios green.\n\n## Release\n\n`feat(<this task id>): apricity export --kit --steps`. Not breaking.\n\n## Dependencies\n\nBlocked by the pad-notes task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-f7be135a-6efe-431d-854f-1f478d1b47ac",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:46.789213Z",
+  "updated_at": "2026-09-26T22:11:55.042688Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

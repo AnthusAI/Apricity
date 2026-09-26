@@ -12,6 +12,7 @@ const url = (r: Route) => {
 test("every page and item round-trips through its URL", () => {
   const routes: Route[] = [
     { page: "home" },
+    { page: "about" },
     { page: "activity" },
     { page: "scores" },
     { page: "beats", score: "examples/salamander-beat.apr" },

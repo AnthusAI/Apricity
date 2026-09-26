@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-5b5ded95-218d-4ab3-a6f1-37c4af8c8583",
+  "title": "Reversed notes play backwards in the set",
+  "description": "As a producer, I want reversed notes to play backwards in the set, so that a reverse flip sounds the same.\n\n```gherkin\nFeature: Reversed notes\n  Scenario: A reversed track plays its notes backwards\n    Given the track \"brk\" plays its clip with \"reverse\"\n    When I export the score as a DAW set\n    Then every clip of \"brk\" plays its audio backwards\n    And each clip still starts and ends where the compiled note does\n\n  Scenario: The same sample forwards and backwards\n    Given the track \"a\" plays \"brk.wav\" forwards and the track \"b\" plays it with \"reverse\"\n    When I export the score as a DAW set\n    Then the clips of \"a\" play forwards and the clips of \"b\" play backwards\n\n  Scenario: Reversed audio travels with the set even when samples are referenced in place\n    Given the track \"brk\" plays its clip with \"reverse\"\n    When I export the score as a DAW set with \"--no-collect\"\n    Then every audio file the set refers to exists\n```\n\nNote: whether the set holds a reversed copy of the audio or the DAW's own reverse setting is decided in M0; the scenarios describe what the listener gets either way.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:26.575215Z",
+  "updated_at": "2026-09-26T22:06:26.575274Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

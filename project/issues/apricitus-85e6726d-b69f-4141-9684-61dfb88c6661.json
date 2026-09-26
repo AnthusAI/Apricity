@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-85e6726d-b69f-4141-9684-61dfb88c6661",
+  "title": "Write features/daw/collection-folder.feature and its steps; watch them fail",
+  "description": "## Intent\n\nSpecs first for collection export.\n\n## Scope\n\n- `features/daw/collection-folder.feature` with every scenario of the stories apricitus-2f5268, apricitus-b0281e and apricitus-325160.\n- Steps in the shared `features/daw/STEPS.md`: a temp library (`apricity_data::Library::create`) with samples, clips and a collection (Crate + CrateItem records until the Collection rename), moving and removing items; reading `.adg` pads reuses M1's steps, reading `.alc` reuses the shared ones.\n- Level check compares against `apricity explain` of a score holding a drum kit of the same clips (observable, not internal).\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test conformance\n```\nScenarios fail for the right reason (no `--collection`); output in a comment.\n\n## Release\n\n`test(<this task id>): specs for collection export`. Not breaking.\n\n## Dependencies\n\nBlocked by M1's CLI task (apricitus-c1a8b5) and M3's CLI task (apricitus-2547a3).",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-c1a8b5ec-e69a-4025-b2fd-2c012f768e59",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-2547a326-130a-44e6-a3ea-a879863673b9",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:26.313065Z",
+  "updated_at": "2026-09-26T22:11:56.127818Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

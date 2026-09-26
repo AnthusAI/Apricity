@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-b0a026ab-bb0f-43f7-919d-ff9283a6944d",
+  "title": "Docs for kit export: tools, concepts, glossary, design note, vocabulary, README",
+  "description": "## Intent\n\nDocument kit export where people look: the docs (also the web app's Docs tab), the glossary, the design note.\n\n## Scope\n\n- `docs/tools.md`: an \"Exporting to a DAW\" section with `apricity export --kit`, its flags and an example.\n- `docs/concepts.md` (Kits: slices and pads): one paragraph on taking a kit to the DAW as a drum rack, and what does not travel with it (effects, chord-following).\n- `docs/glossary.md`: \"Drum rack preset\" and \"Export\" entries.\n- `design/daw-presets.md`: update to what was built (pad table, what a preset cannot hold); `design/vocabulary.md`: the drum rack preset row.\n- README layout table: the `apricity-daw` row (if the crate chore did not add it).\n- Words: never the vendor's name or the DAW's product name; say \"the DAW\", \"drum rack\", \"sampler\".\n\n## Verification\n\n```sh\nnode web/test/docs.test.mjs 2>/dev/null || true   # if the docs tab has a link check\n```\nA case-insensitive grep of docs/, design/ and README.md for the vendor's name prints nothing. A reviewer reads the new docs section and runs its example command.\n\n## Release\n\n`docs(<this task id>): kit export`. Not breaking.\n\n## Dependencies\n\nBlocked by the CLI task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-c1a8b5ec-e69a-4025-b2fd-2c012f768e59",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.664508Z",
+  "updated_at": "2026-09-26T22:11:54.627708Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

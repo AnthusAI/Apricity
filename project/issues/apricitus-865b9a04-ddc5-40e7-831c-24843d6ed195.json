@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-865b9a04-ddc5-40e7-831c-24843d6ed195",
+  "title": "Stopping, pausing and seeking while following a beat clock",
+  "description": "As a performer, I want Apricity to stop when the clock stops and to come back in on a bar line, so that starting and stopping in the DAW never leaves Apricity out of step.\n\nSpec file: `features/link/clock.feature`.\n\n```gherkin\nFeature: Stopping, pausing and seeking while following a beat clock\n\n  Background:\n    Given the click score\n    And playback is following a clock at 120 BPM with a quantum of 4\n\n  Scenario: The clock stops\n    When the clock stops at beat 13.2\n    Then the sound fades out within 5 ms of that moment\n    And nothing sounds afterwards\n\n  Scenario: The clock plays again\n    Given the clock stopped\n    When the clock plays from beat 0\n    Then bar 1 of the score sounds at beat 0 within the tolerance\n\n  Scenario: Pausing playback leaves the clock alone\n    When I pause playback at beat 10\n    Then nothing sounds and the clock keeps playing\n    When I press play at beat 17\n    Then bar 1 of the score sounds at beat 20 within the tolerance\n\n  Scenario: Seeking picks the bar that starts at the next bar line\n    When I seek to bar 3 at beat 13\n    Then bar 3 of the score sounds at beat 16 within the tolerance\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e661ebf4-0379-4220-98a3-f98ab66831ef",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:43.014962Z",
+  "updated_at": "2026-09-26T22:02:43.015005Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

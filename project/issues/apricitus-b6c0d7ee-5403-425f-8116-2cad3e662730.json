@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-b6c0d7ee-5403-425f-8116-2cad3e662730",
+  "title": "Document DAW sidecars in docs/tools.md, concepts and README",
+  "description": "## Intent\nTell people the command exists and how to use it with the DAW.\n\n## Scope\n- `docs/tools.md`: section \"DAW sidecars\" (`apricity export --sidecars`, flags, what gets written where, the corrections guard, library mode).\n- `docs/concepts.md`: a short paragraph under Samples and analysis: the analysis travels to the DAW as a sidecar.\n- README \"Making music\" block: one example line.\n- No brand or product name of the DAW anywhere (say \"the DAW\").\n\n## Verify\nDocs render in the web app's Docs tab; every command line in the new text runs as written against the fixtures.\n\nCommit: `docs(<this id>): DAW sidecars in tools and concepts` (type `docs`, no release).\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2910651b-d34c-4680-b170-26ab9167ccb0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:44.004120Z",
+  "updated_at": "2026-09-26T22:06:36.184160Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

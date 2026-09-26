@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-b717e997-4019-4ee2-ada2-b3532db54efd",
+  "title": "Web need: sidecar status and export for Library samples",
+  "description": "## Need (for the web/docs session; not visuals)\nIn the Library, a person should be able to tell whether a sample has a sidecar and get one without the terminal:\n- per sample: sidecar present / missing / edited in the DAW (not imported yet);\n- an action that runs the same export for the selected sample(s) and shows the report lines.\n\n## Data the UI needs\nAn endpoint on `apricity serve` (or a GraphQL custom operation, coordinated with the storage initiative apricitus-e70662) returning, per sample, `{sidecar: \"none\"|\"current\"|\"edited\", path}` and running an export with the same outcomes as the CLI.\n\n## Out of scope\nDesign, layout and wording of the controls (the web session decides).\n\n## Verify\nThe web session files its own UI tasks from this; this task is done when the endpoint exists and `node web/test/...` (named by the web session) calls it.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2910651b-d34c-4680-b170-26ab9167ccb0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:44.109242Z",
+  "updated_at": "2026-09-26T22:06:36.329788Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

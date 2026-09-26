@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-4663557a-6dad-4d0a-a7fa-8c347580ad11",
+  "title": "Manual A/B in the DAW: the exported rack and MIDI against apricity render",
+  "description": "## Intent\n\nThe initiative's acceptance: a step pattern sounds the same on the rack.\n\n## Steps (owner, in the DAW)\n\n1. `apricity export --kit b examples/chop-shop.apr --steps b -o /tmp/ab/b.adg`, and `apricity render examples/chop-shop.apr --bars 1-4 -o /tmp/ab/apricity.wav` with every other track muted (a copy of the score with only track `b`).\n2. In the DAW: a MIDI track with `b.adg`, the `b.mid` clip under it, tempo from the score; export bars 1-4 as `/tmp/ab/daw.wav`.\n3. Listen A/B. Then compare onsets and levels: `analysis/.venv/bin/python scripts/check-render.py` on both renders (tempo heard, beat deviation), and note the level difference per bar.\n4. Record the differences expected from the warnings (none for this track) and any that are not expected.\n\n## Verification\n\nA comment with the DAW version, what was heard, the check-render numbers for both files, and a verdict. Unexpected differences become bugs under M1 or M2.\n\n## Release\n\nNo commit.\n\n## Dependencies\n\nBlocked by the CLI task in this epic.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-a303620f-b91a-498f-97b2-16736fdcc762",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:46.868591Z",
+  "updated_at": "2026-09-26T22:11:55.112234Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

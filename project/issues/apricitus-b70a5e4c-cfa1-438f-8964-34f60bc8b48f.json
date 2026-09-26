@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-b70a5e4c-cfa1-438f-8964-34f60bc8b48f",
+  "title": "Docs and design for kits, overlapping notes, reverse and ranges in DAW sets",
+  "description": "## Intent\n\nDocs and design for M2.\n\n## Steps\n\n- `design/daw-set.md`: overlapping notes (the group and its numbered audio tracks), reverse, re-pitch, range overflow; mark rows built.\n- `docs/concepts.md` \"Taking a score into a DAW\": kits as one clip per hit, overlapping notes, reverse, levels beyond range.\n- `docs/glossary.md`: only if a new word appears. Never the vendor's name.\n\n## Verification\n\nthe diff adds no mention of the vendor's name or the DAW's product name (the project's naming rule); docs render in the web app.\n\n## Release\n\n`docs(<this task's id>): kits, overlaps and reverse in DAW sets`.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.429007Z",
+  "updated_at": "2026-09-26T22:06:27.429043Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-f4bae70d-f1de-480a-b9dd-03f052ef280c",
+  "title": "Manual check in the DAW: a collection's clip files and drum rack",
+  "description": "## Intent\n\nCheck the collection export in the DAW.\n\n## Steps (owner)\n\n1. Keep a handful of candidates into a collection in the curation loop (some loops, some shots).\n2. `apricity export --clips --collection <name> --library ~/Apricity-Library -o ~/Music/Apricity-collections`.\n3. In the DAW's browser: the files show in collection order; previews play in time; a loop dragged onto a track sits on the grid.\n4. Drag `<name>.adg` onto a MIDI track: one pad per short item, in order from C1, levels even; play them against `apricity play` of a score using the same clips as a drum kit.\n\n## Verification\n\nA comment with the DAW version and pass/fail per step; failures filed as bugs under this epic.\n\n## Release\n\nNo commit.\n\n## Dependencies\n\nBlocked by the CLI task in this epic.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-17016618-6a03-48f3-a348-21c1cd62ad49",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:27.087504Z",
+  "updated_at": "2026-09-26T22:11:56.731615Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

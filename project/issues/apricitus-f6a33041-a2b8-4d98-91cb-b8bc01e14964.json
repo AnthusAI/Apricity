@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f6a33041-a2b8-4d98-91cb-b8bc01e14964",
+  "title": "Write features/daw/import_markers.feature and the domain warp_markers.feature (red)",
+  "description": "## Intent\nSpecs first for M5.\n\n## Scope\n- `features/daw/import_markers.feature`: all scenarios of the four M5 stories; `features/daw/STEPS.md` rows.\n- `features/data/domain/warp_markers.feature`: the library operation (replace one person's warp markers for a sample: idempotent; leaves other markers, clips and other people's warp markers alone), in the house style of `features/data/domain/markup_merge.feature`, run by the existing domain runners.\n- Broken import fixtures (wrong length, out of order, beyond the end, warp off, unknown version).\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-cli --test daw_cli` and the domain runner fail on the new scenarios for the right reason.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.429536Z",
+  "updated_at": "2026-09-26T22:06:13.429574Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-034d523d-852c-4143-b3ba-ec59e4c687fa",
+  "title": "Manual check in the DAW: browse the clip folder, preview and drag clips onto the grid",
+  "description": "## Intent\n\nCheck in the DAW what a machine cannot: the folder browses well and the clips land on the grid.\n\n## Steps (owner)\n\n1. `apricity export --clips samples/marine-band -o ~/Music/Apricity-clips` (or from the library with `--library`).\n2. Add the folder to the DAW's browser. Browse `Thunderer/loops`: names read well; preview plays each loop in time with the DAW's tempo.\n3. Drag `A-1bar-...` and a section onto audio tracks: they start on the bar, stay on the grid for their length, and loops loop.\n4. A sample with no beat grid (a speech or free-time recording): its clips play unwarped at their own speed.\n5. Open a clip and read its info text: it names the sample and the saved clip.\n\n## Verification\n\nA comment with the DAW version and pass/fail per step; failures filed as bugs under this epic.\n\n## Release\n\nNo commit.\n\n## Dependencies\n\nBlocked by the CLI task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2547a326-130a-44e6-a3ea-a879863673b9",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:07:31.506686Z",
+  "updated_at": "2026-09-26T22:11:55.800520Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

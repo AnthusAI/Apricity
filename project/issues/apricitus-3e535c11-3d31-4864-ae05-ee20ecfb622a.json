@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-3e535c11-3d31-4864-ae05-ee20ecfb622a",
+  "title": "M5: Export from the app, every example exporting, and owner acceptance",
+  "description": "## Purpose\n\nExport from where people make scores, and close the initiative: the local server (`apricity serve`) hands the web app a zipped DAW set for a saved score, every example exports cleanly, and the owner accepts the result in the DAW.\n\n```mermaid\nsequenceDiagram\n  participant W as web app (Score view)\n  participant S as apricity serve\n  participant L as library\n  W->>S: GET /export/daw-set/{scoreId} (x-api-key)\n  S->>L: score text + samples\n  S-->>W: 200 application/zip \"Name Project/…\" or 422 with located errors\n```\n\n## Scope\n\nA route in `crates/apricity-cli/src/serve.rs`; a need filed for the web session (label `web`); an examples smoke script; final docs; acceptance.\n\n## Out of scope\n\nExport from the cloud deployment (no local server there; see open question on the initiative). Python `server.py`: its data endpoints are being retired (apricitus-8cecf2), so no Python parity.\n\n## Definition of Done\n\n1. Specs: `features/serve/serve.feature` gains the export scenarios (Rust tests in serve.rs, as the file says); all green.\n2. Rust only. 3. Schema: not applicable (the error body reuses the CLI's messages).\n4. CLI: none new; the route shares `export.rs` with the command.\n5. Fixtures: a library fixture as in serve.rs tests; no audio in git.\n6. Design: `design/storage.md` §4 lists the route; `design/daw-set.md` final status.\n7. Docs: `docs/tools.md` (the route, the app's export), README status line.\n8. Web: one `web` task describing the need, no visuals.\n9. Verification: `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-cli serve`; `scripts/daw-export-smoke.sh`; manual acceptance of every example in the DAW.\n10. Running log. 11. `feat(<task id>)`; not breaking.\n12. Route and smoke depend on M1; acceptance depends on M1–M4.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-8cecf2d6-f9c7-4d01-a70b-b9a287b6065d",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:29.453597Z",
+  "updated_at": "2026-09-26T22:06:52.328274Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

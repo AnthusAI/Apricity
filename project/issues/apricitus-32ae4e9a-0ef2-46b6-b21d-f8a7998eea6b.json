@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-32ae4e9a-0ef2-46b6-b21d-f8a7998eea6b",
+  "title": "Levels beyond the DAW's clip gain and fader ranges are kept, with a warning",
+  "description": "As a producer, I want levels beyond what the DAW's clip gain or fader allows to be kept, with a warning, so that the set's balance matches the render.\n\n```gherkin\nFeature: Levels beyond the DAW's ranges\n  Scenario: A very quiet sample raised beyond the clip gain's range\n    Given the sample \"far.wav\" needs a level match of +28 dB\n    When I export the score as a DAW set\n    Then the export succeeds\n    And the track playing \"far.wav\" makes up what its clips can't hold before its fader\n    And the export warns with the track's name and the amount moved\n\n  Scenario: A fader above the DAW's fader range\n    Given the track \"horn\" has \"volume 10\"\n    When I export the score as a DAW set\n    Then the track \"horn\" is 10 dB louder than at 0 dB in the set\n    And the export warns with the track's name\n\n  Scenario: A long score with many notes\n    Given a 64-bar score with a track playing sixteenth-note steps\n    When I export the score as a DAW set\n    Then the track has 1024 clips\n    And the export finishes in under 10 seconds\n```\n\nNote: the DAW's exact clip gain and fader ranges, and where the difference goes (a Utility device at the start or end of the track's chain), come from `design/daw-set.md` (M0).",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:26.757669Z",
+  "updated_at": "2026-09-26T22:06:26.757714Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

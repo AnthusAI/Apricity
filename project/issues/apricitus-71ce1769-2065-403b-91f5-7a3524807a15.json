@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-71ce1769-2065-403b-91f5-7a3524807a15",
+  "title": "Manual check in the DAW: chop-shop-mixed against apricity render, loudness within 1 LU",
+  "description": "## Intent\n\nProve the mix in the DAW.\n\n## Steps (manual, the owner with the DAW)\n\n1. `apricity export --daw-set examples/chop-shop-mixed.apr -o /tmp/daw/csm.als`; `apricity render examples/chop-shop-mixed.apr -o /tmp/daw/csm.wav`.\n2. Open the set: groups, returns, sends, devices in order, sidechain keyed; export the DAW's own bounce to `/tmp/daw/csm-daw.wav`.\n3. `analysis/.venv/bin/python scripts/check-render.py examples/chop-shop-mixed.apr /tmp/daw/csm-daw.wav` and compare loudness with the render (within 1 LU); A/B listen.\n\n## Verification\n\nA comment with the DAW version, both loudness readings and listening notes; mismatches filed as bugs.\n\n## Release\n\nNo commit.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-243c62db-df24-402a-9f00-5880bdc8a166",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:28.695820Z",
+  "updated_at": "2026-09-26T22:06:51.234980Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

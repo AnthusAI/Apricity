@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-95dee84e-ecf2-42eb-be24-e905769309f7",
+  "title": "A sample's warp map survives a round trip through .alc and .asd",
+  "description": "## Behavior\nA sample's warp map written as a sidecar and read back is the same warp map. `.asd` rows apply only if M0 says **go**.\n\n```gherkin\nFeature: Warp map round trip\n  A warp map written as a DAW sidecar and read back is unchanged, pickups and mid-bar tempo changes included.\n\n  Scenario Outline: A steady sample round-trips\n    Given the fixture sample \"steady-120.wav\" and its analysis\n    When I write its warp map as <format>\n    And I read that <format> back\n    Then the warp markers match the analysis to within 0.1 ms and 0.001 beats\n    And the warp mode is \"complex\"\n    And the detune matches the sample's tuning correction\n\n    Examples:\n      | format |\n      | .alc   |\n      | .asd   |\n\n  Scenario: Pickup beats keep their negative numbers\n    Given the fixture sample \"steady-120.wav\" whose first beat is a pickup at beat -1\n    When I write its warp map as .alc and read it back\n    Then the first warp marker is at beat -1\n    And beat 0 is still the first downbeat\n\n  Scenario: A tempo change in the middle of a bar survives\n    Given the fixture sample \"tempo-change.wav\" with a warp marker at beat 6.5\n    When I write its warp map as .alc and read it back\n    Then there is a warp marker at beat 6.5 at the same second\n\n  Scenario: A sample without a beat grid is written unwarped\n    Given the fixture sample \"free-time.wav\" whose analysis found no beat grid\n    When I write its warp map as .alc and read it back\n    Then warping is off and there are no warp markers\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:27.193842Z",
+  "updated_at": "2026-09-26T22:01:27.193867Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,43 @@
+{
+  "id": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "title": "M1: A set that plays the arrangement: tracks, warped clips, tempo, chords, collected samples",
+  "description": "## Purpose\n\n`apricity export --daw-set score.apr` writes a set folder that opens in the DAW and plays the score's notes in time and in tune: one audio track per score track, one warped arrangement clip per event, the score's tempo, time signature and length, the chords as locators, and the samples collected beside it. Mixing arrives in M3; kits, overlapping notes and reverse in M2.\n\n```mermaid\nflowchart LR\n  S[score.apr] -->|compile| T[Timeline]\n  T -->|apricity-daw| X[set XML]\n  X -->|gzip| A[\"Name Project/Name.als\"]\n  T -->|sources| C[\"Name Project/Samples/Imported/*\"]\n  L[(library)] -. --library .-> T\n```\n\n## Scope\n\nNew crate `crates/apricity-daw` (the set writer, pure Rust, no audio decoding); `apricity export` subcommand in `crates/apricity-cli`; the spec runner for `features/daw/`.\n\n## Out of scope\n\nEffects, groups, returns, sends, pan (M3); automation (M4); kits' per-hit naming, overlapping notes, reverse, re-pitch (M2); the web app (M5); reading a set back.\n\n## Definition of Done\n\n1. Specs: `features/daw/set.feature` + `features/daw/STEPS.md`, run by `crates/apricity-daw/tests/daw.rs` (cucumber-rs 0.21, as in apricity-sources); all green; every step used is in STEPS.md.\n2. Rust: `apricity-daw` + CLI. Python parity: not applicable (no manifest change).\n3. Schema: not applicable (the sample manifest is only read).\n4. CLI: `apricity export --daw-set`, `-o`, `--library`, `--no-collect`, `--force`; `--help` text; errors with score line:column or track/clip name.\n5. Fixtures: reference sets from M0; tests generate tiny WAVs + manifests in temp dirs; no audio in git.\n6. Design: `design/daw-set.md` mapping rows for M1 marked built.\n7. Docs: `docs/tools.md`, `docs/concepts.md` (\"Taking a score into a DAW\"), `docs/glossary.md`, README layout row for the crate.\n8. Web: none in this epic.\n9. Verification: `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw -p apricity-cli`; manual: the owner opens the exported `examples/march-blues.apr` and `examples/iv-of-ab-minor.apr` sets and A/B-listens against `apricity render`.\n10. Running log on each task.\n11. One Conventional Commit per task, `feat(<task id>)` / `chore(<task id>)`; no breaking change (new command only).\n12. Depends on M0. Blocks M2, M3, M5. The crate and the `export` command are shared with apricitus-5562e0 (`export --kit`, `--clips`) and apricitus-d7746d (`.alc`), which should build on them.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-f838a379-42ef-4e28-9e1c-13e88b59321c",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+      "type": "relates-to"
+    },
+    {
+      "target": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.186430Z",
+  "updated_at": "2026-09-26T22:06:52.219201Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

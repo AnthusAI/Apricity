@@ -1,0 +1,47 @@
+{
+  "id": "apricitus-a99407b2-a26e-4e75-b141-c8f40a615ba7",
+  "title": "design/link.md Measuring phase and Checking with a DAW; run the checklist and post the numbers on the initiative",
+  "description": "## Intent\nWrite the manual DAW checklist into the design note and run the whole of it once both harnesses pass, as the initiative's final check.\n\n## Steps\n1. `design/link.md` \"Checking with a DAW\": the steps from the M2 and M3 manual tasks (apricitus-640c7a, apricitus-b1f287) as one checklist, with what \"pass\" sounds like.\n2. `design/link.md` \"Measuring phase\": how the harnesses work, the report fields, how to read a failure.\n3. Run the checklist natively and in Chrome with the current build; record results.\n4. Post the numbers from both harness reports and the checklist results as a comment on the initiative apricitus-2e6ec4.\n\n## Verify\nA comment on apricitus-2e6ec4 with: native max/p99, browser max/p99, the checklist outcome, versions. The reviewer re-runs both harness commands.\n\nCommit: `docs(<this task id>)`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4e9cee0e-d168-40fe-b2e5-77b6660d6c38",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-f8768c2b-4d39-4540-ac9f-4439fe2be4be",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-d578389c-62ec-4747-86f7-1c978001c4c0",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-640c7a1b-6608-40fa-97a2-838eb83f193e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-b1f287af-7b84-4b1c-86a3-8b53b2190b52",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:07:27.541213Z",
+  "updated_at": "2026-09-26T22:07:50.442187Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

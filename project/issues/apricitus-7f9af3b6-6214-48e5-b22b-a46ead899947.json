@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-7f9af3b6-6214-48e5-b22b-a46ead899947",
+  "title": "apricity-link Session: join, allocation-free capture to a clock line, follow-only, peer events, ScriptedSession",
+  "description": "## Intent\nThe session API every Link user in Apricity goes through (play, serve, the harness, later the Swift app).\n\n## Steps\n1. `crates/apricity-link/src/lib.rs`: `Session` (join with a proposed tempo and quantum; peers; enable start/stop sync; leave). An audio-thread capture that returns M1's `ClockLine` for a given output time, allocation-free.\n2. Follow-only by construction: no public method commits a tempo or a start/stop to the session. The only tempo Apricity ever proposes is its initial one, when there are no peers at join time.\n3. Events for the control thread: peers changed, tempo changed, start/stop changed (for messages).\n4. `ScriptedSession` (same trait): a timeline of tempo, start/stop and peer events on a virtual clock, for specs and unit tests.\n5. Unit tests: the capture allocation count is zero; no tempo commit happens after join (spy on the binding); scripted events arrive in order.\n\n## Verify\n`cargo test -p apricity-link`.\n\nCommit: `feat(<this task id>): Link session, follow-only`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-a3ed8d62-a89c-4185-857c-589fb48d7fd3",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:05:25.707069Z",
+  "updated_at": "2026-09-26T22:07:48.414821Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

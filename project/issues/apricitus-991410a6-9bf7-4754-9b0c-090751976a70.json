@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-991410a6-9bf7-4754-9b0c-090751976a70",
+  "title": "Manual check in the DAW: chop-shop, salamander-beat, minor-line, voice-layer",
+  "description": "## Intent\n\nProve M2 in the DAW.\n\n## Steps (manual, the owner with the DAW)\n\n1. Export `examples/chop-shop.apr`, `examples/salamander-beat.apr`, `examples/minor-line.apr`, `examples/voice-layer.apr` with `apricity export --daw-set … -o /tmp/daw/<name>.als`.\n2. Open each; check kit hits named by pad, voiced chords complete (group with numbered audio tracks), reversed hits backwards, the voice re-pitched.\n3. A/B against `apricity render <score> -o /tmp/daw/<name>.wav`: same notes and timing (mix still differs until M3).\n\n## Verification\n\nA comment with the DAW version and each result; mismatches filed as bugs under this epic.\n\n## Release\n\nNo commit.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-cf3dbf2a-d753-4677-881c-ea6dd678cf94",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-4a3846db-ff15-4c7b-8b15-5e9f9fabee0c",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.356309Z",
+  "updated_at": "2026-09-26T22:06:50.500195Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

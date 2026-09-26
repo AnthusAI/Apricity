@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-ad7fb348-b82d-46c7-9ff6-6f4bbfc65e79",
+  "title": "apricity-daw collection.rs: numbered clip files for a collection's items, atomically",
+  "description": "## Intent\n\nWrite a collection's items as numbered clip files.\n\n## Scope\n\n- `crates/apricity-daw/src/collection.rs`: for each item, the file name `NN <names::clip_file_name(...)>.alc` (`NN` two digits, three when more than 99 items), contents from the shared `.alc` writer, audio referenced from the library's files; the same partial-folder-then-rename atomicity as M3's clip folder (reuse it, do not copy it).\n- Every item problem collected with the collection name, position, clip and sample path; nothing written when any item fails.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test conformance\n```\nThe clip-file scenarios of `features/daw/collection-folder.feature` pass.\n\n## Release\n\n`feat(<this task id>): a collection as numbered clip files`. Not breaking.\n\n## Dependencies\n\nBlocked by the collection-read task and M3's folder writer (apricitus-3d8246).",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-44f23bc0-da4d-4928-ac96-c051f1ad44e6",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-3d82462e-f51c-4c5e-9099-836d1459d398",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:26.582855Z",
+  "updated_at": "2026-09-26T22:11:56.325911Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

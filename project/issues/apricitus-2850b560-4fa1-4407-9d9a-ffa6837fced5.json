@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-2850b560-4fa1-4407-9d9a-ffa6837fced5",
+  "title": "Set skeleton, deterministic ids and gzip; tempo, time signature and loop brace",
+  "description": "## Intent\n\nThe set document: skeleton, ids, gzip, deterministic bytes.\n\n## Steps\n\n- `crates/apricity-daw/src/set.rs`: load the skeleton captured in M0 (`crates/apricity-daw/templates/set.xml`, derived from the reference `empty.als`), and a writer that inserts tracks, clips and locators.\n- `crates/apricity-daw/src/ids.rs`: deterministic id allocation (same timeline → same ids), updating the set-wide next-pointee counter.\n- gzip with a fixed header (no timestamp, no file name) so repeated exports are byte-identical.\n- Tempo, time signature (`Timeline.tempo`, `Timeline.meter` over 4), loop brace over `Timeline.length_beats`, looping on.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw` — the tempo/time signature/loop brace/determinism scenarios of `features/daw/set.feature` pass; unit tests for the id allocator.\n\n## Release\n\n`feat(<this task's id>): DAW set skeleton, ids and deterministic gzip`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-1c555bb1-1eab-42da-b749-0b7ce2e6133e",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.700470Z",
+  "updated_at": "2026-09-26T22:06:49.380744Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

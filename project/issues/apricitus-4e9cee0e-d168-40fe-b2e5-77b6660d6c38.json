@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-4e9cee0e-d168-40fe-b2e5-77b6660d6c38",
+  "title": "M4: Proven in phase: the 10-minute drift harness and the DAW checklist",
+  "description": "## Purpose\nProve the initiative's Definition of Done: **two peers stay in phase over a 10-minute run, measured**, natively and in the browser, and check it by ear with a real DAW.\n\n## Scope\n- Native harness `crates/apricity-link/tests/drift.rs` (`#[ignore]`, run on purpose): a scripted reference peer (the \"DAW\": tempo changes mid-bar, a ramp, a stop and a restart) and Apricity playing the click score in the same session; clicks are found in Apricity's output and compared with the reference peer's beats at the same host time; a JSON report (max, p99, first failure, re-warps) written under `renders/` (ignored by git).\n- Browser harness `web/scripts/link-drift.mjs`: headless Chrome against `apricity serve --link`, the same script and report.\n- The manual DAW checklist in `design/link.md`, run and logged.\n\n## Out of scope\nContinuous CI runs of the 10-minute harness (too slow for every push; the owner may schedule it). Multi-machine network tests beyond the manual checklist.\n\n```mermaid\nflowchart LR\n  R[reference peer: scripted tempo, stop, start] -- Link --> A[Apricity peer]\n  A --> O[output frames + host times]\n  O --> K[click finder]\n  R --> B[reference beats at host time]\n  K & B --> E[phase error per click] --> J[report JSON: max, p99, first failure]\n```\n\n## Definition of Done\n1. `features/link/phase.feature` green (the harness is its runner); tolerances as agreed in M0 (proposal: native 3 ms, browser 10 ms, p99 and max).\n2. Rust (native harness) and TypeScript (browser harness); no Python.\n3. The report format is documented in `design/link.md`; no stored format, so no schema.\n4. CLI: none new.\n5. Fixtures: M1's click fixture; the WAV is generated.\n6. `design/link.md` \"Measuring phase\" and \"Checking with a DAW\" sections.\n7. `docs/tools.md` Tests section lists both harnesses and says they are not in `cargo test --workspace`.\n8. Web: none beyond the harness.\n9. Verify: `export PATH=$HOME/.cargo/bin:$PATH && CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-link --test drift -- --ignored --nocapture` (about 11 minutes, under the 20-minute cap); `node web/scripts/link-drift.mjs`; the DAW checklist.\n10. Running log with the numbers from each run.\n11. `feat`/`chore(<task id>)`; not breaking.\n12. Depends on M2 and M3; the browser harness also on apricitus-94da2e (Playwright smoke).",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2e6ec4df-c65d-4dd3-a78a-aa8b0610aa7b",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:00:43.625807Z",
+  "updated_at": "2026-09-26T22:07:47.322304Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

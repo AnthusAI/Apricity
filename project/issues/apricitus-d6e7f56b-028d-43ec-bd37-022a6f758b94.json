@@ -1,0 +1,54 @@
+{
+  "id": "apricitus-d6e7f56b-028d-43ec-bd37-022a6f758b94",
+  "title": "Hand-built proof set from a compiled timeline, opened in the DAW (throwaway)",
+  "description": "## Intent\n\nProve the approach before specs: can a set assembled from a captured skeleton plus patched clip elements open and play in time?\n\n## Steps\n\n1. `apricity compile examples/march-blues.apr -o /tmp/march-blues.json` (timeline JSON).\n2. A throwaway script in the session scratchpad (never committed) builds a set from `empty.als` plus one audio track per timeline track and one clip per event (warp markers from `Event.warp`, transpose from `semitones`, detune from `tuning_cents`, gain from `gain_db`), gzips it and references the sample files in place.\n3. The owner opens it in the DAW: does it open, are clips on the grid, do the chords match `apricity render examples/march-blues.apr -o /tmp/mb.wav` by ear?\n4. Record the outcome, every error dialog and every fix in comments, and the decision \"template-and-patch\" or \"generate\" in `design/daw-set.md`.\n\n## Verification\n\nComment on this task with the DAW's reaction and an A/B listening note; `design/daw-set.md` has a \"Decisions\" entry for the approach.\n\n## Release\n\nNo commit of the script. The design note change rides on the design-note task's commit.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f838a379-42ef-4e28-9e1c-13e88b59321c",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-0696aa3c-0dd3-46ab-80a5-386d9ebc2692",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "e2d35b44-1038-4f75-a178-40e867df4e59",
+      "author": "home",
+      "text": "Machine side done, DAW side waits for the install.\n\n- Built with a throwaway scratchpad script (template-and-patch, Python stdlib): skeleton = fixture public-12.3.7-minimal.als (its first audio track cloned per Apricity track, its two returns kept), clip template = the arrangement AudioClip of fixture public-12.2.1-techno.als (AudioClip children are identical in 12.2, 12.2.1, 12.2.6 and 12.3.2).\n- Input: `target/release/apricity compile examples/march-blues.apr` (4 tracks, 56 events, no overlapping notes, so no group needed). Output: `renders/daw-proof/March Blues Proof Project/March Blues Proof.als` (git-ignored), byte-deterministic (sha256 8e15f9b7…, same on two runs), plus `march-blues-apricity-render.wav` beside it for the A/B.\n- Written per note: Time/CurrentStart/CurrentEnd in beats, Loop 0..dur_beats (LoopOn false), WarpMarkers from Event.warp plus the trailing marker 1/32 beat on that the DAW always writes, WarpMode (beats 0, complex 6 = Complex Pro), PitchCoarse/PitchFine from semitones + tuning_cents, SampleVolume = 10^(gain_db/20) (track volume is already in gain_db), FileRef with RelativePathType 1 + absolute Path, OriginalCrc 0, LastModDate 0. Tempo 100 and 4/4 in both Manual and the MainTrack sentinel envelope events, loop brace 0..96, 12 chord locators, scale F mixolydian (Root 5, Name 3).\n- The script's own checks pass: unique pointee ids, NextPointeeId above the maximum, one ClipSlot per scene, one send per return, increasing warp markers.\n\nRemaining (needs the DAW): open it on this Mac once the licensed copy is installed (sample paths are absolute to /Users/home/Projects/Apricity/samples). Record every dialog, whether clips sit on the grid, and an A/B against the render. Levels will sit lower than the render, because the proof has no loudness make-up Utility. Steps are in design/daw-set.md, section 'Owner steps'. Left in_progress.",
+      "created_at": "2026-09-26T23:14:00.289639Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-26T22:06:25.057756Z",
+  "updated_at": "2026-09-26T23:14:00.289670Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "apricitus-6f10c9d7-9295-4c75-8682-bb31145d19c7",
+  "title": "Reference sets saved by the DAW for every mapped feature (fixtures, no audio)",
+  "description": "## Intent\n\nCapture ground truth: reference sets saved by the DAW itself, covering everything the export will write.\n\n## Steps\n\n1. Generate the audio the reference sets point to: a throwaway script (scratchpad, not committed) writes a 4-bar 120 BPM click-plus-tone WAV (48 kHz, 16-bit) and a second, differently named WAV in a subfolder with the same file name, to see how the DAW collects clashing names.\n2. The owner (manual, needs the DAW) saves these sets with \"collect all and save\":\n   - `empty.als`: new set, nothing changed.\n   - `clip.als`: one audio track, one arrangement clip, warped, 3 warp markers moved, transpose +5, detune -23 ct, gain -6 dB; a second clip reversed; a third in Re-Pitch mode; tempo 99.5, time signature 3/4, loop brace bars 1-4, two locators named `IV` and `V7`, scale set to F mixolydian if available.\n   - `mix.als`: a group inside a group, a return track, a send at -12 dB, track volume +3 dB, pan 30 R.\n   - `devices.als`: one track per stock device (EQ Eight with low cut, shelves and peaks; Compressor with sidechain from another track; Limiter; Saturator; Redux; Gate; Utility with width; Reverb; Delay synced and unsynced with ping pong; Auto Filter 12 dB low-pass), each with non-default values.\n   - `automation.als`: envelopes on volume, pan, a send, EQ Eight high cut, Compressor dry/wet; one ramp and one step.\n3. Record in a comment the DAW version used and whether the previous major version opens each set.\n\n## Output\n\n`crates/apricity-daw/tests/fixtures/reference/*.als` plus `README.md` there listing what each file contains and the regenerating script's parameters. No audio committed.\n\n## Verification\n\n`git ls-files crates/apricity-daw/tests/fixtures` lists only `.als` and `.md`; `gunzip -t` succeeds on each `.als`.\n\n## Release\n\n`chore(<this task's id>): reference sets for the DAW set format`. Not a breaking change.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f838a379-42ef-4e28-9e1c-13e88b59321c",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "415da3ad-e05e-4175-aab0-34b919b575e5",
+      "author": "home",
+      "text": "Started. The DAW is not on this Mac; per the epic's 'Not blocked on the DAW' comment I am gathering public .als files (permissively licensed repos only go into fixtures, others are cited from the scratchpad) and writing the owner's click-by-click save instructions for the licensed install.",
+      "created_at": "2026-09-26T22:59:27.299943Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "fe3db648-3765-421f-8057-04bbf7776751",
+      "author": "home",
+      "text": "Found DAW-saved sets in public repos (cloned to scratchpad, parsed as data only). Current-major evidence: 12.0b16, 12.1d1, 12.1.11, 12.2, 12.2.1, 12.2.6, 12.3.2, 12.3.7, 12.4.5b10. Permissively licensed and chosen for fixtures: a 12.3.7 minimal set (MIT, github.com/reasonno1, repo id 1226932927), two 12.2/12.2.1 user sets (MIT, github.com/owenbush, repo id 1074927552). GPL-3 (abletoolz skeletons, DawVert device dataset), AGPL and unlicensed repos are cited only. Repo names contain the vendor word, so the note cites them by owner + GitHub repository id + commit + blob SHA. Gaps no public 12.x file covers: Gate and Redux XML (11.0.12 and GPL dataset only), reversed clips, clashing collected file names, clip fades units. Those go on the owner's save list.",
+      "created_at": "2026-09-26T23:11:11.921047Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-26T22:06:24.927300Z",
+  "updated_at": "2026-09-26T23:11:26.897856Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

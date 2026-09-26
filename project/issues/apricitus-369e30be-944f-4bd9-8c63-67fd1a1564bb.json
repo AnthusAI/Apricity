@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-369e30be-944f-4bd9-8c63-67fd1a1564bb",
+  "title": "A sidechained compressor listens to the same track or group in the set",
+  "description": "As a producer, I want a sidechained compressor to listen to the same track in the set, so that the kick still ducks the bass.\n\n```gherkin\nFeature: Sidechain\n  Scenario: A compressor keyed from another track\n    Given the track \"bass\" has \"comp 4:1 -24dB sidechain kick\"\n    When I export the score as a DAW set\n    Then the Compressor on \"bass\" has its sidechain on\n    And its sidechain listens to the track \"kick\"\n\n  Scenario: Keyed from a track spread over several audio tracks\n    Given the track \"kick\" plays notes that overlap\n    And the track \"bass\" has \"comp 4:1 -24dB sidechain kick\"\n    When I export the score as a DAW set\n    Then the Compressor on \"bass\" listens to the group track \"kick\"\n\n  Scenario: Keyed from a group track\n    Given the track \"bass\" has \"comp 4:1 -24dB sidechain beat\" where \"beat\" is a group\n    When I export the score as a DAW set\n    Then the Compressor on \"bass\" listens to the group track \"beat\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.879384Z",
+  "updated_at": "2026-09-26T22:06:27.879484Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

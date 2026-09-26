@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-6d1b76b8-6aa4-46c7-bb0c-b8058c26ba6d",
+  "title": "features/link/clock.feature and the cucumber runner crates/apricity-engine/tests/clock.rs (red first)",
+  "description": "## Intent\nWrite the four M1 stories as `features/link/clock.feature` and a cucumber-rs runner, and watch them fail for the right reason.\n\nStories: apricitus-a65057, apricitus-91ed40, apricitus-865b9a, apricitus-ba8ee6.\n\n## Steps\n1. `features/link/clock.feature`: the Gherkin from the stories, verbatim.\n2. `crates/apricity-engine/tests/clock.rs`: cucumber runner (dev-dependency `cucumber = \"0.21\"`, as `apricity-sources` uses), `harness = false` in `Cargo.toml`. Drives the `Mixer` block by block from a scripted clock, captures output, uses the click finder.\n3. Every scenario fails because following doesn't exist, not because of a step error.\n\n## Verify\n`cargo test -p apricity-engine --test clock` shows every scenario failing on its Then step (paste the summary). Later tasks turn it green.\n\nCommit: folded into the implementing tasks' commits, or `test(<this task id>)`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e661ebf4-0379-4220-98a3-f98ab66831ef",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-6ad4660c-79e4-423b-af2a-a01e2e75185f",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:33.669239Z",
+  "updated_at": "2026-09-26T22:07:47.661609Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-1c555bb1-1eab-42da-b749-0b7ce2e6133e",
+  "title": "Specs first: features/daw/set.feature, STEPS.md and the cucumber runner with a set checker",
+  "description": "## Intent\n\nWrite the M1 specs first and watch them fail (outside-in).\n\n## Steps\n\n- `features/daw/set.feature`: the scenarios of the M1 stories (tempo and length; notes as clips; samples travel; chords as locators; mistakes with location), copied from the stories.\n- `features/daw/STEPS.md`: the normative step vocabulary (state, Given/When/Then tables), in the style of `features/sources/STEPS.md`.\n- `crates/apricity-daw/tests/daw.rs` (`[[test]] name = \"daw\", harness = false`): cucumber-rs world with a temp dir per scenario; Given steps write `.apr` text, tiny synthetic WAVs (generated with `hound`, a few hundred ms) and matching `*.apricity.json` manifests (beats, warp markers, tuning; see `fixture()` in `crates/apricity-score/tests/compile.rs`); When steps run the export through the library API and, for CLI-only behavior (`--force`, exit codes), through the built `apricity` binary; Then steps gunzip the set and query it with a small XPath-like helper.\n- A set checker used after every export: well-formed XML, unique ids, the next-pointee counter above every id, every referenced sample file exists.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` runs every scenario and each fails for the right reason (missing behavior, not a broken step). Record the failing list in a comment.\n\n## Release\n\nLands with the first implementation task's commit or as `test(<this task's id>): ...`; no production code here.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-6f37e119-49e2-4ab8-a584-a0c5ff4a03b1",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-e0688bf7-6972-4cd1-80db-b67413513a56",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.637925Z",
+  "updated_at": "2026-09-26T22:06:49.317395Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

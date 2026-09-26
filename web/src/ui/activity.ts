@@ -7,7 +7,6 @@
 import { el } from "./dom";
 import { api, me, ratings } from "../apricity";
 import { mode } from "../data/client";
-import type { SampleSummary } from "../apricity";
 import type { ScoreItem } from "../data/catalog";
 import { handles } from "../data/handles";
 import { cards, FILTERS, kindName, lineText, linesOf, starsOf, type Card } from "../data/activity";
@@ -83,30 +82,45 @@ export class ActivityView {
   private async load() {
     const seq = ++this.seq;
     this.fresh.hidden = true;
+    // Timings for the browser's performance panel: activity:start … activity:shown.
+    performance.mark("activity:start");
+    // The top tags fill in when the scores have listed; nothing waits for them.
+    void api
+      .scores()
+      .then(({ scores }) => seq === this.seq && this.tags.replaceChildren(...tagCounts(scores).slice(0, 10).map((t) => tagLink(t.tag)), ...(scores.some((s) => s.tags.length) ? [allTags()] : [])))
+      .catch(() => undefined);
     try {
-      const [who, names, scores, hidden] = await Promise.all([me().catch(() => null), handles(), api.scores().then((s) => s.scores), api.hiddenIds().catch(() => new Set<string>())]);
-      if (seq !== this.seq) return;
-      const deps: FeedDeps = { who, names };
-      // The tags most used, each a way to its leaderboard.
-      this.tags.replaceChildren(...tagCounts(scores).slice(0, 10).map((t) => tagLink(t.tag)), ...(scores.some((s) => s.tags.length) ? [allTags()] : []));
-      if (mode() === "local") return this.localFeed(scores, deps);
-      const byId = new Map(scores.map((s) => [s.id, s]));
-      let samples: Promise<Map<string, SampleSummary>> | null = null;
-      const sampleOf = (id: string) => (samples ??= api.samples().then((r) => new Map(r.samples.map((x) => [x.id, x])))).then((m) => m.get(id));
+      if (mode() === "local") {
+        const [who, names, { scores }] = await Promise.all([me().catch(() => null), handles(), api.scores()]);
+        if (seq === this.seq) await this.localFeed(scores, { who, names });
+        return;
+      }
+      // The first page of cards comes with who is looking; each card then looks up only its own score or sample, all at
+      // once. (Listing every score and sample first took the page seconds to start.)
       let next: string | null = null;
-      const page = async (token: string | null) => {
-        const got = await cards(this.kind, token);
-        next = got.nextToken;
-        if (!token) this.top = got.items[0] ? `${got.items[0].id}@${got.items[0].lastAt}` : null;
+      const first = cards(this.kind);
+      const [who, names, hidden] = await Promise.all([
+        me().catch(() => null).finally(() => performance.mark("activity:me")),
+        handles().finally(() => performance.mark("activity:handles")),
+        api.hiddenIds().catch(() => new Set<string>()).finally(() => performance.mark("activity:hidden")),
+      ]);
+      const deps: FeedDeps = { who, names };
+      const page = async (got: Promise<{ items: Card[]; nextToken: string | null }>, isFirst: boolean) => {
+        const { items, nextToken } = await got;
+        performance.mark("activity:cards");
+        next = nextToken;
+        if (isFirst) this.top = items[0] ? `${items[0].id}@${items[0].lastAt}` : null;
         // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
-        const items = await Promise.all(got.items.filter((c) => !hidden.has(c.targetId)).map((c) => this.item(c, byId, sampleOf, deps)));
-        return items.filter((x): x is FeedItem => !!x).map((x) => new FeedCard(x, deps).root);
+        const made = await Promise.all(items.filter((c) => !hidden.has(c.targetId)).map((c) => this.item(c, deps).catch(() => null)));
+        performance.mark("activity:items");
+        return made.filter((x): x is FeedItem => !!x).map((x) => new FeedCard(x, deps).root);
       };
-      const first = await page(null);
+      const els = await page(first, true);
       if (seq !== this.seq) return;
+      performance.mark("activity:shown");
       this.body.replaceChildren(
-        first.length
-          ? feedGrid(first, async () => (next && seq === this.seq ? page(next) : []))
+        els.length
+          ? feedGrid(els, async () => (next && seq === this.seq ? page(cards(this.kind, next), false) : []))
           : el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it."),
       );
     } catch (e) {
@@ -114,8 +128,8 @@ export class ActivityView {
     }
   }
 
-  /** A card as something to hear; null when what it's about is gone (or hidden). */
-  private async item(c: Card, scores: Map<string, ScoreItem>, sampleOf: (id: string) => Promise<SampleSummary | undefined>, deps: FeedDeps): Promise<FeedItem | null> {
+  /** A card as something to hear; null when what it's about is gone. */
+  private async item(c: Card, deps: FeedDeps): Promise<FeedItem | null> {
     // Its stars and latest line arrive once it's in view.
     const later = async () => {
       const [stars, lines] = await Promise.all([starsOf(c.targetType, c.targetId), linesOf(c.id, 1)]);
@@ -124,11 +138,11 @@ export class ActivityView {
     };
     const base = { id: c.targetId, owner: c.owner ?? null, stars: { average: null, count: 0 }, tags: [] as string[], later };
     if (c.targetType === "score") {
-      const s = scores.get(c.targetId);
+      const s = await api.scoreById(c.targetId);
       return s ? { ...scoreFeedItem(s, base.stars), later } : null;
     }
     if (c.targetType === "sample") {
-      const s = await sampleOf(c.targetId);
+      const s = await api.sampleById(c.targetId);
       if (!s) return null;
       return { ...base, type: "sample", title: c.title || s.title, kindLabel: kindName(c), kindKey: "sample", route: { page: "samples", sample: sampleKey(s.path) }, sample: { path: s.path } };
     }

@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-0fc9bf7a-12d2-4dea-86dd-95bf0ebe5307",
+  "title": "apricity-daw export planning: write, unchanged, skipped or refused per sample",
+  "description": "## Intent\nThe pure planning step: given samples, decide what to write and why, with no I/O beyond reading.\n\n## Scope\n- `crates/apricity-daw/src/export.rs`: `plan_sample_sidecar(clip: &apricity_score::Clip, audio: &Path, existing: Option<&[u8]>, force: bool) -> Outcome` where `Outcome` ∈ `Write(bytes) | Unchanged | Skipped(reason) | Refused(reason)`.\n- Rules: stale sha256 → Refused; no beat grid → Write unwarped; existing sidecar equal to the grid (within 0.1 ms / 0.001 beat) → Unchanged; different and not `force` → Refused with the import hint; writes `.asd` on M0 go, `.alc` otherwise.\n- Unit tests for each branch.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-daw export`.\n\nCommit: `feat(<this id>): plan sample sidecars`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-f12db7e1-fe79-4b53-9799-fd48f12b9602",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:43.689750Z",
+  "updated_at": "2026-09-26T22:06:35.976114Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

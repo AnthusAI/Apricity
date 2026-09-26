@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-4a3846db-ff15-4c7b-8b15-5e9f9fabee0c",
+  "title": "Reversed notes: DAW reverse setting or a reversed copy in the set folder, per M0",
+  "description": "## Intent\n\nReversed notes play backwards.\n\n## Steps\n\n- Per the M0 decision in `design/daw-set.md`:\n  - DAW reverse setting: set it on the clip and mirror its warp markers.\n  - Pre-rendered: `apricity-cli` (not the crate, which does no audio I/O) writes a reversed copy of each distinct reversed region into the set folder (`Samples/Processed/Reverse/`, decoded with `apricity-engine`'s `decode` feature, written with `hound`), cached by (sample, region); `apricity-daw` receives it as a file to place and mirrors the warp map.\n- With `--no-collect`, reversed files still go into the set folder, so every file the set refers to exists.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` and `cargo test -p apricity-cli --test export_cli` — \"Reversed notes\" passes.\n\n## Release\n\n`feat(<this task's id>): reversed notes in DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-483f72db-bebe-4835-8bf9-7dff7927aeb4",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.120100Z",
+  "updated_at": "2026-09-26T22:06:50.217834Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

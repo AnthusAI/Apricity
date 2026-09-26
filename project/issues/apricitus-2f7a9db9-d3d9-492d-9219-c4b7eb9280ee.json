@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-2f7a9db9-d3d9-492d-9219-c4b7eb9280ee",
+  "title": "Manual check in the DAW: exported kits load with the right pads, pitches and levels",
+  "description": "## Intent\n\nThe part a machine cannot check: the preset loads in the DAW and sounds right.\n\n## Steps (owner, in the DAW)\n\n1. `apricity export --kit b examples/chop-shop.apr -o /tmp/chop-shop-b.adg` and the same for its drum kit.\n2. Drag each preset onto an empty MIDI track. Check: the pad count and order; each pad's name; the sample and region shown in each sampler; pad 1 on C1; kick on C1 and snare on D1 for the drum kit.\n3. Play pads one by one next to `apricity play` of a score that plays the same pad with `at 1`: same pitch (in tune, no transposition), roughly the same level, same length.\n4. Change the DAW's tempo: warped slices follow it; unwarped one-shots do not change pitch.\n5. Move the preset to another folder and reload: the samples are still found.\n\n## Verification\n\nA comment with the DAW version, a pass/fail per step, and any mismatch filed as a bug under this epic.\n\n## Release\n\nNo commit. Not breaking.\n\n## Dependencies\n\nBlocked by the CLI task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-c1a8b5ec-e69a-4025-b2fd-2c012f768e59",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.808271Z",
+  "updated_at": "2026-09-26T22:11:54.764957Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

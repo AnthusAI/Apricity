@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-cf3dbf2a-d753-4677-881c-ea6dd678cf94",
+  "title": "Out-of-range clip gain and fader onto Utility devices; 1024-clip performance bound",
+  "description": "## Intent\n\nKeep levels outside the DAW's ranges, with warnings; keep large scores fast.\n\n## Steps\n\n- `crates/apricity-daw/src/levels.rs`: clip gain and fader ranges from `design/daw-set.md`; per track, the part of the clip gain that is beyond range for any clip moves onto a Utility gain at the start of the track's chain (all its clips lowered by the same amount); fader beyond range: the remainder on a Utility at the end of the chain. Warnings name the track and the dB moved.\n- Performance: a 64-bar score of sixteenth-note steps (1024 clips) exports in under 10 s in a debug build; no quadratic id or lane allocation.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — \"Levels beyond the DAW's ranges\" passes.\n\n## Release\n\n`feat(<this task's id>): keep levels beyond the DAW's ranges`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-483f72db-bebe-4835-8bf9-7dff7927aeb4",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.284154Z",
+  "updated_at": "2026-09-26T22:06:50.372303Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

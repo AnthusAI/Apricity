@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-aa43affe-7861-4097-b765-a6b9dbf05b4d",
+  "title": "Manual check in the DAW: march-blues and iv-of-ab-minor sets against apricity render",
+  "description": "## Intent\n\nProve the M1 set in the DAW, where a machine can't.\n\n## Steps (manual, the owner with the DAW)\n\n1. `apricity sources fetch --all` (or `apricity sync pull`) so the examples' samples are present.\n2. `apricity export --daw-set examples/march-blues.apr -o /tmp/daw/march-blues.als` and the same for `examples/iv-of-ab-minor.apr`.\n3. Open each set: no error dialog; tempo and time signature right; clips on the grid; locators at the chord changes.\n4. `apricity render examples/march-blues.apr -o /tmp/daw/mb.wav`; play both and compare: same timing, same chords (mix differences are expected until M3).\n5. Move the set folder elsewhere and reopen: no missing samples.\n\n## Verification\n\nA comment on this task with the DAW version, the outcome of each step and any mismatch filed as a bug under this epic.\n\n## Release\n\nNo commit.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-08cb9dab-5629-45c0-bbcf-b72314677dcd",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-6b15abb6-5553-43bf-9771-e1b2d5c97fad",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:26.073113Z",
+  "updated_at": "2026-09-26T22:06:49.978598Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

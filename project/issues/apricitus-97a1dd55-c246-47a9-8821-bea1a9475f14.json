@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "title": "M2: apricity play --link: a native Link peer beside the DAW",
+  "description": "## Purpose\n`apricity play --link` joins the Link session on the local network and plays the score in time with the DAW: bar 1 on the session's next bar line, the session's tempo, and start and stop from the session. Apricity **follows**: it never changes the session's tempo and never starts or stops other peers. `apricity link` shows the session.\n\n## Scope\n- New native-only crate `crates/apricity-link` (binding chosen in M0): join and leave, capture session state in the audio callback without allocating, peers, tempo, playing, a scripted session for tests.\n- `crates/apricity-cli/src/play.rs`: feed the M1 clock line from the session at each buffer's playback time, compensating output latency.\n- Flags on `play`: `--link`, `--quantum N` (default: the score's time signature), `--no-start-stop`, `--latency MS`. New subcommand `apricity link`.\n- Proposing a tempo only when alone: the session starts at the score's tempo when there are no peers; later edits to `tempo` are reported as ignored.\n\n## Out of scope\nThe browser (M3); sending audio into the DAW (loopback routing is the user's); song position (Link doesn't share it); the Swift app (it will reuse `apricity-link` later).\n\n## Words\n\"Link\", \"Link session\", \"peer\", \"quantum\", \"start/stop sync\". Not \"sync\" alone (that is `apricity sync`, the library) and not \"follow\" alone (that is `transpose follow`).\n\n## Definition of Done\n1. `features/link/play.feature` green via `crates/apricity-cli/tests/link_play.rs` on the scripted session; 100% coverage.\n2. Rust only; no Python parity (the peer lives in Rust; `server.py` is being retired, apricitus-8cecf2).\n3. No schema change.\n4. CLI: flags, `--help` text, errors with the flag or the score's line and column; exit status 2 for usage errors.\n5. Fixtures: reuse M1's click fixture.\n6. `design/link.md` \"Native peer\" section; `design/vocabulary.md` gains the Link words.\n7. Docs: `docs/tools.md` (`play --link`, `apricity link`), `docs/glossary.md` (Link, Link session, peer, quantum, start/stop sync, phase), a `docs/concepts.md` section \"Playing beside a DAW over Link\", README layout table row for `apricity-link`.\n8. Web: none here.\n9. Verify: `export PATH=$HOME/.cargo/bin:$PATH && CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2 safe-run.sh -- cargo test -p apricity-link -p apricity-cli`; plus the manual DAW check task, logged.\n10. Running log on every task.\n11. `feat(<task id>)`; not breaking. New native dependency (Link SDK, C++ build) noted for CI.\n12. Depends on M0 and M1. Blocks M3 and M4. Relates apricitus-874f56 (licensing) and apricitus-1f0e91 (CI).",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2e6ec4df-c65d-4dd3-a78a-aa8b0610aa7b",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-e661ebf4-0379-4220-98a3-f98ab66831ef",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:00:43.520650Z",
+  "updated_at": "2026-09-26T22:07:47.054334Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

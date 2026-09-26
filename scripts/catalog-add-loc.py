@@ -10,7 +10,7 @@ catalog/sources.json and samples/sources.json, then analyze it. Noise reduction 
 `.clean.wav` copy. `--denoise off` skips it; SPEC is BACKEND[+BACKEND][:STRENGTH]. Idempotent."""
 import argparse, hashlib, json, pathlib, re
 
-from apricity_analyze import cclicense, cli, denoise, loc
+from apricity_analyze import cclicense, cli, denoise, loc, prune
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOMAX = dict(id="loc-lomax-1939", dir="lomax-1939",
@@ -44,6 +44,9 @@ def add_ccmixter(item_id):
     slug = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-")
     path = f"ccmixter/{re.sub(r'[^A-Za-z0-9]+', '-', r['user_name']).strip('-')}/{slug}_{uid}.mp3"
     url, page = mp3["download_url"], r["file_page_url"]
+    if prune.is_pruned(ROOT, path=path):
+        print(f"{title}: pruned earlier (one star); not importing")
+        return None
     data = loc.get(url, headers={"Referer": page})
     dest = ROOT / "samples" / path; dest.parent.mkdir(parents=True, exist_ok=True); dest.write_bytes(data)
     check_length(dest, item_id, title)
@@ -85,6 +88,9 @@ def add(item_id):
     who = people(item, lomax)
     slug = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-")
     path = f"loc/{col['dir']}/{slug}_{item_id}.mp3"
+    if prune.is_pruned(ROOT, path=path):
+        print(f"{title}: pruned earlier (one star); not importing")
+        return None
     url = audio_url(d); data = get(url)
     dest = ROOT / "samples" / path; dest.parent.mkdir(parents=True, exist_ok=True); dest.write_bytes(data)
     check_length(dest, item_id, title)
@@ -119,7 +125,7 @@ def main():
     a = ap.parse_args()
     global MAX_MINUTES
     MAX_MINUTES = a.max_minutes
-    files = {i: add(i) for i in a.ids}
+    files = {i: f for i in a.ids if (f := add(i)) is not None}
     if not a.no_analyze:
         for spec, group in ((a.denoise or denoise.DEFAULT, [f for i, f in files.items() if not i.startswith("ccmixter:")]),
                             (a.denoise or "off", [f for i, f in files.items() if i.startswith("ccmixter:")])):

@@ -1,0 +1,43 @@
+{
+  "id": "apricitus-153adc00-f672-48b7-8d71-2a59c911ad08",
+  "title": "apricity-daw collection.rs: a drum rack of the collection's short sounds via an in-memory drum kit",
+  "description": "## Intent\n\nThe collection's short sounds as a drum rack, using the compiler for level matching so the pads sit exactly as Apricity would level them.\n\n## Scope\n\n- `crates/apricity-daw/src/collection.rs`: build an in-memory `Score` (tempo 120, key of the first item, no tracks) with one clip per short item (`source` = sample path, `saved` = clip name) and a drum kit `<collection>` whose pads are named after the clips (made unique with `-2` when two items share a name), in collection order; compile it with the library loader (`apricity_data::loader::make`); pass `Timeline.kits` (M1, apricitus-c74565) to M1's rack writer with an explicit pad order (collection order from C1, not the drum-word table).\n- \"Short\" = one bar or less of the item's own beat grid (seconds for an unwarped sample: at most 2 s); the limit is one constant, per the owner's decision.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test conformance\n```\nThe rack scenarios of `features/daw/collection-folder.feature` pass.\n\n## Release\n\n`feat(<this task id>): a collection's short sounds as a drum rack`. Not breaking.\n\n## Dependencies\n\nBlocked by the numbered-clip-files task and by M1's rack writer (apricitus-f3ea55); the explicit pad order may need a small option on that writer.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-ad7fb348-b82d-46c7-9ff6-6f4bbfc65e79",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-f3ea5520-23bf-4a9c-93d3-33caf799e844",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-c7456598-11e6-4189-8eec-55457c61feea",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:26.716868Z",
+  "updated_at": "2026-09-26T22:11:56.527616Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

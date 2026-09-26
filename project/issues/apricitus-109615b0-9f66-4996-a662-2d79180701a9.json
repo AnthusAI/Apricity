@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "title": "M1: apricity export --kit: a score's kit as a drum rack preset (.adg)",
+  "description": "## Purpose\n\nAs a beatmaker, I want a kit from my score exported as a drum rack preset (`.adg`, one sampler per pad), so that a crate of curated breaks and hits becomes a playable instrument in one drag.\n\n`apricity export --kit <name> <score> [-o <file>.adg] [--library <dir>] [--force]`\n\n## Scope\n\n- Sliced kits (`kit b = slice brk by beats 0.5`): pad n holds slice n, from C1 upward.\n- Drum kits (`kit drums` with named pads): known drum words on the usual drum notes, other names on the free pads.\n- Each sampler: the pad's region of its sample, level-matched volume (the same gains `apricity explain` prints), A440 detune, root key, the sample's warp markers (warped to the score's tempo) or warp off when the sample has no beat grid.\n- Samples from files (`<audio>.apricity.json`) or from a library (`--library`, the same loader `apricity render --library` uses).\n\n## Out of scope\n\n- Saved kits from the library (planned in design/vocabulary.md, not built yet); only kits defined in a score.\n- The step pattern as MIDI (M2), track effects, sends and chord-following transposition (the set export, apricitus-6edba8).\n- Velocity layers and round robin.\n\n```mermaid\nflowchart LR\n  S[score .apr / .yaml] --> C[apricity-score compile: resolved kits]\n  M[sample manifests or library] --> C\n  C --> R[apricity-daw rack writer]\n  R --> A[kit.adg: gzipped XML]\n```\n\n## Definition of Done\n\nApplies:\n1. Specs: `features/daw/kit-preset.feature` + `features/daw/STEPS.md`, the shared cucumber runner `crates/apricity-daw/tests/conformance.rs`; all green, every scenario of the stories below.\n2. Rust: `crates/apricity-daw` (writer) and `crates/apricity-score` (resolved kits). No Python change (the manifest contract is unchanged).\n3. Schema: none changes; the compiled timeline JSON gains an additive `kits` field (documented in its doc comment).\n4. CLI: `apricity export --kit`, `--help` text, every error with its location.\n5. Fixtures: reference presets from M0; tiny synthetic WAVs generated in tests; no audio in git.\n6. Design: `design/daw-presets.md` updated to what was built; `design/vocabulary.md` in step.\n7. Docs: docs/tools.md, docs/concepts.md (kits), docs/glossary.md; README layout table row for `apricity-daw`.\n8. Web: need filed as a `web` task (no UI work here).\n9. Verification: `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw -p apricity-score -p apricity-cli`; manual load in the DAW (task below).\n10. Running log on every task. 11. `feat(<task id>)` per task; not breaking.\n\n## Dependencies\n\n- Blocked by M0 (apricitus-fcd309).\n- Shares `crates/apricity-daw` (skeleton: apricitus-57dc3f or apricitus-6f37e1), `features/daw/STEPS.md`, the `tests/conformance.rs` runner and the WarpMap model (apricitus-0c91f1) with the sidecar and set-export initiatives, and `Cmd::Export` with `--daw-set` (apricitus-08cb9d) and `--sidecars`.\n- Relates to the set export's kit handling (apricitus-463993: kit hits as audio clips); a later set export could put this rack plus MIDI on a kit track instead.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:18.917655Z",
+  "updated_at": "2026-09-26T22:11:40.912118Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

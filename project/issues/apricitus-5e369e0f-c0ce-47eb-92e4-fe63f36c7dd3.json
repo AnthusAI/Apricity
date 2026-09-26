@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "title": "M4: A collection exports as one folder: its kept clips as clip files and its short sounds as a drum rack",
+  "description": "## Purpose\n\nAs a crate digger, I want a collection of kept clips (the curation loop's crates) exported as one folder, with a clip file per kept clip in collection order and a drum rack of its short sounds, so that a digging session turns into a browsable set of loops and a playable kit in the DAW.\n\n`apricity export --clips --collection <name> --library <dir> [-o <folder>] [--force]`\n\n## Words\n\nThe storage model still says `Crate`/`CrateItem`; design/vocabulary.md plans the rename to **Collection** (not yet on the board as a task). The command and docs say \"collection\" from the start; the code reads `Crate` until the rename lands and follows it then (no alias kept, per the no-backward-compatibility rule).\n\n## Scope\n\n- `<out>/<collection>/NN <file name>.alc` per item, in the collection's order (`NN` = position, 01, 02, ...), named by the shared rule (apricitus-998976), written by the shared `.alc` writer (apricitus-007386).\n- `<out>/<collection>/<collection>.adg`: a drum rack whose pads are the items no longer than one bar (proposal; owner decides), in collection order from C1, level-matched together the way a drum kit's pads are, built by M1's rack writer.\n- Only from a library (collections are stored there).\n\n## Out of scope\n\nSaved kits (planned); editing collections; a collection as an `.apr` score (design/curation.md's `curation crates`), which stays as it is.\n\n```mermaid\nflowchart LR\n  C[library: collection items in order] --> F[NN name.alc per item]\n  C --> P[items up to 1 bar] --> K[in-memory drum kit, compiled for level matching] --> R[collection.adg]\n```\n\n## Definition of Done\n\nApplies: 1 specs `features/daw/collection-folder.feature`; 2 Rust (`apricity-data` collection read, `apricity-daw`, `apricity-cli`); no Python; 3 no schema change (the contract is untouched; if the Collection rename lands first, its contract change is that task's, not this one's); 4 CLI `--collection`, help, located errors; 5 temp libraries built in tests, no audio; 6 `design/curation.md` and `design/daw-presets.md` sections; 7 docs/tools.md, glossary (\"Collection\" if still missing); 8 a `web` need; 9 `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-data -p apricity-daw -p apricity-cli` and a manual check in the DAW; 10 running log; 11 `feat(<task id>)`, not breaking.\n\n## Dependencies\n\nBlocked by M1 (the rack writer, apricitus-109615) and M3 (the clip folder writer, apricitus-f7e8f5).",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:10:32.798673Z",
+  "updated_at": "2026-09-26T22:11:41.337039Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

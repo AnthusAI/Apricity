@@ -55,8 +55,7 @@ button { cursor: pointer; }
     transparent 58%);
 }
 @media (prefers-color-scheme: dark) { .topbar .brand .logo { --sun: #ffa866; --sun-2: #ffd59a; } }
-.tabs { display: flex; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-.tabs::-webkit-scrollbar { display: none; }
+.tabs { display: flex; gap: 4px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
 .tabs a { border: 0; background: none; padding: 6px 12px; border-radius: 8px; color: var(--muted); white-space: nowrap; flex: none; text-decoration: none; font-size: 14px; }
 .tabs a[aria-selected="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 550; }
 
@@ -253,8 +252,8 @@ body.col-resizing iframe, body.col-resizing canvas { pointer-events: none; }
 .account .acct-email { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acct-menu { position: absolute; left: 0; bottom: calc(100% + 6px); min-width: 210px; display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
 .acct-menu[hidden] { display: none; }
-body[data-tab="home"] .account { top: 10px; right: 16px; left: auto; bottom: auto; }
-body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: auto; right: 0; }
+body[data-tab="about"] .account { top: 10px; right: 16px; left: auto; bottom: auto; }
+body[data-tab="about"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: auto; right: 0; }
 .acct-who { padding: 6px 10px; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .account .acct-item { border: 0; background: none; text-align: left; padding: 7px 10px; border-radius: 6px; }
 .account .acct-item:hover { background: var(--accent-soft); }
@@ -384,9 +383,6 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
   .beat { grid-column: auto; --pad-w: 124px; }
 }
 @media (max-width: 760px) {
-  /* Phone: the tabs get their own row under the brand and the transport. */
-  .topbar { flex-wrap: wrap; row-gap: 6px; }
-  .topbar .tabs { order: 3; flex-basis: 100%; }
   .transport .meter { display: none; }
 }
 
@@ -666,3 +662,40 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .act-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .act-all-tags { font-size: 12px; color: var(--muted); margin-left: 4px; }
 .act-local { margin: 0 0 14px; }
+
+/* ---- home: the best-rated songs */
+#home { overflow: auto; }
+#home { display: block; }
+.home-intro { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 18px; margin-bottom: 18px; border-radius: 14px; background: color-mix(in srgb, #f59e5b 12%, var(--panel)); border: 1px solid color-mix(in srgb, #f59e5b 30%, var(--line)); }
+.home-intro p { margin: 0; flex: 1 1 380px; font-size: 15px; line-height: 1.5; }
+.home-intro-actions { display: flex; gap: 8px; }
+.home-intro-actions .btn { text-decoration: none; color: var(--fg); }
+.home-more { font-size: 13px; color: var(--accent); text-decoration: none; }
+.home-more:hover { text-decoration: underline; }
+.home-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center; margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; }
+.home-foot a { color: var(--muted); text-decoration: none; }
+.home-foot a:hover { color: var(--fg); text-decoration: underline; }
+
+/* ---- navigation: the tabs while they fit, else a menu button and a menu that fills the screen (ui/nav.ts) */
+.nav-toggle { display: none; flex: none; width: 36px; height: 36px; margin-right: -12px; border: 0; border-radius: 10px; background: none; color: var(--fg); place-items: center; cursor: pointer; }
+.nav-toggle:hover { background: var(--accent-soft); }
+.nav-toggle svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.topbar.nav-collapsed .nav-toggle { display: grid; }
+.topbar.nav-collapsed .tabs { visibility: hidden; }
+body.nav-open { overflow: hidden; }
+.nav-menu { position: fixed; inset: 0; z-index: 100; overflow: auto; background: var(--bg); padding: 12px 16px 16px; display: flex; flex-direction: column; animation: nav-in .16s ease-out; }
+.nav-menu[hidden] { display: none; }
+@keyframes nav-in { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .nav-menu { animation: none; } }
+.nav-head { display: flex; align-items: center; justify-content: space-between; min-height: 36px; margin-bottom: 16px; }
+.nav-title { font-weight: 650; font-size: 17px; padding-left: 4px; }
+.nav-close { width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--fg); font-size: 28px; line-height: 1; cursor: pointer; }
+.nav-close:hover { background: var(--accent-soft); }
+/* The pages fill the screen: as many columns as fit, rows stretched to its height (scrolling when there's no room). */
+.nav-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); grid-auto-rows: minmax(92px, 1fr); gap: 12px; }
+.nav-item { display: grid; gap: 4px; align-content: center; padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--fg); text-decoration: none; }
+.nav-item:hover, .nav-item:focus-visible { border-color: var(--accent); outline: none; }
+.nav-item[aria-current="page"] { background: var(--accent-soft); border-color: var(--accent); }
+.nav-label { font-size: 20px; font-weight: 620; letter-spacing: -.01em; }
+.nav-sub { font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+@media (max-width: 600px) { .nav-grid { grid-auto-rows: auto; } .nav-item { padding: 14px 16px; } .nav-label { font-size: 18px; } }

@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-f834352b-5230-459a-832b-241bc5e2e480",
+  "title": "apricity-data domain replace_warp_markers and library mode for import",
+  "description": "## Intent\nLibrary mode: your warp markers as Marker records.\n\n## Scope\n- `crates/apricity-data/src/domain.rs`: `replace_warp_markers(sample_id, markers, identity) -> Result<Replaced{added, removed}>`: deletes the identity's `warp` markers for the sample and creates the new ones (`source: user`, `beat`), under the library lock (`transact`), idempotent (same set → no writes).\n- `apricity-cli` import/reset with `--library` call it; records sync like any marker (no change to sync).\n- The `features/data/domain/warp_markers.feature` scenarios green in the Rust runner; the TypeScript runner (apricitus-d121e0) gets a matching step only if the domain op is exposed to the web (not in this task; note it).\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-data` and the library scenarios of `cargo test -p apricity-cli --test daw_cli`.\n\nCommit: `feat(<this id>): replace warp markers in a library`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-9987a307-a8b0-44f3-a7ba-ab35c55b5477",
+      "type": "relates-to"
+    },
+    {
+      "target": "apricitus-17e814a6-46ea-457b-aa1e-b0235fe8b397",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.743592Z",
+  "updated_at": "2026-09-26T22:06:37.169617Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -503,6 +503,28 @@ export class Catalog {
     this.index = null;
     this.scoreList = null;
     this.refList = null;
+    this.undocList = null;
+  }
+
+  /**
+   * The samples whose recording's license isn't documented. From the library's index when it's loaded; else from just
+   * the samples' recording ids and the recordings, so hiding them doesn't load the whole library first (that held the
+   * Activity page for seconds).
+   */
+  private undocList: Promise<Set<string>> | null = null;
+  private undocumented(): Promise<Set<string>> {
+    if (this.index) return this.index.then((i) => i.undocumented);
+    this.undocList ??= (async () => {
+      const m = this.models;
+      const [samples, recordings] = await Promise.all([
+        listAll<{ id: string; recordingId: string }>((nextToken) => m.Sample.list({ limit: 1000, nextToken, selectionSet: ["id", "recordingId"] })),
+        listAll<RecordingRecord>((nextToken) => m.Recording.list({ limit: 1000, nextToken })),
+      ]);
+      const recs = new Map(recordings.map((r) => [r.id, r]));
+      return new Set(samples.filter((c) => !documented(recs.get(c.recordingId))).map((c) => c.id));
+    })();
+    this.undocList.catch(() => (this.undocList = null));
+    return this.undocList;
   }
 
   private get models() {
@@ -604,11 +626,15 @@ export class Catalog {
    */
   async hiddenIds(): Promise<Set<string>> {
     if (await this.seesAll()) return new Set();
-    const i = await this.load();
-    const [clips, refs] = await Promise.all([this.clips(true), this.scoreRefs()]);
-    const out = new Set(i.undocumented);
-    for (const c of clips) if (i.undocumented.has(c.sampleId)) out.add(c.id);
-    for (const r of refs) if (r.sampleId && i.undocumented.has(r.sampleId)) out.add(r.scoreId);
+    const undoc = await this.undocumented();
+    if (!undoc.size) return new Set();
+    const [clips, refs] = await Promise.all([
+      listAll<{ id: string; sampleId: string }>((nextToken) => this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId"] })),
+      this.scoreRefs(),
+    ]);
+    const out = new Set(undoc);
+    for (const c of clips) if (undoc.has(c.sampleId)) out.add(c.id);
+    for (const r of refs) if (r.sampleId && undoc.has(r.sampleId)) out.add(r.scoreId);
     return out;
   }
 
@@ -664,8 +690,8 @@ export class Catalog {
 
   /** Scores that use an undocumented sample (to flag them for curators). */
   private async flaggedScores(): Promise<Set<string>> {
-    const [i, refs] = await Promise.all([this.load(), this.scoreRefs()]);
-    return new Set(refs.filter((r) => r.sampleId && i.undocumented.has(r.sampleId)).map((r) => r.scoreId));
+    const [undoc, refs] = await Promise.all([this.undocumented(), this.scoreRefs()]);
+    return new Set(refs.filter((r) => r.sampleId && undoc.has(r.sampleId)).map((r) => r.scoreId));
   }
 
   /** Every clip saved with a sample (not retired), with its sample's path and title. `all`: undocumented ones too. */
@@ -695,6 +721,21 @@ export class Catalog {
     const r = await this.models.Score.update({ id: found.id, kind });
     if (r.errors?.length) fail(r.errors, true);
     this.scoreList = null;
+  }
+
+  /** One score as the lists show it, by id, without listing them all (a card on a page of them); null if it's gone. */
+  async scoreById(id: string): Promise<ScoreItem | null> {
+    const r = await this.models.Score.get({ id });
+    if (r.errors?.length) fail(r.errors);
+    return r.data ? toScoreItem(r.data as ScoreRecord) : null;
+  }
+
+  /** One sample's path and title, by id, without loading the library; null if it's gone. */
+  async sampleById(id: string): Promise<{ path: string; title: string } | null> {
+    const r = await this.models.Sample.get({ id });
+    if (r.errors?.length) fail(r.errors);
+    const smp = r.data as SampleRecord | null;
+    return smp ? { path: samplePath(smp), title: fileTitle(smp.path) } : null;
   }
 
   /** Set a score's tags (normalized by the caller; see ./tags.ts). Only its owner (or a curator) may. */

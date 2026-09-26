@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-ec3eb717-2748-4713-be78-7b0129aa29fb",
+  "title": "Plan and write per-clip .alc files; folder lifecycle; --no-clips",
+  "description": "## Intent\nPer-clip `.alc` content and the folder's lifecycle.\n\n## Scope\n- `apricity-daw::export::plan_clip_files(sample, folder_listing) -> Vec<Outcome>`: one `.alc` per active (not retired) saved clip (region = `start..end`, loop on, markers inside the region plus interpolated end markers, warp mode per §Mapping, detune as the sample); retired clips skipped.\n- Lifecycle: files Apricity wrote carry the clip's name as the `.alc` clip name; on re-export, a file whose content equals what Apricity last would write for a clip that no longer exists (deleted or renamed) is removed; a file whose markers or region differ from Apricity's is kept and reported (`--force` replaces).\n- `apricity-cli`: `--no-clips`; report lines per clip and the summary.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-daw -p apricity-cli` (all M3 scenarios green).\n\nCommit: `feat(<this id>): export saved clips as .alc files`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f5b805c2-0fb0-4c8e-ae4b-7629ad968c6a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-99897614-47ef-46cb-96b7-19edb00f4856",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:47.815846Z",
+  "updated_at": "2026-09-26T22:06:36.464150Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

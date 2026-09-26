@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-b22b82cd-04d9-4b4b-9d95-8ceb7167be54",
+  "title": "Preset groundwork in the shared crates/apricity-daw: file references, deterministic gzip, reference fixtures",
+  "description": "## Intent\n\nGround work for presets in the shared DAW crate. The crate itself is created by the sidecar initiative (apricitus-57dc3f) or the set export (apricitus-6f37e1), whichever lands first; this chore adds only what presets need, and must not create a second crate.\n\n## Scope\n\n- In `crates/apricity-daw` (after the skeleton exists): modules `rack` and `pads` declared; a `fileref` helper shared with the set export (absolute and relative path from the output file to the sample, as the M0 notes say the DAW reads them); deterministic gzip (fixed header time, stable attribute order) if the skeleton does not already guarantee byte-identical output.\n- Copy M0's reference presets into `crates/apricity-daw/tests/fixtures/reference/` (XML only) if the spike left them elsewhere; reuse the shared tiny-WAV and manifest builders (apricitus-e0688b / apricitus-2831a6) in the runner instead of adding a third.\n- Confirm the crate still builds for `wasm32-wasip1` (no audio dependencies), so the web app can call the writers later.\n\n## Out of scope\n\nRack content (later tasks). A second runner: presets use the shared `tests/conformance.rs` over `features/daw/*.feature`.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo build -p apricity-daw --target wasm32-wasip1\n```\n\n## Release\n\n`chore(<this task id>): preset groundwork in apricity-daw`. Not breaking.\n\n## Dependencies\n\nBlocked by M0 and by the crate skeleton (apricitus-57dc3f or apricitus-6f37e1).",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-e286ad99-caa2-4c60-b01b-98f7b901551f",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-57dc3f15-ad0d-42e2-b41d-5fb64407c9d5",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.183036Z",
+  "updated_at": "2026-09-26T22:11:54.086016Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

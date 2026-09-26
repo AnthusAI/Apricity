@@ -464,6 +464,7 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
 const CLIP_OPTIONS: &[&str] = &["beats", "seconds", "pick", "root", "ratio", "warp", "speed"];
 const TRACK_OPTIONS: &[&str] = &[
     "as", "role", "follow", "transpose", "every", "at", "steps", "notes", "voicing", "strum", "octave", "bars", "volume", "loop", "grid", "swing", "velocity", "humanize", "seed", "reverse", "filter", "gate", "stutter", "half", "double", "speed", "group",
+    "attack", "release",
 ];
 
 fn suggest(word: &str, options: &[&str]) -> String {
@@ -998,6 +999,8 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                         voicing: None,
                         strum: None,
                         octave: None,
+                        attack: None,
+                        release: None,
                         automate: Vec::new(),
                     };
                     while let Some(opt) = l.peek() {
@@ -1097,6 +1100,22 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                                     "hp" | "highpass" => FilterSpec::Highpass(hz),
                                     other => return Err(l.err(kind.col, format!("filter is lp or hp, not `{other}`"))),
                                 });
+                            }
+                            "attack" => {
+                                let v = l.next("a time like 30ms")?;
+                                let x = ms(v.text).ok_or_else(|| l.err(v.col, format!("attack is a time like 30ms, not `{}`", v.text)))?;
+                                if !(0.0..=2000.0).contains(&x) {
+                                    return Err(l.err(v.col, format!("attack is 0ms to 2000ms, not {}", v.text)));
+                                }
+                                t.attack = Some(x);
+                            }
+                            "release" => {
+                                let v = l.next("a time like 400ms")?;
+                                let x = ms(v.text).ok_or_else(|| l.err(v.col, format!("release is a time like 400ms, not `{}`", v.text)))?;
+                                if !(0.0..=5000.0).contains(&x) {
+                                    return Err(l.err(v.col, format!("release is 0ms to 5000ms, not {}", v.text)));
+                                }
+                                t.release = Some(x);
                             }
                             other => return Err(l.err(opt.col, format!("unknown track option `{other}`{}", suggest(other, TRACK_OPTIONS)))),
                         }
@@ -1618,6 +1637,12 @@ pub fn format(s: &Score) -> String {
         if let Some(n) = t.stutter {
             out += &format!("  stutter {n}");
         }
+        if let Some(x) = t.attack {
+            out += &format!("  attack {}ms", num(x));
+        }
+        if let Some(x) = t.release {
+            out += &format!("  release {}ms", num(x));
+        }
 
         if let Some(b) = &t.bars {
             out += &format!("  bars {b}");
@@ -1937,6 +1962,40 @@ track v  at 1\n\ngroup music\n  comp 4:1 -30dB attack 5ms release 250ms sidechai
         assert!(t.iter().any(|x| x.starts_with("line 5 ") && x.contains("strum is a time like 20ms")), "{t:#?}");
         assert!(t.iter().any(|x| x.starts_with("line 6 ") && x.contains("`9` isn't a note")), "{t:#?}");
         assert!(t.iter().any(|x| x.starts_with("line 7 ") && x.contains("octave 12 is out of range")), "{t:#?}");
+    }
+
+    #[test]
+    fn attack_and_release_parse_format_and_round_trip() {
+        let src = "tempo 100\nkey C\n\nclip stab = x/horns.wav  shot-3\n\nchords I\n\ntrack stab  voicing triad  attack 30ms  release 400ms\n";
+        let (s, _) = parse(src).unwrap();
+        let t = &s.tracks[0];
+        assert_eq!((t.attack, t.release), (Some(30.0), Some(400.0)));
+        let again = format(&s);
+        assert!(again.contains("attack 30ms  release 400ms"), "{again}");
+        assert_eq!(parse(&again).unwrap().0, s, "\n{again}");
+        let yaml = serde_yaml::to_string(&s).unwrap();
+        assert!(yaml.contains("attack: 30") && yaml.contains("release: 400"), "{yaml}");
+        assert_eq!(serde_yaml::from_str::<Score>(&yaml).unwrap(), s, "\n{yaml}");
+
+        // Seconds are accepted too, and are normalized to ms on the round trip.
+        let (s2, _) = parse("tempo 100\nkey C\nclip p = x/p.wav\ntrack p  attack 1.5s  release 2s\n").unwrap();
+        assert_eq!((s2.tracks[0].attack, s2.tracks[0].release), (Some(1500.0), Some(2000.0)));
+
+        // Parse-time errors carry a line number.
+        let e = parse("tempo 90\nkey C\nclip a = x/a.wav\ntrack a  attack bogus\ntrack a  as b  release 6s\ntrack a  as c  attack 3000ms\n").unwrap_err();
+        let t: Vec<String> = e.iter().map(|e| e.to_string()).collect();
+        assert!(t.iter().any(|x| x.starts_with("line 4 ") && x.contains("attack is a time like 30ms")), "{t:#?}");
+        assert!(t.iter().any(|x| x.starts_with("line 5 ") && x.contains("release is 0ms to 5000ms")), "{t:#?}");
+        assert!(t.iter().any(|x| x.starts_with("line 6 ") && x.contains("attack is 0ms to 2000ms")), "{t:#?}");
+    }
+
+    #[test]
+    fn attack_release_range_error_locates_to_the_track_line() {
+        // A range error produced by compile.rs (`tracks[i].attack: ...`) is rewritten to the track's line,
+        // the same way `tracks[i].gate` and `tracks[i].filter` errors are.
+        let (_, map) = parse("tempo 100\nkey C\nclip a = x/a.wav\ntrack a  attack 30ms\n").unwrap();
+        assert_eq!(map.locate("tracks[0].attack: 3000ms is outside 0ms to 2000ms"), "line 4 column 1: track.attack: 3000ms is outside 0ms to 2000ms");
+        assert_eq!(map.locate("tracks[0].release: 6000ms is outside 0ms to 5000ms"), "line 4 column 1: track.release: 6000ms is outside 0ms to 5000ms");
     }
 
     #[test]

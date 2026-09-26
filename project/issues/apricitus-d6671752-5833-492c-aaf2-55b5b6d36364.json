@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-d6671752-5833-492c-aaf2-55b5b6d36364",
+  "title": "Web need: show each clip's DAW file name and download one clip's .alc",
+  "description": "## Need (for the web/docs session; not visuals)\nIn the Library's clip list a person should see the file name a clip gets in the DAW (so they can find it in the DAW's browser) and be able to export one clip's `.alc` on its own (for example to drag it straight from the web app).\n\n## Data the UI needs\n- `apricity-daw::names::clip_file_name` exposed to the browser through `crates/apricity-web` (a small pure wasm export, like the existing compiler exports), or returned by the sidecar-status endpoint from the M2 web need.\n- A download of one clip's `.alc` bytes (from `apricity serve`).\n\n## Out of scope\nVisual design.\n\n## Verify\n`node web/test/wasm.test.mjs` gains a check that the wasm export returns the same names as the Rust unit tests.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f5b805c2-0fb0-4c8e-ae4b-7629ad968c6a",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-99897614-47ef-46cb-96b7-19edb00f4856",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:34.669437Z",
+  "updated_at": "2026-09-26T22:06:36.591908Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

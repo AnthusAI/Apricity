@@ -11,10 +11,71 @@
   "labels": [
     "daw"
   ],
-  "dependencies": [],
-  "comments": [],
+  "dependencies": [
+    {
+      "target": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+      "type": "relates-to"
+    },
+    {
+      "target": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [
+    {
+      "id": "84e9a8b8-fae7-4ceb-b2a2-2ce4966e8f97",
+      "author": "home",
+      "text": "## Plan (Plan Kit Presets, 2026-09-26)\n\nEpics in delivery order:\n\n1. **M0** apricitus-fcd309: Spike: the drum rack preset (.adg) anatomy, from files saved by the DAW (4 tasks; leaves `design/daw-presets.md` + reference fixtures, no product code)\n2. **M1** apricitus-109615: `apricity export --kit`: a score's kit as a drum rack preset (5 stories, 8 tasks, 1 chore)\n3. **M2** apricitus-4ea4fd: the kit's step pattern as a MIDI file that plays the rack the same way (2 stories, 5 tasks): the initiative's \"sounds the same\" proof\n4. **M3** apricitus-f7e8f5: `apricity export --clips`: automatic markup of many samples as one browsable folder of clip files (4 stories, 8 tasks)\n5. **M4** apricitus-5e369e: a collection exports as one folder: clip files in collection order plus a drum rack of its short sounds (3 stories, 7 tasks)\n\n## Key decisions and assumptions\n\n- **One shared crate and runner.** `crates/apricity-daw`, `features/daw/STEPS.md`, `tests/conformance.rs` and `Cmd::Export` are shared with the set export (apricitus-6edba8) and the sidecars (apricitus-d7746d). The skeleton comes from apricitus-57dc3f or apricitus-6f37e1; this initiative adds modules, not a second crate.\n- **Naming and the `.alc` writer belong to the sidecar initiative.** Its M3 (apricitus-f5b805) already decided `<letter>-<length>-<key> <clip name>.alc` (key from key over time) and writes every saved clip beside its sample. This initiative's M3 adds only the browsable layout: any output folder, many samples or a whole library, kind folders, automatic markup only. So the initiative's `A-1bar-Fm.alc` becomes `A-1bar-Fm loop-1.alc`.\n- **Kits come from scores only.** Saved kits are still planned (design/vocabulary.md). The compiler gains `Timeline.kits` (apricitus-c74565) so a kit exports even when no track plays it, with the same level gains `apricity explain` prints.\n- **Pad layout:** slice n on note 35+n (pad 1 = C1); drum words (kick, snare, hat, open, crash ...) on the usual drum notes, other names on free notes alphabetically; more than 92 pads is an error.\n- **What a preset cannot hold** (chord-following transposition, reverse, filter, speed, effects) is warned about with the score line, never dropped silently.\n- **\"Crates\" are called collections**, following design/vocabulary.md. The code reads `Crate`/`CrateItem` until the rename lands.\n- No manifest or language change. The only schema edit is a description of the kind tags. Nothing is breaking.\n\n## Open questions for the owner (gathered in apricitus-e286ad)\n\n1. Kits over 92 pads: refuse, or start below C1?\n2. The step pattern proof: a `.mid` file (proposed) or a MIDI clip `.alc`?\n3. Reference audio in place (proposed) or copy it next to the exported files so the folder can move? This also decides what the web downloads can offer in cloud mode.\n4. Do holds and phrases go in the clip folder too?\n5. A collection's rack takes items up to one bar long: is that the right cut?\n6. Is kit export from scores only acceptable until saved kits exist?\n7. The Crate to Collection rename has no board task yet. Should one be filed with the storage session?\n\n## Dependencies\n\n```mermaid\nflowchart TD\n  M0[M0 spike fcd309] --> M1[M1 kit preset 109615]\n  M1 --> M2[M2 step MIDI 4ea4fd]\n  M0 --> M3[M3 clip folder f7e8f5]\n  SK[apricity-daw skeleton 57dc3f / 6f37e1] --> M1\n  SK --> M3\n  WM[WarpMap 0c91f1] --> M1\n  NM[names::clip_file_name 998976] --> M3\n  AW[.alc writer 007386] --> M3\n  M1 --> M4[M4 collections 5e369e]\n  M3 --> M4\n  SP1[sidecar spike 9fb5fe] -. relates .- M0\n  SP2[set spike f838a3] -. relates .- M0\n  F5[sidecar clip names f5b805] -. relates .- M3\n```\n\nM2 and M3 can run in parallel once their blockers clear. Nothing here depends on the Link initiative (apricitus-2e6ec4).",
+      "created_at": "2026-09-26T22:12:18.093334Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Plan Kit Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "63bb5f06-afcd-474f-8288-167ac77091d2",
+      "author": "home",
+      "text": "## Decisions on the open questions (2026-09-26, orchestrator, on the owner's behalf)\n\nAnswers to apricitus-e286ad, which is closed with them:\n\n1. **Kits over the rack's pad count:** refuse with a located error naming the kit and the limit. Apricity kits are small; silently remapping below C1 would hide a mistake.\n2. **Step pattern proof:** a `.mid` file. Universal, and tests can parse it.\n3. **Audio:** copy it next to the exported files by default so the folder can move and cloud downloads can offer a zip. `--no-collect` references it in place, same as set export.\n4. **Holds and phrases:** yes, in the clip folder, each kind in its own subfolder. The folder is everything markup found.\n5. **Collection rack cut:** items one bar or shorter: yes.\n6. **Kits from scores only until saved kits exist:** yes.\n7. **Crate → Collection rename:** filed as a chore under the storage initiative (see the comment after this one for its id).\n8. **Naming rule:** adopt the sidecar plan's `A-1bar-Fm loop-1.alc` rule. The initiative's shorter example is superseded.",
+      "created_at": "2026-09-26T22:19:46.807266Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "59d96ddf-89af-46cd-b57e-16ba4d5a0abc",
+      "author": "home",
+      "text": "Crate → Collection rename chore filed: apricitus-548a61 (under the storage initiative apricitus-e70662).",
+      "created_at": "2026-09-26T22:19:54.483484Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "c1204a83-d37d-4114-88ed-130f51eab068",
+      "author": "home",
+      "text": "Reference files (corrected): the DAW is not installed on this Mac and production holds no DAW-written files, but the owner has a licensed Studio install on the studio machine. Spikes list exact files to copy from that install's library and the owner's sets, and test against production audio; acceptance happens in the licensed install. Details on each M0 spike epic.",
+      "created_at": "2026-09-26T22:26:29.848329Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    }
+  ],
   "created_at": "2026-09-26T20:14:35.643301Z",
-  "updated_at": "2026-09-26T20:14:35.643345Z",
+  "updated_at": "2026-09-26T22:29:47.438806Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

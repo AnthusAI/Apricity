@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+  "title": "M3: The web app in a Link session through apricity serve --link",
+  "description": "## Purpose\nA page can't join Link, so `apricity serve --link` joins the session and passes its clock to the web app over a WebSocket. The page maps that clock onto its `AudioContext` and the AudioWorklet's mixer follows it (M1), so the web app plays beside the DAW like `apricity play --link`.\n\n## Scope\n- `crates/apricity-cli/src/serve.rs`: `--link` flag, one peer (`apricity-link`), WebSocket route `/link` streaming clock messages and answering pings, `custom.apricity.link.url` in `amplify_outputs.json`.\n- `schema/link-clock.schema.json`: the wire messages (clock, ping, pong, error), validated in Rust and TypeScript tests.\n- `web/src/audio/link-clock.ts` (new): WebSocket client, clock offset from ping/pong, server time to `AudioContext` frames.\n- `web/src/audio/player.ts`, `engine-worklet.ts`, `render-worker.ts`: clock lines to the worklet, arranging at the session's tempo, start and stop from the session, re-aligning after a loss.\n- The UI's needs, filed for the web session (label `web`), not built here.\n\n## Out of scope\nThe cloud-hosted app (decided from M0's finding on reaching `ws://127.0.0.1` from https); `server.py` (retiring, apricitus-8cecf2); visual design.\n\n```mermaid\nsequenceDiagram\n  participant D as DAW (peer)\n  participant S as apricity serve --link (peer)\n  participant P as page (link-clock.ts)\n  participant W as AudioWorklet (Mixer)\n  D-->>S: Link session: tempo, beat, start/stop\n  P->>S: ping t\n  S-->>P: pong t, server time\n  S-->>P: clock: tempo, beat at server time, playing, peers\n  P->>W: clock line (beat at context frame)\n  W-->>P: status (position, pending)\n```\n\n## Definition of Done\n1. `features/link/serve.feature` (Rust tests in `serve.rs`, as `features/serve/serve.feature` does) and `features/link/browser.feature` (node tests) green; 100% coverage of new code.\n2. Rust and TypeScript share the message contract (the schema); no Python.\n3. Schema added and validated in both test suites.\n4. CLI: `serve --link` with help text; `/link` without `--link` answers 404 saying how to turn it on.\n5. Fixtures: example messages in `features/link/fixtures/`.\n6. `design/link.md` \"Browser clock\" section with the sequence above.\n7. Docs: `docs/tools.md` web app section; `docs/concepts.md` Link section gains the browser paragraph.\n8. Web: the UI-needs task is filed and linked.\n9. Verify: `cargo test -p apricity-cli serve` (safe-run prefix), `cd web && npx tsx --test test/link-clock.test.ts` (also added to `test:flow`), `node web/test/wasm.test.mjs`, `scripts/serve-smoke.sh`; manual check in Chrome, Safari and Firefox with a DAW, logged.\n10. Running log. 11. `feat(<task id>)`; not breaking (`custom.apricity.link` is additive). 12. Depends on M1 and M2; relates apricitus-92b5b5 (ws from the page), apricitus-205813.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2e6ec4df-c65d-4dd3-a78a-aa8b0610aa7b",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-e661ebf4-0379-4220-98a3-f98ab66831ef",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:00:43.571793Z",
+  "updated_at": "2026-09-26T22:07:47.187654Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

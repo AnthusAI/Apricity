@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-13dac318-cb61-447a-9061-576de30fa746",
+  "title": "design/daw-sidecars.md §Mapping, vocabulary and glossary rows",
+  "description": "## Intent\nDocument the mapping this milestone fixes, so M2–M5 and the other DAW initiatives cite one place.\n\n## Scope\n- `design/daw-sidecars.md` §Mapping: manifest field → sidecar field table (warp markers, beat numbering, warp on/off, warp mode choice, tuning → transpose + detune, clip region → start/end/loop), with a Mermaid diagram.\n- `design/vocabulary.md`: a **Sidecar** row (the DAW's word: analysis file / clip file; means: a file beside a sample that tells the DAW how to play it).\n- `docs/glossary.md`: **sidecar**, **.asd**, **.alc** (plain words, linked to concepts).\n- README: layout table row for `crates/apricity-daw` (if the skeleton chore did not already add it).\n\n## Verify\na case-insensitive grep of the changed files for the DAW's brand and product names finds nothing new; docs render in the web app's Docs tab (`npm --prefix web run dev`, open Docs → Glossary).\n\nCommit: `chore(<this id>): sidecar mapping design note and glossary`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:44.028194Z",
+  "updated_at": "2026-09-26T22:01:44.028229Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

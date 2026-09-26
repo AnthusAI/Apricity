@@ -8,12 +8,13 @@ import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
 import { ActivityView } from "./ui/activity";
 import { TagsView } from "./ui/tags";
+import { HomeView } from "./ui/home";
+import { mountNav } from "./ui/nav";
 import { stopFeed } from "./audio/feed-audio";
 import { bootstrap, bootstrapError, mode } from "./data/client";
 import { mountNotices, notify } from "./ui/notices";
 import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
-import { currentAccount } from "./data/auth";
 import type { ScoreKind } from "./data/catalog";
 import { href, KIND_OF_PAGE, PAGE_OF_KIND, parse, tabOf, titleOf, type Page, type Route } from "./route";
 import type { At } from "./ui/at";
@@ -50,17 +51,19 @@ const samples = new Library(document.querySelector("#samples")!, "samples");
 const docs = new DocsView(document.querySelector("#docs")!);
 const activity = new ActivityView(document.querySelector("#activity")!);
 const tagsView = new TagsView(document.querySelector("#tags")!);
+const home = new HomeView(document.querySelector("#home")!);
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
-// ---- tabs (remembered per browser)
+// ---- tabs
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB = KIND_OF_PAGE as Record<string, ScoreKind>;
 const TAB_OF_KIND = PAGE_OF_KIND as Record<ScoreKind, string>;
-const TABS = ["home", "activity", "tags", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "about", "activity", "tags", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
 const loaded = new Set<string>();
+let landing: Landing | null = null;
 /** The transport's play button follows the page shown (set up below). */
 let syncTransport = () => {};
 function showTab(name: string) {
@@ -74,13 +77,16 @@ function showTab(name: string) {
     document.dispatchEvent(new CustomEvent("apricity:page-changed")); // breakdowns fall silent
   }
   document.body.dataset.tab = name;
+  // The About page (the landing page: its player, its sounds) is made the first time it's shown, not on every start.
+  if (name === "about") landing ??= new Landing(document.querySelector("#about")!, { open: (path) => navigate({ page: "scores", score: path, play: true }) });
+  if (name === "home") void home.show();
   const kind = KIND_OF_TAB[name];
   const view = kind ? "score" : name;
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
   // (Cards on Activity and the tag pages have their own play buttons.)
-  document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home" || name === "activity" || name === "tags";
+  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "activity", "tags"].includes(name);
   activity.show(name === "activity");
   syncTransport();
   if (kind) score.setKind(kind);
@@ -88,9 +94,6 @@ function showTab(name: string) {
     loaded.add(name);
     void (name === "clips" ? clips : samples).refresh();
   } else if (name === "clips" || name === "samples") (name === "clips" ? clips : samples).relist(); // stars rated since show
-  try {
-    localStorage.setItem("apricity.tab", name);
-  } catch {} // storage can be blocked (private browsing): nothing to report
 }
 // ---- the address bar: every page and item has a URL (route.ts). A click on a tab or the brand goes there; the views
 // report what they open (ui/at.ts), and Back and Forward follow the URL.
@@ -136,6 +139,8 @@ document.addEventListener("apricity:at", (e) => {
   // From the address bar: only correct it (a beat asked for under /scores moves to /beats), keeping ?play off.
   history[how === "user" ? "pushState" : "replaceState"](null, "", url);
 });
+// Tabs that don't fit fold into a menu that fills the screen.
+mountNav(document.querySelector<HTMLElement>(".topbar")!, document.querySelector<HTMLElement>(".tabs")!, (page) => navigate({ page }));
 for (const t of tabs)
   t.addEventListener("click", (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // a new tab or window: the link does it
@@ -147,27 +152,6 @@ brand.addEventListener("click", (e) => {
   e.preventDefault();
   navigate({ page: "home" });
 });
-// First visit: the landing page (signed in: Activity). After that, wherever the URL says, or where you were.
-let saved: string | null = null;
-try {
-  saved = localStorage.getItem("apricity.tab");
-} catch {} // storage can be blocked (private browsing): nothing to report
-
-// Signing in takes you to Activity. Nothing here is awaited at the top level: the auth code is a
-// lazily loaded chunk that imports from this one, so awaiting it while this module is still evaluating deadlocks.
-let wasSignedIn = false;
-void currentAccount()
-  .catch(() => null)
-  .then((a) => {
-    wasSignedIn = !!a;
-    if (a && !saved && location.pathname === "/") navigate({ page: "activity" }, true);
-  });
-document.addEventListener("apricity:auth-changed", async () => {
-  const now = !!(await currentAccount().catch(() => null));
-  if (now && !wasSignedIn && location.pathname === "/") navigate({ page: "activity" });
-  wasSignedIn = now;
-});
-
 /** Open a score in the tab for its kind, and play it once it has compiled; nothing waits forever. */
 async function openScore(path: string, play: boolean, how: "user" | "route") {
   await score.open(path, how);
@@ -199,13 +183,8 @@ document.addEventListener("apricity:open-item", async (e) => {
   await (type === "clip" ? clips : samples).openId(id, "auto");
 });
 
-new Landing(document.querySelector("#home")!, {
-  open: (path) => navigate({ page: "scores", score: path, play: true }),
-});
-// Where to start: the URL, or (at "/" with a remembered tab) that tab.
-const start = parse(location.pathname, location.search, location.hash);
-if (start.page === "home" && location.pathname === "/" && saved && saved !== "home") navigate({ page: pageOfTab(saved) }, true);
-else void follow(start);
+// Where to start: the URL (at "/", the home page's best-rated songs).
+void follow(parse(location.pathname, location.search, location.hash));
 
 // ---- transport: one play button for every page. On a score's tab it plays the score (waiting for the score to open and
 // compile, then the engine, the sounds and the mix, and saying so on the button); on Clips and Samples it plays the

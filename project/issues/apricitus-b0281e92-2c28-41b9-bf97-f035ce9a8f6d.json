@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-b0281e92-2c28-41b9-bf97-f035ce9a8f6d",
+  "title": "A collection's short sounds come as a drum rack, level-matched, in collection order",
+  "description": "As a crate digger, I want the short sounds of a collection on a drum rack, so that my kept hits and stabs are a playable kit in the DAW with one drag.\n\n```gherkin\nFeature: A collection's short sounds as a drum rack\n  Background:\n    Given a library with a collection \"digs\" holding, in order, the clips \"riff\" (1 bar), \"loop-1\" (2 bars), \"shot-2\" (1 beat) and \"stab\" (half a beat)\n\n  Scenario: Items up to one bar long become pads, in collection order\n    When I export the collection \"digs\" to \"out\" from the library\n    Then \"out/digs/digs.adg\" has 3 pads\n    And pad 1 is on note C1 and plays \"riff\"\n    And pad 2 is on note C#1 and plays \"shot-2\"\n    And pad 3 is on note D1 and plays \"stab\"\n\n  Scenario: Pads are named after the clips\n    When I export the collection \"digs\" to \"out\" from the library\n    Then the pads of \"out/digs/digs.adg\" are named \"riff\", \"shot-2\" and \"stab\"\n\n  Scenario: Pads are level-matched together as a drum kit's pads are\n    When I export the collection \"digs\" to \"out\" from the library\n    Then each pad's volume equals the gain Apricity gives that clip as a pad of a drum kit holding the same clips, within 0.1 dB\n\n  Scenario: A collection with no item up to a bar long writes no rack\n    Given a collection \"long\" holding only the 2-bar clip \"loop-1\"\n    When I export the collection \"long\" to \"out\" from the library\n    Then the export succeeds\n    And \"out/long\" holds no \".adg\"\n    And it says \"long: no clip is one bar or shorter; no drum rack written\"\n```\n\nThe one-bar limit is a proposal for the owner (M0 decisions, apricitus-e286ad).",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:10:54.719437Z",
+  "updated_at": "2026-09-26T22:10:54.719487Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

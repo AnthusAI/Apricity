@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-670c8c8f-5b27-423f-baaa-8ae13aed6860",
+  "title": "play flags --link, --quantum, --no-start-stop, --latency: help text, validation, exit codes",
+  "description": "## Intent\nThe command-line surface for Link on `play`. Makes apricitus-a4072b green.\n\n## Steps\n1. `crates/apricity-cli/src/main.rs`, `Cmd::Play`: `--link`; `--quantum <beats>` (1 to 16, default the score's time signature); `--no-start-stop`; `--latency <ms>` (-500 to 500). One-line doc comments become the `--help` text.\n2. Value parsers that print the exact messages in the story; options needing `--link` refused with \"X needs --link\"; usage errors exit with status 2 before anything joins.\n3. A score with mistakes is reported as today (`<score>: line L column C: …`) and exits 1 without joining.\n\n## Verify\n`cargo test -p apricity-cli --test link_play` (apricitus-a4072b green); `./target/debug/apricity play --help` shows the four options.\n\nCommit: `feat(<this task id>): play --link options`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8ab30485-a0a8-4f49-b9a8-c557e4ac6348",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:05:25.918203Z",
+  "updated_at": "2026-09-26T22:07:48.678650Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

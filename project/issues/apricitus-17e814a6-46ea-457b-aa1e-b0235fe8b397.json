@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-17e814a6-46ea-457b-aa1e-b0235fe8b397",
+  "title": "apricity import --markers and --reset-markers in apricity-cli (file mode)",
+  "description": "## Intent\nThe command, file mode.\n\n## Scope\n- `crates/apricity-cli/src/import.rs` + `Cmd::Import`: `apricity import --markers <FILE> [--sample AUDIO] [--beat-offset N] [--dry-run] [--library DIR]` and `apricity import --reset-markers <AUDIO> [--library DIR]` (exactly one of the two).\n- Sample resolution: `.asd` → the audio beside it (file name minus `.asd`); `.alc` → its file reference (relative, then absolute), else `--sample`, else an error suggesting `--sample`.\n- File mode: rewrite the manifest's `annotations.markers` (drop your `warp` markers, add the new ones with `source: user`), preserving every other byte of meaning; write atomically; re-read through `apricity_score::Clip::from_json` so the stored result is validated before replacing the file.\n- `--help` with an example of the round trip; report and error texts exactly as the scenarios say.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-cli --test daw_cli` (file-mode import and reset scenarios green) and `./target/debug/apricity import --help`.\n\nCommit: `feat(<this id>): apricity import --markers and --reset-markers`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-110edca3-03c7-4ae6-a908-bdc98c1ae51a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.640042Z",
+  "updated_at": "2026-09-26T22:06:37.104350Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-b1f287af-7b84-4b1c-86a3-8b53b2190b52",
+  "title": "Manual check in Chrome, Safari and Firefox beside a DAW through apricity serve --link",
+  "description": "## Intent\nCheck by ear in each browser what node tests can't.\n\n## Steps (record results as a comment)\n1. `apricity serve --library <dir> --link`, open the app from it in Chrome, Safari and Firefox.\n2. In the DAW: Link and Start Stop Sync on, metronome on, 124 BPM. Turn Link on in the app, press play on a score with a clear click or drum clip: waits, then starts on the DAW's bar line.\n3. Tempo change mid-bar, a slow tempo drag, stop and start, an edit while playing: no flams beyond the browser tolerance.\n4. Kill `apricity serve` for 10 s and restart it: the app keeps playing, shows lost, re-aligns.\n5. Put the tab in the background for a minute and come back.\n\n## Verify\nA comment per browser with each step's result and versions; bugs filed as `bug` under M3.\n\nLabels `daw`, `web`. Commit: none (manual check).",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-a8e11f1d-e029-4a8a-8b99-82d232184040",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-711d9a4f-9dfa-4eac-abd0-753f611c1f69",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:50.161081Z",
+  "updated_at": "2026-09-26T22:07:49.843063Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

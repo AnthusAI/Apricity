@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-950f6230-a70a-4239-8de0-c901817bb825",
+  "title": "Spike: Link clock from apricity serve to an AudioWorklet: accuracy per browser, reachability from the cloud app",
+  "description": "## Intent\nAnswer M0 question 6: can a web page follow a Link session through `apricity serve`, and how closely?\n\n## Steps (throwaway)\n1. A tiny native process joins Link and serves a WebSocket on 127.0.0.1 sending `{tempo, beat, serverMicros, playing, peers}` every 20 ms and answering `ping`.\n2. A test page estimates the clock offset from ping/pong (keep the lowest round trips), maps server time to `performance.now()` and then to `AudioContext` time with `getOutputTimestamp()` and `outputLatency`, and schedules a click on every beat in an AudioWorklet.\n3. Measure the error in Chrome, Safari and Firefox on macOS by recording the output against a reference peer's clicks (loopback driver or a second recording path): p99 and max, with and without a background tab.\n4. From the cloud app's origin (https): can the page open `ws://127.0.0.1:<port>`? Record per browser (mixed content, Private Network Access). Share the finding with apricitus-92b5b5.\n\n## Leaves\nA comment with the per-browser numbers and a recommendation: which browsers are supported, whether cloud mode can use Link, the ping rate and the offset filter.\n\n## Verify\nThe comment holds a table: browser, p99 ms, max ms, background-tab behavior, cloud-origin reachability.\n\nLabels `daw`, `web`. Commit: none (spike).",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0229888f-19da-4ad6-b9d3-1e7420afdfe3",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-92b5b506-e95c-4c9b-9753-9078dffd6f5b",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:05.996565Z",
+  "updated_at": "2026-09-26T22:07:50.865167Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

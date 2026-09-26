@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-6b15abb6-5553-43bf-9771-e1b2d5c97fad",
+  "title": "Collect samples into the set folder, --no-collect, and --library resolution",
+  "description": "## Intent\n\nCollect the samples a set uses, or reference them in place; resolve samples from a library.\n\n## Steps\n\n- `crates/apricity-daw/src/collect.rs`: from the timeline's `sources`, the distinct sample files actually played; a project-relative path under `Samples/Imported/` for each, with clashing file names made unique deterministically; each clip's sample reference written relative to the set (and absolute, as the format wants, per `design/daw-set.md`).\n- `--no-collect`: absolute paths to where the samples are, nothing copied.\n- Library: reuse `compile_from_library` in `crates/apricity-cli/src/main.rs` (`apricity_data::loader`) so `--library` resolves the same files `apricity render --library` does; a sample known to the library but not present locally is an error that says to run `apricity sync pull`.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — \"Samples travel with the set\" scenarios pass.\n\n## Release\n\n`feat(<this task's id>): collect a DAW set's samples`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-1c555bb1-1eab-42da-b749-0b7ce2e6133e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-51ac18d8-1b80-47f8-9ec9-c5504d539b6e",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.914832Z",
+  "updated_at": "2026-09-26T22:06:49.843313Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}
