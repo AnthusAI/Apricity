@@ -96,10 +96,108 @@ export function citation(rec: Provenance): string {
   return `${title}${facts.length ? `, ${facts.join(", ")}` : ""}.${credit ? ` ${credit}.` : ""}${l ? ` ${l.name}.` : ""}${source ? ` ${bare(source)}` : ""}`.trim();
 }
 
+export type CombinedKind = "undetermined" | "share-alike" | "attribution" | "free";
+
+export interface Combined {
+  kind: CombinedKind;
+  /** The license the music must carry: set for share-alike only. */
+  license: License | null;
+  title: string;
+  summary: string;
+  reasons: { title: string; license: License | null; why: string }[];
+  /** Titles of recordings with no documented license (kind "undetermined"). */
+  undocumented: string[];
+}
+
+const versionOf = (l: License) => parseFloat(l.code.split("-").pop() ?? "0") || 0;
+
+/**
+ * The license the finished music must carry, worked out from its recordings' licenses (each counted once):
+ * undocumented sound => undetermined; else any share-alike => the highest share-alike version present; else any
+ * CC BY => credit required; else free (public domain, U.S. Government, LoC free-to-use, CC0).
+ */
+export function combinedLicense(recs: Provenance[]): Combined {
+  const seen = new Set<string>();
+  const items: { title: string; license: License | null; ok: boolean }[] = [];
+  for (const r of recs) {
+    const key = r.id ?? r.title ?? "";
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({ title: r.title ?? "Untitled", license: licenseOf(r), ok: documented(r) });
+  }
+  const bad = items.filter((i) => !i.ok || !i.license);
+  if (bad.length) {
+    return {
+      kind: "undetermined",
+      license: null,
+      title: "Undetermined",
+      summary: "The license can't be computed until every sound has a documented license.",
+      reasons: bad.map((i) => ({ title: i.title, license: i.license, why: "has no documented license" })),
+      undocumented: bad.map((i) => i.title),
+    };
+  }
+  const sa = items.filter((i) => i.license!.shareAlike);
+  if (sa.length) {
+    const top = sa.map((i) => i.license!).reduce((a, b) => (versionOf(b) > versionOf(a) ? b : a));
+    return {
+      kind: "share-alike",
+      license: top,
+      title: top.name,
+      summary: `Share-alike: anything made with these sounds must be shared under ${top.name} or a later version.`,
+      reasons: sa.map((i) => ({ title: i.title, license: i.license, why: `is ${i.license!.name}, a share-alike license` })),
+      undocumented: [],
+    };
+  }
+  const by = items.filter((i) => i.license!.credit === "required");
+  if (by.length) {
+    return {
+      kind: "attribution",
+      license: null,
+      title: "Credit required (CC BY)",
+      summary: "The music must credit these sounds, as the credit lines do. No other condition.",
+      reasons: by.map((i) => ({ title: i.title, license: i.license, why: `is ${i.license!.name}, which requires credit` })),
+      undocumented: [],
+    };
+  }
+  return {
+    kind: "free",
+    license: null,
+    title: "No conditions",
+    summary: items.length ? "Every sound is public domain or free to use, so the music carries no conditions; credit is a courtesy." : "No sounds are used yet, so there are no conditions.",
+    reasons: [],
+    undocumented: [],
+  };
+}
+
+export const NOT_LEGAL_ADVICE = "This covers the sounds' licenses only and is not legal advice.";
+
+const quoted = (titles: string[]) => titles.map((t) => `"${t}"`).join(", ");
+
+/** The plain-language explanation of a computed license, for the credits panel and the copyable credits. */
+export function explainCombined(c: Combined, count: number): string {
+  const head = `Computed from the licenses of the ${count} ${count === 1 ? "sound" : "sounds"} this score uses.`;
+  const names = quoted(c.reasons.map((r) => r.title));
+  switch (c.kind) {
+    case "share-alike": {
+      const l = c.license!;
+      const why = c.reasons.length === 1 ? `${names} is ${c.reasons[0].license!.name}` : `${names} are share-alike (${[...new Set(c.reasons.map((r) => r.license!.name))].join(", ")})`;
+      return `${head} Share-alike: ${why}, so anything made with ${c.reasons.length === 1 ? "it" : "them"} must be shared under ${l.name} or a later version.`;
+    }
+    case "attribution":
+      return `${head} Credit required (CC BY): ${names} ${c.reasons.length === 1 ? "is" : "are"} CC BY, so the music must credit ${c.reasons.length === 1 ? "it" : "them"}. No other condition.`;
+    case "free":
+      return `${head} No conditions: ${count ? "every sound is public domain or free to use; credit is a courtesy" : "no sounds are used yet"}.`;
+    default:
+      return `${head} Undetermined: no license is documented for ${names}, so the license can't be computed.`;
+  }
+}
+
 export interface Credits {
   lines: { id?: string; title: string; text: string; documented: boolean; license: License | null }[];
   /** The share-alike license anything made with these must be shared under, if any asks. */
   shareAlike: License | null;
+  /** The license the finished music must carry, computed from every recording. */
+  combined: Combined;
 }
 
 /** The credits for a set of recordings: one line each (in the order given, once each), and any share-alike notice. */
@@ -115,7 +213,7 @@ export function creditsOf(recs: Provenance[]): Credits {
     if (license?.shareAlike && !shareAlike) shareAlike = license;
     lines.push({ id: r.id, title: r.title ?? "Untitled", text: citation(r), documented: documented(r), license });
   }
-  return { lines, shareAlike };
+  return { lines, shareAlike, combined: combinedLicense(recs) };
 }
 
 /**
