@@ -30,3 +30,14 @@ def classify(url: str | None) -> tuple[str | None, str]:
     if kind in ("by", "by-sa") and ver in ("3.0", "4.0"):
         return f"cc-{kind}-{ver}", f"CC {kind.upper()} {ver}"
     return None, f"CC {kind.upper()} {ver}: version not supported"
+
+
+def seconds(duration: str | None) -> float | None:
+    """"3:46" or "1:35:48" -> seconds; None when unknown."""
+    parts = [int(x) for x in re.findall(r"\d+", duration or "")]
+    if not parts or len(parts) > 3:
+        return None
+    total = 0
+    for x in parts:
+        total = total * 60 + x
+    return float(total)

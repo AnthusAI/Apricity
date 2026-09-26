@@ -19,6 +19,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--denoise", default="off", metavar="SPEC",
                     help="analyze a noise-reduced copy (<name>.clean.wav, made if missing) instead of the file: "
                          "BACKEND[+BACKEND][:STRENGTH], e.g. neural:medium; the original is untouched. Default off.")
+    ap.add_argument("--max-minutes", type=float, default=10, metavar="M",
+                    help="skip recordings longer than this (default 10; 0 = no limit). The library holds "
+                         "samples to curate, not whole sets or lectures.")
     args = ap.parse_args(argv)
 
     from .analyze import analyze, manifest_path, write
@@ -49,6 +52,20 @@ def main(argv: list[str] | None = None) -> int:
             jobs.append((f, rec))
 
     failed = 0
+    if args.max_minutes:
+        import soundfile as sf
+
+        def minutes(p):
+            try:
+                return sf.info(str(p)).duration / 60
+            except Exception:
+                return 0  # unreadable here: let analysis report it
+        long = [(f, m) for f, _ in jobs if (m := minutes(f)) > args.max_minutes]
+        for f, m in long:
+            print(f"  TOO LONG    {f.name}: {m:.0f} min is over {args.max_minutes:g} (--max-minutes 0 to allow)", file=sys.stderr)
+        skip = {f for f, _ in long}
+        jobs = [(f, r) for f, r in jobs if f not in skip]
+        failed += len(long)
     for f, rec in jobs:
         mp = manifest_path(f.resolve())
         if not args.force and mp.exists():

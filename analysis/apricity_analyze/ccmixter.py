@@ -35,3 +35,17 @@ def search(tags: str = "", text: str = "", count: int = 25) -> list[dict]:
         if len(out) >= count:
             break
     return out
+
+
+def fetch_for_preview(c: dict, folder) -> dict:
+    """ccMixter refuses audio requests that don't come from ccmixter.org, so a browser can't stream it from
+    our page. Save a copy beside the preview page (renders/, git-ignored) and play that. The importer
+    needs the same Referer."""
+    import pathlib
+    import urllib.request
+    dest = pathlib.Path(folder) / "audio" / (c["id"].replace(":", "-") + ".mp3")
+    if not dest.exists():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        req = urllib.request.Request(c["audio"], headers={"User-Agent": "Apricity/0.1", "Referer": c["page"]})
+        dest.write_bytes(urllib.request.urlopen(req).read())
+    return dict(c, audio=f"audio/{dest.name}", remote_audio=c["audio"])

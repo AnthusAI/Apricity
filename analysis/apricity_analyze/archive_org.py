@@ -8,7 +8,7 @@ import urllib.parse
 from . import cclicense, loc
 
 
-def search(text: str = "", count: int = 25, per_item: int = 3) -> list[dict]:
+def search(text: str = "", count: int = 25, per_item: int = 3, max_seconds: int = 480) -> list[dict]:
     q = "mediatype:audio AND licenseurl:[* TO *] AND collection:(netlabels OR audio_music OR folksoundomy OR opensource_audio OR etree OR 78rpm)" + (f" AND ({text})" if text else "")
     params = [("q", q), ("rows", count * 4), ("output", "json"), ("sort[]", "downloads desc")] + \
              [("fl[]", f) for f in ("identifier", "title", "creator", "licenseurl", "year", "collection")]
@@ -28,6 +28,8 @@ def search(text: str = "", count: int = 25, per_item: int = 3) -> list[dict]:
                  and not re.search(r"_(64|128)kb\.mp3$", f["name"], re.I)]
         for f in files[:per_item]:
             secs = float(f["length"]) if str(f.get("length", "")).replace(".", "", 1).isdigit() else 0
+            if secs and not 2 <= secs <= max_seconds:  # skip fragments and hour-long sets
+                continue
             out.append({
                 "id": f"ia:{d['identifier']}/{f['name']}", "title": f.get("title") or d.get("title", d["identifier"]),
                 "who": d.get("creator") if isinstance(d.get("creator"), str) else ", ".join(d.get("creator") or []) or "—",

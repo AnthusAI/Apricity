@@ -26,6 +26,7 @@ JUKEBOX_LATE = dict(JUKEBOX, id="loc-national-jukebox-1923-25", title="Library o
     rights="Public domain (published 1923-1925; 100 years since publication, Music Modernization Act).")
 
 get, audio_url, people = loc.get, loc.audio_url, loc.people
+MAX_MINUTES = 10
 
 def add(item_id):
     d = loc.item(item_id)
@@ -39,6 +40,11 @@ def add(item_id):
     path = f"loc/{col['dir']}/{slug}_{item_id}.mp3"
     url = audio_url(d); data = get(url)
     dest = ROOT / "samples" / path; dest.parent.mkdir(parents=True, exist_ok=True); dest.write_bytes(data)
+    import soundfile as sf
+    minutes = sf.info(str(dest)).duration / 60
+    if MAX_MINUTES and minutes > MAX_MINUTES:
+        dest.unlink()
+        raise SystemExit(f"{item_id} ({title}) is {minutes:.0f} min, over the {MAX_MINUTES:g} min limit; not imported (--max-minutes 0 to allow)")
     sha, size = hashlib.sha256(data).hexdigest(), len(data)
     entry = {"path": path, "url": url, "fetch": "http", "title": title, "size": size, "sha256": sha}
 
@@ -65,7 +71,10 @@ def main():
     ap.add_argument("ids", nargs="+")
     ap.add_argument("--denoise", default=denoise.DEFAULT, metavar="SPEC", help=f"default {denoise.DEFAULT}; off to skip")
     ap.add_argument("--no-analyze", action="store_true")
+    ap.add_argument("--max-minutes", type=float, default=10, help="refuse longer audio (default 10; 0 = no limit)")
     a = ap.parse_args()
+    global MAX_MINUTES
+    MAX_MINUTES = a.max_minutes
     files = [add(i) for i in a.ids]
     if not a.no_analyze:
         cli.main(["--denoise", a.denoise, *map(str, files)])
