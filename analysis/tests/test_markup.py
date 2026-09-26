@@ -365,3 +365,75 @@ def test_holds_loudness_check_before_overlap_removal():
     # First note should be rejected by loudness, so second note should be kept
     assert len(result) == 1
     assert result[0]["start"] > 1.0
+
+
+def test_holds_pitch_tag_matches_rust_rule():
+    """Every hold's pitch tag should match the Rust Clip::pitch rule applied to region start/end."""
+    import json
+    import pathlib
+    from apricity_analyze.markup import holds
+    from apricity_analyze.theory import PITCH_NAMES
+    
+    # Load a real tracked manifest: Thunderer/other.wav
+    mpath = pathlib.Path(__file__).parent.parent.parent / 'samples/marine-band/stems/Thunderer/other.wav.apricity.json'
+    m = json.loads(mpath.read_text())
+    
+    r = m["rhythm"]
+    dur = m["source"]["duration"]
+    beat_loudness = r.get("beat_loudness", [])
+    notes = m.get("notes", [])
+    beats = r["beats"]
+    
+    # Generate holds
+    all_holds = holds(notes, dur, beats=beats if len(beats) > 1 else None, 
+                     beat_loudness=beat_loudness if len(beat_loudness) > 0 else None, max_holds=12)
+    
+    # Independent implementation of Rust rule: Clip::pitch
+    def rust_clip_pitch(region_start, region_end, notes_list):
+        """Mirror of Rust's Clip::pitch: lowest loud note in onset window."""
+        onset_start = region_start - 0.03
+        onset_end = min(region_start + 0.12, region_end)
+        
+        onset_notes = [n for n in notes_list if n["start"] >= onset_start and n["start"] <= onset_end]
+        if not onset_notes:
+            return None
+        
+        loudest = max(n["velocity"] for n in onset_notes)
+        loud_notes = [n for n in onset_notes if n["velocity"] >= loudest * 0.5]
+        if not loud_notes:
+            return None
+        
+        return min(n["midi"] for n in loud_notes)
+    
+    # Verify each hold
+    mismatches = []
+    for hold in all_holds:
+        region_start = hold["start"]
+        region_end = hold["end"]
+        
+        # Get expected pitch from Rust rule
+        expected_midi = rust_clip_pitch(region_start, region_end, notes)
+        if expected_midi is None:
+            expected_midi = hold["evidence"]["held"]  # Fallback
+        
+        expected_pitch = f"{PITCH_NAMES[expected_midi % 12]}{expected_midi // 12 - 1}"
+        
+        # Get actual pitch from hold
+        actual_pitch = None
+        for tag in hold.get("tags", []):
+            if tag not in ["hold", "clean", "busy", "chord"] and not tag.endswith("s"):
+                actual_pitch = tag
+                break
+        
+        if actual_pitch != expected_pitch:
+            mismatches.append({
+                "name": hold["name"],
+                "region": f"{region_start:.2f}-{region_end:.2f}",
+                "expected": expected_pitch,
+                "actual": actual_pitch
+            })
+    
+    # Report mismatches
+    assert len(mismatches) == 0, f"Found {len(mismatches)} pitch tag mismatches:\n" + \
+        "\n".join(f"  {m['name']}: {m['region']} expected {m['expected']}, got {m['actual']}" 
+                 for m in mismatches)

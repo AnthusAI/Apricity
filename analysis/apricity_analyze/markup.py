@@ -423,10 +423,10 @@ def holds(notes: list[dict], duration: float, beats: list[float] | None = None, 
         region_end = min(cand_end + 0.15, duration)
         cand_dur = cand_end - cand_start
         
-        # Determine pitch: of notes starting at [cand_start - 0.03, cand_start + 0.12], 
+        # Determine pitch: of notes starting at [region_start - 0.03, min(region_start + 0.12, region_end)], 
         # the lowest with velocity >= 0.5 * loudest (Rust rule: crates/apricity-score/src/manifest.rs:313)
-        onset_start = cand_start - 0.03
-        onset_end = min(cand_start + 0.12, cand_end)
+        onset_start = region_start - 0.03
+        onset_end = min(region_start + 0.12, region_end)
         onset_notes = [n for n in notes if n["start"] >= onset_start and n["start"] <= onset_end]
         
         if onset_notes:
@@ -436,14 +436,8 @@ def holds(notes: list[dict], duration: float, beats: list[float] | None = None, 
         else:
             pitch_midi = cand_midi
         
-        # Convert MIDI to pitch name
-        def midi_to_pitch(midi):
-            notes_list = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-            octave = (midi // 12) - 1
-            pitch_class = notes_list[midi % 12]
-            return f"{pitch_class}{octave}"
-        
-        pitch_name = midi_to_pitch(pitch_midi)
+        # Convert MIDI to pitch name using PITCH_NAMES (flat notation: Ab, Db, etc.)
+        pitch_name = f"{PITCH_NAMES[pitch_midi % 12]}{pitch_midi // 12 - 1}"
         
         # Check for chord: >= 2 notes starting within 0.08 s of cand_start, lasting >= 70% of cand_dur
         within_0_08 = [n for n in notes if cand_start <= n["start"] <= cand_start + 0.08 and n != cand]

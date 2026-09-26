@@ -16572,7 +16572,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "C#3",
+     "Db3",
      "0.91s",
      "busy"
     ],
@@ -16620,12 +16620,12 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A#2",
+     "Bb1",
      "0.86s",
      "busy"
     ],
     "evidence": {
-     "held": 46,
+     "held": 34,
      "velocity": 0.646
     }
    },
@@ -16652,7 +16652,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "D#2",
+     "Eb2",
      "0.91s",
      "busy"
     ],
@@ -16684,12 +16684,12 @@
     "source": "ml",
     "tags": [
      "hold",
-     "F3",
+     "D4",
      "0.89s",
      "busy"
     ],
     "evidence": {
-     "held": 53,
+     "held": 62,
      "velocity": 0.61
     }
    },
@@ -16700,7 +16700,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A#2",
+     "Bb2",
      "0.99s",
      "busy"
     ],
@@ -16716,7 +16716,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A#2",
+     "Bb2",
      "0.87s",
      "busy"
     ],

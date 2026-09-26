@@ -19523,12 +19523,12 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A4",
+     "F2",
      "0.94s",
      "busy"
     ],
     "evidence": {
-     "held": 69,
+     "held": 41,
      "velocity": 0.615
     }
    },
@@ -19587,7 +19587,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A#2",
+     "Bb2",
      "1.05s",
      "busy"
     ],
@@ -19619,7 +19619,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A#2",
+     "Bb2",
      "1.04s",
      "busy"
     ],
@@ -19635,7 +19635,7 @@
     "source": "ml",
     "tags": [
      "hold",
-     "A#2",
+     "Bb2",
      "1.27s",
      "busy"
     ],
@@ -19651,12 +19651,12 @@
     "source": "ml",
     "tags": [
      "hold",
-     "F4",
+     "F3",
      "0.81s",
      "clean"
     ],
     "evidence": {
-     "held": 65,
+     "held": 53,
      "velocity": 0.576
     }
    },
@@ -19667,12 +19667,12 @@
     "source": "ml",
     "tags": [
      "hold",
-     "F4",
+     "F3",
      "0.81s",
      "clean"
     ],
     "evidence": {
-     "held": 65,
+     "held": 53,
      "velocity": 0.554
     }
    }
