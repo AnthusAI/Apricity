@@ -46,10 +46,22 @@
         "model": "Sonnet 5",
         "name": "Library Expansion"
       }
+    },
+    {
+      "id": "0bc8c076-2b09-4bf1-be6a-6bca29e48f53",
+      "author": "home",
+      "text": "Import done 2026-09-26 via the app (Import library from bucket, signed in as @techjunkie in the user's Chrome): DynamoDB now 87 Recordings (= library) and 153 Samples (library 152 + voice/announcer.wav, hero, expected). New content present: 53 ccmixter, 13 loc/, 54 citizen-dj samples. prod-smoke.sh passes. Content and logic are live; curation in production can start.",
+      "created_at": "2026-09-26T22:45:17.787531Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
     }
   ],
   "created_at": "2026-09-26T16:54:27.272422Z",
-  "updated_at": "2026-09-26T22:17:44.813685Z",
+  "updated_at": "2026-09-26T22:45:17.787564Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
