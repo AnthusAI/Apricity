@@ -3,25 +3,31 @@
   "title": "Surface data-layer and UI failures to the person instead of swallowing them",
   "description": "`bootstrap()` in `web/src/data/client.ts:32-53` catches any failure to load `/amplify_outputs.json`, logs to the console and defaults to cloud mode, so a broken deploy shows empty lists and odd sign-in behaviour with no message. There is no retry or backoff in `web/src/data/*`; the only timeout is `watchAuth`'s 12 s (`auth.ts:282`). About 20 empty `catch {}` blocks in the UI hide real failures: ratings (`score.ts:276`, `library.ts:156`), peaks (`flow/view.ts:91`, so a waveform never appears), tallies (`ranked-list.ts:131`), `hero-audio.ts:61,71`, `beat/view.ts:335`, `breakdown.ts:229`. Where errors do surface it is ad hoc `statusEl.textContent`. `keepCandidate` in `domain.ts` writes the Verdict, then the Clip, then CrateItems and returns on the first error, leaving partial state.\n\nDone when: one shared error surface (a status bar or toast) exists and every non-localStorage catch reports through it; bootstrap failure is visible; the multi-step domain writes either roll back or are documented as idempotent and retried.",
   "type": "bug",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-0aa1f157-3a16-4e12-b2d5-e0238cef669f",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6cabec1f-0345-43b8-b7ee-ff93a2016d24",
+      "author": "home",
+      "text": "keepCandidate's multi-step writes (Verdict, Clip, CrateItems) are not called by the app today; left for when curation comes back.",
+      "created_at": "2026-09-26T17:35:44.801521Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T05:32:21.497220Z",
-  "updated_at": "2026-09-26T05:37:07.848795Z",
+  "updated_at": "2026-09-26T17:35:44.801544Z",
   "closed_at": null,
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {},
   "agent": {
     "platform": "claude_code",
     "model": "Claude",
-    "name": "Project improvement audit",
-    "settings": {}
+    "name": "Project improvement audit"
   },
-  "agent_assignment": null
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
 }
