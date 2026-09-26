@@ -1,5 +1,6 @@
 // The landing page: Apricity, the mashup machine — what it does, how, what's in the library, a piece to hear.
 
+import { reportError } from "./notices";
 import "./landing.css";
 import { api } from "../apricity";
 import { el } from "./dom";
@@ -164,8 +165,9 @@ export class Landing {
         big(`${Math.round(minutes)}`, "minutes of music"),
         big(String(new Set(samples.map((c) => c.key)).size), "different keys detected"),
       );
-    } catch {
-      box.replaceChildren(el("p", { className: "lede" }, "Start the server to see your library."));
+    } catch (e) {
+      reportError("load the library's numbers", e);
+      box.replaceChildren(el("p", { className: "lede" }, "The library's numbers couldn't be loaded."));
     }
   }
 

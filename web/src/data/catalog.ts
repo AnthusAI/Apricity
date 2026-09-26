@@ -50,16 +50,31 @@ function fail(errors: GqlError[], write = false): never {
 }
 
 /** Every item of a list or index query, following nextToken; errors throw (SignedOut if unauthorized). */
+/** A fetch that never reached the server (offline, dropped connection): worth trying again. */
+export function isNetworkError(e: unknown): boolean {
+  if (isUnauthorized(e)) return false;
+  const m = `${(e as Error)?.name ?? ""} ${(e as Error)?.message ?? ""}`;
+  return e instanceof TypeError || /network ?error|failed to fetch|load failed|networkerror/i.test(m);
+}
+
+/** How long to wait before each retry of a page that failed on the network (tests set it to zeros). */
+export const retryDelays = { ms: [500, 1500] };
+
 export async function listAll<T>(page: (nextToken: string | null) => Promise<Page<T>>): Promise<T[]> {
   const out: T[] = [];
   let token: string | null = null;
   do {
     let r: Page<T>;
-    try {
-      r = await page(token);
-    } catch (e) {
-      if (isUnauthorized(e)) throw new SignedOut();
-      throw e;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        r = await page(token);
+        break;
+      } catch (e) {
+        if (isUnauthorized(e)) throw new SignedOut();
+        // A dropped connection gets two more tries; anything else fails now.
+        if (!isNetworkError(e) || attempt >= retryDelays.ms.length) throw e;
+        await new Promise((res) => setTimeout(res, retryDelays.ms[attempt]));
+      }
     }
     if (r.errors?.length) fail(r.errors);
     out.push(...(r.data ?? []).filter((x): x is T => x != null));

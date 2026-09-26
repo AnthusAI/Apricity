@@ -104,8 +104,9 @@ export function handles(): Promise<Handles> {
         rows.push(...((r.data ?? []) as HandleRow[]));
         nextToken = r.nextToken;
       } while (nextToken);
-    } catch {
-      /* no handles to show */
+    } catch (e) {
+      // Names fall back to "someone"; say why.
+      (await import("../ui/notices")).reportError("load people's handles", e);
     }
     return new Handles(rows);
   })();

@@ -2,6 +2,7 @@
 // New button. Scores, Beats, Chords, Melodies, Clips and Samples all use it; each tab says how to load its items and
 // how a row reads.
 
+import { reportError } from "./notices";
 import { el } from "./dom";
 import { rank, WINDOWS, WINDOW_LABEL, widenedNote, type DayTally, type Rankable, type Ranked, type Standing, type Window } from "../data/rank-window";
 import { starSummary } from "./stars";
@@ -56,7 +57,7 @@ const store = {
   set(k: string, v: string) {
     try {
       localStorage.setItem(k, v);
-    } catch {}
+    } catch {} // storage can be blocked (private browsing): nothing to report
   },
 };
 
@@ -128,7 +129,7 @@ export class RankedList<T extends Rankable> {
   /** Reload items, tallies and who is signed in. */
   async refresh(): Promise<T[]> {
     try {
-      [this.items, this.tallies, this.me] = await Promise.all([this.src.load(), this.src.tallies().catch(() => []), this.src.me().catch(() => null)]);
+      [this.items, this.tallies, this.me] = await Promise.all([this.src.load(), this.src.tallies().catch((e) => (reportError("load the ratings that rank this list", e), [])), this.src.me().catch(() => null)]);
     } catch (e) {
       this.items = [];
       this.listEl.replaceChildren(el("div", { className: "empty" }, `Couldn't load the ${this.label}: ${(e as Error).message}`));

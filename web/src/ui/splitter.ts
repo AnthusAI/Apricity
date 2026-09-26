@@ -45,7 +45,7 @@ export function columnSplitter(o: SplitterOptions): HTMLElement {
     try {
       if (w === null) localStorage.removeItem(storage);
       else localStorage.setItem(storage, String(w));
-    } catch {}
+    } catch {} // storage can be blocked (private browsing): nothing to report
   };
 
   /** Put the grip over the panel's moving edge (hidden when the panel is). */
@@ -65,7 +65,7 @@ export function columnSplitter(o: SplitterOptions): HTMLElement {
   try {
     const w = Number(localStorage.getItem(storage));
     if (w > 0) set(clampWidth(w, o.min, o.max(o.view.clientWidth || innerWidth)));
-  } catch {}
+  } catch {} // storage can be blocked (private browsing): nothing to report
 
   const widthFor = (w0: number, dx: number) => clampWidth(o.edge === "right" ? w0 + dx : w0 - dx, o.min, o.max(o.view.clientWidth));
   grip.addEventListener("pointerdown", (e) => {

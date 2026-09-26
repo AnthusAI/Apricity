@@ -3,6 +3,7 @@
 // and tempo, swing and pattern length. Every edit rewrites the score's text (model.ts), which recompiles and plays
 // the change at the next bar. Mute and solo are for listening only and are never saved.
 
+import { reportError } from "../notices";
 import { el } from "../dom";
 import { audioUrl, stepsView, type ClipItem, type Timeline } from "../../apricity";
 import { pickClip } from "../clip-picker";
@@ -335,8 +336,8 @@ export class BeatView {
       src.buffer = buf;
       src.connect(ctx.destination);
       src.start(0, piece.src_start, Math.max(0.01, piece.src_end - piece.src_start));
-    } catch {
-      /* a pad that can't be heard is not worth an error */
+    } catch (e) {
+      reportError("play that pad", e);
     }
   }
 

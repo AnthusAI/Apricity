@@ -1,12 +1,14 @@
 import "./style.css";
 import { player, progressLabel, type Transport } from "./audio/player";
 import { PlayButton, type PlayState } from "./ui/play-button";
+import { reasonOf } from "./audio/pending";
 import { Library } from "./ui/library";
 import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
 import { ActivityView } from "./ui/activity";
-import { bootstrap, mode } from "./data/client";
+import { bootstrap, bootstrapError, mode } from "./data/client";
+import { mountNotices, notify } from "./ui/notices";
 import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
 import { currentAccount } from "./data/auth";
@@ -22,7 +24,7 @@ window.addEventListener("vite:preloadError", (e) => {
     const last = Number(sessionStorage.getItem("apricity.reloadedAt") ?? "0");
     if (Date.now() - last < 30_000) return; // already tried a moment ago: do not loop
     sessionStorage.setItem("apricity.reloadedAt", String(Date.now()));
-  } catch {}
+  } catch {} // storage can be blocked (private browsing): nothing to report
   location.reload();
 });
 
@@ -30,6 +32,11 @@ window.addEventListener("vite:preloadError", (e) => {
 // at once and reload when watchAuth announces the session (apricity:auth-changed), so the page is never blank.
 void watchAuth();
 await bootstrap();
+
+// Failures outside the play button show here (a list that wouldn't load, a waveform, a rating).
+mountNotices(document.body.appendChild(document.createElement("div")));
+if (bootstrapError())
+  notify(`Couldn't reach Apricity's servers (${bootstrapError()}). Lists will be empty until it can.`, { action: { label: "Retry", run: () => location.reload() } });
 
 // Sign in / out lives in the bottom-left pill; it only appears against the cloud backend.
 new AccountControl(document.querySelector<HTMLElement>("#account")!, realDeps(() => mode() === "cloud"));
@@ -77,7 +84,7 @@ function showTab(name: string) {
   }
   try {
     localStorage.setItem("apricity.tab", name);
-  } catch {}
+  } catch {} // storage can be blocked (private browsing): nothing to report
 }
 tabs.forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab!)));
 brand.addEventListener("click", () => showTab("home"));
@@ -85,7 +92,7 @@ brand.addEventListener("click", () => showTab("home"));
 let saved: string | null = null;
 try {
   saved = localStorage.getItem("apricity.tab");
-} catch {}
+} catch {} // storage can be blocked (private browsing): nothing to report
 const initial = saved ?? "home";
 
 // Signing in takes you to Activity. Nothing here is awaited at the top level: the auth code is a
@@ -182,10 +189,13 @@ async function togglePlay() {
     if (!tl) return setScore({ kind: "idle" }); // nothing open, or it doesn't compile: the score's own panel says why
     if (!player.started) setScore({ kind: "loading", label: "Starting the audio engine" });
     await player.init();
-    await score.send(tl, (p) => setScore({ kind: "loading", label: progressLabel(p), ...(p.step === "sounds" ? { done: p.done, total: p.total } : {}) }));
+    const failed = await score.send(tl, (p) => setScore({ kind: "loading", label: progressLabel(p), ...(p.step === "sounds" ? { done: p.done, total: p.total } : {}) }));
+    if (failed) return setScore({ kind: "error", message: failed });
     await player.play();
-  } finally {
     setScore({ kind: player.transport.playing ? "playing" : "idle" });
+  } catch (e) {
+    // Say why on the button; a click tries again (a failed engine or sound is started or fetched afresh).
+    setScore({ kind: "error", message: reasonOf(e) });
   }
 }
 

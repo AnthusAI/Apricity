@@ -1,11 +1,13 @@
 // Samples and Clips: every analyzed sample (or every clip saved with one), ranked by stars, and a waveform editor for
 // the clips saved with a sample. The two tabs are one view: opening a clip opens its sample with that clip selected.
 
+import { reportError } from "./notices";
 import { api, audioUrl, manifest, me, ratings, type SampleSummary, type SavedClip } from "../apricity";
 import { owns, SignedOut, type ClipItem, type Me } from "../data/catalog";
 import { byline, handles, type Handles } from "../data/handles";
 import { mode } from "../data/client";
 import { player } from "../audio/player";
+import { reasonOf } from "../audio/pending";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
@@ -189,7 +191,9 @@ export class Library {
     let mine: number | null = null;
     try {
       mine = await (await ratings()).mineFor(t.type, t.id);
-    } catch {}
+    } catch (e) {
+      reportError("load your rating", e);
+    }
     const now = this.target();
     if (now?.id !== t.id) return;
     this.stars.set({ mine, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
@@ -385,7 +389,7 @@ export class Library {
     const license = el("div", { className: "license-host" });
     const curator = !this.cloud() || !!this.who?.curator;
     const fillLicense = async () => {
-      const p = await api.provenance(path).catch(() => null);
+      const p = await api.provenance(path).catch((e) => (reportError("load where this sample comes from", e), null));
       if (this.current !== path || !p) return;
       license.replaceChildren(
         licensePanel(
@@ -434,7 +438,11 @@ export class Library {
   private async startAudition(buf: AudioBuffer, from: number, to: number | null, wave: Waveform) {
     this.stopAudition();
     if (!player.started) this.setPlay({ kind: "loading", label: "Starting the audio engine" });
-    await player.init();
+    try {
+      await player.init();
+    } catch (e) {
+      return this.setPlay({ kind: "error", message: reasonOf(e) }); // a click tries again
+    }
     const ctx = player.ctx!;
     await ctx.resume();
     const src = ctx.createBufferSource();

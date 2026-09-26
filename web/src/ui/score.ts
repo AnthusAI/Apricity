@@ -1,6 +1,7 @@
 // Score editor: YAML in, live compile (wasm) on every edit, live playback that swaps changes in
 // at the next bar. Problems with a line number are marked in the editor; all are listed beside it.
 
+import { reportError } from "./notices";
 import { EditorView, basicSetup } from "codemirror";
 import { yaml } from "@codemirror/lang-yaml";
 import { lintGutter, setDiagnostics, type Diagnostic } from "@codemirror/lint";
@@ -185,7 +186,7 @@ export class ScoreView {
       const old = JSON.parse(localStorage.getItem("apricity.flow") ?? "{}"); // the Flow panel's old setting
       saved = { ...saved, ...(typeof old.height === "number" ? { height: old.height } : {}), ...(old.open === false ? { song: null } : {}) };
       saved = { ...saved, ...JSON.parse(localStorage.getItem("apricity.dock") ?? "{}") };
-    } catch {}
+    } catch {} // storage can be blocked (private browsing): nothing to report
     const panels = { flow: this.flow.root, steps: this.beat.root, harp: this.harp.root, roll: this.roll.root };
     const current = (): Dock => {
       const d = this.kind in saved ? saved[this.kind]! : (own[this.kind] ?? "flow");
@@ -206,7 +207,7 @@ export class ScoreView {
       }
       try {
         localStorage.setItem("apricity.dock", JSON.stringify(saved));
-      } catch {}
+      } catch {} // storage can be blocked (private browsing): nothing to report
       if (d === "flow") this.flow.redraw();
       if (d === "steps") this.beat.update(this.view.state.doc.toString(), this.timeline);
       if (d === "harp") this.harp.update(this.view.state.doc.toString(), this.timeline);
@@ -356,7 +357,9 @@ export class ScoreView {
     let mineStars: number | null = null;
     try {
       mineStars = await (await ratings()).mineFor("score", it.id);
-    } catch {}
+    } catch (e) {
+      reportError("load your rating", e);
+    }
     if (this.item()?.id !== it.id) return;
     this.stars.set({ mine: mineStars, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
   }
@@ -576,15 +579,18 @@ export class ScoreView {
   }
 
   /** Render and queue the current timeline (at the next bar if already playing). */
-  async send(tl = this.timeline, onProgress?: (p: LoadProgress) => void) {
-    if (!tl) return;
+  /** Render and queue it; the reason it couldn't, or null when it could (or a newer edit took over). */
+  async send(tl = this.timeline, onProgress?: (p: LoadProgress) => void): Promise<string | null> {
+    if (!tl) return null;
     try {
       // Progress shows on the play button (onProgress); the status line reports the result.
       const res = await player.arrange(this.harp.filter(this.beat.filter(tl)), onProgress);
       this.statusEl.textContent = `${res.rendered} rendered, ${res.reused} reused in ${(res.ms / 1000).toFixed(1)} s` + (player.transport.playing ? " · lands at the next bar" : "");
+      return null;
     } catch (e) {
-      if (e instanceof Superseded) return; // a newer edit's render will report
+      if (e instanceof Superseded) return null; // a newer edit's render will report
       this.statusEl.textContent = `couldn't render: ${(e as Error).message}`;
+      return (e as Error).message;
     }
   }
 
@@ -593,7 +599,7 @@ export class ScoreView {
     const key = `${this.path}|${paths.join("|")}`;
     if (key === this.creditsKey) return;
     this.creditsKey = key;
-    const [recs, who] = await Promise.all([api.creditsFor(paths).catch(() => []), me().catch(() => null)]);
+    const [recs, who] = await Promise.all([api.creditsFor(paths).catch((e) => (reportError("work out this score's credits", e), [])), me().catch(() => null)]);
     if (key !== this.creditsKey) return;
     // A fork credits the score it came from first (and the original, further back).
     const it = this.item();

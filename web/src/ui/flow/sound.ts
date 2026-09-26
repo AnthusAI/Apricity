@@ -215,7 +215,7 @@ export class StorySound {
     for (const n of this.nodes) {
       try {
         n.stop();
-      } catch {}
+      } catch {} // already stopped
     }
     this.nodes.clear();
   }

@@ -66,7 +66,9 @@ button { cursor: pointer; }
 @keyframes play-spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
 .playctl .play[data-state="unavailable"] { opacity: .4; cursor: not-allowed; }
 .playctl .play:hover[data-state="loading"], .playctl .play:hover[data-state="unavailable"] { transform: none; }
-.playctl .play-status { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.playctl .play-status { font-size: 12.5px; color: var(--muted); white-space: nowrap; max-width: 46ch; overflow: hidden; text-overflow: ellipsis; }
+.playctl .play-status.bad { color: var(--bad, #c0392b); }
+.playctl .play[data-state="error"] { background: var(--bad, #c0392b); }
 .transport[data-plays="sample"] .pos, .transport[data-plays="sample"] .meta, .transport[data-plays="sample"] .meter, .transport[data-plays="sample"] .pill { display: none; }
 @media (prefers-reduced-motion: reduce) { .playctl .play.spin .ring { animation-duration: 3s; } }
 .transport .pos { font-family: var(--mono); font-size: 15px; min-width: 7ch; }
@@ -579,3 +581,12 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .editor .code-tabs button.on { color: var(--fg); background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
 .editor .cm-host[hidden] { display: none; }
 .editor .solved { flex: 1; min-height: 0; overflow: auto; margin: 0; border: 0; border-radius: 0; padding: 12px 16px; font-size: 12px; }
+
+/* Notices (ui/notices.ts): failures and news, bottom-centre, above everything. */
+.notices { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; display: grid; gap: 8px; width: min(560px, calc(100vw - 32px)); pointer-events: none; }
+.notice { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); box-shadow: 0 8px 24px rgba(0,0,0,.18); font-size: 13.5px; }
+.notice.error { border-color: color-mix(in srgb, var(--bad, #c0392b) 55%, var(--line)); }
+.notice.error::before { content: "⚠"; color: var(--bad, #c0392b); }
+.notice span { flex: 1; overflow-wrap: anywhere; }
+.notice-action { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 7px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+.notice-close { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }

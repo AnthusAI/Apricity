@@ -3,6 +3,7 @@
 // drawn. Hover anything to trace it (a note back to its sample, or a pad out to everywhere it
 // plays); click to pin; while playing, whatever sounds is traced as it plays.
 
+import { reportError } from "../notices";
 import type { Timeline } from "../../apricity";
 import { player } from "../../audio/player";
 import { el } from "../dom";
@@ -88,7 +89,7 @@ export class FlowView {
             this.peaks.set(r.path, p);
             this.redraw();
           })
-          .catch(() => {});
+          .catch((e) => reportError("draw a waveform", e));
     }
     this.say();
     this.redraw();

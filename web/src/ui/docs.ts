@@ -63,7 +63,7 @@ export class DocsView {
     let start = this.current;
     try {
       start = localStorage.getItem("apricity.docs") ?? start;
-    } catch {}
+    } catch {} // storage can be blocked (private browsing): nothing to report
     this.open(pages.some((p) => p.file === start) ? start : this.current);
   }
 
@@ -74,7 +74,7 @@ export class DocsView {
     this.current = file;
     try {
       localStorage.setItem("apricity.docs", file);
-    } catch {}
+    } catch {} // storage can be blocked (private browsing): nothing to report
     this.article.innerHTML = marked.parse(page.md, { async: false }) as string;
     for (const h of this.article.querySelectorAll("h1, h2, h3, h4")) h.id = slug(h.textContent ?? "");
     for (const code of this.article.querySelectorAll("pre code.language-apr")) code.innerHTML = highlightApr(code.textContent ?? "");

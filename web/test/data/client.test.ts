@@ -32,3 +32,17 @@ describe("local identity", () => {
     assert.equal(await ownerValue(), "local::local");
   });
 });
+
+describe("a site configuration that won't load", () => {
+  it("is remembered with its reason, so the page can say so", async () => {
+    const { bootstrap, bootstrapError } = await import("../../src/data/client.ts");
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () => new Response("gone", { status: 503, statusText: "Service Unavailable" })) as typeof fetch;
+    try {
+      assert.equal(await bootstrap(), "cloud");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+    assert.match(bootstrapError() ?? "", /Service Unavailable/);
+  });
+});

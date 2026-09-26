@@ -7,6 +7,7 @@
 //     shift the solver chose for it in every bar.
 // Every edit rewrites the score's text (model.ts); stopped, with nothing selected, a chord bar lets you hear it.
 
+import { reportError } from "../notices";
 import { el } from "../dom";
 import { chordFits, chordsView, compile, type ClipItem, type Timeline } from "../../apricity";
 import { player } from "../../audio/player";
@@ -209,8 +210,9 @@ export class HarpView {
     if (!voices.length || !v.palette.length) return;
     try {
       for (const f of await chordFits(v.key, voices, v.palette.map((p) => p.numeral))) this.fits.set(f.label, { score: f.score, coverage: f.coverage });
-    } catch {
-      /* no fits: the bars just aren't lit */
+    } catch (e) {
+      // The bars just aren't lit; say why.
+      reportError("score the chords against your strings", e);
     }
   }
 

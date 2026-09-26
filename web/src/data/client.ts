@@ -56,10 +56,19 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     if (typeof document !== "undefined") document.addEventListener("apricity:auth-changed", () => (signedIn = null));
     return cachedMode;
   } catch (error) {
+    // Carry on as the website would (so what can work, does), and say so: the page shows this (main.ts).
     console.error("Failed to bootstrap data layer:", error);
-    cachedMode = "cloud"; // Default to cloud mode on error
+    failure = error instanceof Error ? error.message : String(error);
+    cachedMode = "cloud";
     return cachedMode;
   }
+}
+
+let failure: string | null = null;
+
+/** Why the site's configuration couldn't be loaded, if it couldn't (null when it was). */
+export function bootstrapError(): string | null {
+  return failure;
 }
 
 /** The local identity from the outputs (null in the cloud, or before bootstrap). */

@@ -4,6 +4,7 @@
 // edit rewrites the melody in the text (model.ts), which recompiles and plays at the next bar. A row's key plays
 // the clip at that pitch.
 
+import { reportError } from "../notices";
 import { el } from "../dom";
 import { audioUrl, melodyView, type ClipItem, type Timeline } from "../../apricity";
 import { player } from "../../audio/player";
@@ -386,8 +387,8 @@ export class RollView {
       src.playbackRate.value = 2 ** ((this.tonicMidi() + semis - clip) / 12);
       src.connect(ctx.destination);
       src.start(0, piece.src_start, Math.max(0.05, piece.src_end - piece.src_start));
-    } catch {
-      /* a note that can't be heard is not worth an error */
+    } catch (e) {
+      reportError("play that note", e);
     }
   }
 

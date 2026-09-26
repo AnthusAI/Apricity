@@ -168,7 +168,7 @@ export class Waveform {
     this.drag = null;
     try {
       this.canvas.releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch {} // the pointer may not have been captured
     if (!d) return;
     if (d.kind === "select") {
       const sel = this.state.selection;
