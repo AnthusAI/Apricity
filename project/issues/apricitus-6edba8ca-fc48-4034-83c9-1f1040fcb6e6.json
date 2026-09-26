@@ -51,10 +51,25 @@
         "model": "Claude Fable 5.1",
         "name": "DAW Integration Decisions"
       }
+    },
+    {
+      "id": "97b730c5-4738-4d4d-ac62-86fb103f39c9",
+      "author": "home",
+      "text": "## M0 set-format spike: open questions for the owner (design/daw-set.md, 2026-09-26)\n\nThe initiative's eight decisions hold; nothing in the evidence makes one impossible. Writing one file for both 12 and 11 is impossible (11 to 12 is a structural break), which decision 1 already rules out. Still open:\n\n1. Which exact DAW version is installed? The export copies its header and templates from that install's default set.\n2. Pan law: the DAW's pan on stereo tracks may differ from Apricity's balance law. Accept the difference, or compensate with Utility Balance?\n3. Track volume: keep it inside each clip's gain (exact, current decision) or move the static part to the fader (easier to mix)?\n4. Per-note filters (Event.filter) and note attack/release: approximate them with clip envelopes or fades, or leave them out and report them?",
+      "created_at": "2026-09-26T23:22:01.186347Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
     }
   ],
   "created_at": "2026-09-26T20:14:35.579925Z",
-  "updated_at": "2026-09-26T22:29:47.314326Z",
+  "updated_at": "2026-09-26T23:22:01.186402Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

@@ -17,9 +17,25 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a9cfdf38-c9b0-4a63-93ff-1948f5a8885a",
+      "author": "home",
+      "text": "Done: design/daw-set.md 'Decisions' (13 dated entries): warp modes, overlap groups, reverse, tuning plus transpose split, level beyond ranges (Utility), loudness make-up placement, locators, unmatched effects reported, target version, template-and-patch, determinism, track volume in clip gain. 'Open questions for the owner' has 4 entries, copied to apricitus-6edba8. Verification: read both sections against the initiative's Decisions comment; every item in this task's list has an entry. Left open for review.",
+      "created_at": "2026-09-26T23:22:01.286467Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
   "created_at": "2026-09-26T22:06:25.120467Z",
-  "updated_at": "2026-09-26T23:16:21.087406Z",
+  "updated_at": "2026-09-26T23:22:01.286499Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

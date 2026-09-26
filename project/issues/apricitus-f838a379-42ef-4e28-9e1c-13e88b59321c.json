@@ -36,10 +36,25 @@
         "model": "Claude Fable 5.1",
         "name": "DAW Integration Decisions"
       }
+    },
+    {
+      "id": "1a413274-29dc-4cea-ab56-8e06b5d7603e",
+      "author": "home",
+      "text": "## Spike summary (2026-09-26)\n\n**Answered** in design/daw-set.md with evidence from DAW-saved 12.x sets (12.0b16 to 12.4.5b10): the skeleton and header rules; the id rules (one set-wide pointee space below NextPointeeId, everything else list-local, track ids for routing); the full arrangement AudioClip (beats vs seconds, warp markers plus the trailing 1/32-beat marker, WarpMode 0-6, PitchCoarse/PitchFine, SampleVolume linear, FileRef RelativePathType 0/1/3/5/6/7, no reverse flag in 12); tempo and time signature (Manual plus the sentinel envelope, id = 99*log2(den)+num-1); loop brace, locators and scale; mixer units (volume and send linear gain, pan -1..1, groups, returns, sidechain AudioIn/Track.N/PostFxOut); device parameters for EQ Eight, Compressor, Limiter, Saturator, Utility, Reverb, Delay and Auto Filter; the automation envelope format. It also has a Mermaid tree, the Apricity to set mapping table, 13 Decisions (template-and-patch chosen) and 4 owner questions (copied to apricitus-6edba8).\n\n**Provisional** (public or older files only): the exact header to write, clip gain max (+24 dB), clip fade units, collected-name clashes, the scale index table beyond Minor, nested groups in 12, Gate (11.0.12) and Redux (GPL dataset) XML, the EQ Eight band Mode order, Saturator Type order, Reverb Dry/Wet element, Auto Filter cutoff units, pan law, envelope interpolation domain, OriginalCrc 0 accepted.\n\n**Waits on the DAW**: the owner's five reference sets (apricitus-6f10c9) and opening and listening to the proof set (apricitus-d6e7f5, built at renders/daw-proof/, deterministic). Both have click-by-click steps in the note. The 'Re-check when the licensed install arrives' list gives exact library paths.\n\n**Files created**: design/daw-set.md; crates/apricity-daw/tests/fixtures/reference/set/{README.md, public-12.3.7-minimal.als, public-12.2.1-techno.als, public-12.2-broom-bap.als} (MIT, unmodified); scripts/daw-reference-audio.py. Git-ignored outputs: renders/daw-reference/, renders/daw-proof/. Note: the sidecars spike added a second WAV generator (scripts/daw-fixture-audio.py); keep one.",
+      "created_at": "2026-09-26T23:22:30.552253Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
     }
   ],
   "created_at": "2026-09-26T22:05:36.499263Z",
-  "updated_at": "2026-09-26T22:55:06.624449Z",
+  "updated_at": "2026-09-26T23:22:30.552297Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
