@@ -57,6 +57,12 @@ export class Player {
   }
 
   /** Start audio (must follow a user gesture the first time). */
+  /** Whether the audio engine is up (the first start takes a moment: the engine, then its renderers). */
+  get started() {
+    return this.isStarted;
+  }
+  private isStarted = false;
+
   init(): Promise<void> {
     this.ready ??= (async () => {
       const module = await apricityModule();
@@ -95,6 +101,7 @@ export class Player {
       );
       setInterval(() => this.node.port.postMessage({ type: "gc" }), 1000);
       this.emit({ sampleRate: ctx.sampleRate });
+      this.isStarted = true;
     })();
     return this.ready;
   }
@@ -114,16 +121,18 @@ export class Player {
   }
 
   /** Decode (Web Audio) and hand to every renderer each source the timeline needs. */
-  private async loadSources(tl: Timeline, onProgress?: (msg: string) => void) {
+  private async loadSources(tl: Timeline, onProgress?: (p: LoadProgress) => void) {
     const ctx = this.ctx!;
     const paths = [...new Set(tl.sources.map((s) => s.path))].filter((p) => !this.loaded.has(p));
+    let done = 0;
+    if (paths.length) onProgress?.({ step: "sounds", done, total: paths.length });
+    const counted = (p: Promise<void>) => p.then(() => onProgress?.({ step: "sounds", done: ++done, total: paths.length }));
     await Promise.all(
       paths.map((p) => {
         if (!this.decoding.has(p)) {
           this.decoding.set(
             p,
             (async () => {
-              onProgress?.(`decoding ${p.split("/").pop()}`);
               const bytes = await fetch(await audioUrl(p)).then((r) => {
                 if (!r.ok) throw new Error(`${p}: ${r.status}`);
                 return r.arrayBuffer();
@@ -145,16 +154,16 @@ export class Player {
             })(),
           );
         }
-        return this.decoding.get(p)!;
+        return counted(this.decoding.get(p)!);
       }),
     );
   }
 
   /** Render a timeline and queue it: immediately if nothing is playing yet, else at the next bar. */
-  async arrange(tl: Timeline, onProgress?: (msg: string) => void): Promise<ArrangeResult> {
+  async arrange(tl: Timeline, onProgress?: (p: LoadProgress) => void): Promise<ArrangeResult> {
     await this.init();
     await this.loadSources(tl, onProgress);
-    onProgress?.("rendering");
+    onProgress?.({ step: "mix" });
     const id = this.nextId++;
     // Deal events to workers by a stable hash of what they sound like. A track with effects goes
     // whole to one worker (a compressor needs the whole track), by a hash of its name; every track
@@ -205,3 +214,9 @@ export class Player {
 }
 
 export const player = new Player();
+
+/** How far along getting a timeline ready to play is: its sounds (fetched and decoded), then the mix. */
+export type LoadProgress = { step: "sounds"; done: number; total: number } | { step: "mix" };
+
+/** The play button's words for a step. */
+export const progressLabel = (p: LoadProgress) => (p.step === "sounds" ? "Loading sounds" : "Mixing");

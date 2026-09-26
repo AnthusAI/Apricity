@@ -15,7 +15,7 @@ import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind }
 import { RankedList } from "./ranked-list";
 import { StarRating } from "./stars";
 import { KIND_LABEL, rebaseSamples, TEMPLATES, TEMPLATE_FOLDER } from "./templates";
-import { player, Superseded } from "../audio/player";
+import { player, Superseded, type LoadProgress } from "../audio/player";
 import { el } from "./dom";
 import { currentAccount } from "../data/auth";
 import { FlowView } from "./flow/view";
@@ -83,6 +83,8 @@ export class ScoreView {
   private applyDock = () => {};
   private saved = "";
   private compileTimer = 0;
+  /** Opening, listing and compiling under way; `ready()` waits for them. */
+  private busy = new Set<Promise<unknown>>();
   private generation = 0;
 
   constructor(root: HTMLElement) {
@@ -238,7 +240,35 @@ export class ScoreView {
     this.loadList();
   }
 
-  async loadList(select?: string) {
+  loadList(select?: string) {
+    return this.track(this.listNow(select));
+  }
+
+  private track<T>(p: Promise<T>): Promise<T> {
+    this.busy.add(p);
+    const done = () => this.busy.delete(p);
+    p.then(done, done);
+    return p;
+  }
+
+  /**
+   * The open score's timeline, once whatever is under way has finished: the list loading, the score opening, and
+   * the compile of its latest text (started now if it was waiting for the typing to pause). Null: nothing playable.
+   */
+  async ready(): Promise<Timeline | null> {
+    for (let i = 0; i < 20; i++) {
+      if (this.compileTimer) {
+        clearTimeout(this.compileTimer);
+        this.compileTimer = 0;
+        void this.recompile();
+      }
+      if (!this.busy.size) break;
+      await Promise.allSettled([...this.busy]);
+    }
+    return this.timeline;
+  }
+
+  private async listNow(select?: string) {
     const shown = await this.list.refresh();
     const current = this.items.find((x) => x.path === (select ?? this.path));
     if (current && current.kind === this.kind) {
@@ -315,7 +345,11 @@ export class ScoreView {
     return this.item(path)?.kind ?? "song";
   }
 
-  async open(path: string) {
+  open(path: string) {
+    return this.track(this.openNow(path));
+  }
+
+  private async openNow(path: string) {
     if (this.dirty() && !confirm(`Discard unsaved changes to ${this.item()?.title ?? this.path}?`)) return;
     if (!this.items.length) await this.list.refresh();
     let text: string;
@@ -411,10 +445,14 @@ export class ScoreView {
   private changed() {
     this.changedDirty();
     clearTimeout(this.compileTimer);
-    this.compileTimer = window.setTimeout(() => this.recompile(), 300);
+    this.compileTimer = window.setTimeout(() => ((this.compileTimer = 0), this.recompile()), 300);
   }
 
-  private async recompile() {
+  private recompile() {
+    return this.track(this.compileNow());
+  }
+
+  private async compileNow() {
     if (!this.path) return;
     const gen = ++this.generation;
     const text = this.view.state.doc.toString();
@@ -447,10 +485,11 @@ export class ScoreView {
   }
 
   /** Render and queue the current timeline (at the next bar if already playing). */
-  async send(tl = this.timeline) {
+  async send(tl = this.timeline, onProgress?: (p: LoadProgress) => void) {
     if (!tl) return;
     try {
-      const res = await player.arrange(this.harp.filter(this.beat.filter(tl)), (m) => (this.statusEl.textContent = m + "…"));
+      // Progress shows on the play button (onProgress); the status line reports the result.
+      const res = await player.arrange(this.harp.filter(this.beat.filter(tl)), onProgress);
       this.statusEl.textContent = `${res.rendered} rendered, ${res.reused} reused in ${(res.ms / 1000).toFixed(1)} s` + (player.transport.playing ? " · lands at the next bar" : "");
     } catch (e) {
       if (e instanceof Superseded) return; // a newer edit's render will report

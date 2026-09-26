@@ -54,8 +54,8 @@ export class StorySound {
     private metronome?: Metronome,
   ) {}
 
-  /** Start (loading the sounds the first time), joining the story at `storyT`. Must follow a click. */
-  async enable(storyT: number) {
+  /** Start (loading the sounds the first time, saying how many are in), joining the story at `storyT`. Must follow a click. */
+  async enable(storyT: number, onProgress?: (done: number, total: number) => void) {
     if (!this.ctx) {
       const ctx = new AudioContext({ latencyHint: "interactive" });
       this.ctx = ctx;
@@ -69,7 +69,14 @@ export class StorySound {
       unlock.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
       unlock.connect(ctx.destination);
       unlock.start(0);
-      const load = async (key: string) => ctx.decodeAudioData(await fetchKey(key));
+      const total = this.audio.sources.length + this.audio.tracks.length;
+      let done = 0;
+      onProgress?.(done, total);
+      const load = async (key: string) => {
+        const buf = await ctx.decodeAudioData(await fetchKey(key));
+        onProgress?.(++done, total);
+        return buf;
+      };
       try {
         [this.sources, this.tracks] = await Promise.all([Promise.all(this.audio.sources.map(load)), Promise.all(this.audio.tracks.map((t) => load(t.key)))]);
       } catch (e) {

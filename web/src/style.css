@@ -45,8 +45,30 @@ button { cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 550; }
 
 .transport { margin-left: auto; display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
-.transport .play { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--accent); color: white; display: grid; place-items: center; }
-.transport .play:disabled { opacity: .45; cursor: default; }
+/* The play button (ui/play-button.ts), everywhere: a disc with ▶ or ■; while getting ready, a ring that fills (or spins)
+   and a line beside it saying what it is doing. --play sets its color. */
+.playctl { display: flex; align-items: center; gap: 8px; }
+.playctl .play { --play: var(--accent); position: relative; width: 36px; height: 36px; padding: 0; border-radius: 50%; border: 0; background: var(--play); color: white; display: grid; place-items: center; cursor: pointer; transition: transform .12s, box-shadow .2s, background .2s; }
+.playctl .play:hover { transform: scale(1.06); }
+.playctl .play svg { width: 36px; height: 36px; overflow: visible; }
+.playctl .play .track, .playctl .play .ring { fill: none; stroke-width: 3; }
+.playctl .play .track { stroke: transparent; }
+.playctl .play .ring { stroke: white; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 18px 18px; transition: stroke-dashoffset .3s ease; }
+.playctl .play .icon-play, .playctl .play .icon-stop { fill: currentColor; }
+.playctl .play .icon-stop { display: none; }
+.playctl .play[data-state="playing"] .icon-play { display: none; }
+.playctl .play[data-state="playing"] .icon-stop { display: inline; }
+.playctl .play[data-state="loading"] { background: color-mix(in srgb, var(--play) 30%, transparent); color: var(--play); cursor: progress; }
+.playctl .play[data-state="loading"] .track { stroke: color-mix(in srgb, var(--play) 25%, transparent); }
+.playctl .play[data-state="loading"] .ring { stroke: var(--play); }
+.playctl .play[data-state="loading"] .icon-play { opacity: .55; }
+.playctl .play.spin .ring { animation: play-spin 1s linear infinite; }
+@keyframes play-spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+.playctl .play[data-state="unavailable"] { opacity: .4; cursor: not-allowed; }
+.playctl .play:hover[data-state="loading"], .playctl .play:hover[data-state="unavailable"] { transform: none; }
+.playctl .play-status { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.transport[data-plays="sample"] .pos, .transport[data-plays="sample"] .meta, .transport[data-plays="sample"] .meter, .transport[data-plays="sample"] .pill { display: none; }
+@media (prefers-reduced-motion: reduce) { .playctl .play.spin .ring { animation-duration: 3s; } }
 .transport .pos { font-family: var(--mono); font-size: 15px; min-width: 7ch; }
 .transport .meta { color: var(--muted); font-size: 13px; }
 .transport .meter { width: 70px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
