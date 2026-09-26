@@ -143,12 +143,6 @@ new Landing(document.querySelector("#home")!, {
 showTab(initial);
 void followRoute();
 
-// The score editor's "Reference" button opens the language docs.
-document.addEventListener("apricity:docs", (e) => {
-  const { file, anchor } = (e as CustomEvent<{ file: string; anchor?: string }>).detail;
-  showTab("docs");
-  docs.open(file, anchor);
-});
 
 // ---- transport: one play button for every page. On a score's tab it plays the score (waiting for the score to open and
 // compile, then the engine, the sounds and the mix, and saying so on the button); on Clips and Samples it plays the

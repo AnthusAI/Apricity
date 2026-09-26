@@ -156,7 +156,7 @@ export class ScoreView {
     });
     root.append(
       this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.refBtn(), this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
       this.sideEl,
       ...this.dockPanels(),
     );
@@ -243,15 +243,6 @@ export class ScoreView {
   }
 
   /** Opens the reference for whichever format is being edited. */
-  private refBtn() {
-    const b = el("button", { className: "btn", type: "button", title: "Open the language reference in Help" }, "Reference");
-    b.addEventListener("click", () => {
-      const file = this.path?.endsWith(".yaml") ? "yaml.md" : "language.md";
-      document.dispatchEvent(new CustomEvent("apricity:docs", { detail: { file } }));
-    });
-    return b;
-  }
-
   /** The list's top of the week (where signing in lands). */
   topOfWeek() {
     this.list.setWindow("week");
