@@ -3,7 +3,7 @@
   "title": "crates/apricitus-data: Library, ids, typed models, compile loader",
   "description": "`design/storage.md` §3.2, §3.3 and §1.2.\n\n## Steps\n1. New crate `crates/apricitus-data`. It depends on `virtuus-amplify` and `virtuus-blobs` by path (`../../../Virtuus/rust/crates/...`; a git dependency later) and on `apricitus-score`.\n2. `Library::create(dir)` and `Library::open(dir, Identity)` with the §3.3 layout and `apricitus-library.json`. The contract comes from `include_str!(\"../../../contract/apricitus.contract.json\")`.\n3. `cargo xtask gen-models` (a new `xtask` crate) generates `src/models.rs`: serde structs and typed facades such as `lib.models().clip().get(id)` and `.slices_by_clip(clip_id, opts)`, all over `Engine::call`.\n4. `ids`: `clip_id(sha256)`, `stem_clip_id(parent, stem, model)`, `candidate_id(clip_id, start, end, kind)` and `curated_slice_id(candidate_id)`, exactly as §1.2 says.\n5. `loader::make(&Library)`, following §3.2: look the alias up with `clipsByPath` (falling back to `aliases`), load the analysis attachment, load active and retired slices plus markers, rebuild the manifest JSON, then `Clip::from_json`. It plugs into the existing `compile_with`.\n6. Test: build a library in a temp folder from one real manifest (a test helper inserts the Clip, the analysis file and slices), compile an example score through the loader, and assert the timeline equals the file-based compile.\n\n## Verify\n`cargo test -p apricitus-data`\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -126,11 +126,18 @@
       "text": "Reviewed by storage-lead: cargo test -p apricity-data passes (52 unit, loader-vs-file timeline equality, rank parity). Facades go through Engine::call; loader pre-fetches via facades. Clippy has style warnings only.",
       "created_at": "2026-09-24T23:33:01.751362Z",
       "comment_type": "default"
+    },
+    {
+      "id": "b8f16a04-7035-4c3a-b3d9-a1abd83a3265",
+      "author": "home",
+      "text": "Done: crates/apricity-data (Library, ids, typed models, compile loader) is in use by the CLI, serve and migrate.",
+      "created_at": "2026-09-26T16:25:13.250210Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-24T04:45:38.911536Z",
-  "updated_at": "2026-09-24T23:33:01.751398Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:25:13.339847Z",
+  "closed_at": "2026-09-26T16:25:13.339807Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

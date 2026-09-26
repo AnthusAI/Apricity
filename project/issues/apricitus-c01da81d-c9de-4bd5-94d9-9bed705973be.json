@@ -3,7 +3,7 @@
   "title": "apricitus migrate: today's files into a library",
   "description": "Implement `design/storage.md` §5 as `apricitus migrate --from <repo root> --to <library> [--link]` (in `apricitus-data`, exposed by `apricitus-cli`).\n\n## Behaviour\n- Recordings, Clips (+ analysis attachments; audio cloned or hard-linked), Slices, Markers, Candidates (with `legacyId`), Verdicts (`judge: \"local\"`), Crates, and Scores with ScoreRefs.\n- A report of counts.\n- Exits non-zero on any unresolved score reference.\n- Idempotent: a second run reports 0 changes.\n\n## Check\n`scripts/check-migration.sh` migrates to a temp library, then for each `examples/*.apr|yaml` renders it from the files (`apricitus render`) and from the library (`apricitus render --library <lib>`), and `cmp`s the WAVs.\n\n## Verify\n```\napricitus migrate --from . --to /tmp/apr-lib --link     # report\napricitus migrate --from . --to /tmp/apr-lib --link     # \"0 changes\"\nscripts/check-migration.sh                              # all identical\n```\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -43,11 +43,18 @@
       "text": "Reviewed by storage-lead: cargo test -p apricity-data -p apricity-cli passes; check-migration.sh 8 identical; second migrate run 0 changes. Follow-ups: Virtuus validate_record treats array fields as strings (migration writes via Table::put); save_score_impl swallows ScoreRef errors.",
       "created_at": "2026-09-25T01:44:06.999252Z",
       "comment_type": "default"
+    },
+    {
+      "id": "85b1688d-89a4-4bef-9ad4-553cdaf733b4",
+      "author": "home",
+      "text": "Done: apricity migrate --from <repo> --to <library> [--link] built ~/Apricity-Library.",
+      "created_at": "2026-09-26T16:25:13.384322Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-24T04:45:39.004984Z",
-  "updated_at": "2026-09-25T01:44:06.999272Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:25:13.422456Z",
+  "closed_at": "2026-09-26T16:25:13.422417Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

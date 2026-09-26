@@ -3,7 +3,7 @@
   "title": "Web data layer on generateClient (data calls only)",
   "description": "`design/storage.md` §4 (mode switching, facades, domain).\n\n## Steps\n1. `web/src/data/client.ts`: fetch `/amplify_outputs.json`, call `Amplify.configure`, export `client = generateClient<Schema>()`.\n2. `files.ts` and `auth.ts` facades with the `aws-amplify` signatures. Local mode is implemented now; cloud branches are stubs until apricitus-df37ae.\n3. `domain.ts`: `keepCandidate`, `saveSlice`, `saveScore`, `applyVerdict`.\n4. Add wasm exports `rw_rank`, `rw_ids` and `rw_markup_merge` in `crates/apricitus-web`, and update the shim types.\n5. Replace the `api.*` calls in `web/src/apricitus.ts` and `web/src/ui/{library,score,landing}.ts`. Slices are saved per record. Compiling fetches clips, analysis and slices from the data layer. **Data calls only**: note the change on the issue so the web session sees it.\n6. Playwright end-to-end: `web/test/e2e/local.spec.ts` against `serve` on a migrated library. Browse, rename a slice (story apricitus-453448), keep a candidate, save and compile a score.\n\n## Verify\n`cd web && npx tsc --noEmit && npm run build && npx playwright test`\n\n---\n**Repo:** `~/Projects/Ripple`, branch `master` (don't switch).\n**Toolchain:** `export PATH=$HOME/.cargo/bin:$PATH`; Python `analysis/.venv/bin/python`; web `cd web && npm …`.\n**Protocol:** initiative `apricitus-e70662`: specs first; log with `kbs comment`; run **Verify** and paste the output tail; label `ready-for-review`; never commit, push, close, or deploy. Don't change visuals in `web/src/ui/*` (the web session owns them); data calls only.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -15,10 +15,18 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6fcc59f6-ba94-4601-b27c-afc28a444f03",
+      "author": "home",
+      "text": "Done: web/src/data/client.ts configures Amplify from amplify_outputs.json and uses generateClient (authAware in the cloud).",
+      "created_at": "2026-09-26T16:25:13.459213Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-24T04:45:39.298059Z",
-  "updated_at": "2026-09-24T04:45:51.654338Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T16:25:13.497240Z",
+  "closed_at": "2026-09-26T16:25:13.497208Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",
