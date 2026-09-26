@@ -42,10 +42,25 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "a200a13b-f739-4f7b-87da-0258a3be8c09",
+      "author": "home",
+      "text": "Machine-side half done: crates/apricity-daw/tests/fixtures/reference/presets/ holds 4 DAW-saved files from MIT repositories (daw-12.3-drum-sampler-kit.adg, daw-12.3-simpler-kit-64.adg, daw-12.3-simpler-warped.adv, daw-12.2-sliced-racks.als) and 3 spike-written candidates (candidate-full-kit.adg, candidate-trimmed-kit-v12.adg, candidate-trimmed-kit-v11.adg) that follow this task's 4-pad recipe, plus README.md with origin, header version, commit and licence notice for each file. Verification: gzip -t and xmllint --noout pass on all 7; the candidates regenerate byte for byte (md5 identical over two runs). No audio: the files only reference paths.\nRemains (needs the licensed install, so this task stays in_progress): the owner saves kit-reference.adg, the pad-2-note variant, clip-warped.alc and clip-unwarped.alc in the DAW (steps in design/daw-presets.md, 'Owner checklist'), and reopens the candidates. The sidecar generator (apricitus-2831a6) has not landed yet, so the candidates name its planned WAVs (steady-120, detuned, tempo-change) with durations taken from its spec.",
+      "created_at": "2026-09-26T23:13:56.079122Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
     }
   ],
   "created_at": "2026-09-26T21:59:38.976131Z",
-  "updated_at": "2026-09-26T23:11:19.367420Z",
+  "updated_at": "2026-09-26T23:13:56.079157Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
