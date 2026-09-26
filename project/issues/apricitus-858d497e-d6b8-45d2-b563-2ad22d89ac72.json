@@ -3,7 +3,7 @@
   "title": "Show authors by name",
   "description": "Lists say 'yours' for your own work but nothing for others: owners are Cognito usernames (google_...). Needs a public profile (display name) per person.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Plan: people pick a unique public handle at first sign-in (Profile + Handle models; Handle id = handle for atomic uniqueness). Lists show 'by @handle'. Change handle in Account settings.",
       "created_at": "2026-09-26T09:02:46.796141Z",
       "comment_type": "default"
+    },
+    {
+      "id": "124031cb-6083-4d37-a6d8-2c60d69940ac",
+      "author": "home",
+      "text": "Deployed (Amplify job 48, commit 48abb3a); prod smoke passed.",
+      "created_at": "2026-09-26T09:34:21.988348Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T18:34:33.194563Z",
-  "updated_at": "2026-09-26T09:02:46.796157Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T09:34:22.014875Z",
+  "closed_at": "2026-09-26T09:34:22.014838Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
