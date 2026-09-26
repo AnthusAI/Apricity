@@ -369,6 +369,14 @@ pub struct ChordSpan {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LevelGroup {
+    /// Where the pads come from (the last two parts of their folder, e.g. "salamander-drumkit/OH").
+    pub from: String,
+    pub level_db: f64,
+    pub pads: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrackInfo {
     pub name: String,
     pub clip: String,
@@ -383,6 +391,9 @@ pub struct TrackInfo {
     pub retune_cents: f64,
     /// Automatic level match: brings the region to a common loudness before the track's `gain`.
     pub level_db: f64,
+    /// A kit's pads levelled together, by where they come from (their folder): one gain each.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub level_groups: Vec<LevelGroup>,
     /// Number of pads when the track plays a kit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub chops: Option<usize>,
@@ -1303,7 +1314,29 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
     let mut pitches: Vec<Option<i32>> = vec![None; score.tracks.len()];
     let mut piece_levels: Vec<Vec<f64>> = Vec::new();
     let mut warned_irregular: Vec<String> = Vec::new();
-    let level_of = |p: &Piece| clips[&p.clip].clip.loudness((p.from, p.to)).map_or(0.0, |l| ((TARGET_DBFS - l) * 10.0).round() / 10.0).clamp(-24.0, 30.0);
+    let gain_to_target = |l: f64| (((TARGET_DBFS - l) * 10.0).round() / 10.0).clamp(-24.0, 30.0);
+    // A kit's pads that come from one place (one folder: one kit, one recording) are levelled together, by their
+    // attacks: one gain brings the loudest to the target and the rest keep their recorded balance (a ghost note stays
+    // soft, a crash's long tail earns it nothing). Pads from different places are still matched to each other.
+    let group_of = |p: &Piece| clips[&p.clip].clip.audio.parent().map(|d| d.to_string_lossy().into_owned()).unwrap_or_default();
+    let mut kit_gain: BTreeMap<(String, String), (f64, usize)> = BTreeMap::new();
+    for (k, pieces) in &kits {
+        let mut peaks: BTreeMap<String, (f64, usize)> = BTreeMap::new();
+        for p in pieces {
+            let Some(rc) = clips.get(&p.clip) else { continue };
+            let Some(l) = rc.clip.peak_loudness((p.from, p.to)) else { continue };
+            let e = peaks.entry(group_of(p)).or_insert((f64::MIN, 0));
+            *e = (e.0.max(l), e.1 + 1);
+        }
+        for (g, (l, n)) in peaks {
+            kit_gain.insert((k.clone(), g), (gain_to_target(l), n));
+        }
+    }
+    // A whole clip (a loop, a phrase) is matched by its average; a kit's pad by its group.
+    let level_of = |p: &Piece, kit: Option<&str>| match kit.and_then(|k| kit_gain.get(&(k.to_string(), group_of(p)))) {
+        Some((g, _)) => *g,
+        None => clips[&p.clip].clip.loudness((p.from, p.to)).map_or(0.0, gain_to_target),
+    };
     for (ti, tr) in score.tracks.iter().enumerate() {
         let src = srcs[ti].as_ref().expect("resolved when there are no errors");
         let first = &src.pieces[0];
@@ -1330,7 +1363,17 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 warnings.push(format!("{}: its beats are uneven here (intervals vary {:.0}%), so it won't lock to the grid. Free-time playing or a compound meter (6/8) read in twos are the usual causes; try beat_ratio: 3 or 1.5, or another region.", prc.name, irregular * 100.0));
             }
         }
-        let levels: Vec<f64> = src.pieces.iter().map(level_of).collect();
+        // The kit this track plays from: a whole kit, or one of its pads ("drums.hat").
+        let kit_name = src.kit.clone().or_else(|| tr.clip.rsplit_once('.').map(|(k, _)| k.to_string()).filter(|k| kits.contains_key(k)));
+        let levels: Vec<f64> = src.pieces.iter().map(|p| level_of(p, kit_name.as_deref())).collect();
+        let level_groups: Vec<LevelGroup> = match &kit_name {
+            Some(k) => kit_gain
+                .iter()
+                .filter(|((kk, g), _)| kk == k && src.pieces.iter().any(|p| &group_of(p) == g))
+                .map(|((_, g), (db, n))| LevelGroup { from: g.rsplit('/').take(2).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>().join("/"), level_db: *db, pads: *n })
+                .collect(),
+            None => Vec::new(),
+        };
         for (p, lvl) in src.pieces.iter().zip(&levels) {
             if *lvl > 24.0 {
                 let what = p.name.as_ref().map_or_else(|| tr.clip.clone(), |n| format!("{}.{n}", tr.clip));
@@ -1349,6 +1392,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             stretch,
             retune_cents: -rc.clip.manifest.tonal.tuning_cents,
             level_db: levels[0],
+            level_groups,
             chops: src.kit.as_ref().map(|_| src.pieces.len()),
             kit: src.kit.clone(),
             pieces: src
@@ -1706,16 +1750,21 @@ impl Timeline {
         let bar = |b: f64| b / self.meter as f64 + 1.0;
         s += &format!("{} BPM, {}/4, key {}, {} bars\n\nClips:\n", self.tempo, self.meter, self.key, self.length_beats / self.meter as f64);
         for t in &self.tracks {
+            // A kit's pads levelled together, by where they come from.
+            let groups: String = t.level_groups.iter().map(|g| format!("  {:<14} {:<10} {} pad{} from {} levelled together: {:+.1} dB\n", "", "", g.pads, if g.pads == 1 { "" } else { "s" }, g.from, g.level_db)).collect();
             if let Some(v) = t.varispeed {
                 s += &format!("  {:<14} {:<10} seconds {:>6.1}–{:<6.1} re-pitched, plays as recorded at {v}× (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0 * 60.0 * v / (self.tempo * t.beat_ratio), t.region_beats.1 * 60.0 * v / (self.tempo * t.beat_ratio), t.level_db);
+                s += &groups;
                 continue;
             }
             if let Some(p) = &t.pitch {
                 s += &format!("  {:<14} {:<10} one sound at {p}, played at the pitches it's given (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.level_db);
+                s += &groups;
                 continue;
             }
             s += &format!("  {:<14} {:<10} clip beats {:>6.1}–{:<6.1} (×{}) sounds in {:<5} stretch {:<7} retune {:+.0}¢  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0, t.region_beats.1, t.beat_ratio, t.region_key,
                 t.stretch.map_or("?".into(), |x| format!("{x:.3}×")), t.retune_cents, t.level_db);
+            s += &groups;
         }
         s += "\nHarmony:\n";
         for span in &self.harmony {

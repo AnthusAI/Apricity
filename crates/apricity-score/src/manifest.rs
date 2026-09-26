@@ -248,6 +248,19 @@ impl Clip {
         Some(10.0 * p.log10())
     }
 
+    /// The loudest beat in a range (dB): a one-shot's attack, not its tail. None when the range has no beats.
+    /// A hit shorter than a beat counts the beat it starts in.
+    pub fn peak_loudness(&self, beats: (f64, f64)) -> Option<f64> {
+        let loud = &self.manifest.rhythm.beat_loudness;
+        let range = self.beat_indices(beats);
+        if range.is_empty() {
+            let at = self.seconds_at(beats.0);
+            let i = self.manifest.rhythm.beats.partition_point(|&t| t <= at + 1e-3).saturating_sub(1);
+            return loud.get(i).copied();
+        }
+        range.filter_map(|i| loud.get(i).copied()).reduce(f64::max)
+    }
+
     /// How quiet a range is relative to the clip's *playing* level (its 90th-percentile beat):
     /// 0 when the range is that loud; grows as it falls below, and with the share of near-silent
     /// beats in it. (Not the median: a stem can be silent most of the time, like tubas resting.)

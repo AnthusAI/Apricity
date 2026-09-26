@@ -140,7 +140,10 @@ kit drums
   rim   = b.3                     # a pad can hold another kit's slice
 ```
 
-Each pad is level-matched on its own, so pads from different recordings sit together.
+A kit's pads that come from one place (one folder: a drum kit's hits, or the slices of one loop) are
+levelled together: one gain brings the loudest hit to the common level, and the rest keep their
+recorded balance, so a ghost note stays soft and a crash's long tail doesn't make it louder. Pads from
+different recordings are matched to each other, so they sit together.
 
 Kits and clips share one set of names. A track can play a whole kit (with a step pattern, below),
 or one pad (`b.3`, `drums.kick`); a single pad behaves exactly like a clip.
@@ -264,7 +267,8 @@ Before transposing, every clip is **detuned** to A = 440 Hz using its measured t
 from different eras don't beat against each other.
 
 Every track is also **level-matched**: its clip is brought to a common loudness (−20 dBFS RMS)
-before its own `volume`. So `volume -2` means "two dB under the others", not "compensate for how loud
+before its own `volume`. A clip is measured by its average level; a kit's pads by their attacks,
+levelled together per source (see [kits](#kits-slices-and-pads); `apricity explain` lists each group and its gain). So `volume -2` means "two dB under the others", not "compensate for how loud
 this recording happened to be". (The match is limited to −24…+30 dB.) The finished mix goes through
 the master's limiter and is then brought to a loudness target (−16 LUFS unless the score says
 otherwise); see [mixing](#mixing).

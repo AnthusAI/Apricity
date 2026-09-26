@@ -920,3 +920,69 @@ tracks:
     let none = run_pitched("apricity: 0.1\ntempo: 60\nkey: F\nbars: 1\nclips: { stab: { source: stab.wav, beats: [0, 1] } }\ntracks:\n  - { clip: stab, voicing: triad }\n").unwrap_err().join("\n");
     assert!(none.contains("the score has none"), "{none}");
 }
+
+/// A one-shot hit whose beats (one a second) have these loudnesses (dB), in `dir/rel`.
+fn hit_fixture(dir: &Path, rel: &str, loud: &[f64]) {
+    let path = dir.join(rel);
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(&path, b"not real audio").unwrap();
+    let n = loud.len() as f64;
+    let beats: Vec<f64> = (0..loud.len()).map(|i| i as f64).collect();
+    let manifest = serde_json::json!({
+        "apricity_manifest": 1,
+        "source": { "path": rel, "sha256": "0".repeat(64), "sample_rate": 48000, "channels": 1, "duration": n },
+        "rhythm": { "bpm": 60.0, "bpm_stability": 1.0, "beats": beats, "downbeats": [], "meter": 4, "beat_loudness": loud,
+                    "warp_markers": [{"seconds": 0.0, "beat": 0.0}, {"seconds": n, "beat": n}] },
+        "tonal": { "key": {"tonic": "C", "mode": "major", "strength": 0.9}, "tuning_hz": 440.0, "tuning_cents": 0.0,
+                   "pitch_class_profile": [1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "beat_chroma": [] },
+        "notes": [],
+        "annotations": { "clips": [] }
+    });
+    std::fs::write(dir.join(format!("{rel}.apricity.json")), manifest.to_string()).unwrap();
+}
+
+#[test]
+fn a_kits_pads_from_one_place_keep_their_recorded_balance() {
+    let dir = tmp();
+    hit_fixture(&dir, "kit/snare.wav", &[-10.0, -30.0, -40.0]);
+    hit_fixture(&dir, "kit/ghost.wav", &[-22.0, -40.0]);
+    // A crash: as loud as a snare at the hit, then a long quiet tail (its average is very quiet).
+    hit_fixture(&dir, "kit/crash.wav", &[-12.0, -30.0, -34.0, -38.0, -42.0, -46.0, -50.0, -54.0, -58.0, -60.0, -60.0]);
+    hit_fixture(&dir, "other/clap.wav", &[-26.0, -50.0]);
+    let score: Score = serde_yaml::from_str(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips:
+  snare: { source: kit/snare.wav, warp: repitch }
+  ghost: { source: kit/ghost.wav, warp: repitch }
+  crash: { source: kit/crash.wav, warp: repitch }
+  clap:  { source: other/clap.wav, warp: repitch }
+kits:
+  drums: { pads: { snare: { clip: snare }, ghost: { clip: ghost }, crash: { clip: crash }, clap: { clip: clap } } }
+tracks:
+  - { clip: drums, pattern: { steps: "snare ghost snare clap" } }
+  - { clip: drums.crash, pattern: { steps: "x . . ." } }
+  - { clip: snare, name: loose }
+"#)
+    .unwrap();
+    let tl = compile(&score, &dir).unwrap();
+    let level = |track: &str, src: &str| {
+        let s = tl.sources.iter().position(|x| x.clip == src).unwrap();
+        tl.events.iter().find(|e| e.track == track && e.source == s).map(|e| e.gain_db).unwrap()
+    };
+    // One gain for kit/: its loudest attack (the snare, -10 dB) to the target (-20): -10 dB for every pad there.
+    assert!((level("drums", "snare") - level("drums", "ghost")).abs() < 1e-9, "the ghost keeps its 12 dB under the snare");
+    assert!((level("drums.crash", "crash") - level("drums", "snare")).abs() < 1e-9, "the crash's tail earns it no boost");
+    assert!((level("drums", "snare") - -10.0).abs() < 1e-9, "{}", level("drums", "snare"));
+    // other/ is its own group, matched to the target by its own attack: +(-20 - -26) = +6 dB.
+    assert!((level("drums", "clap") - 6.0).abs() < 1e-9, "{}", level("drums", "clap"));
+    let kit = tl.tracks.iter().find(|t| t.name == "drums").unwrap();
+    let groups: Vec<(f64, usize)> = kit.level_groups.iter().map(|g| (g.level_db, g.pads)).collect();
+    assert_eq!(groups, [(-10.0, 3), (6.0, 1)]);
+    // A clip played on its own is matched by its average, as before.
+    let loose = tl.tracks.iter().find(|t| t.name == "loose").unwrap();
+    assert!(loose.level_groups.is_empty());
+    assert!(loose.level_db > -10.0 && loose.level_db < 0.0, "average matching: {}", loose.level_db);
+}
