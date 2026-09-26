@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-fca12940-f330-4908-86fa-2ba17a19eb14",
+  "title": "Analysis server: origin check, upload size cap, extension check, bounded jobs",
+  "description": "`analysis/apricity_analyze/server.py` binds to 127.0.0.1 (250) but trusts any page in the browser:\n- `/api/upload` (191-201) is a multipart POST, a CORS simple request, so any website the user visits can call it. It overwrites `samples/uploads/<name>` with no existence check and starts ML analysis threads.\n- The whole file is read into memory (`await file.read()`, 198) with no size limit.\n- No Host-header validation, so DNS rebinding could read `/files/...` and `PUT /api/score` (160-167), which writes arbitrary content to any `.apr`/`.yaml` under examples/ or scores/.\n- `/api/analyze` (204-210) does not check the extension and spawns an unbounded daemon thread per call; `JOBS` (172) is never cleaned up.\n- `_summary` (63-99) indexes `m[\"tonal\"][\"key\"]` and `m[\"rhythm\"][\"bpm\"]` directly, so one malformed or older manifest turns `/api/samples` into a 500 for the whole library. The broad `except Exception` at 143 and 187 reduces failures to `str(e)` with no logging.\n\nDone when: TrustedHost and an Origin check (or a per-session token) guard every mutating route; uploads are size-capped and streamed to disk; analysis runs through a bounded queue with job expiry; a malformed manifest is skipped with a logged warning; tests cover a foreign-origin upload being refused and a bad manifest being skipped.",
+  "type": "bug",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-de033deb-4fc0-4768-95a7-8ba46603b71b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:32:39.063912Z",
+  "updated_at": "2026-09-26T05:32:39.064133Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

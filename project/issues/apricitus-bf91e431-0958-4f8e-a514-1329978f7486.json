@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-bf91e431-0958-4f8e-a514-1329978f7486",
+  "title": "Analysis tests: cover analyze, stems, loudness and cli; stop writing to tracked files; do not skip silently",
+  "description": "`analysis/tests` is 414 lines against about 1,780 lines of source. `analyze.py` (262 lines), `stems.py`, `loudness.py` and `cli.py` have no tests. `test_markup.py:34` and `test_manifests.py:16` skip silently when samples are absent, so a clean checkout passes without testing much. `test_server.py:34-39` rewrites a tracked manifest under `samples/citizen-dj/` in place and restores it afterwards; an interrupted run leaves the repo dirty. `test_server.py:56-66` creates and deletes `scores/` in the repo root. Long functions: `markup.sections` (93, 88 lines), `curation.terminal_feed` (505), `curation.main` (574), `analyze.tonal` (111).\n\nDone when: tests use `tmp_path` copies of fixtures, never tracked files; sample-dependent tests use a small committed fixture or a generated signal instead of skipping; analyze, stems (mocked Demucs), loudness and cli have tests; the four long functions are split.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-de033deb-4fc0-4768-95a7-8ba46603b71b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:32:47.588236Z",
+  "updated_at": "2026-09-26T05:32:47.588417Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

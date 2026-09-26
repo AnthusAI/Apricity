@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-8f70227a-4b06-4f53-a44e-dfcb472353a5",
+  "title": "CI runs pytest, ruff and mypy for the analysis package",
+  "description": "No CI job touches `analysis/`. `analysis/pyproject.toml` declares only `pytest` as a dev dependency and has no `[tool.ruff]`, `[tool.mypy]` or pytest configuration.\n\nDone when: a CI job creates the venv, installs `analysis[dev]`, runs `pytest analysis/tests`, `ruff check`, `ruff format --check` and `mypy analysis/apricity_analyze`; the configuration for all three lives in `pyproject.toml`. The heavy ML dependencies may be skipped in CI by a dependency extra (see the packaging issue) as long as the server, curation, markup and theory tests run.",
+  "type": "chore",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-de033deb-4fc0-4768-95a7-8ba46603b71b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:29:16.350599Z",
+  "updated_at": "2026-09-26T05:29:16.350790Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

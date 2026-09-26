@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-20581361-eb6f-4e26-8786-fcae6de9e48a",
+  "title": "Harden the wasm FFI surface: bounds, null checks, panic hook, tests",
+  "description": "`crates/apricity-web/src/lib.rs` has 74 `unsafe` mentions and zero tests.\n\n- `rw_arrange` passes caller JSON into `Renderer::arrange`, which indexes `tl.sources[e.source]` without a bounds check (`crates/apricity-engine/src/render.rs:97`). A malformed timeline panics; in wasm that is a trap with no message because no panic hook is installed.\n- `rw_engine_load` (263) and `rw_engine_load_mastered` (304) rebuild a `Vec` with `Vec::from_raw_parts(data, 2*frames, 2*frames)` with no null check and no overflow check on `2*frames`.\n- `str_arg` (85) silently turns invalid UTF-8 into an empty string.\n- `RESULT` is a thread-local `String` whose pointer is handed to the caller and invalidated on the next call.\n- `rw_engine_process` (347) is not covered by the allocation-counting test in `crates/apricity-engine/tests/realtime.rs`.\n\nDone when: every entry point validates its inputs and returns an error code or message instead of panicking; a panic hook forwards messages to the host; the safe inner functions have a native test harness; the allocation test covers the wasm process path.",
+  "type": "bug",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-de033deb-4fc0-4768-95a7-8ba46603b71b",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:30:24.429433Z",
+  "updated_at": "2026-09-26T05:30:24.429626Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}
