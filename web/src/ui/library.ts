@@ -236,9 +236,10 @@ export class Library {
   }
 
   /** Small stars for a clip in a row: yours, over everyone's average. */
-  private rowStars(id: string, standing: Pick<Standing, "average" | "count">): HTMLElement {
+  private rowStars(id: string, standing: Pick<Standing, "average" | "count">, rated?: () => void): HTMLElement {
     const w = new StarRating(
       async (n) => {
+        rated?.(); // e.g. open its comments, to say why
         await (await ratings()).rate("clip", id, n);
         if (n === null) this.myStars.delete(id);
         else this.myStars.set(id, n);
@@ -437,31 +438,55 @@ export class Library {
       save.disabled = false;
       save.textContent = this.cloud() && !this.who ? "Sign in to save clips" : "Save clips •";
     };
-    // Each saved clip's comments open under its row; the threads (and their counts) outlive a redraw of the table.
+    // One clip's comments are open at a time, under its row: the clip you're working on. Playing it, rating it, clicking
+    // its row or its name opens them; 💬 opens or closes them by hand. They open in place (no redraw), so typing in a
+    // name or a comment keeps its focus. The threads and their counts outlive a redraw of the table.
     const threads = new Map<string, CommentThread>();
-    const talkOpen = new Set<string>();
     const talkCounts = new Map<string, number>();
+    const talkButtons = new Map<string, HTMLButtonElement>();
+    let talkOn: string | null = null;
+    const talkLabel = (id: string) => (talkCounts.get(id) ? `💬 ${talkCounts.get(id)}` : "💬 Comment");
     const threadFor = (id: string) => {
       let t = threads.get(id);
       if (!t) {
-        t = new CommentThread({ type: "clip", id }, { onCount: (n) => (talkCounts.set(id, n), renderTable()) });
+        t = new CommentThread({ type: "clip", id }, { onCount: (n) => (talkCounts.set(id, n), talkButtons.get(id) && (talkButtons.get(id)!.textContent = talkLabel(id))) });
         threads.set(id, t);
         void t.load();
       }
       return t;
     };
+    const talkRow = (id: string) => el("tr", { className: "talk" }, el("td", { colSpan: COLS }, threadFor(id).root));
+    const closeTalk = () => {
+      for (const r of table.querySelectorAll("tr.talk")) r.remove();
+      if (talkOn) talkButtons.get(talkOn)?.setAttribute("aria-expanded", "false");
+      talkOn = null;
+    };
+    const openTalk = (id: string, tr: HTMLElement) => {
+      if (talkOn === id) return;
+      closeTalk();
+      talkOn = id;
+      tr.after(talkRow(id));
+      talkButtons.get(id)?.setAttribute("aria-expanded", "true");
+    };
     void Promise.all(
       clips.filter((x) => x.id).map(async (x) => talkCounts.set(x.id!, countOf(threadOf(await commentsOn(x.id!))))),
-    ).then(() => this.current === path && renderTable(), () => {}); // no counts: the buttons still open the threads
+    ).then(
+      () => {
+        for (const [id, b] of talkButtons) b.textContent = talkLabel(id);
+      },
+      () => {}, // no counts: the buttons still open the threads
+    );
     const COLS = 9;
     const renderTable = () => {
       const s = wave.state;
+      talkButtons.clear();
       makeClip.disabled = !(s.selection && s.selection[1] - s.selection[0] >= 0.05);
       snippet.disabled = s.selected === null;
       const row = (sl: SavedClip, i: number) => {
         const auto = sl.source === "ml";
         const name = el("input", { value: sl.name, ariaLabel: "Clip name", spellcheck: false });
         // Only characters the manifest accepts can be typed (letters, digits, - and _).
+        name.addEventListener("focus", () => engage());
         name.addEventListener("input", () => {
           const clean = name.value.replace(/[^A-Za-z0-9_-]+/g, "-");
           if (clean !== name.value) name.value = clean;
@@ -479,24 +504,30 @@ export class Library {
           s.selection = null;
           wave.draw();
           for (const r of table.querySelectorAll("tbody tr")) r.setAttribute("aria-selected", String(r === tr));
+          engage();
           return this.startAudition(buf, sl.start, sl.end, wave);
         });
-        const stars = sl.id ? this.rowStars(sl.id, standingOf(sl.id)) : el("span", { className: "hint", title: "Save the clip to rate it" }, "—");
         const id = sl.id;
-        const n = id ? talkCounts.get(id) : undefined;
-        const talk = el("button", { type: "button", className: "row-talk", disabled: !id, title: id ? "Comments on this clip" : "Save the clip to comment on it" }, `💬${n ? ` ${n}` : ""}`);
-        talk.setAttribute("aria-expanded", String(!!id && talkOpen.has(id)));
-        if (id) talk.addEventListener("click", () => (talkOpen.has(id) ? talkOpen.delete(id) : talkOpen.add(id), renderTable()));
+        /** Working on this clip: its comments open under it. */
+        const engage = () => id && openTalk(id, tr);
+        const stars = id ? this.rowStars(id, standingOf(id), engage) : el("span", { className: "hint", title: "Save the clip to rate it" }, "—");
+        const talk = el("button", { type: "button", className: "row-talk", disabled: !id, title: id ? "Comments on this clip" : "Save the clip to comment on it" }, id ? talkLabel(id) : "💬");
+        talk.setAttribute("aria-expanded", String(!!id && talkOn === id));
+        if (id) {
+          talkButtons.set(id, talk);
+          talk.addEventListener("click", () => (talkOn === id ? closeTalk() : openTalk(id, tr)));
+        }
         const tr = el("tr", {}, el("td", { className: "play-cell" }, play), el("td", {}, name), el("td", {}, kind), el("td", { className: "mono" }, fmt(sl.start)), el("td", { className: "mono" }, fmt(sl.end)), el("td", { className: "mono" }, `${(sl.end - sl.start).toFixed(2)} s`), el("td", {}, stars), el("td", {}, talk), el("td", {}, del));
         tr.setAttribute("aria-selected", String(i === s.selected));
         tr.addEventListener("click", (e) => {
           if ((e.target as HTMLElement).closest("button, input")) return;
           s.selected = i;
           s.selection = null;
+          if (id) talkOn = id;
           renderTable();
           wave.draw();
         });
-        if (!id || !talkOpen.has(id)) return [tr];
+        if (!id || talkOn !== id) return [tr];
         return [tr, el("tr", { className: "talk" }, el("td", { colSpan: COLS }, threadFor(id).root))];
       };
       // Yours (and new ones), then other people's, then the automatic ones (collapsed).
