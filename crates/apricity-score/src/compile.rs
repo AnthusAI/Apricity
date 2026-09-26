@@ -2,7 +2,7 @@
 //! split notes at chord changes, and attach warp maps.
 
 use crate::manifest::Clip;
-use crate::score::{parse_bars, parse_duration, parse_notes, parse_position, parse_steps, Effect, FilterSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
+use crate::score::{parse_bars, parse_duration, parse_notes, parse_position, parse_steps, AutomationSpec, Effect, FilterSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
 use apricity_theory::{rank_keys, solve, Chord, Fit, Key, PitchClass, Voice, Weights};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -30,6 +30,337 @@ pub struct Timeline {
 
 /// Loudness target when the score doesn't set one.
 pub const DEFAULT_LOUDNESS: f64 = -16.0;
+
+/// An automation lane: a parameter changing over time.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Lane {
+    /// The parameter being automated, e.g. `eq.highcut`, `volume`, `pan`.
+    pub target: String,
+    /// Step mode: hold each value until the next point instead of ramping.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub step: bool,
+    /// Breakpoints in engine units: [beat, value].
+    pub points: Vec<[f64; 2]>,
+}
+
+/// Context for validating and compiling automation lanes.
+struct LaneCtx<'a> {
+    effects: &'a [Effect],
+    filter: Option<&'a FilterSpec>,
+    sends: Option<&'a BTreeMap<String, f64>>,
+    is_track: bool,
+    meter: f64,
+    length_beats: f64,
+}
+
+/// Validate and compile automation specs into lanes. Errors are tagged with `{at}.automate[{j}]: message`.
+fn lanes(at: &str, specs: &[AutomationSpec], ctx: LaneCtx, errors: &mut Vec<String>) -> Vec<Lane> {
+    let mut result = Vec::new();
+    let mut seen_targets = std::collections::HashSet::new();
+
+    for (j, spec) in specs.iter().enumerate() {
+        let prefix = format!("{at}.automate[{j}]");
+        let errors_before = errors.len();
+
+        // Canonicalize and validate target
+        let (target, valid) = validate_target(&spec.target, &ctx, &prefix, errors);
+        if !valid {
+            continue;
+        }
+
+        if seen_targets.contains(&target) {
+            errors.push(format!("{prefix}: {target} is already automated on this track or bus"));
+            continue;
+        }
+        seen_targets.insert(target.clone());
+
+        // Convert positions to beats and validate
+        let mut lane_points = Vec::new();
+        let mut prev_beat = -1.0;
+
+        for (pi, (pos_str, val)) in spec.points.iter().enumerate() {
+            let beat = match parse_position(pos_str, ctx.meter as u32) {
+                Ok(b) => b,
+                Err(e) => {
+                    errors.push(format!("{prefix}: point {pi}: {e}"));
+                    continue;
+                }
+            };
+
+            if beat > prev_beat + 1e-9 {
+                // OK - in order
+            } else if (beat - prev_beat).abs() < 1e-9 {
+                // Same position - OK for jumps
+            } else {
+                errors.push(format!("{prefix}: point {pi}: position {beat} comes before {prev_beat}; points go in time order"));
+                continue;
+            }
+
+            if beat > ctx.length_beats + 1e-9 {
+                errors.push(format!("{prefix}: position {beat} is past the end of the piece (bar {:.0})", ctx.length_beats / ctx.meter as f64 + 1.0));
+                continue;
+            }
+
+            // Validate and convert value
+            let engine_val = validate_value(&target, *val, &prefix, pi, errors);
+            lane_points.push([beat, engine_val]);
+            prev_beat = beat;
+        }
+
+        if errors.len() > errors_before && !lane_points.is_empty() {
+            // Had errors but still have points - skip this lane
+            continue;
+        }
+
+        if !lane_points.is_empty() {
+            result.push(Lane {
+                target,
+                step: spec.step,
+                points: lane_points,
+            });
+        }
+    }
+    result
+}
+
+/// Validate automation target and return (canonical_name, is_valid).
+fn validate_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Vec<String>) -> (String, bool) {
+    // Handle send <return> → send.<return> (both formats: "send.plate" and "send plate")
+    if target.starts_with("send.") || target.starts_with("send ") {
+        let return_name = if target.starts_with("send.") {
+            &target[5..]
+        } else {
+            &target[5..]
+        };
+        if !ctx.is_track {
+            errors.push(format!("{at}: `send` is a track target only"));
+            return (target.to_string(), false);
+        }
+        if let Some(sends) = ctx.sends {
+            if sends.contains_key(return_name) {
+                return (format!("send.{return_name}"), true);
+            }
+        }
+        errors.push(format!("{at}: this track doesn't send to `{return_name}`; add send {return_name} 0% to automate it"));
+        return (target.to_string(), false);
+    }
+
+    // Handle direct targets
+    match target {
+        "volume" => (target.to_string(), true),
+        "pan" => {
+            if !ctx.is_track {
+                errors.push(format!("{at}: `pan` is a track target only"));
+                (target.to_string(), false)
+            } else {
+                (target.to_string(), true)
+            }
+        }
+        "filter" => {
+            if !ctx.is_track {
+                errors.push(format!("{at}: `filter` is a track target only"));
+                return (target.to_string(), false);
+            }
+            if ctx.filter.is_none() {
+                errors.push(format!("{at}: this track has no filter; add filter lp 20000 (or hp) to the track line"));
+                return (target.to_string(), false);
+            }
+            (target.to_string(), true)
+        }
+        "width" => (target.to_string(), true),
+        t if t.starts_with("eq") || t.starts_with("comp") || t.starts_with("reverb") || t.starts_with("delay") => {
+            validate_effect_target(t, ctx, at, errors)
+        }
+        _ => {
+            errors.push(format!("{at}: unknown automation target `{target}`"));
+            (target.to_string(), false)
+        }
+    }
+}
+
+/// Validate effect.param targets like eq.highcut, comp2.mix, etc.
+fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Vec<String>) -> (String, bool) {
+    // Parse "eq2.highcut" → ("eq", 2, "highcut") or "comp.mix" → ("comp", 1, "mix")
+    let parts: Vec<&str> = target.split('.').collect();
+    if parts.len() != 2 {
+        errors.push(format!("{at}: invalid target `{target}`"));
+        return (target.to_string(), false);
+    }
+
+    let (effect_name, idx_str) = (parts[0], parts[1]);
+    let (base, idx) = if let Some(num_str) = effect_name.strip_prefix("eq") {
+        if num_str.is_empty() { ("eq", 1) } else { match num_str.parse::<usize>() { Ok(n) => ("eq", n), Err(_) => {
+            errors.push(format!("{at}: invalid effect index in `{target}`"));
+            return (target.to_string(), false);
+        }}}
+    } else if let Some(num_str) = effect_name.strip_prefix("comp") {
+        if num_str.is_empty() { ("comp", 1) } else { match num_str.parse::<usize>() { Ok(n) => ("comp", n), Err(_) => {
+            errors.push(format!("{at}: invalid effect index in `{target}`"));
+            return (target.to_string(), false);
+        }}}
+    } else if let Some(num_str) = effect_name.strip_prefix("reverb") {
+        if num_str.is_empty() { ("reverb", 1) } else { match num_str.parse::<usize>() { Ok(n) => ("reverb", n), Err(_) => {
+            errors.push(format!("{at}: invalid effect index in `{target}`"));
+            return (target.to_string(), false);
+        }}}
+    } else if let Some(num_str) = effect_name.strip_prefix("delay") {
+        if num_str.is_empty() { ("delay", 1) } else { match num_str.parse::<usize>() { Ok(n) => ("delay", n), Err(_) => {
+            errors.push(format!("{at}: invalid effect index in `{target}`"));
+            return (target.to_string(), false);
+        }}}
+    } else {
+        errors.push(format!("{at}: invalid effect `{effect_name}`"));
+        return (target.to_string(), false);
+    };
+
+    // Find the Nth effect of this type and check for the parameter
+    let mut count = 0;
+    for fx in ctx.effects {
+        let fx_matches = match (base, fx) {
+            ("eq", Effect::Eq(_)) => true,
+            ("comp", Effect::Comp(_)) => true,
+            ("reverb", Effect::Reverb(_)) => true,
+            ("delay", Effect::Delay(_)) => true,
+            _ => false,
+        };
+
+        if fx_matches {
+            count += 1;
+            if count == idx {
+                // Validate parameter
+                match (base, idx_str, fx) {
+                    ("eq", "lowcut" | "highcut", Effect::Eq(eq)) if (idx_str == "lowcut" && eq.lowcut.is_some()) || (idx_str == "highcut" && eq.highcut.is_some()) => {
+                        return (target.to_string(), true);
+                    }
+                    ("eq", "low" | "high", Effect::Eq(eq)) if (idx_str == "low" && eq.low.is_some()) || (idx_str == "high" && eq.high.is_some()) => {
+                        return (target.to_string(), true);
+                    }
+                    ("comp", "threshold" | "mix", Effect::Comp(_)) => {
+                        return (target.to_string(), true);
+                    }
+                    ("reverb", "mix", Effect::Reverb(_)) => {
+                        return (target.to_string(), true);
+                    }
+                    ("delay", "mix", Effect::Delay(_)) => {
+                        return (target.to_string(), true);
+                    }
+                    ("eq", _, Effect::Eq(eq)) => {
+                        let mut valid_params = Vec::new();
+                        if eq.lowcut.is_some() { valid_params.push("lowcut".to_string()); }
+                        if eq.highcut.is_some() { valid_params.push("highcut".to_string()); }
+                        if eq.low.is_some() { valid_params.push("low".to_string()); }
+                        if eq.high.is_some() { valid_params.push("high".to_string()); }
+                        let suggestion = if valid_params.is_empty() {
+                            // No parameters defined, report that the parameter doesn't exist
+                            format!("{at}: this track's eq has no {idx_str}; add one to the eq line (eq {idx_str} 20k)")
+                        } else {
+                            let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
+                            match best {
+                                Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
+                                    format!("{at}: unknown automation target `{target}` (did you mean `{base}.{p}`?)")
+                                }
+                                _ => format!("{at}: unknown automation target `{target}`")
+                            }
+                        };
+                        errors.push(suggestion);
+                        return (target.to_string(), false);
+                    }
+                    ("comp", _, Effect::Comp(_)) => {
+                        let valid_params = vec!["threshold".to_string(), "mix".to_string()];
+                        let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
+                        let msg = match best {
+                            Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
+                                format!("{at}: unknown automation target `{target}` (did you mean `{base}.{p}`?)")
+                            }
+                            _ => format!("{at}: unknown automation target `{target}`")
+                        };
+                        errors.push(msg);
+                        return (target.to_string(), false);
+                    }
+                    ("reverb", _, Effect::Reverb(_)) => {
+                        let valid_params = vec!["mix".to_string()];
+                        let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
+                        let msg = match best {
+                            Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
+                                format!("{at}: unknown automation target `{target}` (did you mean `{base}.{p}`?)")
+                            }
+                            _ => format!("{at}: unknown automation target `{target}`")
+                        };
+                        errors.push(msg);
+                        return (target.to_string(), false);
+                    }
+                    ("delay", _, Effect::Delay(_)) => {
+                        let valid_params = vec!["mix".to_string()];
+                        let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
+                        let msg = match best {
+                            Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
+                                format!("{at}: unknown automation target `{target}` (did you mean `{base}.{p}`?)")
+                            }
+                            _ => format!("{at}: unknown automation target `{target}`")
+                        };
+                        errors.push(msg);
+                        return (target.to_string(), false);
+                    }
+                    _ => {
+                        errors.push(format!("{at}: unknown automation target `{target}`"));
+                        return (target.to_string(), false);
+                    }
+                }
+            }
+        }
+    }
+
+    errors.push(format!("{at}: this track has no {base}"));
+    (target.to_string(), false)
+}
+
+/// Validate and convert an automation value to engine units.
+fn validate_value(target: &str, val: f64, at: &str, pi: usize, errors: &mut Vec<String>) -> f64 {
+    // Values from dsl.rs are in different representations:
+    // - Pan: -100 to 100 (stored as numbers)
+    // - Shares (mix/send): 0-1 (already converted by share() function)
+    // - Hz: 20-20000
+    // - dB: per context
+
+    // Pan values are ALWAYS -100 to 100 (musician's units) and converted to -1 to 1 (engine units)
+    if target == "pan" {
+        // Pan values always in -100 to 100 range from both DSL and YAML
+        if !(-100.0..=100.0).contains(&val) {
+            errors.push(format!("{at}: point {pi}: pan {:.0} is outside -100 to 100", val));
+        }
+        val / 100.0
+    } else if target.contains("mix") || target.contains("send") {
+        // Shares come as 0-1 from dsl.rs
+        if !(0.0..=1.0).contains(&val) {
+            errors.push(format!("{at}: point {pi}: {:.0}% is outside 0% to 100%", val * 100.0));
+        }
+        val
+    } else if target.contains("cut") || target == "filter" {
+        // Hz: 20-20000
+        let display = if val >= 1000.0 && (val / 1000.0).fract() < 0.01 {
+            format!("{:.0}k", val / 1000.0)
+        } else {
+            format!("{:.0}", val)
+        };
+        if !(20.0..=20000.0).contains(&val) {
+            errors.push(format!("{at}: point {pi}: {display} is outside 20Hz to 20000Hz"));
+        }
+        val
+    } else if target.contains("volume") || target.contains("threshold") || target.contains("gain") || target.ends_with(".low") || target.ends_with(".high") {
+        // dB: ±24 or ±60 depending on context
+        let display = format!("{:.0}dB", val);
+        if target.contains("volume") && !(-60.0..=12.0).contains(&val) {
+            errors.push(format!("{at}: point {pi}: {display} is outside -60dB to 12dB"));
+        } else if target.contains("threshold") && !(-60.0..=0.0).contains(&val) {
+            errors.push(format!("{at}: point {pi}: {display} is outside -60dB to 0dB"));
+        } else if (target.ends_with(".low") || target.ends_with(".high")) && !(-24.0..=24.0).contains(&val) {
+            errors.push(format!("{at}: point {pi}: {display} is outside -24dB to 24dB"));
+        }
+        val
+    } else {
+        val
+    }
+}
 
 /// Check an effect chain's settings; errors name `at` (e.g. "tracks[2].effects[1]").
 fn check_effects(at: &str, fx: &[Effect], errors: &mut Vec<String>) {
@@ -179,6 +510,12 @@ pub struct BusInfo {
     pub gain_db: f64,
     /// A group track, or "master".
     pub out: String,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automation: Vec<Lane>,
+    /// Original automation specs (non-serialized; used for explain output).
+    #[serde(skip)]
+    pub automation_specs: Vec<AutomationSpec>,
 }
 
 fn group_kind() -> String {
@@ -187,7 +524,7 @@ fn group_kind() -> String {
 
 /// Check group and return tracks, `group` and `send` targets, and cycles; returns them
 /// feeders-first (groups inside out, then returns).
-fn route(score: &Score, errors: &mut Vec<String>) -> Vec<BusInfo> {
+fn route(score: &Score, meter: u32, length_beats: f64, errors: &mut Vec<String>) -> Vec<BusInfo> {
     let groups: Vec<String> = score.groups.keys().cloned().collect();
     let returns: Vec<String> = score.returns.keys().cloned().collect();
     let group_ok = |g: &str, at: String, errors: &mut Vec<String>| {
@@ -301,8 +638,51 @@ fn route(score: &Score, errors: &mut Vec<String>) -> Vec<BusInfo> {
         left.retain(|n| !ready.contains(n));
         order.extend(ready);
     }
-    let mut out: Vec<BusInfo> = order.iter().map(|n| BusInfo { name: n.clone(), kind: "group".into(), effects: score.groups[n].effects.clone(), gain_db: score.groups[n].volume, out: out_of(n) }).collect();
-    out.extend(score.returns.iter().map(|(n, r)| BusInfo { name: n.clone(), kind: "return".into(), effects: r.effects.clone(), gain_db: r.volume, out: "master".into() }));
+    let mut out: Vec<BusInfo> = order.iter().map(|n| {
+        let g = &score.groups[n];
+        BusInfo {
+            name: n.clone(),
+            kind: "group".into(),
+            effects: g.effects.clone(),
+            gain_db: g.volume,
+            out: out_of(n),
+            automation: lanes(
+                &format!("groups.{n}"),
+                &g.automate,
+                LaneCtx {
+                    effects: &g.effects,
+                    filter: None,
+                    sends: None,
+                    is_track: false,
+                    meter: meter as f64,
+                    length_beats,
+                },
+                errors,
+            ),
+            automation_specs: g.automate.clone(),
+        }
+    }).collect();
+    out.extend(score.returns.iter().map(|(n, r)| BusInfo {
+        name: n.clone(),
+        kind: "return".into(),
+        effects: r.effects.clone(),
+        gain_db: r.volume,
+        out: "master".into(),
+        automation: lanes(
+            &format!("returns.{n}"),
+            &r.automate,
+            LaneCtx {
+                effects: &r.effects,
+                filter: None,
+                sends: None,
+                is_track: false,
+                meter: meter as f64,
+                length_beats,
+            },
+            errors,
+        ),
+        automation_specs: r.automate.clone(),
+    }));
     out
 }
 
@@ -425,6 +805,15 @@ pub struct TrackInfo {
     /// Absent when it plays re-pitched and sits out of the harmony.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub voice: Option<crate::assist::VoiceInfo>,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automation: Vec<Lane>,
+    /// Original automation specs (non-serialized; used for explain output).
+    #[serde(skip)]
+    pub automation_specs: Vec<AutomationSpec>,
+    /// Static filter: lowpass or highpass. Can be automated if a filter lane exists.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter: Option<FilterSpec>,
 }
 
 fn master_name() -> String {
@@ -1041,6 +1430,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
     let mut srcs: Vec<Option<TrackSrc>> = Vec::new();
     let mut hits = Vec::new();
     let mut track_names = Vec::new();
+    let mut track_lanes: Vec<Vec<Lane>> = vec![Vec::new(); score.tracks.len()];
+    let mut track_automate_specs: Vec<Vec<AutomationSpec>> = vec![Vec::new(); score.tracks.len()];
     for (i, tr) in score.tracks.iter().enumerate() {
         let at = format!("tracks[{i}]");
         if tr.transpose == Transpose::Follow && !matches!(tr.role, apricity_theory::Role::Any | apricity_theory::Role::Root) {
@@ -1103,6 +1494,21 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 errors.push(format!("{at}.pan: {p} is outside -100 (left) to 100 (right)"));
             }
         }
+        // Validate and compile automation lanes (before error check, so errors propagate)
+        track_lanes[i] = lanes(
+            &at,
+            &tr.automate,
+            LaneCtx {
+                effects: &tr.effects,
+                filter: tr.filter.as_ref(),
+                sends: Some(&tr.sends),
+                is_track: true,
+                meter: meter as f64,
+                length_beats: length,
+            },
+            &mut errors,
+        );
+        track_automate_specs[i] = tr.automate.clone();
         let grid = tr.grid.unwrap_or(16);
         if !(1..=64).contains(&grid) {
             errors.push(format!("{at}.grid: {grid} isn't a note value between 1 and 64 (16 = sixteenth notes)"));
@@ -1284,7 +1690,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         srcs.push(Some(src));
     }
 
-    let buses = route(score, &mut errors);
+    let buses = route(score, meter, length, &mut errors);
     let master = score.master.clone().unwrap_or_default();
     check_effects("master", &master.effects, &mut errors);
     for (i, e) in master.effects.iter().enumerate() {
@@ -1410,6 +1816,9 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             varispeed: unwarped.then(|| score.tempo / rc.clip.manifest.rhythm.bpm.unwrap_or(score.tempo) * tr.speed.unwrap_or(1.0)),
             voice: None,
             pitch: None,
+            automation: std::mem::take(&mut track_lanes[ti]),
+            automation_specs: std::mem::take(&mut track_automate_specs[ti]),
+            filter: tr.filter,
         });
         piece_levels.push(levels);
         // A pitched track plays its clip from the clip's own pitch: pinned (`root Bb2`), heard from its notes, or guessed.
@@ -1528,6 +1937,12 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 bt += 1.0;
             }
             warp.push((rc.clip.seconds_at(cb1), (cb1 - cb0) / ratio));
+            // If track automates filter, don't use per-note filter
+            let event_filter = if infos[h.track].automation.iter().any(|lane| lane.target == "filter") {
+                None
+            } else {
+                tr.filter
+            };
             events.push(Event {
                 track: infos[h.track].name.clone(),
                 source: rc.source,
@@ -1542,7 +1957,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 velocity: ((h.vel - 100.0).abs() > 0.05).then(|| (h.vel * 10.0).round() / 10.0),
                 mode: rc.mode,
                 reverse: tr.reverse,
-                filter: tr.filter,
+                filter: event_filter,
                 piece: h.piece,
             });
         }
@@ -1720,6 +2135,11 @@ impl Timeline {
                 *s += &format!("      {}\n", crate::dsl::effect_text(e));
             }
         };
+        let automate_text = |specs: &[AutomationSpec], s: &mut String| {
+            for spec in specs {
+                *s += &format!("      {}\n", crate::dsl::automation_text(spec));
+            }
+        };
         let mut s = String::from("\nMix:\n");
         for t in &self.tracks {
             s += &format!("  track {:<14} → {:<8}", t.name, t.out);
@@ -1731,6 +2151,7 @@ impl Timeline {
             }
             s += "\n";
             fx(&t.effects, &mut s);
+            automate_text(&t.automation_specs, &mut s);
         }
         for b in &self.buses {
             s += &format!("  {:<6}{:<14} → {:<8}", b.kind, b.name, b.out);
@@ -1739,6 +2160,7 @@ impl Timeline {
             }
             s += "\n";
             fx(&b.effects, &mut s);
+            automate_text(&b.automation_specs, &mut s);
         }
         s += &format!("  master{:<16}   loudness {} LUFS, then a limiter (−1 dB unless one is given)\n", "", self.master.loudness.unwrap_or(DEFAULT_LOUDNESS));
         fx(&self.master.effects, &mut s);

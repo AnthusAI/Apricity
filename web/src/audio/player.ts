@@ -244,7 +244,7 @@ export class Player {
     const bused = new Set(
       tracks.filter((t) => (t.out && t.out !== "master") || Object.keys(t.sends ?? {}).length || keys.has(t.name) || keyOf(t.effects).length).map((t) => t.name),
     );
-    const whole = new Set(tracks.filter((t) => t.effects?.length).map((t) => t.name));
+    const whole = new Set(tracks.filter((t) => t.effects?.length || t.automate?.length).map((t) => t.name));
     for (const e of tl.events as any[]) {
       const key = bused.has(e.track)
         ? "buses"

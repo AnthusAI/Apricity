@@ -385,6 +385,7 @@ difference.
 | `reverb`, `delay` | ✓ (25% wet) | ✓ (group 25% wet; return all wet) | ✗ put them on a return track |
 | `pan` | ✓ | | |
 | `send` | ✓ | | |
+| `automate` | ✓ | ✓ | ✗ automate a group track instead |
 | `loudness` | | | ✓ |
 
 A track's `volume` is its **fader**; its effects run before it, and `pan` and the sends after it.
@@ -394,7 +395,7 @@ A track's `volume` is its **fader**; its effects run before it, and `pan` and th
 | Effect | Write | Parameters |
 |---|---|---|
 | `eq` | `eq lowcut 120 low -3@250 high +2@6k peak -4@800 q1.4 highcut 9k` | `lowcut` / `highcut` Hz (20–20000); `low` / `high` shelves as gain@Hz (±24 dB); `peak` gain@Hz with an optional `q` (0.1–18, default 1), repeatable; up to 8 bands |
-| `comp` | `comp 4:1 -18dB attack 10ms release 120ms knee 6dB makeup 3dB` | ratio (1–50) and threshold (−60–0 dB) first, both required; `attack` 0.1–500 ms, `release` 5–3000 ms, `knee` 0–24 dB, `makeup` −12–24 dB |
+| `comp` | `comp 4:1 -18dB attack 10ms release 120ms knee 6dB makeup 3dB mix 100%` | ratio (1–50) and threshold (−60–0 dB) first, both required; `attack` 0.1–500 ms, `release` 5–3000 ms, `knee` 0–24 dB, `makeup` −12–24 dB, `mix` 0–100% (parallel compression: dry/wet share, default 100%) |
 | `limit` | `limit -1dB release 50ms` | ceiling (−24–0 dB), optional `release` (1–2000 ms); the output never goes over the ceiling |
 | `reverb` | `reverb plate 1.8s predelay 20ms damp 35% mix 30%` | `room`, `hall` (default) or `plate`; a decay in seconds (0.1–20; default room 0.8 s, hall 2.4 s, plate 1.6 s); `predelay` 0–500 ms; `damp` and `mix` 0–100% |
 | `delay` | `delay 1/8. feedback 35% hp 400 lp 4k pingpong mix 30%` | the time first: a [note value](#units) or `350ms`; `feedback` 0–95%; `hp` / `lp` Hz on the echoes; `pingpong` bounces them left and right; `mix` 0–100% |
@@ -404,6 +405,38 @@ A track's `volume` is its **fader**; its effects run before it, and `pan` and th
 
 `mix` is the wet share. Under a return track it defaults to 100%, since a return is all effect;
 under a track or a group track, which carry the music itself, it defaults to 25%. Delays in note values follow the tempo.
+
+### Automation
+
+Change a parameter over time with **`automate <target> [step] <point> <point> …`**, where each point is `position=value`.
+Positions are bars and beats (`1=` start, `2:3=` bar 2 beat 3); values are in the parameter's own units (`20k` Hz, `-4dB`, `30%`, a bare pan number).
+
+```apr
+track stab  steps "x . x . x . x ."  filter lp 20000
+  eq    highcut 20k
+  comp  3:1  -22dB  mix 0%
+  automate volume      1=-60dB  2=0dB          # fade in over bar 1
+  automate eq.highcut  1=20k  3=6k  5=5k       # the old record's hiss rolls off over bars 1–4
+  automate comp.mix    step  1=0%  5=100%      # compression arrives at bar 5, all at once
+  automate filter      1=300  5=20k            # a low-pass sweep that opens up over the build
+```
+
+**Curve behavior:** Before the first point, the value holds at that point; after the last, it holds at the last point.
+Between points it ramps evenly: frequencies by octaves, so a sweep sounds smooth; dB, percentages and pan in a straight line. With `step` (right after the target), each value holds until the next point instead.
+Two points at the same position jump instantly (`13=10% 13=40%`).
+
+**Targets** (things you can automate):
+- `volume` — track fader offset, dB (−60…+12)
+- `pan` — track pan, −100 (left) to 100 (right)
+- `send <return>` — send level to that return, % or dB
+- `filter` — track's low-pass or high-pass cutoff, Hz (20–20000)
+- `eq.highcut`, `eq.lowcut` — cutoff frequencies, Hz
+- `eq.low`, `eq.high` — shelf gains, dB (±24)
+- `comp.threshold`, `comp.mix` — compressor threshold (dB) or dry/wet (%)
+- `reverb.mix`, `delay.mix` — the reverb's or delay's wet share, %
+- `width` — stereo width, % (0 = mono, 100 = unchanged, 200 = double)
+
+`eq2.highcut` means the second eq in the chain, `comp2.mix` the second comp, etc.
 
 ### Group and return tracks
 
@@ -510,8 +543,8 @@ statement   = "tempo" NUMBER
             | "kit" NAME EOL { INDENT pad EOL }
             | "chords" chord-seq
             | "track" SOUND { track-option } EOL { INDENT track-line EOL }
-            | "group" NAME [ "volume" NUMBER ] [ "group" NAME ] EOL { INDENT effect EOL }
-            | "return" NAME [ "volume" NUMBER ] EOL { INDENT effect EOL }
+            | "group" NAME [ "volume" NUMBER ] [ "group" NAME ] EOL { INDENT ( effect | automate ) EOL }
+            | "return" NAME [ "volume" NUMBER ] EOL { INDENT ( effect | automate ) EOL }
             | "master" EOL { INDENT ( effect | "loudness" LUFS ) EOL } ;
 
 HUMANIZE    = ( NUMBER "ms" [ PERCENT ] ) | ( PERCENT [ NUMBER "ms" ] ) ;
@@ -531,7 +564,10 @@ track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER 
             | "reverse" | "filter" ( "lp" | "hp" ) NUMBER | "gate" PERCENT | "stutter" INTEGER
             | "bars" BARS | "volume" NUMBER | "group" NAME ;
 
-track-line  = effect | "pan" NUMBER | "send" NAME LEVEL { NAME LEVEL } ;
+track-line  = effect | "pan" NUMBER | "send" NAME LEVEL { NAME LEVEL } | automate ;
+automate    = "automate" TARGET [ "step" ] POINT { POINT } ;   (* also under group and return *)
+TARGET      = "volume" | "pan" | "filter" | "send" NAME | EFFECT "." PARAM ;   (* eq.highcut, eq2.highcut, comp.mix *)
+POINT       = POSITION "=" VALUE ;           (* 3=6k, 5:3=-4dB, 1=30% *)
 effect      = "eq" { "lowcut" HZ | "highcut" HZ | "low" GAIN-AT | "high" GAIN-AT
                    | "peak" GAIN-AT [ "q" NUMBER ] }
             | "comp" RATIO DB { ( "attack" | "release" ) TIME | ( "knee" | "makeup" ) DB }

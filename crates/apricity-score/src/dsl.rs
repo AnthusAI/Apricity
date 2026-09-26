@@ -20,7 +20,7 @@
 //! Several `chords` lines append.
 
 use crate::score::{
-    ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
+    AutomationSpec, ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
     Transpose, WarpModeSpec, Humanize,
 };
 use apricity_theory::{Role, Voicing};
@@ -38,12 +38,22 @@ pub struct SourceMap {
     pub tracks: Vec<usize>,
     /// (line, column) of each progression entry.
     pub chords: Vec<(usize, usize)>,
+    /// Line numbers for automate lines, keyed by path (e.g., "tracks[0].automate[0]").
+    pub automates: BTreeMap<String, usize>,
 }
 
 impl SourceMap {
     /// Rewrite a compiler error that names a score location into "line N column C: …".
     pub fn locate(&self, err: &str) -> String {
         let at = |line: usize, col: usize, rest: &str| format!("line {line} column {col}: {rest}");
+        // Check for automate lines FIRST: extract "tracks[i].automate[j]" or "groups.name.automate[j]" etc.
+        if let Some((auto_path, rest)) = err.split_once(": ") {
+            if auto_path.contains(".automate[") {
+                if let Some(&line) = self.automates.get(auto_path) {
+                    return at(line, 1, &format!("automate {}", rest));
+                }
+            }
+        }
         if let Some(rest) = err.strip_prefix("tracks[") {
             if let Some((i, tail)) = rest.split_once(']') {
                 if let Some(&line) = i.parse::<usize>().ok().and_then(|i| self.tracks.get(i)) {
@@ -154,8 +164,8 @@ fn words(line: &str) -> Vec<Tok<'_>> {
 }
 
 const STATEMENTS: &[&str] = &["apricity", "tempo", "time", "key", "samples", "bars", "swing", "humanize", "seed", "clip", "kit", "chords", "track", "group", "return", "master"];
-const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send"];
-const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width"];
+const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send", "automate"];
+const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "automate"];
 const MASTER_LINES: &[&str] = &["eq", "comp", "limit", "width", "loudness"];
 const EFFECTS: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width"];
 
@@ -298,7 +308,7 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
             let ratio = r.text.strip_suffix(":1").and_then(|x| x.parse().ok()).ok_or_else(|| l.err(r.col, format!("`{}`: write the ratio like 4:1", r.text)))?;
             let t = l.next("a threshold like -18dB")?;
             let threshold = db(t.text).ok_or_else(|| l.err(t.col, format!("`{}`: write the threshold in dB, e.g. -18dB", t.text)))?;
-            let mut c = CompSpec { ratio, threshold, attack_ms: None, release_ms: None, knee: None, makeup: None, sidechain: None };
+            let mut c = CompSpec { ratio, threshold, attack_ms: None, release_ms: None, knee: None, makeup: None, sidechain: None, mix: None };
             while let Some(o) = l.peek() {
                 l.pos += 1;
                 let v = l.next("a value")?;
@@ -312,7 +322,11 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
                         let x = db(v.text).ok_or_else(|| l.err(v.col, format!("`{}`: write levels in dB, e.g. 6dB", v.text)))?;
                         if o.text == "knee" { c.knee = Some(x) } else { c.makeup = Some(x) }
                     }
-                    other => return Err(l.err(o.col, format!("unknown comp part `{other}`{}", suggest(other, &["attack", "release", "knee", "makeup", "sidechain"])))),
+                    "mix" => {
+                        let x = share(v.text, false).ok_or_else(|| l.err(v.col, format!("`{}`: write mix as a percentage, e.g. 50%", v.text)))?;
+                        c.mix = Some(x);
+                    }
+                    other => return Err(l.err(o.col, format!("unknown comp part `{other}`{}", suggest(other, &["attack", "release", "knee", "makeup", "mix", "sidechain"])))),
                 }
             }
             Ok(Effect::Comp(c))
@@ -556,6 +570,54 @@ fn range(l: &Line, t: Tok, what: &str) -> Result<[f64; 2], ParseError> {
     Ok([p(a)?, p(b)?])
 }
 
+/// Parse an automation line: `automate <target> [step] <point> <point> …`
+/// where `point` is `position=value`.
+fn automation(l: &mut Line) -> Result<AutomationSpec, ParseError> {
+    let target_tok = l.next("an automation target like eq.highcut or volume")?;
+    let mut target = target_tok.text.to_string();
+
+    // Special handling for "send RETURN" syntax (without dot)
+    if target == "send" {
+        if let Some(return_tok) = l.peek() {
+            // Check if next token looks like a return bus name (not a point with =)
+            if !return_tok.text.contains('=') && !return_tok.text.contains("step") {
+                l.pos += 1;
+                target = format!("send.{}", return_tok.text);
+            }
+        }
+    }
+
+    let mut step = false;
+    let mut points = Vec::new();
+
+    // Check for optional "step" keyword
+    if let Some(t) = l.peek() {
+        if t.text == "step" {
+            step = true;
+            l.pos += 1;
+        }
+    }
+
+    // Parse points: position=value
+    while let Some(p) = l.peek() {
+        l.pos += 1;
+        let (pos_str, val_str) = p.text.split_once('=').ok_or_else(|| {
+            l.err(p.col, format!("expected a point like 1=20k or 3:2=-12dB, got `{}`", p.text))
+        })?;
+
+        let value: f64 = val_str.parse().ok().or_else(|| hz(val_str)).or_else(|| db(val_str)).or_else(|| share(val_str, false))
+            .ok_or_else(|| l.err(p.col, format!("`{}` isn't a valid value (try a number, Hz like 6k, dB like -4dB, or % like 30%)", val_str)))?;
+
+        points.push((pos_str.to_string(), value));
+    }
+
+    if points.is_empty() {
+        return Err(l.err(l.end_col(), "automate needs at least one point like 1=20k or 3=-12dB"));
+    }
+
+    Ok(AutomationSpec { target, step, points })
+}
+
 /// Parse `.apr` text into a score and a source map.
 pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
     let mut score = Score {
@@ -640,6 +702,27 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                                 break;
                             }
                         }
+                    }
+                    ("automate", Block::Track(t)) => {
+                        let idx = score.tracks[*t].automate.len();
+                        map.automates.insert(format!("tracks[{t}].automate[{idx}]"), l.no);
+                        let auto = automation(&mut l)?;
+                        score.tracks[*t].automate.push(auto);
+                    }
+                    ("automate", Block::Group(g)) => {
+                        let idx = score.groups[g].automate.len();
+                        map.automates.insert(format!("groups.{g}.automate[{idx}]"), l.no);
+                        let auto = automation(&mut l)?;
+                        score.groups.get_mut(g).expect("group exists").automate.push(auto);
+                    }
+                    ("automate", Block::Return(r)) => {
+                        let idx = score.returns[r].automate.len();
+                        map.automates.insert(format!("returns.{r}.automate[{idx}]"), l.no);
+                        let auto = automation(&mut l)?;
+                        score.returns.get_mut(r).expect("return exists").automate.push(auto);
+                    }
+                    ("automate", Block::Master) => {
+                        return Err(l.err(kw.col, "`automate` on the master isn't supported yet; automate a group track that everything plays through"));
                     }
                     ("loudness", Block::Master) => {
                         let v = l.next("a loudness like -14LUFS")?;
@@ -861,11 +944,11 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                     }
                     if kind == "group" {
                         map.groups.insert(name.text.to_string(), l.no);
-                        score.groups.insert(name.text.to_string(), GroupSpec { effects: Vec::new(), volume, group: parent });
+                        score.groups.insert(name.text.to_string(), GroupSpec { effects: Vec::new(), volume, group: parent, automate: Vec::new() });
                         mix_block = Some(Block::Group(name.text.to_string()));
                     } else {
                         map.returns.insert(name.text.to_string(), l.no);
-                        score.returns.insert(name.text.to_string(), ReturnSpec { effects: Vec::new(), volume });
+                        score.returns.insert(name.text.to_string(), ReturnSpec { effects: Vec::new(), volume, automate: Vec::new() });
                         mix_block = Some(Block::Return(name.text.to_string()));
                     }
                 }
@@ -915,6 +998,7 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                         voicing: None,
                         strum: None,
                         octave: None,
+                        automate: Vec::new(),
                     };
                     while let Some(opt) = l.peek() {
                         l.pos += 1;
@@ -1193,6 +1277,42 @@ fn humanize_text(h: &Humanize) -> String {
     parts.join(" ")
 }
 
+/// Format an automation spec in `.apr` text.
+pub fn automation_text(auto: &AutomationSpec) -> String {
+    let hzs = |f: f64| if f >= 1000.0 && (f / 1000.0 * 100.0).fract() == 0.0 { format!("{}k", num(f / 1000.0)) } else { num(f) };
+
+    let mut s = format!("automate {}", auto.target);
+    if auto.step {
+        s += " step";
+    }
+    for (pos, val) in &auto.points {
+        let val_str = if auto.target.contains("cut") || auto.target == "filter" {
+            // Frequencies
+            hzs(*val)
+        } else if auto.target.contains("volume") || auto.target.contains("threshold") || auto.target.contains("gain") || auto.target.contains("eq.low") || auto.target.contains("eq.high") {
+            // dB values
+            format!("{}dB", num(*val))
+        } else if auto.target.contains("mix") || auto.target.contains("send") {
+            // Percentages (0-1)
+            pct(*val)
+        } else if auto.target == "pan" {
+            // Pan (bare number, -100 to 100)
+            num(*val)
+        } else {
+            // Default: check if it looks like a frequency by range
+            if *val >= 20.0 && *val <= 20000.0 {
+                hzs(*val)
+            } else if *val >= 0.0 && *val <= 1.0 {
+                pct(*val)
+            } else {
+                num(*val)
+            }
+        };
+        s += &format!("  {}={}", pos, val_str);
+    }
+    s
+}
+
 fn num(x: f64) -> String {
     if x.fract() == 0.0 { format!("{}", x as i64) } else { format!("{x}") }
 }
@@ -1234,6 +1354,9 @@ pub fn effect_text(fx: &Effect) -> String {
             }
             if let Some(v) = c.makeup {
                 s += &format!("  makeup {}dB", sign(v));
+            }
+            if let Some(v) = c.mix {
+                s += &format!("  mix {}", pct(v));
             }
             if let Some(k) = &c.sidechain {
                 s += &format!("  sidechain {k}");
@@ -1515,6 +1638,9 @@ pub fn format(s: &Score) -> String {
         if !t.sends.is_empty() {
             out += &format!("  send  {}\n", t.sends.iter().map(|(b, x)| format!("{b} {}", send_text(*x))).collect::<Vec<_>>().join("  "));
         }
+        for auto in &t.automate {
+            out += &format!("  {}\n", automation_text(auto));
+        }
     }
     for (name, g) in &s.groups {
         out += &format!("\ngroup {name}");
@@ -1528,6 +1654,9 @@ pub fn format(s: &Score) -> String {
         for fx in &g.effects {
             out += &format!("  {}\n", effect_text(fx));
         }
+        for auto in &g.automate {
+            out += &format!("  {}\n", automation_text(auto));
+        }
     }
     for (name, r) in &s.returns {
         out += &format!("\nreturn {name}");
@@ -1537,6 +1666,9 @@ pub fn format(s: &Score) -> String {
         out += "\n";
         for fx in &r.effects {
             out += &format!("  {}\n", effect_text(fx));
+        }
+        for auto in &r.automate {
+            out += &format!("  {}\n", automation_text(auto));
         }
     }
     if let Some(m) = &s.master {
@@ -1662,7 +1794,7 @@ mod tests {
         let t = &s.tracks[0];
         assert_eq!(t.pan, Some(-20.0));
         assert_eq!(t.effects[0], Effect::Eq(EqSpec { lowcut: Some(120.0), highcut: None, low: Some([-3.0, 250.0]), high: Some([2.0, 6000.0]), peaks: vec![[-4.0, 800.0, 1.4]] }));
-        assert_eq!(t.effects[1], Effect::Comp(CompSpec { ratio: 4.0, threshold: -18.0, attack_ms: Some(10.0), release_ms: Some(120.0), knee: None, makeup: None, sidechain: None }));
+        assert_eq!(t.effects[1], Effect::Comp(CompSpec { ratio: 4.0, threshold: -18.0, attack_ms: Some(10.0), release_ms: Some(120.0), knee: None, makeup: None, sidechain: None, mix: None }));
         let m = s.master.as_ref().unwrap();
         assert_eq!((m.effects.len(), m.loudness), (2, Some(-14.0)));
         let (again, _) = parse(&format(&s)).unwrap();

@@ -209,7 +209,7 @@ shares from 0 to 1 (so `35%` is `0.35`). For what each does and its ranges, see
 | Effect | Fields |
 |---|---|
 | `eq` | `lowcut`, `highcut` (Hz); `low`, `high` (`[dB, Hz]` shelves); `peaks` (list of `[dB, Hz, q]`) |
-| `comp` | `ratio` and `threshold` (dB), both required; `attack_ms`, `release_ms`, `knee`, `makeup` |
+| `comp` | `ratio` and `threshold` (dB), both required; `attack_ms`, `release_ms`, `knee`, `makeup`, `mix` (0–1, default 1) |
 | `limit` | `ceiling` (dB), required; `release_ms` |
 | `reverb` | `type` (`room` · `hall` · `plate`, default `hall`); `decay_s`, `predelay_ms`, `damp`, `mix` |
 | `delay` | `beats` (a quarter note is 1, so a dotted eighth is 0.75) or `ms`; `feedback`, `highpass`, `lowpass`, `pingpong`, `mix` |
@@ -218,6 +218,34 @@ A **group track** has `effects`, `volume` (dB, default 0) and `group` (the group
 the master). A **return track** has `effects` and `volume`, and always plays into the master. The
 **master** has `effects` and `loudness` (LUFS, default −16). `reverb` and `delay` aren't allowed on
 the master, and `pan` is a track field, not an effect.
+
+## Automation
+
+Change a parameter over time with `automate` blocks on a track, group or return:
+
+```yaml
+tracks:
+  - clip: horns
+    automate:
+      - target: volume
+        points: [["1", -60], ["2", 0]]    # fade in from -60dB to 0dB
+      - target: eq.highcut
+        step: true
+        points: [["1", 20000], ["3", 6000], ["5", 5000]]  # step mode
+      - target: comp.mix
+        points: [["1", 0], ["5", 1]]      # compression fades in
+groups:
+  beat:
+    automate:
+      - target: volume
+        points: [["1", 0], ["8", -6], ["16", 0]]  # swell and fall
+```
+
+Positions are strings: bars (`"3"`) or beats (`"2:3"` = bar 2, beat 3). Values are numbers, in the
+same units as on the effect line (0–1 for shares, Hz for frequencies, dB for levels, −100…100 for pan).
+
+Before the first point the value holds at that point; after the last, it holds at that point. Between points
+it ramps linearly (or steps, if `step: true`). Two points at the same position jump instantly.
 
 ## Converting
 
