@@ -12,9 +12,22 @@
     "daw"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "3fc84f75-eaf9-4852-9629-fb32263d406c",
+      "author": "home",
+      "text": "## Where reference files come from (decided 2026-09-26)\n\nChecked: the DAW is not installed on the owner's Mac, and neither the persistent library (~5,500 files) nor the production bucket holds any `.als`, `.alc`, `.adg` or `.asd`. So this spike must NOT depend on the owner saving files. Instead:\n\n1. **Public reference files.** Gather sets, clips, presets and sidecars from public git repositories (many open-source projects and sample packs check them in) and from the DAW vendor's free trial download, whose bundled library ships thousands of `.adg`/`.alc` files and `.asd` sidecars beside its sample WAVs. Record each file's origin and licence in the design note; keep the fixtures small and never commit audio.\n2. **Test material.** Every test and every conformance check runs against samples and manifests from the production library (sync it down read-only; never push). There is plenty and it grows hourly, so pick a fixed, named handful for determinism.\n3. **Acceptance.** Opening the exported file in the DAW needs the DAW installed somewhere. The owner should install the free trial on this Mac when the first acceptance task is reached; until then acceptance tasks stay blocked, not skipped, and the machine-checkable conformance tests are the gate.",
+      "created_at": "2026-09-26T22:26:29.685145Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    }
+  ],
   "created_at": "2026-09-26T21:59:43.708001Z",
-  "updated_at": "2026-09-26T22:07:31.171924Z",
+  "updated_at": "2026-09-26T22:26:29.685173Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

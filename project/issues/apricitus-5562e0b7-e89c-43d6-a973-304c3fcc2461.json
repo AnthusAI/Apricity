@@ -60,10 +60,22 @@
         "model": "Claude Fable 5.1",
         "name": "DAW Integration Decisions"
       }
+    },
+    {
+      "id": "c1204a83-d37d-4114-88ed-130f51eab068",
+      "author": "home",
+      "text": "Reference files: the DAW is not installed here and production holds no DAW-written files. Spikes gather public reference files (git repositories, the vendor's free trial library) and test against production audio; acceptance in the DAW waits on the owner installing the trial. Details on each M0 spike epic.",
+      "created_at": "2026-09-26T22:26:29.848329Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
     }
   ],
   "created_at": "2026-09-26T20:14:35.643301Z",
-  "updated_at": "2026-09-26T22:19:54.483530Z",
+  "updated_at": "2026-09-26T22:26:29.848360Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
