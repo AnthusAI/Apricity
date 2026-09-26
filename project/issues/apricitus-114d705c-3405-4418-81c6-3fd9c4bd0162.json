@@ -1,7 +1,7 @@
 {
   "id": "apricitus-114d705c-3405-4418-81c6-3fd9c4bd0162",
   "title": "apricity-daw warp.rs: warp markers and warp mode for each pad's region",
-  "description": "## Intent\n\nPads warp the way Apricity warps them: a sample with a beat grid carries its warp markers into the sampler, so the rack plays the slices at the DAW's tempo; a sample without one plays unwarped.\n\n## Scope\n\n- `crates/apricity-daw/src/warp.rs`: map `rhythm.warp_markers` (seconds -> beat, beat 0 = first downbeat, pickups negative) to the DAW's warp marker list, clipped to the pad's region with a marker at each end (interpolated); warp mode from the clip's `warp` (beats / complex / texture / repitch) using the mode table from the M0 notes.\n- Shared with the sidecar initiative (apricitus-d7746d) and the set export (apricitus-6edba8): if one of them already wrote this mapping, reuse it and add only the region clipping.\n- A sample whose manifest has no beats (`rhythm.bpm` null) or a clip with `warp repitch`: warp off.\n\n## Out of scope\n\nTempo automation (Apricity scores have one tempo).\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw\n```\nThe warp scenarios of `features/daw/kit-preset.feature` pass; unit tests cover a pickup (negative beat), a region that starts between two markers, and a sample with drifting tempo (markers not evenly spaced).\n\n## Release\n\n`feat(<this task id>): warp markers for kit pads`. Not breaking.\n\n## Dependencies\n\nBlocked by the rack writer task. Relates to the warp marker mapping in apricitus-d7746d.",
+  "description": "## Intent\n\nPads warp the way Apricity warps them: a sample with a beat grid carries its warp markers into the sampler, so the rack plays the slices at the DAW's tempo; a sample without one plays unwarped.\n\n## Scope\n\n- `crates/apricity-daw/src/warp.rs`: map `rhythm.warp_markers` (seconds -> beat, beat 0 = first downbeat, pickups negative) to the DAW's warp marker list, clipped to the pad's region with a marker at each end (interpolated); warp mode from the clip's `warp` (beats / complex / texture / repitch) using the mode table from the M0 notes.\n- Build on the shared WarpMap model (apricitus-0c91f1, sidecar initiative) and its warp mode table; this task adds only clipping to a pad's region and the sampler's own warp fields.\n- A sample whose manifest has no beats (`rhythm.bpm` null) or a clip with `warp repitch`: warp off.\n\n## Out of scope\n\nTempo automation (Apricity scores have one tempo).\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw\n```\nThe warp scenarios of `features/daw/kit-preset.feature` pass; unit tests cover a pickup (negative beat), a region that starts between two markers, and a sample with drifting tempo (markers not evenly spaced).\n\n## Release\n\n`feat(<this task id>): warp markers for kit pads`. Not breaking.\n\n## Dependencies\n\nBlocked by the rack writer task and the WarpMap model (apricitus-0c91f1).",
   "type": "task",
   "status": "open",
   "priority": 2,
@@ -11,10 +11,19 @@
   "labels": [
     "daw"
   ],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "target": "apricitus-f3ea5520-23bf-4a9c-93d3-33caf799e844",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-0c91f1c8-a583-4a63-8f52-b7ffafa6cceb",
+      "type": "blocked-by"
+    }
+  ],
   "comments": [],
   "created_at": "2026-09-26T22:03:19.511869Z",
-  "updated_at": "2026-09-26T22:03:19.511896Z",
+  "updated_at": "2026-09-26T22:11:54.428714Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

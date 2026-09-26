@@ -11,10 +11,27 @@
   "labels": [
     "daw"
   ],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "target": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-99897614-47ef-46cb-96b7-19edb00f4856",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-00738618-0fb2-4483-8430-e60f33e0296e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-f5b805c2-0fb0-4c8e-ae4b-7629ad968c6a",
+      "type": "relates-to"
+    }
+  ],
   "comments": [],
   "created_at": "2026-09-26T22:05:55.794600Z",
-  "updated_at": "2026-09-26T22:09:30.935185Z",
+  "updated_at": "2026-09-26T22:11:41.212968Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

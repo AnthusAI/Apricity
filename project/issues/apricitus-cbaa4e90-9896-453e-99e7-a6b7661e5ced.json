@@ -12,10 +12,15 @@
     "daw",
     "web"
   ],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "target": "apricitus-c1a8b5ec-e69a-4025-b2fd-2c012f768e59",
+      "type": "blocked-by"
+    }
+  ],
   "comments": [],
   "created_at": "2026-09-26T22:03:19.736349Z",
-  "updated_at": "2026-09-26T22:03:19.736383Z",
+  "updated_at": "2026-09-26T22:11:54.696382Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

@@ -1,7 +1,7 @@
 {
   "id": "apricitus-ae84a56f-68fc-4cda-8a39-b46f78db4aa1",
-  "title": "Web need: download a sample's markup (or one clip) as DAW clip files",
-  "description": "## Intent\n\nDescribe what the web app would need; the web/docs session designs it.\n\n## The need\n\n- In the Library, on a sample: \"Download clips for the DAW\", producing the same folder (as a zip) the CLI writes.\n- On a clip row (automatic ones included): \"Download clip file\" for that one clip.\n- Source of the bytes: `apricity serve` (local library; e.g. `GET /export/clips?sample=<id>` returning a zip), or the wasm engine; the audio must be on the user's machine for the files to play, so in cloud mode the UI must say so or include the audio (owner decision from M0).\n- Show the file name a clip will get (`A-1bar-Fm`) next to its Apricity name, so the two can be matched.\n\n## Verification\n\nDone when the web session has accepted the need in its own issue (comment with its id).\n\n## Release\n\nNo product commit here.\n\n## Dependencies\n\nBlocked by the CLI task.",
+  "title": "Web need: download a sample's (or the library's) automatic markup as a clip folder",
+  "description": "## Intent\n\nDescribe what the web app would need; the web/docs session designs it.\n\n## The need\n\n- In the Library, on a sample: \"Download clips for the DAW\", producing the same folder (as a zip) the CLI writes.\n- Source of the bytes: `apricity serve` (local library; e.g. `GET /export/clips?sample=<id>` returning a zip), or the wasm engine; the audio must be on the user's machine for the files to play, so in cloud mode the UI must say so or include the audio (owner decision from M0).\n- One clip's file and its DAW name on a clip row are already filed by the sidecar initiative (apricitus-d66717); this need is only the whole-sample (and whole-library) folder.\n\n## Verification\n\nDone when the web session has accepted the need in its own issue (comment with its id).\n\n## Release\n\nNo product commit here.\n\n## Dependencies\n\nBlocked by the CLI task.",
   "type": "task",
   "status": "open",
   "priority": 2,
@@ -12,10 +12,19 @@
     "daw",
     "web"
   ],
-  "dependencies": [],
+  "dependencies": [
+    {
+      "target": "apricitus-2547a326-130a-44e6-a3ea-a879863673b9",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-d6671752-5833-492c-aaf2-55b5b6d36364",
+      "type": "relates-to"
+    }
+  ],
   "comments": [],
   "created_at": "2026-09-26T22:07:31.408388Z",
-  "updated_at": "2026-09-26T22:07:31.408427Z",
+  "updated_at": "2026-09-26T22:11:55.994269Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

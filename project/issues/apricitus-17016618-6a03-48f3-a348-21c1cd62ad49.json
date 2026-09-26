@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-17016618-6a03-48f3-a348-21c1cd62ad49",
+  "title": "apricity-cli: --collection on export --clips, with help, errors and docs (tools, glossary, curation note)",
+  "description": "## Intent\n\nThe command, and its documentation.\n\n## Scope\n\n- `--collection <name>` with `--clips` on `apricity export` (crates/apricity-cli/src/export.rs); requires `--library`; `-o` (default `./clips`), `--force`.\n- `--help` line and example; errors as in the story; success line `digs: 12 clip files, a drum rack of 7 pads`.\n- Docs: docs/tools.md (the flag, in the \"Exporting to a DAW\" section); docs/glossary.md \"Collection\" if still missing; `design/curation.md` (the keep -> collection -> DAW path, next to the existing `curation crates` .apr export); `design/daw-presets.md` collection section.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-cli --test export_cli\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test conformance\n```\nAll M4 scenarios green; a case-insensitive grep of docs/ and design/ for the vendor's name prints nothing.\n\n## Release\n\n`feat(<this task id>): apricity export --clips --collection`. Not breaking.\n\n## Dependencies\n\nBlocked by the rack-from-collection task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-153adc00-f672-48b7-8d71-2a59c911ad08",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:26.847274Z",
+  "updated_at": "2026-09-26T22:11:56.594786Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
