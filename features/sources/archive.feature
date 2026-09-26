@@ -99,4 +99,4 @@ Feature: Archive sources
     When I list the sources
     Then the catalog has source "salamander-drumkit" with 545 files
     And the source "salamander-drumkit" is an archive extracted into "salamander-drumkit"
-    And the catalog has 6 sources
+    And the catalog has 9 sources

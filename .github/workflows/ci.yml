@@ -34,23 +34,35 @@ jobs:
     name: Web
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install system libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+        working-directory: web
+      - name: Build the wasm module
+        run: npm run wasm
+        working-directory: web
       - name: Type-check
         run: npx tsc --noEmit
+        working-directory: web
       - name: Flow tests
         run: npm run test:flow
+        working-directory: web
       - name: Contract is up to date
         run: npm run contract:check
+        working-directory: web
 
   features:
     name: Gherkin step vocabulary
