@@ -313,14 +313,12 @@ export function scoreKey(path: string): { id: string; title: string; folder: str
   return { id: `scr_${folder.replace(/\//g, "_")}_${title}_${format}`, title, folder, format: format as "apr" | "yaml" };
 }
 
-/** Checks the clips a person saved before they become records (what the Python server checked). */
+/** Checks the clips a person saved before they become records: names and times. (Names are checked against the
+ *  sample's other clips by `planClips`, which knows whose they are.) */
 export function validateClips(clips: SavedClip[], duration: number): string[] {
   const problems: string[] = [];
-  const names = new Set<string>();
   clips.forEach((s, i) => {
     if (!/^[A-Za-z0-9_-]+$/.test(s.name ?? "")) problems.push(`clips[${i}]: name ${JSON.stringify(s.name)} must be letters, digits, - or _`);
-    if (names.has(s.name)) problems.push(`clips[${i}]: name ${JSON.stringify(s.name)} is used twice`);
-    names.add(s.name);
     if (!(s.start >= 0 && s.start < s.end && s.end <= duration + 1e-6)) problems.push(`clips[${i}] ${JSON.stringify(s.name)}: [${s.start}, ${s.end}] must satisfy 0 ≤ start < end ≤ ${duration}`);
   });
   return problems;
@@ -337,21 +335,52 @@ export interface ClipPlan {
  *
  * `mine` says which records this person may change (their own; every one for a curator, or locally). Everyone sees
  * everyone's clips on a sample, but a save only touches your own: editing someone else's clip (or an automatic one)
- * saves your copy of it, and leaving one out of the list does not delete it.
+ * saves your copy of it, named with your handle (`loop-1-ryan`), and leaving one out of the list does not delete it.
+ *
+ * A clip's name is unique on its sample, since scores name clips by sample and name. A new or renamed clip whose name
+ * another clip keeps is refused with a free name to try; clashes already in the records never block a save.
  */
-export function planClips(sampleId: string, existing: ClipRecord[], edited: SavedClip[], mine: (r: ClipRecord) => boolean = () => true): ClipPlan {
+export function planClips(
+  sampleId: string,
+  existing: ClipRecord[],
+  edited: SavedClip[],
+  mine: (r: ClipRecord) => boolean = () => true,
+  handle?: string,
+): ClipPlan {
   const byId = new Map(existing.map((s) => [s.id, s]));
   const kept = new Set<string>();
   const plan: ClipPlan = { create: [], update: [], delete: [] };
+  // Every name on the sample after this save, counted: other people's clips and retired ones stay as they are.
+  const count = new Map<string, number>();
+  const take = (n: string) => count.set(n, (count.get(n) ?? 0) + 1);
+  const editedIds = new Set(edited.map((c) => c.id).filter(Boolean));
+  for (const s of existing) if (!mine(s) || (s.retired && !editedIds.has(s.id))) take(s.name);
+  const free = (base: string) => {
+    let name = base;
+    for (let n = 2; count.has(name); n++) name = `${base}-${n}`;
+    return name;
+  };
+  const suffix = handle || "copy";
+  const fresh: string[] = []; // names this save introduces, which must not clash
+  const copies: { base: string; row: Omit<ClipRecord, "id"> }[] = [];
   for (const c of edited) {
     const old = c.id ? byId.get(c.id) : undefined;
     if (old) kept.add(old.id);
     const changed = !old || old.name !== c.name || old.start !== c.start || old.end !== c.end;
     if (old && !mine(old)) {
-      // Not yours: unchanged it stays theirs; changed, it becomes a new clip of yours.
-      if (changed) plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source: "user", ...(c.tags ? { tags: c.tags } : {}) });
+      // Not yours: unchanged it stays theirs; changed, it becomes a new clip of yours, under your name.
+      if (!changed) continue;
+      if (c.name !== old.name) {
+        take(c.name);
+        fresh.push(c.name);
+        plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source: "user", ...(c.tags ? { tags: c.tags } : {}) });
+      } else {
+        copies.push({ base: `${old.name}-${suffix}`, row: { sampleId, name: "", start: c.start, end: c.end, source: "user", ...(c.tags ? { tags: c.tags } : {}) } });
+      }
       continue;
     }
+    take(c.name);
+    if (!old || old.name !== c.name) fresh.push(c.name);
     const source = c.source === "ml" ? "ml" : old?.source === "curated" ? "curated" : "user";
     if (!old) {
       plan.create.push({ sampleId, name: c.name, start: c.start, end: c.end, source, ...(c.tags ? { tags: c.tags } : {}) });
@@ -361,6 +390,15 @@ export function planClips(sampleId: string, existing: ClipRecord[], edited: Save
       plan.update.push({ id: old.id, name: c.name, start: c.start, end: c.end, source });
     }
   }
+  for (const { base, row } of copies) {
+    row.name = free(base);
+    take(row.name);
+    plan.create.push(row);
+  }
+  const problems = [...new Set(fresh.filter((n) => (count.get(n) ?? 0) > 1))].map(
+    (n) => `"${n}" is already a clip on this sample; try "${free(`${n}-${suffix}`)}"`,
+  );
+  if (problems.length) throw Object.assign(new Error(problems.join("\n")), { errors: problems });
   // Retired clips never reach the editor; they stay for the scores that still use them.
   for (const s of existing) if (!kept.has(s.id) && !s.retired && mine(s)) plan.delete.push(s.id);
   return plan;
@@ -384,6 +422,8 @@ export interface CatalogDeps {
   url: (key: string) => Promise<string>;
   /** Who is saving: the owner values their records carry, and whether they curate (may change anyone's). Null locally. */
   me?: () => Promise<Me | null>;
+  /** That person's public handle, which names their copies of other people's clips. */
+  handle?: (me: Me) => Promise<string | undefined>;
 }
 
 interface Index {
@@ -555,7 +595,8 @@ export class Catalog {
     const m = this.models;
     const existing = await listAll<ClipRecord>((nextToken) => m.Clip.clipsBySample({ sampleId: c.id }, { limit: 1000, nextToken }));
     const who = (await this.deps.me?.()) ?? null;
-    const plan = planClips(c.id, existing, clips, (r) => !who || who.curator || owns(who, r.owner));
+    const handle = who ? await this.deps.handle?.(who) : undefined;
+    const plan = planClips(c.id, existing, clips, (r) => !who || who.curator || owns(who, r.owner), handle);
     const check = (r: { errors?: GqlError[] }) => r.errors?.length && fail(r.errors, true);
     for (const id of plan.delete) check(await m.Clip.delete({ id }));
     for (const u of plan.update) check(await m.Clip.update(u));

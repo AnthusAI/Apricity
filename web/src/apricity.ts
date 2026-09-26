@@ -192,6 +192,7 @@ export async function connectCatalog() {
     url: async (key) => (await files.getUrl({ path: key })).url,
     // Locally every record is editable (null); in the cloud, the signed-in person.
     me: async () => ((await import("./data/client.js")).mode() === "local" ? null : me()),
+    handle: async (who) => (await (await import("./data/handles.js")).handles()).mine(who.owners),
   });
   // Sign-in or sign-out changes what may be read: forget what was loaded.
   document.addEventListener("apricity:auth-changed", () => (catalogInstance?.reset(), manifestCache.clear()));

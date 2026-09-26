@@ -79,6 +79,21 @@ pub struct Annotations {
     pub markers: Vec<Marker>,
 }
 
+impl Annotations {
+    /// The saved clip a score names. A clip's name is unique on its sample; if two live clips still share one, the
+    /// score must not play whichever comes first, so that is an error. A retired clip (kept for the scores that used
+    /// it) answers only when no live clip has the name.
+    pub fn saved_clip(&self, name: &str) -> Result<Option<&SavedClip>, String> {
+        let named: Vec<&SavedClip> = self.clips.iter().filter(|s| s.name == name).collect();
+        let live: Vec<&SavedClip> = named.iter().copied().filter(|s| !s.retired).collect();
+        match live.len() {
+            0 => Ok(named.first().copied()),
+            1 => Ok(Some(live[0])),
+            n => Err(format!("{n} clips are named {name:?} on this sample; rename one in the Library")),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Marker {
     pub name: String,
@@ -91,6 +106,9 @@ pub struct SavedClip {
     pub name: String,
     pub start: f64,
     pub end: f64,
+    /// Kept only for the scores that still use it (markup no longer proposes it).
+    #[serde(default)]
+    pub retired: bool,
 }
 
 /// A loaded clip: its audio path and manifest.
@@ -338,5 +356,16 @@ mod tests {
         assert_eq!(s(-1.0), 0.5); // first segment's tempo
         let b = |t| interp(&m, t, |w| w.seconds, |w| w.beat);
         assert_eq!(b(2.0), 1.5);
+    }
+
+    #[test]
+    fn saved_clip_names_are_unambiguous() {
+        let clip = |name: &str, start: f64, retired: bool| SavedClip { name: name.into(), start, end: start + 1.0, retired };
+        let a = Annotations { clips: vec![clip("loop-1", 0.0, true), clip("loop-1", 2.0, false), clip("fill", 4.0, true)], markers: vec![] };
+        assert_eq!(a.saved_clip("loop-1").unwrap().unwrap().start, 2.0, "the live one, not the retired one");
+        assert_eq!(a.saved_clip("fill").unwrap().unwrap().start, 4.0, "a retired clip still plays for old scores");
+        assert!(a.saved_clip("nope").unwrap().is_none());
+        let b = Annotations { clips: vec![clip("loop-1", 0.0, false), clip("loop-1", 2.0, false)], markers: vec![] };
+        assert_eq!(b.saved_clip("loop-1").unwrap_err(), "2 clips are named \"loop-1\" on this sample; rename one in the Library");
     }
 }

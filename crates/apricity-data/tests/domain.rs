@@ -511,12 +511,18 @@ fn test_markup_merge_names_never_reused() {
         .unwrap_or(&empty_json)
         .as_array()
         .unwrap_or(&default_clips);
-    let loop_3 = clips
+    // Every name is used once, and the new clip's name is one no clip ever had (loop-1 and loop-2 were taken).
+    let names: Vec<&str> = clips.iter().filter_map(|s| s["name"].as_str()).collect();
+    let unique: std::collections::HashSet<&str> = names.iter().copied().collect();
+    assert_eq!(unique.len(), names.len(), "no two clips share a name: {names:?}");
+    let newest = clips
         .iter()
-        .find(|s| s.get("name").unwrap_or(&json!(null)) == "loop-3")
-        .expect("loop-3 should exist");
-    assert_eq!(loop_3["start"], 50.0);
-    assert_eq!(loop_3["end"], 54.0);
+        .find(|s| s["start"] == 50.0)
+        .expect("the clip at 50 s exists");
+    assert!(
+        !["loop-1", "loop-2"].contains(&newest["name"].as_str().unwrap()),
+        "{newest}"
+    );
 }
 
 #[test]

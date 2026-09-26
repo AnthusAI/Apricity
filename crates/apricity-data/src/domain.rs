@@ -622,7 +622,7 @@ pub fn apply_markup_merge(
     let updated_counters = plan.name_counters;
     let sample_update = json!({
         "id": sample_id,
-        "nameCounters": serde_json::to_value(&updated_counters).unwrap_or(json!({}))
+        "nameCounters": json!(updated_counters).to_string()
     });
     let _ = engine
         .call("Sample", "update", &sample_update, identity)

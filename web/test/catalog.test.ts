@@ -128,7 +128,7 @@ test("score paths and ids follow the migration's scheme", () => {
 test("edited clips: validated, then planned as clip creates, updates and deletes", () => {
   assert.deepEqual(validateClips([{ name: "ok", start: 0, end: 1 }], 10), []);
   const problems = validateClips([{ name: "a b", start: 0, end: 1 }, { name: "x", start: 2, end: 1 }, { name: "x", start: 0, end: 11 }], 10);
-  assert.equal(problems.length, 4);
+  assert.equal(problems.length, 3, "names and times; clashes are planClips' job");
   const existing = [clip("s1", "loop-1", 0, 2), clip("s2", "loop-2", 2, 4), clip("s3", "gone", 4, 5, { retired: true })];
   const plan = planClips("smp_drums", existing, [
     { id: "s1", name: "loop-1", start: 0, end: 2, source: "ml" },
@@ -156,16 +156,40 @@ test("planClips only changes your own clips", () => {
       { id: "t1", name: "break-2", start: 0, end: 2, source: "user" },
       { id: "m1", name: "loop-1", start: 2, end: 3.5, source: "ml" },
       { id: "y1", name: "fill", start: 4, end: 5, source: "user" },
-    ], mine),
+    ], mine, "ann"),
     {
       create: [
         { sampleId: "smp_drums", name: "break-2", start: 0, end: 2, source: "user" },
-        { sampleId: "smp_drums", name: "loop-1", start: 2, end: 3.5, source: "user" },
+        { sampleId: "smp_drums", name: "loop-1-ann", start: 2, end: 3.5, source: "user" },
       ],
       update: [],
       delete: [],
     },
   );
+});
+
+test("clip names are unique on a sample", () => {
+  const theirs: ClipRecord = { id: "t1", sampleId: "smp_drums", name: "loop-1", start: 0, end: 2, source: "user", owner: "u2::bob" };
+  const taken: ClipRecord = { id: "t2", sampleId: "smp_drums", name: "loop-1-ann", start: 3, end: 4, source: "user", owner: "u2::bob" };
+  const old: ClipRecord = { id: "r1", sampleId: "smp_drums", name: "fill", start: 5, end: 6, source: "user", owner: "u1::ann", retired: true };
+  const yours: ClipRecord = { id: "y1", sampleId: "smp_drums", name: "hit", start: 7, end: 8, source: "user", owner: "u1::ann" };
+  const mine = (r: ClipRecord) => r.owner === "u1::ann";
+  const all = [theirs, taken, old, yours];
+  // A copy of someone's clip gets your handle, and a number when that is taken too.
+  assert.deepEqual(
+    planClips("smp_drums", all, [{ id: "t1", name: "loop-1", start: 0, end: 1.5, source: "user" }, { id: "y1", name: "hit", start: 7, end: 8 }], mine, "ann").create.map((c) => c.name),
+    ["loop-1-ann-2"],
+  );
+  // A new or renamed clip may not take a name someone else's (or a retired) clip keeps.
+  assert.throws(() => planClips("smp_drums", all, [{ name: "loop-1", start: 9, end: 10 }], mine, "ann"), /"loop-1" is already a clip on this sample; try "loop-1-ann-2"/);
+  assert.throws(() => planClips("smp_drums", all, [{ id: "y1", name: "fill", start: 7, end: 8 }], mine, "ann"), /"fill" is already/);
+  assert.throws(() => planClips("smp_drums", [yours], [{ name: "a", start: 0, end: 1 }, { name: "a", start: 1, end: 2 }], mine), /"a" is already a clip on this sample; try "a-copy"/);
+  // Clashes already in the records don't block anyone's save.
+  const dup: ClipRecord = { ...theirs, id: "t3", owner: "u3::cy" };
+  const dupMine: ClipRecord = { ...yours, id: "y2", name: "loop-1" };
+  assert.deepEqual(planClips("smp_drums", [theirs, dup, dupMine], [{ id: "y2", name: "loop-1", start: 7, end: 9 }], mine, "ann").update, [
+    { id: "y2", name: "loop-1", start: 7, end: 9, source: "user" },
+  ]);
 });
 
 test("listAll follows nextToken and surfaces errors", async () => {

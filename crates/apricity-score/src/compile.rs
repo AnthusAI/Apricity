@@ -451,7 +451,7 @@ fn region_of(clip: &Clip, whole: (f64, f64), beats: Option<[f64; 2]>, seconds: O
         }
         (clip.beat_at(a), clip.beat_at(b))
     } else if let Some(sl) = saved {
-        let s = clip.manifest.annotations.clips.iter().find(|s| s.name == sl).ok_or_else(|| format!("no saved clip {sl:?} in this sample"))?;
+        let s = clip.manifest.annotations.saved_clip(sl)?.ok_or_else(|| format!("no saved clip {sl:?} in this sample"))?;
         (clip.beat_at(s.start), clip.beat_at(s.end))
     } else {
         whole
@@ -713,9 +713,10 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 Ok((clip.beat_at(a), clip.beat_at(b)))
             }
         } else if let Some(sl) = &spec.saved {
-            match clip.manifest.annotations.clips.iter().find(|s| &s.name == sl) {
-                Some(s) => Ok((clip.beat_at(s.start), clip.beat_at(s.end))),
-                None => {
+            match clip.manifest.annotations.saved_clip(sl) {
+                Err(e) => Err(format!("{at}.saved: {e}")),
+                Ok(Some(s)) => Ok((clip.beat_at(s.start), clip.beat_at(s.end))),
+                Ok(None) => {
                     let have: Vec<_> = clip.manifest.annotations.clips.iter().map(|s| s.name.as_str()).collect();
                     Err(format!("{at}.saved: no saved clip {sl:?} in this sample{}", if have.is_empty() { " (it has no saved clips yet; mark some in the Library or run automatic markup)".into() } else { format!("; it has {have:?}") }))
                 }

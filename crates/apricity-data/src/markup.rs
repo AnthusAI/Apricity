@@ -122,8 +122,9 @@ pub fn plan_merge(
     // Sort keep by existing clip id to be deterministic
     keep.sort_by(|a, b| a.0.cmp(&b.0));
 
-    // Create new clips for unmatched proposals
+    // Create new clips for unmatched proposals, under names no clip on the sample has (people name clips too).
     let mut create = Vec::new();
+    let mut taken: HashSet<String> = existing.iter().map(|s| s.name.clone()).collect();
 
     for (pidx, proposed) in proposed.iter().enumerate() {
         if matched_proposed.contains(&pidx) {
@@ -133,8 +134,13 @@ pub fn plan_merge(
         // This is a new unmatched proposal; give it a new name
         let kind = &proposed.kind;
         let counter = name_counters.entry(kind.clone()).or_insert(0);
-        *counter += 1;
-        let name = format!("{}-{}", kind, counter);
+        let name = loop {
+            *counter += 1;
+            let name = format!("{}-{}", kind, counter);
+            if taken.insert(name.clone()) {
+                break name;
+            }
+        };
 
         create.push((name, proposed.start, proposed.end, proposed.rank));
     }
@@ -352,5 +358,27 @@ mod tests {
         // Only the ML clip should be deleted; the user clip should be ignored
         assert_eq!(plan.delete.len(), 1);
         assert_eq!(plan.delete[0], "clp-a");
+    }
+
+    #[test]
+    fn new_names_skip_names_people_took() {
+        let mine = ExistingClip {
+            id: "c1".into(),
+            name: "loop-2".into(),
+            kind: String::new(),
+            start: 0.0,
+            end: 1.0,
+            source: "user".into(),
+            retired: false,
+        };
+        let proposed = vec![
+            ProposedClip { kind: "loop".into(), start: 4.0, end: 5.0, rank: None },
+            ProposedClip { kind: "loop".into(), start: 6.0, end: 7.0, rank: None },
+        ];
+        let counters = HashMap::from([("loop".to_string(), 1)]);
+        let plan = plan_merge(&[mine], &proposed, counters, &HashSet::new());
+        let names: Vec<&str> = plan.create.iter().map(|c| c.0.as_str()).collect();
+        assert_eq!(names, ["loop-3", "loop-4"]);
+        assert_eq!(plan.name_counters["loop"], 4);
     }
 }

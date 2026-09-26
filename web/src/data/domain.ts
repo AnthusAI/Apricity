@@ -583,7 +583,10 @@ async function fetchLookups(
         async (token) =>
           await dataClient.models.Clip.clipsBySampleAndName({ sampleId, name }, { nextToken: token })
       );
-      const clip = (clipResults as any[])?.[0];
+      // The compiler's rule: a live clip over a retired one; two live clips of one name are ambiguous, so none.
+      const named = (clipResults as any[]) ?? [];
+      const live = named.filter((c) => !c.retired);
+      const clip = live.length > 1 ? undefined : live[0] ?? named[0];
       if (clip) {
         if (!lookups.clipsBySampleAndName.has(sampleId)) {
           lookups.clipsBySampleAndName.set(sampleId, new Map());
