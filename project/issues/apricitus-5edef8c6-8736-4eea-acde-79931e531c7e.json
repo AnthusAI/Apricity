@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-5edef8c6-8736-4eea-acde-79931e531c7e",
+  "title": "Renderer cache: test stats, invalidation and eviction; document the ranged-arrange eviction",
+  "description": "`crates/apricity-engine/src/render.rs` has one test and it covers filters. Nothing checks the `rendered`/`reused` statistics, invalidation on `insert_source` (68), or eviction (128). Eviction keeps only the keys used by the latest `arrange`, so a ranged `arrange(\u2026, Some(range))` drops every render outside the range. `render.rs:113` does a linear `lanes.iter().position` per event. Files with no unit tests: `apricity-sources/src/lib.rs` (496 lines, only the conformance test), `data/src/loader.rs`, `engine/src/arrangement.rs`, `engine/src/decode.rs`, `engine/src/mixer.rs` (only `tests/realtime.rs`), `cli/src/{play,main,render}.rs`. There are no CLI end-to-end tests for `render`, `fmt`, `explain` or `sources`.\n\nDone when: tests assert the cache statistics and invalidation; the ranged-arrange eviction is either fixed or documented and tested; the lane lookup is a map; the CLI has an end-to-end test per subcommand on `examples/iv-of-ab-minor.apr`.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-1df42115-4de4-4fe5-8db1-7d8e0ea9d735",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:30:32.964661Z",
+  "updated_at": "2026-09-26T05:36:31.038449Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

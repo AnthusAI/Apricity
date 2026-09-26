@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-ae920d05-06e2-4827-8d41-26ae276192db",
+  "title": "Analysis packaging: declare fastapi, uvicorn, python-multipart; extras for the ML stack; a lock file",
+  "description": "`server.py:19,245` import `fastapi` and `uvicorn`, `UploadFile` needs `python-multipart`, and `tests/test_server.py:5` needs `httpx`; none is declared in `analysis/pyproject.toml`. `beat_this @ .../archive/main.zip` floats on an upstream branch; `essentia==2.1b6.dev1389` is a dev pre-release, which is why the README needs `--pre`; `torch`, `numpy`, `librosa` and `onnxruntime` are unpinned; there is no lock or constraints file; `basic-pitch` is not listed and is installed by hand with `--no-deps` per README lines 50-51. Everything lives in core dependencies, so the lightweight server and curation path must install torch, essentia and onnxruntime. `ROOT = pathlib.Path(__file__).resolve().parents[2]` in `server.py:22`, `curation.py:35` and `analyze.py:17` ties the package to an editable checkout, so the `[project.scripts]` entries do not work from a normal install.\n\nDone when: every import is declared; `[project.optional-dependencies]` splits `server`, `analyze` (torch, essentia, beat_this, basic-pitch) and `stems` (demucs); a lock file or constraints file pins the ML stack; the basic-pitch workaround is gone or encoded in the extra; the repository root is located by an environment variable or a config argument with the checkout as fallback.",
+  "type": "chore",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-634ee631-6b1d-4cb2-89b6-2970ef629259",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:32:43.461110Z",
+  "updated_at": "2026-09-26T05:37:30.918393Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-634ee631-6b1d-4cb2-89b6-2970ef629259",
+  "title": "Analysis, onboarding, release and licensing",
+  "description": "The Python analysis server trusts any web page, its package does not declare its imports, the README has a dead step and the cargo config only works on arm64 macOS, there is no LICENSE file for a GPL project, and Semantic Release bumps tags but not manifests. Done when every child is closed and a clean Linux checkout gets a first sound by following the README.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-22a02538-aeec-43af-8ba7-2c3fdca4da8e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:35:35.249550Z",
+  "updated_at": "2026-09-26T05:35:35.249731Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

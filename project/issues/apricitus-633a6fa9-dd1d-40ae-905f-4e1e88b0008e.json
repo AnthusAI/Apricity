@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-633a6fa9-dd1d-40ae-905f-4e1e88b0008e",
+  "title": "Browser audio: bounded source memory, eviction and dispose()",
+  "description": "Every decoded source is copied into every render worker's wasm heap, up to six workers (`web/src/audio/player.ts:79` and the `copy` near 140). The wasm API has only `rw_renderer_new`, `has_source` and `add_source` (`crates/apricity-web/src/lib.rs:169-188`), with no remove or evict, and `this.loaded` only grows, so browsing many samples in one session grows memory without bound. The gc `setInterval` (`player.ts:94`) is never cleared and there is no `dispose()` to close the AudioContext or terminate workers. `process()` allocates a new `Float32Array` view on every 128-frame quantum (`engine-worklet.ts` near 98), about 375 times a second on the audio thread.\n\nDone when: the wasm API has `remove_source`, the player evicts sources not referenced by the current arrangement, `dispose()` exists and is called on navigation, and the worklet reuses its output view.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0aa1f157-3a16-4e12-b2d5-e0238cef669f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:32:17.270978Z",
+  "updated_at": "2026-09-26T05:37:03.211316Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

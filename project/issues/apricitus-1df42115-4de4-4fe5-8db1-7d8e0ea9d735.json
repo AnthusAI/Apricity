@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-1df42115-4de4-4fe5-8db1-7d8e0ea9d735",
+  "title": "Rust engine and score: smaller functions, structured errors, hardened FFI",
+  "description": "The score compiler and DSL parser are single 500 to 900 line functions with string errors located by message prefix; the wasm and Rubber Band FFI crates panic or leak on bad input and have no tests; the renderer cache and CLI are lightly tested. Done when every child is closed, no function in the score crate exceeds about 150 lines, compile errors carry structured locations, and every FFI entry point returns an error instead of trapping.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-22a02538-aeec-43af-8ba7-2c3fdca4da8e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:35:26.734498Z",
+  "updated_at": "2026-09-26T05:35:26.734659Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}

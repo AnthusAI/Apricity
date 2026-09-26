@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-7edd75f4-7505-4109-bd3b-728364790b7c",
+  "title": "Keyboard focus and labels: replace removed outlines, announce play/stop, label the Flow canvas",
+  "description": "The focusable panels `.flow`, `.beat` and `.harp` set `outline: none` with no replacement focus style (`web/src/style.css:107,261,323`); the only `:focus-visible` rule is for account controls (217). The Flow canvas is mouse-only (click and pointermove, Escape on keydown, `flow/view.ts:61-66`); its root has `tabIndex=0` but no aria-label. The play button's glyph toggles between play and stop (`main.ts:131,157`) but its aria-label stays \"Play score\". Two colours are hardcoded outside the tokens (`#f59e5b` at `style.css:217`, `#f5b301` at 246).\n\nDone when: every focusable panel has a visible `:focus-visible` style, the play button's label follows its state, the Flow canvas has a label and arrow-key navigation between notes, and the hardcoded colours are tokens.",
+  "type": "bug",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0aa1f157-3a16-4e12-b2d5-e0238cef669f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T05:32:34.612264Z",
+  "updated_at": "2026-09-26T05:37:21.773791Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude",
+    "name": "Project improvement audit",
+    "settings": {}
+  },
+  "agent_assignment": null
+}
