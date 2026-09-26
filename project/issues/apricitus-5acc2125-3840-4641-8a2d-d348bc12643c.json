@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-5acc2125-3840-4641-8a2d-d348bc12643c",
+  "title": "voice-ingest Lambda: finished render becomes a generated Sample with phrase clips",
+  "description": "Runs on EventBridge SUCCEEDED/FAILED events from the renderer's state machine.\n- Reads speech.wav and speech.json, and sets smp_ = sha256(audio)[:20].\n- Copies the audio to `files/audio/<smp>/<name>.wav`.\n- Builds a minimal speech manifest like the `compile.rs` speech fixture (empty beats, 0.5 s loudness from the PCM, placeholder key and flat PCP) and writes it to `files/analysis/<smp>/<sha>.json`.\n- Detects phrases with a TypeScript port of `markup.phrases()`.\n- Raw-writes Recording (collection generated, cc0-1.0, credit 'Generated with Auritus (Kokoro-82M, Apache-2.0)' plus the requester), Sample (role generated, alias samples/voice/<name>.wav) and phrase-N Clips, and mirrors the record JSON to the bucket.\n- Marks the Job done with its sampleId, or failed with the error.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5a367ce3-8dab-441c-84b2-0bfadecc59f6",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T18:58:54.418627Z",
+  "updated_at": "2026-09-26T18:58:54.418656Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "auritus-voice-integration"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

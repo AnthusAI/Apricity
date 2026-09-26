@@ -10,9 +10,22 @@
   "parent": "apricitus-5a367ce3-8dab-441c-84b2-0bfadecc59f6",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "796c0408-f335-4bfd-90b0-a94f4f77f5e2",
+      "author": "home",
+      "text": "Updated scope for the web session: a 'New voice line' dialog (curators) calling the `requestVoiceLine` mutation; Job rows for `kind === 'voice'` (queued, running, done, failed with error) alongside 'analyze'; and generated-sample provenance (text, voice, requester, CC0 credit). The data model and mutation come from apricitus-d13c16 / 47a67e.",
+      "created_at": "2026-09-26T18:58:54.464390Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
   "created_at": "2026-09-26T15:25:36.606457Z",
-  "updated_at": "2026-09-26T15:25:36.606478Z",
+  "updated_at": "2026-09-26T18:58:54.464411Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
@@ -21,5 +34,8 @@
   },
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
 }
