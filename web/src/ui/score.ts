@@ -64,6 +64,11 @@ export class ScoreView {
   private forkBtn = el("button", { className: "btn", type: "button", title: "Make your own copy of this score, linked back to it" }, "Fork");
   /** "forked from beat-1 by @ann", under the title bar. */
   private lineageEl = el("div", { className: "lineage", hidden: true });
+  /** The editor's two views: the code, and how the compiler solved it (tempo, key, and each clip's warp and
+   *  transposition per chord, with why). The second is there when you want it, not all the time. */
+  private codeTab = el("button", { type: "button", role: "tab", className: "on", ariaSelected: "true" }, "Code");
+  private solvedTab = el("button", { type: "button", role: "tab", ariaSelected: "false", title: "What the compiler did to make it play: each clip's tempo, key, stretch and transposition per chord, and why" }, "How it was solved");
+  private solvedEl = el("pre", { className: "explain solved", hidden: true }, "Nothing compiled yet.");
   /** Its forks, in the side panel. */
   private forksHost = el("div", { className: "side-forks" });
   private statusEl = el("span", { className: "status" });
@@ -118,6 +123,8 @@ export class ScoreView {
     });
     this.saveBtn.addEventListener("click", () => this.save());
     this.forkBtn.addEventListener("click", () => void this.fork());
+    this.codeTab.addEventListener("click", () => this.showCode(true));
+    this.solvedTab.addEventListener("click", () => this.showCode(false));
     for (const k of SCORE_KINDS) this.kindSel.append(el("option", { value: k, textContent: k === "song" ? "Song" : k[0].toUpperCase() + k.slice(1) }));
     this.kindSel.addEventListener("change", () => this.changeKind(this.kindSel.value as ScoreKind));
     this.list = new RankedList<ScoreItem>({
@@ -149,7 +156,7 @@ export class ScoreView {
     });
     root.append(
       this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.refBtn(), this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "cm-host" }, this.view.dom)),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.refBtn(), this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
       this.sideEl,
       ...this.dockPanels(),
     );
@@ -354,6 +361,16 @@ export class ScoreView {
     } catch {}
     if (this.item()?.id !== it.id) return;
     this.stars.set({ mine: mineStars, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
+  }
+
+  /** Show the code, or how it was solved. */
+  private showCode(code: boolean) {
+    this.codeTab.classList.toggle("on", code);
+    this.solvedTab.classList.toggle("on", !code);
+    this.codeTab.setAttribute("aria-selected", String(code));
+    this.solvedTab.setAttribute("aria-selected", String(!code));
+    (this.view.dom.parentElement as HTMLElement).hidden = !code;
+    this.solvedEl.hidden = code;
   }
 
   /** "forked from beat-1 by @ann" under the bar, and the score's own forks in the side panel. */
@@ -608,8 +625,9 @@ export class ScoreView {
     }
     if (errors.length) kids.push(el("h2", {}, `Problems (${errors.length})`), el("ul", { className: "problems" }, ...errors.map((e) => el("li", {}, e.replace(/^[^:]*\.(yaml|apricity): /, "")))));
     if (tl?.warnings.length) kids.push(el("h2", {}, "Warnings"), el("ul", { className: "warnings" }, ...tl.warnings.map((w) => el("li", {}, w))));
-    // Warnings are listed above; don't repeat them at the end of the explanation.
-    if (explain) kids.push(el("h2", {}, "How it was solved"), el("pre", { className: "explain" }, explain.split("\nWarnings:")[0].trimEnd()));
+    // Warnings are listed above; the explanation lives in the editor's second tab.
+    if (explain) this.solvedEl.textContent = explain.split("\nWarnings:")[0].trimEnd();
+    else if (!tl) this.solvedEl.textContent = errors.length ? "It doesn't compile yet: see Problems." : "Nothing compiled yet.";
     if (!tl && !errors.length) kids.push(el("div", { className: "empty" }, "Open or create a score."));
     this.sideEl.replaceChildren(...kids, this.forksHost, this.creditsHost, this.commentsHost);
   }
