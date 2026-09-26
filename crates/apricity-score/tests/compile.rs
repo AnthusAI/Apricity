@@ -819,6 +819,25 @@ tracks:
 }
 
 #[test]
+fn slash_chords_put_their_bass_lowest() {
+    let tl = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips: { stab: { source: stab.wav, beats: [0, 1] } }
+progression: [ { chord: IV/3, bars: 1 }, { chord: I/5, bars: 1 } ]
+tracks:
+  - { clip: stab, name: bass, voicing: root }
+  - { clip: stab, name: pad, voicing: triad }
+"#)
+    .unwrap();
+    // B♭/D: the bass line plays D (D3 = +2 from the stab's C3); the triad is D F B♭ from there. F/C: C, then C F A.
+    assert_eq!(pitched_events(&tl, "bass"), [(0.0, 2), (4.0, 0)]);
+    assert_eq!(pitched_events(&tl, "pad"), [(0.0, 2), (0.0, 5), (0.0, 10), (4.0, 0), (4.0, 5), (4.0, 9)]);
+    assert!(tl.harmony.iter().any(|h| h.label.contains("Bb/D")), "{:?}", tl.harmony.iter().map(|h| &h.label).collect::<Vec<_>>());
+}
+
+#[test]
 fn a_melody_plays_scale_degrees_of_the_key() {
     let tl = run_pitched(r#"
 apricity: 0.1

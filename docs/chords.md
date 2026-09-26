@@ -77,6 +77,20 @@ in major. Numerals are `I II III IV V VI VII` / `i ii iii iv v vi vii`; mixed ca
 is D major and `V7/ii` is A7. The part after `/` is read in the score's key; the part before it is
 read in the major key built on that chord's root.
 
+**Slash chords** put a chosen note in the bass. After the `/` comes a chord tone or a note:
+
+| Written | Means | In F |
+|---|---|---|
+| `IV/3` | IV with its third in the bass (first inversion) | B♭/D |
+| `I/5` | I with its fifth in the bass (second inversion) | F/C |
+| `V7/7` | V7 with its seventh in the bass (third inversion) | C7/B♭ |
+| `IV/D`, `Bb/D` | IV (or B♭) over D | B♭/D |
+| `I/Eb` | F over E♭, a note outside the chord | F/E♭ |
+
+`1`, `3`, `5` and `7` name the chord's own tones; a letter names any note. A numeral after the `/` is
+still a secondary chord (`V/V`), and the two combine: `V/V/3`. The bass note counts as part of the
+chord, so strings may land on it.
+
 ## Chord symbols
 
 Anything that doesn't start like a roman numeral is read as a chord symbol: a [note](#notes), then a
@@ -103,13 +117,12 @@ clash.
 
 Each chord has a **root**, **third**, **fifth** and, for sevenths, a **seventh**. A track's `role`
 asks the harmony solver to land the clip's root on one of them. For suspended chords the "third" is
-the suspended note (the 2nd or 4th).
+the suspended note (the 2nd or 4th). `role bass` lands it on the chord's lowest note: a slash chord's
+bass, otherwise the root.
 
 ## Not supported (yet)
 
-- **Inversions and figured bass** (`I6`, `V65`, `I64`) — write the root-position chord. The bass note
-  isn't controlled separately.
-- **Slash chords** like `C/G` — the `/` is only for secondary chords (`V/V`).
+- **Figured bass** (`I6`, `V65`, `I64`) — write a slash chord instead: `I/3`, `V7/5`, `I/5`.
 - **Extensions and alterations**: 6, 9, 11, 13, add9, 7♯9, 7♭5 (dominant with a flat fifth) and so on.
   Use the nearest seventh chord.
 - **Key changes** within a score — one key per score (roman numerals can still borrow: `bVII`, `V/V`).

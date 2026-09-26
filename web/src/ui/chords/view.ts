@@ -17,6 +17,7 @@ import {
   fill,
   freshName,
   qualities,
+  inversions,
   jobOf,
   readHarp,
   removeString,
@@ -59,12 +60,13 @@ const JOBS: [string, string][] = [
   ["voiced:triad", "Play the chord (triad)"],
   ["voiced:seventh", "Play the chord (seventh)"],
   ["voiced:power", "Play the chord (root + fifth)"],
-  ["voiced:root", "Bass (the root)"],
+  ["voiced:root", "Bass line (the lowest note)"],
   ["follow", "Follow the root"],
   ["role:root", "Root"],
   ["role:third", "Third"],
   ["role:fifth", "Fifth"],
   ["role:seventh", "Seventh"],
+  ["role:bass", "Bass note (a slash chord's bass)"],
   ["role:chord", "Any chord tone"],
   ["role:any", "Free (fit anywhere)"],
   ["fixed", "Stay put"],
@@ -93,8 +95,12 @@ export function midiOf(pitch: string): number | null {
 /** 46 → "Bb2". */
 export const noteName = (midi: number) => `${NOTE_NAMES[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
 
-const pretty = (numeral: string) => numeral.replace(/o7$/, "°7").replace(/o$/, "°");
-const flat = (name: string) => name.replace(/b(?=\d|m|$|aug|dim|sus)/, "♭").replace(/^([A-G])b/, "$1♭");
+const pretty = (numeral: string) => numeral.replace(/o7(?=\/|$)/, "°7").replace(/o(?=\/|$)/, "°");
+const flat = (name: string) =>
+  name
+    .split("/")
+    .map((n) => n.replace(/b(?=\d|m|$|aug|dim|sus)/, "♭").replace(/^([A-G])b/, "$1♭"))
+    .join("/");
 
 export class HarpView {
   readonly root = el("section", { className: "harp", tabIndex: 0, ariaLabel: "Chord harp" });
@@ -411,11 +417,12 @@ export class HarpView {
   private menu(anchor: HTMLElement, p: PaletteChord) {
     document.querySelector(".cb-menu")?.remove();
     const m = el("div", { className: "cb-menu", role: "menu" });
-    for (const q of qualities(p.degree)) {
-      const item = el("button", { type: "button", role: "menuitem" }, el("b", {}, pretty(q.label)), el("span", {}, q.what));
-      item.addEventListener("click", () => (m.remove(), this.put_or_hear(q.label)));
-      m.append(item);
-    }
+    const item = (q: { label: string; what: string }) => {
+      const b = el("button", { type: "button", role: "menuitem" }, el("b", {}, pretty(q.label)), el("span", {}, q.what));
+      b.addEventListener("click", () => (m.remove(), this.put_or_hear(q.label)));
+      return b;
+    };
+    m.append(...qualities(p.degree).map(item), el("div", { className: "cb-sep", role: "separator" }, "In the bass"), ...inversions(p.numeral).map(item));
     const r = anchor.getBoundingClientRect();
     const host = this.root.getBoundingClientRect();
     m.style.left = `${r.left - host.left}px`;

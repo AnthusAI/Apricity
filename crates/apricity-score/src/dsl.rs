@@ -922,7 +922,7 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                             "as" => t.name = Some(l.next("a track name")?.text.to_string()),
                             "role" => {
                                 let r = l.next("a role")?;
-                                t.role = serde_yaml::from_str(r.text).map_err(|_| l.err(r.col, format!("role is any, chord, root, third, fifth or seventh, not `{}`", r.text)))?;
+                                t.role = serde_yaml::from_str(r.text).map_err(|_| l.err(r.col, format!("role is any, chord, root, third, fifth, seventh or bass, not `{}`", r.text)))?;
                             }
                             "follow" => t.transpose = Transpose::Follow,
                             "transpose" => {

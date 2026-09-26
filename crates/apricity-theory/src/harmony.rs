@@ -28,6 +28,8 @@ pub enum Role {
     Third,
     Fifth,
     Seventh,
+    /// The voice's tonic should be the chord's lowest note: a slash chord's bass, otherwise its root.
+    Bass,
 }
 
 #[derive(Debug, Clone)]
@@ -232,6 +234,7 @@ fn solo_score(pv: &Prepared, k: i32, chord: &Chord, key: Key, w: &Weights) -> (f
                 Role::Third => chord.member(Member::Third) == Some(lands),
                 Role::Fifth => chord.member(Member::Fifth) == Some(lands),
                 Role::Seventh => chord.member(Member::Seventh) == Some(lands),
+                Role::Bass => chord.bass_note() == lands,
             };
             if hit { w.role_bonus } else { 0.0 }
         }
@@ -295,6 +298,22 @@ mod tests {
         let fit = solve(&[v], &chord, key, &Weights::default());
         assert_eq!(fit.voices[0].semitones, -2, "{fit:#?}");
         assert_eq!(fit.voices[0].tonic_lands_on.unwrap().name(), "Db");
+    }
+
+    #[test]
+    fn a_bass_voice_takes_the_slash_note() {
+        // One note, C. Over B♭/D it could move down to B♭ (the root) or up to D (the bass): the role decides.
+        let (key, chord) = setup("F", "IV/3");
+        let mut pcp = [0.0; 12];
+        pcp[0] = 1.0;
+        let mut v = Voice::new("tuba", pcp);
+        v.tonic = Some(PitchClass::C);
+        v.role = Role::Bass;
+        let fit = solve(std::slice::from_ref(&v), &chord, key, &Weights::default());
+        assert_eq!(fit.voices[0].tonic_lands_on.unwrap().name(), "D", "{fit:#?}");
+        v.role = Role::Root;
+        let fit = solve(&[v], &chord, key, &Weights::default());
+        assert_eq!(fit.voices[0].tonic_lands_on.unwrap().name(), "Bb", "{fit:#?}");
     }
 
     #[test]

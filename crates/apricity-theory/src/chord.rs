@@ -107,34 +107,67 @@ pub enum Member {
 pub struct Chord {
     pub root: PitchClass,
     pub quality: Quality,
+    /// A slash chord's bass (`IV/3`, `Bb/D`, `C/Bb`): the note under the chord, which need not be a chord tone.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bass: Option<PitchClass>,
     /// What the user wrote, e.g. "iv" or "Dbm".
     pub label: String,
 }
 
 impl Chord {
     pub fn new(root: PitchClass, quality: Quality) -> Self {
-        let mut c = Self { root, quality, label: String::new() };
+        let mut c = Self { root, quality, bass: None, label: String::new() };
         c.label = c.name();
         c
     }
 
+    /// The chord's tones, root first; a slash chord's bass is one of them even when it isn't a chord tone.
     pub fn pitch_classes(&self) -> Vec<PitchClass> {
-        self.quality.intervals().iter().map(|&i| self.root.transpose(i)).collect()
+        let mut out: Vec<PitchClass> = self.quality.intervals().iter().map(|&i| self.root.transpose(i)).collect();
+        if let Some(b) = self.bass.filter(|b| !out.contains(b)) {
+            out.push(b);
+        }
+        out
+    }
+
+    /// The lowest note: a slash chord's bass, otherwise the root.
+    pub fn bass_note(&self) -> PitchClass {
+        self.bass.unwrap_or(self.root)
     }
 
     pub fn contains(&self, pc: PitchClass) -> bool {
         self.pitch_classes().contains(&pc)
     }
 
-    /// The tones a voicing plays, in semitones above the root, low to high.
+    /// The tones a voicing plays, in semitones from the root, low to high. A slash chord puts its bass lowest (the
+    /// nearest one to the root, up or down) and stacks the other tones above it: `C/E` is E G C, an inversion. The
+    /// `root` voicing is the bass line, so it plays the bass.
     pub fn voiced(&self, v: Voicing) -> Vec<i32> {
         let iv = self.quality.intervals();
-        match v {
+        let tones = match v {
             Voicing::Root => vec![0],
             Voicing::Power => vec![0, iv[2]],
             Voicing::Triad => iv[..3].to_vec(),
             Voicing::Seventh => iv.to_vec(),
+        };
+        let Some(bass) = self.bass.filter(|b| *b != self.root) else { return tones };
+        let low = self.root.signed_interval_to(bass);
+        if v == Voicing::Root {
+            return vec![low];
         }
+        let mut out = vec![low];
+        for t in tones {
+            if self.root.transpose(t) == bass {
+                continue;
+            }
+            let mut t = t;
+            while t <= low {
+                t += 12;
+            }
+            out.push(t);
+        }
+        out.sort();
+        out
     }
 
     /// Pitch class of a chord member (sus chords use the suspended tone as "third").
@@ -149,20 +182,55 @@ impl Chord {
         iv.get(idx).map(|&i| self.root.transpose(i))
     }
 
-    /// Chord-symbol name with flat-leaning spelling, e.g. "Dbm", "Eb7".
+    /// Chord-symbol name with flat-leaning spelling, e.g. "Dbm", "Eb7", "Bb/D".
     pub fn name(&self) -> String {
-        format!("{}{}", self.root, self.quality.suffix())
+        match self.bass.filter(|b| *b != self.root) {
+            Some(b) => format!("{}{}/{}", self.root, self.quality.suffix(), b),
+            None => format!("{}{}", self.root, self.quality.suffix()),
+        }
     }
 
     /// Parse either a roman numeral relative to `key` (`iv`, `V7`, `bVI`, `vii°`, `V/V`)
-    /// or a chord symbol (`Dbm`, `Eb7`, `F#dim`, `Bbmaj7`).
+    /// or a chord symbol (`Dbm`, `Eb7`, `F#dim`, `Bbmaj7`), either one with a bass after a slash: a chord tone
+    /// (`IV/3`, `V7/7`: 1, 3, 5 or 7) or a note (`IV/D`, `C/Bb`). A numeral after the slash is a secondary chord.
     pub fn parse(s: &str, key: Key) -> Result<Self, String> {
         let t = s.trim();
+        if let Some((head, tail)) = t.rsplit_once('/') {
+            let member = match tail {
+                "1" => Some(Member::Root),
+                "3" => Some(Member::Third),
+                "5" => Some(Member::Fifth),
+                "7" => Some(Member::Seventh),
+                _ => None,
+            };
+            let note = tail
+                .starts_with(|c: char| matches!(c, 'A'..='G'))
+                .then(|| PitchClass::parse_prefix(tail).filter(|(_, n)| *n == tail.len()).map(|(pc, _)| pc))
+                .flatten();
+            if member.is_some() || note.is_some() || tail.starts_with(|c: char| c.is_ascii_digit()) {
+                let mut c = Self::parse(head, key)?;
+                c.bass = Some(match (member, note) {
+                    (Some(m), _) => c.member(m).ok_or_else(|| format!("{t:?}: {} has no {}", c.name(), tail_name(tail)))?,
+                    (_, Some(pc)) => pc,
+                    _ => return Err(format!("{t:?}: after the slash, a bass is 1, 3, 5 or 7 (a chord tone) or a note like D or Bb")),
+                });
+                c.label = t.to_string();
+                return Ok(c);
+            }
+        }
         let first = t.chars().next().ok_or("empty chord")?;
         let is_roman = matches!(first, 'b' | '♭' | '#' | '♯') || roman_prefix(t.trim_start_matches(['b', '♭', '#', '♯'])).is_some();
         let mut c = if is_roman { parse_roman(t, key)? } else { parse_symbol(t)? };
         c.label = t.to_string();
         Ok(c)
+    }
+}
+
+fn tail_name(tail: &str) -> &'static str {
+    match tail {
+        "7" => "seventh",
+        "5" => "fifth",
+        _ => "third",
     }
 }
 
@@ -248,7 +316,7 @@ fn parse_quality(suffix: &str, upper: bool) -> Result<Quality, String> {
         ("maj7" | "Maj7" | "M7" | "Δ" | "Δ7", true) => Quality::Major7,
         ("maj7" | "Maj7" | "M7" | "Δ" | "Δ7", false) => Quality::MinorMajor7,
         ("6" | "64" | "65" | "43" | "42", _) => {
-            return Err(format!("inversion figures ({suffix}) aren't supported yet; write the root-position chord"))
+            return Err(format!("inversion figures ({suffix}) aren't supported; write a slash chord instead, like I/3 or V7/5"))
         }
         _ => return Err(format!("unknown chord quality {suffix:?} (try m, dim, aug, 7, maj7, m7, ø7, dim7, sus4)")),
     })
@@ -339,6 +407,39 @@ mod tests {
         assert_eq!(c.member(Member::Third).unwrap().name(), "E");
         assert_eq!(c.member(Member::Fifth).unwrap().name(), "Ab");
         assert_eq!(c.member(Member::Seventh), None);
+    }
+
+    #[test]
+    fn slash_chords() {
+        let c = |s: &str| roman(s, "F");
+        assert_eq!(c("IV/3").name(), "Bb/D");
+        assert_eq!(c("IV/D").name(), "Bb/D");
+        assert_eq!(c("Bb/D").name(), "Bb/D");
+        assert_eq!(c("IV/3").label, "IV/3");
+        assert_eq!(c("I/5").name(), "F/C");
+        assert_eq!(c("V7/7").name(), "C7/Bb");
+        assert_eq!(c("I/1").name(), "F", "the root in the bass is root position");
+        assert_eq!(c("C/Bb").name(), "C/Bb", "a bass outside the chord");
+        assert_eq!(names(&c("C/Bb")), ["C", "E", "G", "Bb"]);
+        assert_eq!(c("V/V").name(), "G", "still a secondary chord");
+        assert_eq!(c("V/V/3").name(), "G/B", "a secondary chord with a bass");
+        assert_eq!(c("IV/3").bass_note().name(), "D");
+        assert_eq!(c("IV").bass_note().name(), "Bb");
+        let key: Key = "F".parse().unwrap();
+        assert!(Chord::parse("IV/7", key).unwrap_err().contains("no seventh"));
+        assert!(Chord::parse("IV/9", key).unwrap_err().contains("1, 3, 5 or 7"));
+    }
+
+    #[test]
+    fn inversions_put_the_bass_lowest() {
+        let c = |s: &str| Chord::parse(s, "C".parse().unwrap()).unwrap();
+        assert_eq!(c("C/E").voiced(Voicing::Triad), [4, 7, 12], "first inversion: E G C");
+        assert_eq!(c("C/G").voiced(Voicing::Triad), [-5, 0, 4], "second inversion, G below the root");
+        assert_eq!(c("G7/F").voiced(Voicing::Seventh), [-2, 0, 4, 7], "third inversion");
+        assert_eq!(c("C/Bb").voiced(Voicing::Triad), [-2, 0, 4, 7], "a bass outside the chord goes under it");
+        assert_eq!(c("C/E").voiced(Voicing::Root), [4], "the bass line plays the bass");
+        assert_eq!(c("C/E").voiced(Voicing::Power), [4, 7, 12]);
+        assert_eq!(c("C").voiced(Voicing::Triad), [0, 4, 7]);
     }
 
     #[test]

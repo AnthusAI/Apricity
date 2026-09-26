@@ -130,7 +130,7 @@ describe("suggestions", () => {
   });
 });
 
-import { degreeOf, qualities } from "../src/ui/chords/model.ts";
+import { degreeOf, inversions, qualities } from "../src/ui/chords/model.ts";
 
 describe("degrees and qualities", () => {
   const pal = view("tempo 90\nkey F mixolydian\nclip a = a.wav\nchords I\ntrack a\n").palette;
@@ -146,6 +146,16 @@ describe("degrees and qualities", () => {
         const text = `tempo 90\nkey F mixolydian\nclip a = a.wav\nchords ${q.label}\ntrack a\n`;
         assert.equal(view(text).errors, undefined, `${q.label}: ${view(text).errors}`);
       }
+  });
+  it("every inversion in the menu is a slash chord the solver reads", () => {
+    assert.deepEqual(inversions("IV").map((q) => q.label), ["IV", "IV/3", "IV/5"]);
+    assert.deepEqual(inversions("V7/3").map((q) => q.label), ["V7", "V7/3", "V7/5", "V7/7"]);
+    const labels = pal.flatMap((p) => inversions(p.numeral).map((q) => q.label));
+    const r = rw.call("rw_fit", "F mixolydian", "[]", JSON.stringify(labels));
+    assert.equal(r.errors, undefined, String(r.errors));
+    const names = new Map(r.fits.map((f: { label: string; name: string }) => [f.label, f.name]));
+    assert.equal(names.get("IV/3"), "Bb/D");
+    assert.equal(names.get("I7/7"), "F7/Eb");
   });
 });
 

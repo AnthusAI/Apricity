@@ -37,7 +37,7 @@ export interface PaletteChord {
   function: "tonic" | "subdominant" | "dominant";
   seventh: boolean;
 }
-export type Role = "any" | "chord" | "root" | "third" | "fifth" | "seventh";
+export type Role = "any" | "chord" | "root" | "third" | "fifth" | "seventh" | "bass";
 
 /**
  * A string's job: move with the chord root, take a chord tone (the solver's hint), stay put, or play the chord
@@ -242,6 +242,17 @@ export function qualities(degree: number): { label: string; what: string }[] {
     { label: `${up}sus2`, what: "sus2" },
     { label: `${up}sus4`, what: "sus4" },
     { label: `${lo}o`, what: "diminished" },
+  ];
+}
+
+/** A chord with each of its tones in the bass (for the quality menu): `IV`, `IV/3`, `IV/5`, and `IV7/7` for a seventh. */
+export function inversions(label: string): { label: string; what: string }[] {
+  const base = label.replace(/\/.*$/, "");
+  return [
+    { label: base, what: "root in the bass" },
+    { label: `${base}/3`, what: "1st inversion: 3rd in the bass" },
+    { label: `${base}/5`, what: "2nd inversion: 5th in the bass" },
+    ...(/7|ø/.test(base) ? [{ label: `${base}/7`, what: "3rd inversion: 7th in the bass" }] : []),
   ];
 }
 

@@ -181,7 +181,8 @@ Brackets can nest: `[I [IV V]]` gives I for half a bar, then IV and V for a quar
 The same chord twice in a row joins into one longer chord (`I7 I7` is `I7*2`).
 
 **Chords** can be roman numerals read in the score's key (`I7`, `iv`, `bVI`, `V/V`, `viiø7`) or chord
-symbols (`Dbm`, `Eb7`, `Bbmaj7`). The full list is in [Chords and keys](chords.md).
+symbols (`Dbm`, `Eb7`, `Bbmaj7`), with a bass after a slash if you like (`IV/3`, `Bb/D`). The full
+list is in [Chords and keys](chords.md).
 
 ## Track options
 
@@ -210,7 +211,7 @@ Then any options. Each time a track sounds is a **note**: each repeat of a loop,
 | `as <name>` | `as riff` | Name the track. Needed when the same sound plays on two tracks: names must be unique, because the mixer tells tracks apart by name. | what it plays |
 | `follow` | `follow` | Move with the chord root (like a blues riff). Same as `transpose follow`. | |
 | `transpose <t>` | `transpose 0`, `transpose -3`, `transpose +5`, `transpose auto` | `auto`: the harmony solver chooses per chord. `follow`: move with the root. A number: always that many semitones. | `auto` |
-| `role <r>` | `role third` | Hint for where the clip's root should land: `root`, `third`, `fifth`, `seventh`, `chord` (any chord tone) or `any`. With `follow`, only `root` or `any` make sense. | `any` |
+| `role <r>` | `role third` | Hint for where the clip's root should land: `root`, `third`, `fifth`, `seventh`, `bass` (a slash chord's bass, else the root), `chord` (any chord tone) or `any`. With `follow`, only `root` or `any` make sense. | `any` |
 | `loop` | `loop` | Repeat the sound back to back. | ✓ |
 | `every <duration>` | `every 1bar` | Restart the sound at that interval; each note plays at most that long. | |
 | `at <positions…>` | `at 3 7 11`, `at 3:1 3:3` | One note at each position: a bar number, or `bar:beat` (both start at 1). Each note plays the whole sound. | |
@@ -291,6 +292,8 @@ strums once at every chord change and rings until the next one; with `steps "x .
 `at`, it strums the chord of the moment on those hits. `strum 20ms` starts each tone a little after
 the one below it, like a hand across strings. The chord sits nearest the clip's own pitch (the
 smallest move) unless `octave` says where its root goes: `voicing root  octave 2` is a bass line.
+Over a slash chord (`IV/3`) the bass goes lowest and the other tones stack above it (an inversion),
+and `voicing root` plays the bass note.
 
 **Melodies.** `notes "…"` is a step pattern whose notes are scale degrees of the key, 1 to 7:
 
@@ -520,7 +523,7 @@ clip-option = "beats" RANGE | "seconds" RANGE | "pick" DURATION
             | "root" NOTE | "ratio" NUMBER | "warp" ( "beats" | "complex" | "texture" | "repitch" )
             | "speed" NUMBER [ "x" ] ;
 track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER )
-            | "role" ( "any" | "chord" | "root" | "third" | "fifth" | "seventh" )
+            | "role" ( "any" | "chord" | "root" | "third" | "fifth" | "seventh" | "bass" )
             | "loop" | "every" DURATION | "at" POSITION { POSITION } | "steps" QUOTED | "notes" QUOTED
             | "voicing" ( "root" | "power" | "triad" | "seventh" ) | "strum" NUMBER "ms" | "octave" INTEGER
             | "grid" INTEGER | "swing" PERCENT [ "1/" INTEGER ] | "half" | "double" | "speed" NUMBER
