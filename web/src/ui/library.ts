@@ -29,6 +29,7 @@ export class Library {
   private jobsEl = el("div", { className: "jobs" });
   private decoded = new Map<string, Promise<AudioBuffer>>();
   private audition: AudioBufferSourceNode | null = null;
+  private auditionBtn: HTMLButtonElement | null = null;
   private jobsTimer = 0;
   private who: Me | null = null;
   private names: Handles | null = null;
@@ -384,6 +385,7 @@ export class Library {
     const t0 = ctx.currentTime;
     src.start(t0, from, to !== null ? to - from : undefined);
     this.audition = src;
+    this.auditionBtn = button ?? null;
     if (button) button.textContent = "■ Stop";
     const tick = () => {
       if (this.audition !== src) return;
@@ -404,5 +406,11 @@ export class Library {
     this.audition = null;
     a?.stop();
     if (button) button.textContent = "▶ Audition";
+  }
+
+  /** Stop any audition (the reader left this page). */
+  silence() {
+    this.stopAudition(this.auditionBtn ?? undefined);
+    this.auditionBtn = null;
   }
 }

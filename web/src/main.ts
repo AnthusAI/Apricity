@@ -49,6 +49,12 @@ const brand = document.querySelector<HTMLButtonElement>(".brand.link")!;
 const loaded = new Set<string>();
 function showTab(name: string) {
   if (!TABS.includes(name)) name = "scores";
+  // Leaving a page stops what it was playing: the score, or an audition in Clips or Samples.
+  if (document.body.dataset.tab && document.body.dataset.tab !== name) {
+    if (player.transport.playing) player.pause();
+    clips.silence();
+    samples.silence();
+  }
   document.body.dataset.tab = name;
   const kind = KIND_OF_TAB[name];
   const view = kind ? "score" : name;
