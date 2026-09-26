@@ -3,7 +3,7 @@
   "title": "Kit pad level matching flattens drum dynamics and boosts long tails (crash +14 dB)",
   "description": "Found with examples/salamander-beat.apr (Salamander Drumkit, warp repitch one-shots). apricity explain shows each pad's whole clip level-matched (target about -20 dBFS RMS, see docs/concepts.md level matching; compile.rs ~906-933). Effects: (1) a crash with an 11.5 s tail gets +14 dB and dominates; drums track peaks +4.8 dBFS and crash +6.0 dBFS before the master limiter; (2) ghost, backbeat and kick end up equally loud, so kit dynamics are flattened. Options: measure level from the attack window (first N ms) for one-shot pads; or let a pad/clip opt out (keep recorded level, e.g. 'level as-recorded' or volume only); or match on peak. Needs Gherkin first, and a decision on whether it belongs in kit/pad vocabulary (coordinate with the vocabulary session). Repro: apricity explain examples/salamander-beat.apr (uncommitted example; fetch with apricity sources fetch salamander-drumkit, analyze with apricity_analyze.cli --no-notes).",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Fixed on develop: pads levelled together per source folder by their attacks (peak beat loudness). Salamander Beat: 8 pads at -3.4 dB (was +14 dB); crash peak before the limiter -11.4 dBFS (was +6.0).",
       "created_at": "2026-09-26T17:01:38.853405Z",
       "comment_type": "default"
+    },
+    {
+      "id": "53c35f92-ec0e-45d6-9b1d-4ee143f3d471",
+      "author": "home",
+      "text": "Deployed (main 74c5516; new wasm live 17:21 UTC); prod smoke passed.",
+      "created_at": "2026-09-26T17:22:27.869221Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-24T21:54:40.633338Z",
-  "updated_at": "2026-09-26T17:01:38.853424Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T17:22:27.918634Z",
+  "closed_at": "2026-09-26T17:22:27.918597Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-sonnet-5",
