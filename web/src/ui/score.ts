@@ -13,6 +13,7 @@ import { api, compile, me, ratings, type Timeline } from "../apricity";
 import { byline, handles, type Handles } from "../data/handles";
 import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
+import { CommentThread } from "./comments";
 import { StarRating } from "./stars";
 import { KIND_LABEL, rebaseSamples, TEMPLATES, TEMPLATE_FOLDER } from "./templates";
 import { player, Superseded, type LoadProgress } from "../audio/player";
@@ -58,6 +59,9 @@ export class ScoreView {
   private saveBtn = el("button", { className: "btn", type: "button", disabled: true }, "Save");
   private statusEl = el("span", { className: "status" });
   private sideEl = el("div", { className: "side" });
+  /** The open score's comments, at the bottom of the side panel (kept across recompiles). */
+  private commentsHost = el("div", { className: "side-comments" });
+  private thread: { id: string; view: CommentThread } | null = null;
   private chordsEl = el("div", { className: "chords", title: "Click to jump" });
   private head = el("i", { className: "head" });
   private flow = new FlowView();
@@ -294,6 +298,12 @@ export class ScoreView {
     this.header();
   }
 
+  /** A score's path by its record id (e.g. from an Activity card), or null. */
+  async pathOf(id: string): Promise<string | null> {
+    const { scores } = await api.scores();
+    return scores.find((x) => x.id === id)?.path ?? null;
+  }
+
   /** The open score's record, if it is in the list. */
   private item(path = this.path): ScoreItem | undefined {
     return this.items.find((x) => x.path === path);
@@ -302,6 +312,13 @@ export class ScoreView {
   /** Title, kind, stars and the Save button for the open score and whoever is looking. */
   private async header() {
     const it = this.item();
+    // Its comments: a new thread when another score opens.
+    if (!it) (this.thread = null), this.commentsHost.replaceChildren();
+    else if (this.thread?.id !== it.id) {
+      this.thread = { id: it.id, view: new CommentThread({ type: "score", id: it.id }) };
+      this.commentsHost.replaceChildren(this.thread.view.root);
+      void this.thread.view.load();
+    }
     const mine = !!it && (owns(this.who, it.owner) || !!this.who?.curator);
     this.nameEl.textContent = it ? it.title : this.path ?? "—";
     this.nameEl.title = this.path ?? "";
@@ -518,7 +535,7 @@ export class ScoreView {
     // Warnings are listed above; don't repeat them at the end of the explanation.
     if (explain) kids.push(el("h2", {}, "How it was solved"), el("pre", { className: "explain" }, explain.split("\nWarnings:")[0].trimEnd()));
     if (!tl && !errors.length) kids.push(el("div", { className: "empty" }, "Open or create a score."));
-    this.sideEl.replaceChildren(...kids);
+    this.sideEl.replaceChildren(...kids, this.commentsHost);
   }
 
   private drawHead(beat: number) {

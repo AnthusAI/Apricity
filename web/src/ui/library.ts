@@ -8,6 +8,7 @@ import { mode } from "../data/client";
 import { player } from "../audio/player";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
+import { CommentThread } from "./comments";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
 import { computePeaks, Waveform } from "./waveform";
@@ -106,6 +107,21 @@ export class Library {
 
   private cloud() {
     return mode() === "cloud";
+  }
+
+  /** Open a sample (Samples) or a clip (Clips) by its record id, e.g. from an Activity card. */
+  async openId(id: string) {
+    await this.list.refresh();
+    if (this.mode === "clips") {
+      const clip = this.clips.find((c) => c.id === id);
+      if (!clip) return;
+      this.currentClip = clip;
+      this.list.current = clip.id;
+      this.list.render();
+      return this.show(clip.samplePath);
+    }
+    const s = this.samples.find((x) => x.id === id);
+    if (s) return this.show(s.path);
   }
 
   /** Load (or reload) the list; opens `select`, or what was open, or the top of the list. */
@@ -351,6 +367,8 @@ export class Library {
     const stat = (label: string, value: string) => el("div", { className: "stat" }, el("b", {}, label), el("span", {}, value));
     const keysOverTime = c.keys_over_time.map(keyLabel).join(" → ");
     const clip = this.mode === "clips" ? this.currentClip : null;
+    // Comments on the clip open in Clips, else on the sample.
+    const thread = new CommentThread(clip ? { type: "clip", id: clip.id } : { type: "sample", id: c.id });
     this.detailEl.replaceChildren(
       el("div", { className: "title-row" }, el("h1", {}, clip ? clip.name : c.title), this.stars.el),
       el("div", { className: "credit" }, clip ? `A clip of ${c.title} · ${fmt(clip.start)}–${fmt(clip.end)}` : [c.credit, c.rights].filter(Boolean).join(" ") || path),
@@ -370,7 +388,9 @@ export class Library {
       el("div", { className: "toolbar" }, makeClip, save, snippet),
       errors,
       table,
+      thread.root,
     );
+    void thread.load();
     renderTable();
     this.paintStars();
     requestAnimationFrame(() => wave.draw());

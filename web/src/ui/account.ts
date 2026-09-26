@@ -79,6 +79,8 @@ export class AccountControl {
     document.addEventListener("apricity:auth-changed", () => void this.refresh());
     // Something that needs the library asked the reader to sign in (e.g. a breakdown's "Open in Score").
     document.addEventListener("apricity:sign-in", () => void (this.account ? null : this.open("signin")));
+    // Something that signs with a handle (a comment) asked for one.
+    document.addEventListener("apricity:choose-handle", () => void (this.account ? this.open("handle") : this.open("signin")));
     void this.refresh();
   }
 
