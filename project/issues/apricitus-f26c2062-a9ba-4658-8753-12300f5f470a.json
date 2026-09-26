@@ -3,17 +3,30 @@
   "title": "apricity prune: remove one-star rated items via the GraphQL backend",
   "description": "Utility that signs in as a curator, queries the backend (AppSync/Amplify, web/amplify/data/resource.ts) for the caller's Rating rows with stars=1 on samples and clips, and removes those items. Removal: backend records (Sample, Clip, Candidate, Verdict, CrateItem, Marker, Rating, Comment), bucket files (audio/analysis), local audio, .apricity.json manifest and stems. Items a ScoreRef still uses are retired, not deleted (existing Clip.retired logic). Adds a tombstone list (sha256/catalog path) so 'apricity sources fetch' and future ingests never resurrect pruned audio. Dry run by default; --apply deletes. Findings: Rating is owner-only (allow.owner) so the CLI only sees the signed-in user's ratings; Sample/Clip delete needs curators group; Ratings are cloud-only (import-library.ts CLOUD_ONLY); Rust judge does not validate 1-5 stars. Spec first (features/), Rust only in the CLI, coordinate any web change via the web-session issue.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "f137f749-1f15-481a-a22e-78bd672091aa",
+      "author": "home",
+      "text": "Built and verified: analysis/apricity_analyze/prune.py (+prune_aws.py), 14 tests (fake backend), 301 analysis tests pass. Dry run against production (read-only): 5 to prune, 2 kept. KEEP voice/announcer.wav (examples/voice-layer.apr + score) and marine-band/stems/WashingtonPost/bass.wav (examples + scores). PRUNE: ccmixter Why_27918, ccmixter Dear-Mr-Williams_27808, marine-band/stems/Thunderer/bass.wav (46 candidates, 46 clips), and the ORIGINALS of the two St-Patricks-parade clean pairs (001, 003; audio kept as the clean copy's source). NOT APPLIED: awaiting the user's go-ahead; --apply deletes production rows and bucket objects. Run: PYTHONPATH=analysis python3 -m apricity_analyze.prune [--apply] (needs boto3; system python has it, the analysis venv does not).",
+      "created_at": "2026-09-26T22:58:53.914584Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
+    }
+  ],
   "created_at": "2026-09-26T17:04:25.943049Z",
-  "updated_at": "2026-09-26T17:04:25.943092Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T22:58:53.965249Z",
+  "closed_at": "2026-09-26T22:58:53.964749Z",
   "agent": {
     "platform": "claude_code",
     "model": "Sonnet 5",
