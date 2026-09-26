@@ -123,14 +123,15 @@ function editor(rec: Provenance, d: EditDeps): HTMLElement {
 }
 
 /** A score's credits: one citation per recording it plays, and the share-alike notice when any asks for it. */
-export function scoreCredits(recs: Provenance[], curator: boolean): HTMLElement {
+export function scoreCredits(recs: Provenance[], curator: boolean, based: string | null = null): HTMLElement {
   const c = creditsOf(recs);
   const lines = c.lines.filter((l) => l.documented || curator);
-  const all = () => [...lines.filter((l) => l.documented).map((l) => l.text), ...(c.shareAlike ? [`This work is shared under ${c.shareAlike.name} (${c.shareAlike.url}).`] : [])].join("\n");
+  const all = () => [...(based ? [based] : []), ...lines.filter((l) => l.documented).map((l) => l.text), ...(c.shareAlike ? [`This work is shared under ${c.shareAlike.name} (${c.shareAlike.url}).`] : [])].join("\n");
   return el(
     "section",
     { className: "credits" },
     el("h3", {}, "Credits"),
+    ...(based ? [el("p", { className: "lic-based" }, based)] : []),
     ...(c.shareAlike ? [el("p", { className: "lic-sa" }, `Share-alike: this uses sounds under ${c.shareAlike.name}, so what you make with it must be shared under ${c.shareAlike.name} too.`)] : []),
     el("ol", { className: "credit-list" }, ...lines.map((l) => el("li", { className: l.documented ? "" : "missing" }, l.documented ? l.text : `${l.title}: no license documented (only curators see this).`))),
     ...(lines.some((l) => l.documented) ? [el("div", { className: "lic-actions" }, copyButton("Copy credits", all))] : []),

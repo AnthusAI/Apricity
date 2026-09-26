@@ -117,3 +117,13 @@ export function creditsOf(recs: Provenance[]): Credits {
   }
   return { lines, shareAlike };
 }
+
+/**
+ * A fork's first credit: the score it was forked from, and the original when that's another score.
+ * `Based on “beat-1b” by @bo, after “beat-1” by @ann.`
+ */
+export function basedOn(parent?: { id: string; title: string; by: string } | null, root?: { id: string; title: string; by: string } | null): string | null {
+  if (!parent) return null;
+  const after = root && root.id !== parent.id ? `, after “${root.title}” by ${root.by}` : "";
+  return `Based on “${parent.title}” by ${parent.by}${after}.`;
+}

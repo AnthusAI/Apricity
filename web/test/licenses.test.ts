@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { authorOf, citation, creditsOf, documented, licenseOf, type Provenance } from "../src/data/licenses.ts";
+import { authorOf, basedOn, citation, creditsOf, documented, licenseOf, type Provenance } from "../src/data/licenses.ts";
 
 // The recordings as they are in production (2026-09-26).
 const salamander: Provenance = {
@@ -64,4 +64,12 @@ test("credits: once per recording, with the share-alike notice when any asks", (
   assert.deepEqual(c.lines.map((l) => [l.title, l.documented]), [["The Thunderer", true], ["Salamander Drumkit", true], ["uploads_kick_OH_F_1", false]]);
   assert.equal(c.shareAlike?.code, "cc-by-sa-3.0");
   assert.equal(creditsOf([thunderer, jukebox]).shareAlike, null);
+});
+
+test("a fork credits where it came from", () => {
+  assert.equal(basedOn({ id: "s1", title: "beat-1", by: "@ann" }), "Based on “beat-1” by @ann.");
+  assert.equal(basedOn({ id: "s2", title: "beat-1b", by: "@bo" }, { id: "s1", title: "beat-1", by: "@ann" }), "Based on “beat-1b” by @bo, after “beat-1” by @ann.");
+  assert.equal(basedOn({ id: "s1", title: "beat-1", by: "@ann" }, { id: "s1", title: "beat-1", by: "@ann" }), "Based on “beat-1” by @ann.", "the parent is the original");
+  assert.equal(basedOn({ id: "s2", title: "hero", by: "you" }, { id: "s1", title: "hero", by: "you" }), "Based on “hero” by you, after “hero” by you.", "same name, different score");
+  assert.equal(basedOn(null), null);
 });

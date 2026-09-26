@@ -547,3 +547,13 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .lic-sa { font-size: 13px; padding: 6px 10px; border-radius: 6px; background: var(--accent-soft); margin: 0 0 8px; }
 .credit-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 12.5px; line-height: 1.45; overflow-wrap: anywhere; }
 .credit-list li.missing { color: var(--bad, #c0392b); }
+
+/* Forks (ui/score.ts): where a score came from, and what came of it. */
+.editor .lineage { padding: 4px 12px; font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.editor .lineage .link, .forks .link { border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
+.editor .lineage .link:hover, .forks .link:hover { text-decoration: underline; }
+.forks { margin-top: 16px; }
+.forks h3 { font-size: 13px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.forks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+.lic-based { font-size: 13px; margin: 0 0 8px; font-style: italic; }
+.act-forks { font-size: 13px; color: var(--muted); margin-left: 12px; }

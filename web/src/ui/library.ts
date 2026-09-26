@@ -80,7 +80,7 @@ export class Library {
         tallies: async () => (await ratings()).tallies("clip"),
         row: (c) => ({
           title: c.name,
-          sub: `${c.undocumented ? "⚠ no license documented · " : ""}${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${c.source === "ml" && !owns(this.who, c.owner) ? "found by analysis" : byline(this.names, c.owner, owns(this.who, c.owner)) || "made by someone"}`,
+          sub: `${c.undocumented ? "⚠ no license documented · " : ""}${c.sampleTitle} · ${(c.end - c.start).toFixed(2)} s · ${c.source === "ml" && !owns(this.who, c.owner) ? "found by analysis" : byline(this.names, c.owner, owns(this.who, c.owner)) || "made by someone"}${this.copiedFrom(c)}`,
         }),
         text: (c) => `${c.name} ${c.sampleTitle} ${c.samplePath} ${byline(this.names, c.owner, false)}`,
         owner: (c) => c.owner,
@@ -108,6 +108,15 @@ export class Library {
 
   private cloud() {
     return mode() === "cloud";
+  }
+
+  /** " · copied from loop-1 by @ann" for someone's copy of another person's clip (else ""). */
+  private copiedFrom(c: ClipItem): string {
+    if (!c.copyOf) return "";
+    const p = this.clips.find((x) => x.id === c.copyOf);
+    if (!p) return " · copied from a clip that's gone";
+    const by = byline(this.names, p.owner, owns(this.who, p.owner)).replace(/^by /, "") || (p.source === "ml" ? "analysis" : "someone");
+    return ` · copied from ${p.name} by ${by}`;
   }
 
   /** Open a sample (Samples) or a clip (Clips) by its record id, e.g. from an Activity card. */
@@ -393,7 +402,7 @@ export class Library {
     void fillLicense();
     this.detailEl.replaceChildren(
       el("div", { className: "title-row" }, el("h1", {}, clip ? clip.name : c.title), this.stars.el),
-      el("div", { className: "credit" }, clip ? `A clip of ${c.title} · ${fmt(clip.start)}–${fmt(clip.end)}` : [c.credit, c.rights].filter(Boolean).join(" ") || path),
+      el("div", { className: "credit" }, clip ? `A clip of ${c.title} · ${fmt(clip.start)}–${fmt(clip.end)}${this.copiedFrom(clip)}` : [c.credit, c.rights].filter(Boolean).join(" ") || path),
       el(
         "div",
         { className: "stats" },

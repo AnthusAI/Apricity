@@ -11,10 +11,12 @@ import { aprLanguage } from "./apr-lang";
 import { tags as t } from "@lezer/highlight";
 import { api, compile, me, ratings, type Timeline } from "../apricity";
 import { byline, handles, type Handles } from "../data/handles";
-import { owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
+import { forkFrom, freeTitle, owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
 import { scoreCredits } from "./credits";
+import { basedOn } from "../data/licenses";
+import { timeAgo } from "./time";
 import { mode } from "../data/client";
 import { StarRating } from "./stars";
 import { KIND_LABEL, rebaseSamples, TEMPLATES, TEMPLATE_FOLDER } from "./templates";
@@ -59,6 +61,11 @@ export class ScoreView {
   private kindSel = el("select", { className: "kind", ariaLabel: "What this score is" });
   private nameEl = el("span", { className: "name" }, "—");
   private saveBtn = el("button", { className: "btn", type: "button", disabled: true }, "Save");
+  private forkBtn = el("button", { className: "btn", type: "button", title: "Make your own copy of this score, linked back to it" }, "Fork");
+  /** "forked from beat-1 by @ann", under the title bar. */
+  private lineageEl = el("div", { className: "lineage", hidden: true });
+  /** Its forks, in the side panel. */
+  private forksHost = el("div", { className: "side-forks" });
   private statusEl = el("span", { className: "status" });
   private sideEl = el("div", { className: "side" });
   /** The open score's comments, at the bottom of the side panel (kept across recompiles). */
@@ -110,6 +117,7 @@ export class ScoreView {
       ],
     });
     this.saveBtn.addEventListener("click", () => this.save());
+    this.forkBtn.addEventListener("click", () => void this.fork());
     for (const k of SCORE_KINDS) this.kindSel.append(el("option", { value: k, textContent: k === "song" ? "Song" : k[0].toUpperCase() + k.slice(1) }));
     this.kindSel.addEventListener("change", () => this.changeKind(this.kindSel.value as ScoreKind));
     this.list = new RankedList<ScoreItem>({
@@ -122,7 +130,10 @@ export class ScoreView {
         return scores.filter((x) => x.kind === this.kind);
       },
       tallies: async () => (await ratings()).tallies("score"),
-      row: (x) => ({ title: x.title, sub: `${x.undocumented ? "⚠ plays a sample with no license documented · " : ""}${byline(this.names, x.owner, owns(this.who, x.owner))}` }),
+      row: (x) => ({
+        title: x.title,
+        sub: [x.undocumented ? "⚠ plays a sample with no license documented" : "", byline(this.names, x.owner, owns(this.who, x.owner)), x.forks ? `${x.forks} fork${x.forks > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · "),
+      }),
       text: (x) => `${x.title} ${byline(this.names, x.owner, false)}`,
       owner: (x) => x.owner,
       me: async () => this.who,
@@ -138,7 +149,7 @@ export class ScoreView {
     });
     root.append(
       this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.refBtn(), this.saveBtn), el("div", { className: "cm-host" }, this.view.dom)),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.refBtn(), this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "cm-host" }, this.view.dom)),
       this.sideEl,
       ...this.dockPanels(),
     );
@@ -325,6 +336,8 @@ export class ScoreView {
       void this.thread.view.load();
     }
     const mine = !!it && (owns(this.who, it.owner) || !!this.who?.curator);
+    this.forkBtn.hidden = !it;
+    this.renderLineage(it);
     this.nameEl.textContent = it ? it.title : this.path ?? "—";
     this.nameEl.title = this.path ?? "";
     this.kindSel.hidden = !it;
@@ -341,6 +354,41 @@ export class ScoreView {
     } catch {}
     if (this.item()?.id !== it.id) return;
     this.stars.set({ mine: mineStars, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
+  }
+
+  /** "forked from beat-1 by @ann" under the bar, and the score's own forks in the side panel. */
+  private renderLineage(it: ScoreItem | undefined) {
+    const who = (owner: string | null | undefined) => byline(this.names, owner, owns(this.who, owner)).replace(/^by /, "") || "someone";
+    const openLink = (x: ScoreItem) => {
+      const a = el("button", { type: "button", className: "link" }, x.title);
+      a.addEventListener("click", () => void this.openAny(x));
+      return a;
+    };
+    const parent = it?.forkOf ? this.items.find((x) => x.id === it.forkOf) : undefined;
+    this.lineageEl.hidden = !it?.forkOf;
+    if (it?.forkOf) this.lineageEl.replaceChildren("forked from ", ...(parent ? [openLink(parent), ` by ${who(parent.owner)}`] : ["a score that's gone"]));
+    const forks = it ? this.items.filter((x) => x.forkOf === it.id).sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? "")) : [];
+    this.forksHost.replaceChildren(
+      ...(forks.length
+        ? [el("section", { className: "forks" }, el("h3", {}, `Forks · ${forks.length}`), el("ul", {}, ...forks.map((f) => el("li", {}, openLink(f), ` · ${who(f.owner)} · ${timeAgo(f.createdAt)}`))))]
+        : []),
+    );
+  }
+
+  /** Open a score in the tab of its kind (a fork's parent may be another kind). */
+  private async openAny(x: ScoreItem) {
+    if (x.kind !== this.kind) document.dispatchEvent(new CustomEvent("apricity:open-item", { detail: { type: "score", id: x.id } }));
+    else await this.open(x.path);
+  }
+
+  /** Make your own copy of the open score (its current text), linked back to it. */
+  private async fork() {
+    const it = this.item();
+    if (!it) return;
+    if (!this.who) return signIn();
+    const text = this.view.state.doc.toString();
+    this.saved = text; // any edits go with the fork
+    await this.create(text, it.title, it.path);
   }
 
   private async rate(stars: number | null) {
@@ -402,12 +450,17 @@ export class ScoreView {
     return this.who ? "scores" : null; // locally there is one person; a guest has no folder
   }
 
-  /** A new score of this tab's kind: the kind's template, or (`from`) a copy of another score's text. */
+  /**
+   * A new score of this tab's kind: the kind's template, or (`from`) a fork of another score, which remembers where
+   * it came from (and the original at the start of the chain).
+   */
   private async create(text?: string, suggested?: string, from?: string) {
     const folder = await this.folder();
     if (!folder) return signIn();
     const one = KIND_LABEL[this.kind].one;
-    const name = prompt(`Name for the new ${one} (letters, digits, - and _):`, suggested ?? `my-${one}`)?.trim();
+    const parent = from ? this.item(from) : undefined;
+    const taken = this.items.filter((x) => x.path.startsWith(`${folder}/`)).map((x) => x.title);
+    const name = prompt(`Name for the new ${one} (letters, digits, - and _):`, freeTitle(suggested ?? `my-${one}`, taken))?.trim();
     if (!name) return;
     const safe = name.replace(/[^A-Za-z0-9_-]+/g, "-");
     const format = from?.endsWith(".yaml") ? "yaml" : "apr";
@@ -420,7 +473,7 @@ export class ScoreView {
       return;
     }
     try {
-      await api.saveScore(path, text, this.kind);
+      await api.saveScore(path, text, this.kind, parent ? forkFrom(parent) : undefined);
     } catch (e) {
       this.statusEl.textContent = `couldn't create ${path}: ${(e as Error).message}`;
       return;
@@ -527,7 +580,14 @@ export class ScoreView {
     this.creditsKey = key;
     const [recs, who] = await Promise.all([api.creditsFor(paths).catch(() => []), me().catch(() => null)]);
     if (key !== this.creditsKey) return;
-    this.creditsHost.replaceChildren(recs.length ? scoreCredits(recs, mode() === "local" || !!who?.curator) : "");
+    // A fork credits the score it came from first (and the original, further back).
+    const it = this.item();
+    const named = (id?: string) => {
+      const x = id ? this.items.find((s) => s.id === id) : undefined;
+      return x ? { id: x.id, title: x.title, by: byline(this.names, x.owner, false).replace(/^by /, "") || "someone" } : null;
+    };
+    const based = it?.forkOf ? basedOn(named(it.forkOf), named(it.forkRoot)) : null;
+    this.creditsHost.replaceChildren(recs.length || based ? scoreCredits(recs, mode() === "local" || !!who?.curator, based) : "");
   }
 
   private renderSide(tl: Timeline | null, errors: string[], explain: string) {
@@ -551,7 +611,7 @@ export class ScoreView {
     // Warnings are listed above; don't repeat them at the end of the explanation.
     if (explain) kids.push(el("h2", {}, "How it was solved"), el("pre", { className: "explain" }, explain.split("\nWarnings:")[0].trimEnd()));
     if (!tl && !errors.length) kids.push(el("div", { className: "empty" }, "Open or create a score."));
-    this.sideEl.replaceChildren(...kids, this.creditsHost, this.commentsHost);
+    this.sideEl.replaceChildren(...kids, this.forksHost, this.creditsHost, this.commentsHost);
   }
 
   private drawHead(beat: number) {
