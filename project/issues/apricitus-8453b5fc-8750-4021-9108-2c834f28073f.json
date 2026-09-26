@@ -1,0 +1,43 @@
+{
+  "id": "apricitus-8453b5fc-8750-4021-9108-2c834f28073f",
+  "title": "Write design/link.md: findings, decisions, tolerances and words for Link",
+  "description": "## Intent\nTurn the three spikes into `design/link.md`, the design note every later epic follows.\n\n## Contents of `design/link.md`\n- **What Link shares and doesn't**: tempo, beat and phase within a quantum, start/stop; not song position, not the time signature.\n- **Findings** from the three spike tasks (binding, RT-safe capture, host time, in-process peers, permission prompt, browser accuracy, cloud reachability).\n- **Decisions**: binding; crates (`apricity-link` native-only; the clock math in `apricity-engine`); following strategy (bridge, trim, resync threshold, re-render debounce); Apricity never sets the session's tempo or start/stop, and proposes the score's tempo only when alone; the quantum defaults to the time signature; start/stop sync is on by default with `--no-start-stop` to opt out.\n- **Tolerances** as numbers (proposal: native 3 ms, browser 10 ms, p99 and max).\n- **Words**: Link, Link session, peer, quantum, start/stop sync, phase. Not \"sync\" alone (library sync) and not \"follow\" alone (`transpose follow`). Proposed rows for `design/vocabulary.md`.\n- A Mermaid diagram of the clock path, native and browser.\n- Open questions left for the owner.\n\n## Out of scope\nCode. Docs outside `design/` (each epic updates `docs/`).\n\n## Verify\n`design/link.md` exists; `grep -c \"Decisions\" design/link.md` ≥ 1; the owner's agreement on tolerances is a comment on apricitus-2e6ec4. Reviewer reads it against the three spike comments.\n\nLabel `daw`. Commit: `docs(<this task id>): design/link.md` (not a release-bearing change). Blocked by the three spike tasks.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0229888f-19da-4ad6-b9d3-1e7420afdfe3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-5c021bc3-b18b-4c9b-a865-040a71be7051",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-7e32cbd5-113f-458f-8832-301b411f7a1b",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-950f6230-a70a-4239-8de0-c901817bb825",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:06.061727Z",
+  "updated_at": "2026-09-26T22:07:47.564904Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

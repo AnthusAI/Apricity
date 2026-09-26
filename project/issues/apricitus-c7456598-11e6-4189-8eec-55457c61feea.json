@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-c7456598-11e6-4189-8eec-55457c61feea",
+  "title": "apricity-score: list every kit's resolved pads in the compiled timeline (Timeline.kits)",
+  "description": "## Intent\n\nThe exporter needs each kit's resolved pads even when no track plays the kit. Today the compiler resolves kits (`compile_with`, crates/apricity-score/src/compile.rs, the \"kits: sliced kits first\" block) but only exposes pads through `TrackInfo.pieces` and level gains through `TrackInfo.level_groups` of tracks that play a whole kit.\n\n## Scope\n\n- Add `Timeline.kits: Vec<KitInfo>` (additive, `skip_serializing_if` empty): name, kind (sliced | drum), and per pad: number or name, `source` index, `src_start`/`src_end`, the level group gain in dB, the pad's `tuning_cents`, and the root pitch (clip `root` or the detected tonic of the region).\n- Level gains computed by the same function the tracks use (no second copy of level matching).\n- Doc comments on the new types; `apricity compile` output shows the field.\n\n## Out of scope\n\nAny DAW format. Changing level matching.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-score\n```\nNew unit tests in `crates/apricity-score/tests/compile.rs`: a sliced kit and a drum kit that no track plays still appear in `kits`, with the same gains `apricity explain` prints for a track that plays them. Every example still compiles unchanged (`tests/examples.rs`).\n\n## Release\n\n`feat(<this task id>): the compiled timeline lists every kit's pads`. Not breaking (additive field). Web: the typed timeline in `web/src` may add the optional field later; no change needed now.\n\n## Dependencies\n\nNone inside the initiative; can start in parallel with the crate chore after M0.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.262243Z",
+  "updated_at": "2026-09-26T22:03:19.262276Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

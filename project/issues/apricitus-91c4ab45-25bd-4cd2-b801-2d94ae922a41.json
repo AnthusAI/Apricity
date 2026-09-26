@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-91c4ab45-25bd-4cd2-b801-2d94ae922a41",
+  "title": "Report automation left out, and a manual check in the DAW of the automate example",
+  "description": "## Intent\n\nReport automation the set can't hold, and prove M4 in the DAW.\n\n## Steps\n\n- Warnings for lanes whose target was left out of its device (M3's list), located by the automate line.\n- Manual (owner with the DAW): put the `automate` example from `docs/language.md` (the `stab` track) in a score, export it, open it: envelopes visible on the right controls, the fade, the step and the sweep audible; A/B against `apricity render`.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — \"Automation that can't be kept is reported\" passes; a comment with the DAW check.\n\n## Release\n\n`feat(<this task's id>): report automation a DAW set can't hold`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6f091cf7-753d-4580-9ea4-d17a89f48257",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-19936767-f032-4b4f-85f5-4d993aea0cfb",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-6c8c19dd-ccef-42e1-b6be-c1d62f2f2eab",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:29.309732Z",
+  "updated_at": "2026-09-26T22:06:51.599007Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

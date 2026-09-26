@@ -1,0 +1,31 @@
+{
+  "id": "apricitus-0afc13f7-e149-4efb-8179-3fffd5f955f4",
+  "title": "The web app copes when the Link clock drops, is noisy, is suspended, or isn't offered",
+  "description": "As a performer using the web app, I want the page to cope when the clock goes away or can't be offered, so that a hiccup never stops the music or leaves me guessing.\n\nSpec file: `features/link/browser.feature`.\n\n```gherkin\nFeature: Losing and finding the Link clock in the web app\n\n  Scenario: The server goes away\n    Given the web app plays in a Link session\n    When the connection to \"/link\" drops\n    Then the web app keeps playing at the last tempo on its own clock\n    And the app shows that Link is lost and it is retrying\n    When the connection comes back\n    Then playback re-aligns on the session's next bar line\n\n  Scenario: A slow round trip is not trusted\n    Given the clock offset was measured from pings with 2 ms round trips\n    When a ping comes back after 80 ms\n    Then that ping does not move the clock offset\n\n  Scenario: The tab was in the background\n    Given the web app plays in a Link session\n    When the tab comes back after its audio was suspended\n    Then playback re-aligns on the session's next bar line\n\n  Scenario: The cloud app offers no Link\n    Given the web app was opened from the cloud (amplify_outputs.json has no custom.apricity.link)\n    Then there is no Link control\n    And the Docs say how to use Link with apricity serve --link\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:11.252132Z",
+  "updated_at": "2026-09-26T22:06:11.252176Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

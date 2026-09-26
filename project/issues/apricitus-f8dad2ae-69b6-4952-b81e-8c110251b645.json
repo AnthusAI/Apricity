@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f8dad2ae-69b6-4952-b81e-8c110251b645",
+  "title": "The samples a set plays travel with it (collected, or referenced in place, or from a library)",
+  "description": "As a producer, I want the samples a set uses to travel with it, so that I can move the folder to another machine and it still opens.\n\n```gherkin\nFeature: Samples travel with the set\n  Background:\n    Given the samples \"a/horn.wav\" and \"b/horn.wav\"\n    And a score \"two.apr\" that plays both\n\n  Scenario: Samples are collected into the set folder\n    When I export \"two.apr\" as a DAW set\n    Then the folder \"two Project/Samples/Imported\" holds a copy of each sample the score plays\n    And every clip refers to its sample by a path relative to the set\n    And samples the score does not play are not copied\n\n  Scenario: Two samples with the same file name do not collide\n    When I export \"two.apr\" as a DAW set\n    Then the two copies have different file names\n    And each clip refers to the copy of its own sample\n\n  Scenario: Referencing samples where they are\n    When I export \"two.apr\" as a DAW set with \"--no-collect\"\n    Then no samples are copied\n    And every clip refers to its sample's absolute path\n\n  Scenario: Exporting from a library\n    Given a library holding the samples of \"two.apr\"\n    When I export \"two.apr\" as a DAW set with \"--library\" set to that library\n    Then the export succeeds\n    And the collected samples are the library's files\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.374126Z",
+  "updated_at": "2026-09-26T22:06:25.374158Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

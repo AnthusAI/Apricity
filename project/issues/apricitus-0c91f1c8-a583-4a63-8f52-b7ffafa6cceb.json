@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-0c91f1c8-a583-4a63-8f52-b7ffafa6cceb",
+  "title": "WarpMap model: markers, beat numbering, warp mode, transpose and detune",
+  "description": "## Intent\nThe model both directions share: `apricity_daw::warp::WarpMap` and how it is built from a sample.\n\n## Scope\n- `crates/apricity-daw/src/warp.rs`: `WarpMap { markers: Vec<(seconds, beat)>, warped: bool, mode: DawWarpMode, transpose: i32, detune_cents: i32, region: Option<(start_s, end_s)>, loop_on: bool }`.\n- `WarpMap::from_clip(&apricity_score::Clip)`: markers from `rhythm.warp_markers` (M4 later switches this to the effective grid); `warped = has_beats()`; detune = rounded `-tuning_cents`, split into transpose + detune when beyond the DAW's range (per §Formats); mode per §Mapping (drum stems `beats`, everything else `complex`).\n- Beat numbering exactly as `design/daw-sidecars.md` §Formats decided (negative pickups kept, or a recorded offset).\n- `DawWarpMode` covers all six DAW modes; conversions to/from `apricity_score::score::WarpModeSpec` are partial and say so.\n- Unit tests for detune splitting (-30, -70, +55 cents) and mode mapping.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-daw warp`.\n\nCommit: `feat(<this id>): warp map model for DAW sidecars`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-3acb4717-a499-4448-a037-e0bf09e03b8a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:27.808925Z",
+  "updated_at": "2026-09-26T22:06:35.656938Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

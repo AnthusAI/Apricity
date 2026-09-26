@@ -12,9 +12,25 @@
     "daw"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "d35697a0-9d44-4d59-915a-27e0704efc06",
+      "author": "home",
+      "text": "## Plan: transport and tempo over Link (Plan Link Sync)\n\n### Epics, in delivery order\n1. **M0: Spike** (apricitus-022988): binding and build targets, RT-safe capture, host-time mapping, varispeed bridge vs re-phase, browser clock accuracy, cloud reachability, macOS permission. Leaves `design/link.md`, no product code. 4 tasks.\n2. **M1: The engine follows a beat clock** (apricitus-e661eb): `apricity-engine::clock`, the `Mixer` follows a clock line, bridge + drift trim, re-warp at the clock's tempo, wasm export. 4 stories, 5 tasks, 2 chores (plus the red-spec task).\n3. **M2: `apricity play --link`** (apricitus-97a1dd): new native-only crate `apricity-link`, `play --link --quantum --no-start-stop --latency`, `apricity link`. 5 stories, 6 tasks, 2 chores.\n4. **M3: The web app through `apricity serve --link`** (apricitus-75c473): `/link` WebSocket, `schema/link-clock.schema.json`, `web/src/audio/link-clock.ts`, player and worklet, UI needs for the web session. 3 stories, 6 tasks, 2 chores.\n5. **M4: Proven in phase** (apricitus-4e9cee): 10-minute native and browser harnesses with reports, the DAW checklist, numbers posted here. 3 stories, 3 tasks, 1 chore.\n\n### Key decisions (proposed; M0 confirms)\n- **Apricity only follows.** It never commits a tempo or a start/stop to the session. It proposes the score's tempo only when it is alone at join time; later `tempo` edits are reported as not used while linked.\n- **What Link doesn't share:** song position and time signature. Bar 1 lands on a session bar line; the quantum defaults to the score's time signature (`--quantum` overrides).\n- **Start/stop sync on by default**; `--no-start-stop` for peers that don't share it.\n- **Tempo changes:** a varispeed bridge keeps the beat until the arrangement re-warped at the new tempo lands on the next bar line; a re-render debounce for ramps; cached renders reused when a tempo comes back.\n- **Crates:** the clock math in `apricity-engine` (it builds for wasm); the SDK only in the native `apricity-link`.\n- **Browser:** the peer lives in the Rust `apricity serve`, not `server.py` (being retired), so there is no Python part. No language or manifest change; one new schema for the wire messages.\n- **Words:** Link, Link session, peer, quantum, phase, start/stop sync. Not \"sync\" alone (`apricity sync` is the library) and not \"follow\" alone (`transpose follow`).\n- **Tolerance proposal:** native 3 ms, browser 10 ms, at p99 and max.\n\n### Open questions for the owner\n1. Is the tolerance proposal right? The initiative says \"one beat-phase tolerance\"; the harness needs numbers.\n2. Should start/stop sync be on by default?\n3. Should the cloud app get Link through a local helper, or stay local-only (depends on M0's reachability finding)?\n4. iOS / Swift app: the SDK's iOS terms differ from the desktop's (joins apricitus-874f56). Out of scope here, but it decides whether `apricity-link` is reusable there.\n5. Should the 10-minute harnesses run in CI on a schedule?\n6. May `apricity play --link` start a session at the score's tempo when alone (a DAW that joins later adopts it, if M0 confirms Link merges that way)?\n\n### Dependencies\nNo hard dependency on the other DAW initiatives (apricitus-6edba8, apricitus-d7746d, apricitus-5562e0). Relates to apricitus-8edd5f, apricitus-205813, apricitus-874f56, apricitus-1f0e91, apricitus-92b5b5, apricitus-7edd75; the browser harness is blocked by apricitus-94da2e.\n\n```mermaid\nflowchart TD\n  M0[M0 Spike apricitus-022988] --> M1[M1 Engine follows a clock apricitus-e661eb]\n  M1 --> M2[M2 play --link apricitus-97a1dd]\n  M1 --> M3[M3 serve --link + web apricitus-75c473]\n  M2 --> M3\n  M2 --> M4[M4 Proven in phase apricitus-4e9cee]\n  M3 --> M4\n  PW[apricitus-94da2e Playwright smoke] -.-> M4\n  LIC[apricitus-874f56 licensing] -.-> M2\n  WS[apricitus-92b5b5 ws from the page] -.-> M3\n```",
+      "created_at": "2026-09-26T22:08:18.734303Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Plan Link Sync",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
   "created_at": "2026-09-26T20:14:35.674508Z",
-  "updated_at": "2026-09-26T20:14:35.674549Z",
+  "updated_at": "2026-09-26T22:08:18.734334Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

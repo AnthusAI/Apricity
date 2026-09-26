@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-b7a44d1e-67d0-4221-95b6-2d7f62c1afae",
+  "title": "Automation becomes envelopes with the same ramps, steps, jumps and octave sweeps",
+  "description": "As a producer, I want the score's automation as envelopes in the set, so that fades and sweeps play and can be edited there.\n\n```gherkin\nFeature: Automation becomes envelopes\n  Background:\n    Given the score \"sweep.apr\":\n      \"\"\"\n      tempo 120\n      key C\n      clip stab = stab.wav\n      bars 8\n      track stab  steps \"x . x . x . x .\"  filter lp 20000\n        eq    highcut 20k\n        comp  3:1  -22dB  mix 0%\n        automate volume      1=-60dB  2=0dB\n        automate comp.mix    step  1=0%  5=100%\n        automate eq.highcut  1=20k  3=6k  5=5k\n      \"\"\"\n\n  Scenario: A fade in on the track's volume\n    When I export \"sweep.apr\" as a DAW set\n    Then the track \"stab\" has a volume envelope from -60 dB at bar 1 to 0 dB at bar 2\n\n  Scenario: A step holds its value until the next point\n    When I export \"sweep.apr\" as a DAW set\n    Then the Compressor's dry/wet envelope on \"stab\" is 0% until bar 5 and 100% from bar 5 on\n\n  Scenario: A frequency sweep moves by octaves\n    When I export \"sweep.apr\" as a DAW set\n    Then the EQ Eight high cut envelope on \"stab\" passes 20 kHz at bar 1, 6 kHz at bar 3 and 5 kHz at bar 5\n    And halfway between bars 1 and 3 it is within a quarter tone of 11 kHz\n\n  Scenario: Values hold before the first point and after the last\n    When I export \"sweep.apr\" as a DAW set\n    Then the EQ Eight high cut envelope on \"stab\" stays at 5 kHz from bar 5 to the end\n\n  Scenario: Two points at one position jump\n    Given the track \"stab\" has \"automate pan 3=-50 3=50\"\n    When I export \"sweep.apr\" as a DAW set\n    Then the pan envelope on \"stab\" jumps from 50% left to 50% right at bar 3\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6f091cf7-753d-4580-9ea4-d17a89f48257",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:28.902897Z",
+  "updated_at": "2026-09-26T22:06:28.902930Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-59a582e5-5035-4be1-953c-4cb4a9ef2c91",
+  "title": "Spike: decode the current DAW's .asd (warp markers, mode, detune, loop) and test a hand-patched one",
+  "description": "## Intent\nAnswer M0 questions 1, 2 and 4 for the `.asd`: find where the current DAW version stores warp markers, warp on/off, warp mode, detune, start/end/loop, and the version marker; and check whether a hand-written `.asd` is honoured.\n\n## Steps\n1. Hex-diff the owner's reference files: same audio with different markers, modes and detune isolates each field.\n2. Compare with the publicly documented older layouts (versions read by existing open-source parsers); note what moved.\n3. Throwaway decoder in the scratchpad prints the markers of every reference `.asd`; they must equal the README table.\n4. Hand-patch one `.asd` (move one marker), put it beside a fresh copy of the WAV, drag the WAV into the DAW: is the patched marker used? Repeat after changing the WAV's modification time, and with a copied WAV of a different length.\n5. Record what triggers the DAW to rewrite the file.\n\n## Output\nA findings comment here and the `.asd` section of `design/daw-sidecars.md` §Formats (field, offset/encoding, versions, confidence).\n\n## Verify (manual)\nThe scratch decoder's printout matches the fixture README for every reference `.asd`; the drag-in test result is recorded with the DAW version.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9fb5fec4-4cf9-4f87-9db3-535b47e5a7ab",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2c3dfeff-8e27-42f6-9c4e-5fa4971d1f28",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T21:59:43.985597Z",
+  "updated_at": "2026-09-26T22:06:35.243029Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

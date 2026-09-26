@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-de4d5ebd-b4a8-4493-abee-a4521a7c070b",
+  "title": "Stock device templates from the reference sets and a unit-converting parameter patcher",
+  "description": "## Intent\n\nStock device templates and a parameter patcher.\n\n## Steps\n\n- `crates/apricity-daw/templates/devices/*.xml`: each device used (EQ Eight, Compressor, Limiter, Saturator, Redux, Gate, Utility, Reverb, Delay, Auto Filter), extracted from the M0 reference `devices.als`, at default values; loaded with `include_str!`.\n- `crates/apricity-daw/src/devices/mod.rs`: set a parameter by name in the score's units, converting to the set's stored value (real or normalized) per `design/daw-set.md`; fresh ids per instance.\n- Unit tests: each conversion round-trips within tolerance; a template instance passes the set checker.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw devices`.\n\n## Release\n\n`feat(<this task's id>): stock device templates for DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8d493b02-ec2a-44ef-a24f-a74519b4cce8",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-6f10c9d7-9295-4c75-8682-bb31145d19c7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:28.434566Z",
+  "updated_at": "2026-09-26T22:06:50.866462Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

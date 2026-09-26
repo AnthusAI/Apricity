@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-2441b7da-b4cf-4518-8b15-83a13c6430c1",
+  "title": "Web need: import an .asd or .alc onto a Library sample with a dry-run report",
+  "description": "## Need (for the web/docs session; not visuals)\nA person working in the web app should be able to drop an `.asd` or `.alc` onto a sample in the Library, see the same dry-run report the CLI prints (what moves, by how much), confirm, and later reset to the analysis grid.\n\n## Data the UI needs\nAn import endpoint on `apricity serve` taking the file bytes and a sample id, with `dryRun`, returning the report lines and errors with location (same texts as the CLI), and a reset call. Writes go through the same domain op as the CLI.\n\n## Out of scope\nVisual design.\n\n## Verify\nThe web session files its UI tasks from this; done when the endpoint exists with a test in `crates/apricity-cli/tests` calling it over HTTP.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-f834352b-5230-459a-832b-241bc5e2e480",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.966443Z",
+  "updated_at": "2026-09-26T22:06:37.299746Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

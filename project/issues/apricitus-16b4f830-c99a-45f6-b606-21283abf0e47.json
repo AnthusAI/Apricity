@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-16b4f830-c99a-45f6-b606-21283abf0e47",
+  "title": "Clip file names carry the section letter, length and key from key over time",
+  "description": "## Behavior\n```gherkin\nFeature: Clip file names carry the section letter, length and key\n\n  Scenario: The key comes from key over time\n    Given an analyzed march in Bb whose trio (from 60 s) is in Eb\n    And a saved clip \"trio-riff\" from 64 s to 66 s\n    When I export its sidecars\n    Then its file is named with key \"Eb\"\n\n  Scenario: A clip across a modulation takes the key where most of it lies\n    Given a saved clip covering 1 s in Bb and 3 s in Eb\n    When I export its sidecars\n    Then its file is named with key \"Eb\"\n\n  Scenario: No section letter when the sample has no sections\n    Given an analyzed drum stem with a saved clip \"loop-1\" one bar long and no sections\n    When I export its sidecars\n    Then its file is named \"1bar loop-1.alc\"\n\n  Scenario: No key for unpitched or uncertain audio\n    Given an analyzed drum stem whose key strength is below the naming threshold\n    When I export its sidecars\n    Then no clip file name contains a key\n\n  Scenario: No length for an unwarped sample\n    Given the analyzed fixture sample \"free-time.wav\" with a saved clip \"phrase-1\"\n    When I export its sidecars\n    Then its file is named \"phrase-1.alc\"\n    And that clip file has warping off\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f5b805c2-0fb0-4c8e-ae4b-7629ad968c6a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:34.111952Z",
+  "updated_at": "2026-09-26T22:03:34.111981Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

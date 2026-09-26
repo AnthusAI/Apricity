@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-3848a79d-9ebb-457c-87b6-12cde0c90f05",
+  "title": "A sample's markup exports into kind folders, each clip file playing its region on the grid",
+  "description": "As a beatmaker, I want a sample's sections, loops and one-shots in a folder of my choosing, sorted by kind, each clip file playing exactly its region on the grid, so that I can browse and drag Apricity's markup in the DAW.\n\nFile names follow the shared rule of apricitus-f5b805 (`<letter>-<length>-<key> <clip name>.alc`); this story checks the layout and the clip contents, not the naming rule itself.\n\n```gherkin\nFeature: A sample's automatic markup exported as a browsable folder of clip files\n  Background:\n    Given a sample \"Thunderer.wav\" of 32 bars in 4/4 at 120 BPM in Bb, analyzed\n    And its automatic markup has the sections \"sec-A1\" (bars 1-16) and \"sec-B1\" (bars 17-32)\n    And the loop \"loop-1\" over bars 3-4\n    And the one-shot \"shot-1\" at bar 20 beat 1\n\n  Scenario: One clip file per section, loop and one-shot, in folders by kind\n    When I export the clips of \"Thunderer.wav\" to \"out\"\n    Then the export succeeds\n    And the folder \"out/Thunderer\" holds exactly:\n      | file                              |\n      | sections/A-16bars-Bb sec-A1.alc   |\n      | sections/B-16bars-Bb sec-B1.alc   |\n      | loops/A-2bars-Bb loop-1.alc       |\n      | shots/B-1beat-Bb shot-1.alc       |\n\n  Scenario: A clip file plays its region of the sample, warped\n    When I export the clips of \"Thunderer.wav\" to \"out\"\n    Then \"out/Thunderer/loops/A-2bars-Bb loop-1.alc\" plays \"Thunderer.wav\" from bar 3 to the end of bar 4\n    And it is warped with the sample's warp markers inside that region\n    And it loops over its whole length\n\n  Scenario: Sections and one-shots do not loop\n    When I export the clips of \"Thunderer.wav\" to \"out\"\n    Then no clip file under \"out/Thunderer/sections\" or \"out/Thunderer/shots\" loops\n\n  Scenario: The clip files reference the sample where it is\n    When I export the clips of \"Thunderer.wav\" to \"out\"\n    Then every clip file under \"out/Thunderer\" references \"Thunderer.wav\"\n    And no audio file is written under \"out\"\n\n  Scenario: A stem's folder is named after its recording and stem\n    Given a stem \"stems/Thunderer/drums.wav\" of \"Thunderer.wav\", analyzed, with no sections and the loop \"loop-1\" one bar long\n    When I export the clips of \"stems/Thunderer/drums.wav\" to \"out\"\n    Then the folder \"out/Thunderer-drums/loops\" holds one clip file\n\n  Scenario: The same sample exports the same bytes\n    When I export the clips of \"Thunderer.wav\" to \"out\" twice with \"--force\"\n    Then every file is identical between the two exports\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:36.064630Z",
+  "updated_at": "2026-09-26T22:09:31.036710Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

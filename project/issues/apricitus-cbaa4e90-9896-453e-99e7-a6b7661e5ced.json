@@ -1,0 +1,31 @@
+{
+  "id": "apricitus-cbaa4e90-9896-453e-99e7-a6b7661e5ced",
+  "title": "Web need: download a score's kit as a drum rack preset",
+  "description": "## Intent\n\nDescribe what the web app would need to offer kit export; the web/docs session decides the visuals (see AGENTS.md: UI changes go through a Kanbus issue).\n\n## The need\n\n- On the Score view, for each kit the score defines, an action \"Download as drum rack preset\" that produces the same `.adg` the CLI writes.\n- Where the bytes come from: either the wasm engine (`crates/apricity-web` calling `apricity-daw`, which builds for wasm32-wasip1) or the local server (`apricity serve`) with an endpoint like `GET /export/kit?score=...&kit=...`.\n- A preset downloaded from the browser references audio paths on the user's machine; in cloud mode those files are not local. The UI needs to say that the preset works with a local library, or offer a zip with the audio (decision for the owner, see M0 decisions task).\n\n## Out of scope\n\nBuilding the UI in this initiative.\n\n## Verification\n\nThe web session's own issue records its verification; this task is done when the need is accepted there (comment with that issue's id).\n\n## Release\n\nNo product commit here.\n\n## Dependencies\n\nBlocked by the CLI task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.736349Z",
+  "updated_at": "2026-09-26T22:03:19.736383Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

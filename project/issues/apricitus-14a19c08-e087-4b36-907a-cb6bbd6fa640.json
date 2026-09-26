@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "title": "M5: apricity import --markers brings the DAW's corrected warp markers back",
+  "description": "## Purpose\n`apricity import --markers <file.asd|file.alc>` brings warp markers corrected in the DAW back into Apricity as warp markers of yours (M4), so the corrections feed compile, markup and later exports instead of fighting them. `apricity import --reset-markers <audio>` goes back to the analysis grid.\n\n```mermaid\nsequenceDiagram\n  participant A as Apricity\n  participant F as sample folder\n  participant D as the DAW\n  A->>F: export --sidecars (M2): x.wav.asd\n  D->>F: drag in, move markers, Save in clip view\n  A->>F: import --markers x.wav.asd\n  Note over A: validate, re-number beats, diff against the current grid\n  A->>A: store as warp markers of yours (manifest or library Marker records)\n  A->>A: compile: the timeline follows the DAW's markers\n```\n\n## Scope\nFile mode (manifest `annotations`) and library mode (`--library`, Marker records, synced like any record); `.asd` (versions M1 reads) and `.alc`; `--sample` to name the audio; `--beat-offset`; `--dry-run`; a report of what moved; `--reset-markers`.\n\n## Out of scope\nImporting clips (regions) from `.alc` as saved clips; reading a whole set (`.als`); editing markers in the web app.\n\n## Definition of Done\n1. `features/daw/import_markers.feature` (CLI runner) green; a `features/data/domain/` scenario for the replace-warp-markers operation.\n2. Rust (`apricity-daw::import`, `apricity-cli`, `apricity-data::domain`); Python parity only through M4's validator (the server's annotation check).\n3. No new schema change beyond M4.\n4. CLI flags, `--help`, report, every error with file and line/byte/marker index.\n5. M1 fixtures, including `steady-120-edited.wav.asd` from the DAW.\n7. `docs/tools.md` import section; `docs/concepts.md` round-trip walkthrough; README.\n8. Web need filed.\n9. `safe-run.sh -- cargo test -p apricity-daw -p apricity-cli -p apricity-data`; the manual end-to-end round trip with listening.\n11. `feat(<task id>)`; not breaking.\n\n## Initiative Definition of Done this closes\n\"Importing an edited `.asd` changes the compiled timeline the way the markers say\" and, with M2, \"a sample from the library opens in the DAW on the grid with no re-warping\".\n\n## Dependencies\nBlocked by M1 (readers) and M4 (storage and compile of your markers). M2 only for the manual round trip.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-0297cb89-801b-4961-bc6b-a7e1fb8bedb6",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:12.906475Z",
+  "updated_at": "2026-09-26T22:06:34.651266Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

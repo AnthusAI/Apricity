@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-33c7c3ac-7b64-4668-aa7b-ee2a16ef96fb",
+  "title": "Re-pitch warp mode and speed flips from the compiled warp maps",
+  "description": "## Intent\n\nRe-pitch, speed flips, gate and stutter.\n\n## Steps\n\n- `Event.mode == Repitch` (and `TrackInfo.varispeed`): the set's Re-Pitch warp mode with warp markers from `Event.warp`, so the speed follows; a sample with no beats gets markers at the clip's start and end only.\n- `half`, `double`, `speed n`, `gate`, `stutter`: already in the compiled events (warp maps and durations); verify with specs, no separate mapping.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — \"Re-pitch and speed\" passes.\n\n## Release\n\n`feat(<this task's id>): re-pitch and speed flips in DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-483f72db-bebe-4835-8bf9-7dff7927aeb4",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.207954Z",
+  "updated_at": "2026-09-26T22:06:50.304081Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

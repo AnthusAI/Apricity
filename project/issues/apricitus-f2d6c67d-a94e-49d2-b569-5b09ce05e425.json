@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f2d6c67d-a94e-49d2-b569-5b09ce05e425",
+  "title": "Write design/daw-presets.md: the kit to drum rack mapping and a minimal preset skeleton",
+  "description": "## Intent\n\nLeave the spike's answer where the implementers will read it: `design/daw-presets.md`.\n\n## Contents\n\n- The mapping, kit -> drum rack:\n\n| Apricity | In the preset |\n|---|---|\n| kit | drum rack preset (`<kit>.adg`) |\n| slice n of a sliced kit | pad n, note 35 + n (pad 1 = C1) |\n| named pad (`kick`, `snare`, `hat.closed` ...) | the usual drum note for that word; other names fill free pads |\n| piece region (source seconds) | sampler sample start / end |\n| level group gain (`apricity explain`) | sampler volume |\n| A440 correction (`tuning_cents`) | sampler detune |\n| the slice's root | sampler root key |\n| warp markers of the sample (`rhythm.warp_markers`) | sampler warp markers, warp on |\n| sample with no beat grid | warp off |\n\n- An annotated minimal XML skeleton (element names, no vendor prose), and a Mermaid tree of it.\n- The velocity comparison and the chosen sampler setting.\n- A draft of the clip folder naming scheme (`A-1bar-Fm.alc`), for M3.\n- A short \"what a preset cannot hold\" list (chord-following transposition, reverse, filter, track effects) with where each goes instead (the set export, apricitus-6edba8).\n- Keep `design/vocabulary.md` in step: add rows for drum rack preset and clip file.\n\n## Verification\n\n`grep -c \"|\" design/daw-presets.md` shows the mapping table; the note links the reference fixtures by path; a reviewer checks each row against a reference file. a case-insensitive grep of design/ and docs/ for the vendor's name prints nothing.\n\n## Release\n\n`docs(<this task id>): design note for kit presets and the clip folder`. Not breaking.\n\n## Dependencies\n\nBlocked by the annotation task in this epic.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T21:59:39.099841Z",
+  "updated_at": "2026-09-26T22:03:38.521599Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

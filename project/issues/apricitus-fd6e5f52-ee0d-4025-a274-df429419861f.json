@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-fd6e5f52-ee0d-4025-a274-df429419861f",
+  "title": "The score's chords appear as named locators; the key as the set's scale",
+  "description": "As a producer, I want the chords shown in the set's timeline, so that I can see the harmony while I finish the piece.\n\n```gherkin\nFeature: Chords as locators\n  Background:\n    Given the sample \"horn.wav\" with a steady beat at 100 BPM\n\n  Scenario: A locator at every chord change, named with the chord\n    Given the score \"c.apr\" with the chords \"I7 IV7 I7 . | IV7 . I7 .\" in F\n    When I export \"c.apr\" as a DAW set\n    Then the set has locators at bars 1, 2, 3, 5, 7\n    And the locators are named \"I7 (F7)\", \"IV7 (Bb7)\", \"I7 (F7)\", \"IV7 (Bb7)\", \"I7 (F7)\"\n\n  Scenario: A split bar gets a locator mid-bar\n    Given the score \"c.apr\" with the chords \"[ii V] I\" in C\n    When I export \"c.apr\" as a DAW set\n    Then the set has locators at bar 1 beat 1, bar 1 beat 3 and bar 2 beat 1\n\n  Scenario: A score with no chords has no locators\n    Given the score \"c.apr\" with \"bars 4\" and no chords\n    When I export \"c.apr\" as a DAW set\n    Then the set has no locators\n\n  Scenario: The set's scale is the score's key\n    Given the score \"c.apr\" in \"F mixolydian\"\n    When I export \"c.apr\" as a DAW set\n    Then the set's scale is F mixolydian\n```\n\nNote: locator names are the compiler's own chord labels (`ChordSpan.label`, e.g. `I7 (F7)`), the same text `apricity explain` shows. The scale scenario follows the decisions in `design/daw-set.md` (M0); the scale scenario is dropped if the target DAW version has no set scale.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.435030Z",
+  "updated_at": "2026-09-26T22:06:25.435079Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

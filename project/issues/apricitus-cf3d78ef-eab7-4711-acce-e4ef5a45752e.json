@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-cf3d78ef-eab7-4711-acce-e4ef5a45752e",
+  "title": "apricity-daw midi.rs: a dependency-free Standard MIDI File writer",
+  "description": "## Intent\n\nA small, dependency-free Standard MIDI File writer.\n\n## Scope\n\n- `crates/apricity-daw/src/midi.rs`: type 0, 960 ticks per quarter note, a tempo meta event, a time signature meta event, a track name, note on/off pairs sorted by time (note-off before note-on at the same tick), end of track. Beats convert to ticks by rounding to the nearest tick.\n- No new crate dependency unless a review finds one clearly better (record the decision in a comment).\n- Unit tests: byte-level golden test of a two-note file; a round trip through a reader written in the test.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw midi\n```\n\n## Release\n\n`feat(<this task id>): write Standard MIDI Files`. Not breaking.\n\n## Dependencies\n\nBlocked by the specs task. If the owner picks a MIDI clip file (`.alc`) in M0, this task writes that instead, using the sidecar initiative's clip writer.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:46.633747Z",
+  "updated_at": "2026-09-26T22:04:46.633788Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "title": "M2: The kit's step pattern as a MIDI file that plays the rack the same way",
+  "description": "## Purpose\n\nProve the initiative's promise, \"a step pattern in the score sounds the same on the rack\": export a track's notes as MIDI on the rack's pad notes, so the pattern can be dropped under the preset from M1 and compared with Apricity's render.\n\n`apricity export --kit <name> <score> --steps <track>` writes `<kit>.adg` and `<track>.mid` side by side.\n\n## Scope\n\n- One Standard MIDI File (type 0) per exported track: the track's notes as compiled (swing, humanize, velocity, gate and stutter already applied by the compiler), each on its pad's note, with the score's tempo and time signature, covering the track's bars.\n- Tracks that play the exported kit, or one pad of it.\n- Warnings, with the score line, for what a rack plus MIDI cannot reproduce: chord-following or auto transposition, `reverse`, `filter`, `speed`/`half`/`double`, and track effects.\n\n## Out of scope\n\n- A MIDI clip file (`.alc`) instead of `.mid`: only if the owner chooses it in M0 (apricitus-e286ad); then this epic's writer task changes, not its stories.\n- Several tracks in one file; the whole arrangement (the set export, apricitus-6edba8).\n\n```mermaid\nflowchart LR\n  T[compiled timeline: events of track t] --> N[pad note per event piece]\n  L[pad layout from M1] --> N\n  N --> MID[t.mid]\n  K[kit.adg from M1] --> D[DAW: MIDI track with the rack]\n  MID --> D\n```\n\n## Definition of Done\n\nApplies: 1 specs (`features/daw/kit-midi.feature`, steps in STEPS.md); 2 Rust (`apricity-daw`, `apricity-cli`), no Python; 3 no schema change; 4 CLI `--steps`, help, located errors; 5 fixtures generated in tests, no audio; 6 `design/daw-presets.md` MIDI section; 7 docs/tools.md and glossary; 8 no web need beyond M1's; 9 `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw -p apricity-cli` plus the manual A/B in the DAW; 10 running log; 11 `feat(<task id>)`, not breaking.\n\n## Dependencies\n\nBlocked by M1 (apricitus-109615): it reuses M1's pad layout and preset.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:04.671205Z",
+  "updated_at": "2026-09-26T22:04:04.671259Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

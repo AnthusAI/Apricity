@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-5a32fda5-d570-4580-8937-13bcc13e66d1",
+  "title": "Joining a Link session: the session's tempo wins; alone, the score's tempo starts it",
+  "description": "As a performer, I want Apricity to take the DAW's tempo when I join its Link session, and to start the session at my score's tempo when nobody else is there, so that I never have to type the tempo twice.\n\nSpec file: `features/link/play.feature` (runner `crates/apricity-cli/tests/link_play.rs`, on a scripted Link session and the silent clock).\n\n```gherkin\nFeature: Playing in a Link session\n  `apricity play --link` joins the Link session on the local network and plays in time with it.\n  Apricity only follows: it never changes the session's tempo and never starts or stops other\n  peers. Link shares tempo, the beat within a bar and start/stop, not song position, so bar 1 of\n  the score lands on one of the session's bar lines, not on a particular bar of the DAW set.\n\n  Scenario: The session sets the tempo\n    Given a Link session at 124 BPM with 1 other peer, playing\n    When I run \"apricity play click.apr --link\" for a score at 100 BPM\n    Then it prints \"Link: 1 peer, 124 BPM (the score says 100)\"\n    And the score plays at 124 BPM with bar 1 on the session's next bar line\n\n  Scenario: Alone, the score's tempo starts the session\n    Given no other Link peers\n    When I run \"apricity play click.apr --link\" for a score at 100 BPM\n    Then it prints \"Link: no other peers; the session starts at the score's 100 BPM\"\n    When a peer joins the session\n    Then the session is still at 100 BPM\n\n  Scenario: Editing the score's tempo while other peers are there\n    Given the score plays in a session at 124 BPM with 1 other peer\n    When I save the score with \"tempo 90\"\n    Then the session stays at 124 BPM\n    And it prints \"tempo 90 is not used while linked: the Link session sets the tempo (124 BPM)\"\n    And the rest of the edit lands at the session's next bar line\n\n  Scenario: The session's tempo changes\n    Given the score plays in a session at 124 BPM\n    When another peer sets the tempo to 98 BPM\n    Then it prints \"Link: 98 BPM\" and the clicks stay on the session's beats\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:23.912972Z",
+  "updated_at": "2026-09-26T22:04:23.913029Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

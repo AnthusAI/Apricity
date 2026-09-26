@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "title": "M3: apricity export --clips: automatic markup of many samples as one browsable folder of clip files",
+  "description": "## Purpose\n\nAs a beatmaker, I want the automatic markup (sections, loops, one-shots) of many samples exported into one folder of my choosing, laid out for browsing (a folder per sample, a folder per kind), so that I can browse Apricity's markup in the DAW's browser, preview it, and drag a loop straight onto a track, on the grid. This matters most for a library, whose audio sits under `files/audio/<id>/` where browsing beside the sample is useless.\n\n`apricity export --clips <sample or folder>... [-o <folder>] [--library <dir>] [--force]`\n\n## What is shared, and with whom\n\n- The `.alc` writer, the warp map and the **naming rule** belong to the sidecar initiative (apricitus-d7746d): `apricity-daw::names::clip_file_name` (apricitus-998976) gives `<section letter>-<length>-<key> <clip name>.alc`, e.g. `A-1bar-Fm loop-1.alc`, and the `.alc` writer is apricitus-007386. Its M3 (apricitus-f5b805) writes every saved clip **beside its sample** (`export --sidecars`).\n- This epic adds only the browsable layout: an output folder anywhere, many samples at once, kind subfolders, automatic markup only, samples from files or a library.\n\n## Scope\n\n- `<out>/<sample>/sections/`, `loops/`, `shots/` (and `holds/`, `phrases/` if the owner includes them, apricitus-e286ad); `<sample>` is the file name without extension, `<recording>-<stem>` for a stem, prefixed by its parent folder when two samples would share a name.\n- Each clip file: the sample's audio referenced in place, the region, warp from the manifest, loop on for loops only; built by the shared writer.\n\n## Out of scope\n\nNaming (apricitus-f5b805), your own and curated clips (beside the sample via `export --sidecars`, or a collection in M4), copying audio.\n\n```mermaid\nflowchart LR\n  MF[manifests or library: ML clips] --> K[kind: section / loop / shot]\n  K --> L[layout: out/sample/kind/]\n  N[names::clip_file_name, apricitus-998976] --> L\n  W[.alc writer, apricitus-007386] --> L\n  L --> B[the DAW's browser]\n```\n\n## Definition of Done\n\nApplies: 1 specs `features/daw/clip-folder.feature` (shared runner and STEPS.md); 2 Rust (`apricity-daw`, `apricity-cli`) and a Python contract test for the kind tags markup writes; 3 schema: the `tags` description of `annotations.clips` documents the kind tags (no structural change); 4 CLI `--clips`; 5 fixtures generated in tests, no audio; 6 `design/daw-presets.md` layout section, `design/vocabulary.md` \"clip folder\" row; 7 docs/tools.md, docs/concepts.md (Automatic markup), glossary; 8 a `web` need; 9 `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw -p apricity-cli` and `(cd analysis && PYTHONPATH=. .venv/bin/python -m pytest tests/test_markup_tags.py)`, plus the manual browse in the DAW; 10 running log; 11 `feat(<task id>)`, not breaking.\n\n## Dependencies\n\nBlocked by M0's decisions (apricitus-e286ad), the naming function (apricitus-998976) and the `.alc` writer (apricitus-007386). Independent of M1 and M2.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:05:55.794600Z",
+  "updated_at": "2026-09-26T22:09:30.935185Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

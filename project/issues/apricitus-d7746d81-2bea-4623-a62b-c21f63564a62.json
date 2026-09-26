@@ -12,9 +12,25 @@
     "daw"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "25e93723-2c4c-4114-8303-ee5288a79be6",
+      "author": "home",
+      "text": "## Plan (Plan Warp Sidecars, 2026-09-26)\n\nEpics in delivery order:\n1. **M0** apricitus-9fb5fe: Spike on the `.asd`/`.alc` formats in the current DAW version, ending in a go / no-go on *writing* `.asd` (design note only, no product code).\n2. **M1** apricitus-026452: new crate `apricity-daw` with the `WarpMap` model, an `.alc` reader and writer, an `.asd` reader, and an `.asd` writer only if M0 says go. Real-format fixtures saved by the DAW; no audio in git.\n3. **M2** apricitus-6ef935: `apricity export --sidecars` writes a sidecar beside each analyzed sample (file and library mode) and never overwrites markers edited in the DAW. Sidecars are ignored by sync and git.\n4. **M3** apricitus-f5b805: one `.alc` per saved clip in `<audio> clips/`, named `<section>-<length>-<key> <clip>.alc`.\n5. **M4** apricitus-0297cb: **your warp markers**, meaning markers named `warp` that carry a `beat`. With two or more they replace the analysis grid in compile, explain, markup snapping and export. Includes Python parity.\n6. **M5** apricitus-14a19c: `apricity import --markers <.asd|.alc>` and `--reset-markers`, strict, with located errors, a dry-run and a diff report.\n\n### Key decisions and assumptions\n- The `.asd` is proprietary binary, and public parsers only read older versions. So `.alc` (gzip XML) is the reliable carrier. If M0 says no-go, M2 writes `<audio>.alc` instead of `.asd`, and import still reads both.\n- Your warp markers reuse `annotations.markers` / the `Marker` record with an optional `beat`. There is no new model, and `apricity_manifest` stays 2. This is not breaking, but the contract version changes.\n- An imported set replaces the whole analysis grid for that sample. Beat numbering is kept as the DAW has it, plus `--beat-offset`, with a warning when it doesn't line up with the analysis downbeat.\n- Export refuses to overwrite a sidecar whose markers differ from Apricity's grid, and tells you to import first or pass `--force`.\n- Warp mode is derived (drum stems → beats, else complex), so there is no schema field for it. Detune = −tuning, split into transpose + detune past the DAW's range.\n- `apricity-daw` and the `export` subcommand are shared with apricitus-6edba8: whichever starts first creates them. The `.alc` writer and naming rule are meant to be reused by apricitus-5562e0.\n\n### Open questions for the owner\n1. Writing `.asd`: accept the M0 go/no-go outcome, or require `.asd` regardless?\n2. Should sidecars be written into a library's `files/audio/<id>/`? The plan says yes, excluded from sync. Or should they go to a separate export folder?\n3. apricitus-5562e0 also plans `export --clips` (an `.alc` per section/loop/shot). Is M3 here the single owner of per-sample `.alc` export and naming?\n4. In the cloud, should a curator's grid be everyone's fallback, instead of the analysis's?\n5. When a stem's markers are imported, should they also go to its siblings and parent, since they share one grid?\n6. Command names: `import --markers` / `--reset-markers`, `export --sidecars`. OK?\n\n```mermaid\nflowchart LR\n  M0[M0 spike] --> M1[M1 apricity-daw formats]\n  M1 --> M2[M2 export .asd]\n  M2 --> M3[M3 export .alc per clip]\n  M1 --> M4[M4 your warp markers]\n  M4 --> M5[M5 import --markers]\n  M1 --> M5\n  M2 -. manual round trip .-> M5\n  X6[apricitus-6edba8 set export] -. shared crate + export cmd .- M1\n  X5[apricitus-5562e0 kits/clip folder] -. reuses .alc writer + naming .- M3\n  S[apricitus-e70662 storage: Marker.beat] -. contract .- M4\n```\n",
+      "created_at": "2026-09-26T22:07:02.520050Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Plan Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
   "created_at": "2026-09-26T20:14:35.611246Z",
-  "updated_at": "2026-09-26T20:14:35.611283Z",
+  "updated_at": "2026-09-26T22:07:02.520091Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

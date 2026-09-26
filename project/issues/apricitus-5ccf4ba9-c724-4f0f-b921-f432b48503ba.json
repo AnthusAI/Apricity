@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-5ccf4ba9-c724-4f0f-b921-f432b48503ba",
+  "title": "Every note becomes a warped arrangement clip at its place, pitch and level",
+  "description": "As a producer, I want every note of the score to become a warped arrangement clip at the same place, pitch and level, so that the set plays what the engine renders.\n\n```gherkin\nFeature: Notes become arrangement clips\n  Background:\n    Given the sample \"horn.wav\" with a steady beat at 120 BPM, tuned 30 cents sharp\n    And the score \"blues.apr\":\n      \"\"\"\n      tempo 100\n      key F\n      clip horn = horn.wav beats 0..8 warp beats\n      chords I7 IV7\n      track horn transpose 2 volume -3\n      \"\"\"\n\n  Scenario: A note that crosses a chord change is two clips\n    When I export \"blues.apr\" as a DAW set\n    Then the track \"horn\" has 2 clips\n    And clip 1 of \"horn\" starts at beat 0 and lasts 4 beats\n    And clip 2 of \"horn\" starts at beat 4 and lasts 4 beats\n\n  Scenario: Clips are warped onto the score's beats\n    When I export \"blues.apr\" as a DAW set\n    Then every clip of \"horn\" is warped in \"Beats\" mode\n    And the warp markers of each clip pin the sample's beats to the score's beats\n\n  Scenario: Transposition and tuning correction\n    When I export \"blues.apr\" as a DAW set\n    Then every clip of \"horn\" is transposed 2 semitones and detuned -30 cents\n\n  Scenario: A tuning correction beyond half a semitone moves a whole semitone\n    Given the sample \"horn.wav\" is tuned 70 cents flat\n    When I export \"blues.apr\" as a DAW set\n    Then every clip of \"horn\" is transposed 3 semitones and detuned -30 cents\n\n  Scenario: Levels\n    When I export \"blues.apr\" as a DAW set\n    Then each clip's gain is its note's level match in dB\n    And the track \"horn\" has volume -3 dB\n\n  Scenario Outline: Warp modes\n    Given the clip \"horn\" is warped with \"<mode>\"\n    When I export \"blues.apr\" as a DAW set\n    Then every clip of \"horn\" is warped in \"<set mode>\" mode\n    Examples:\n      | mode    | set mode                    |\n      | beats   | Beats                       |\n      | complex | as decided in design/daw-set.md |\n      | texture | Texture                     |\n\n  Scenario: A track that plays no notes is still exported\n    Given the track \"horn\" plays only \"bars 9-10\" of an 8-bar score\n    When I export \"blues.apr\" as a DAW set\n    Then the set has an audio track \"horn\" with no clips\n    And the export warns that \"horn\" plays no notes\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.308907Z",
+  "updated_at": "2026-09-26T22:06:25.308946Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-63597b45-6843-4068-9c7a-8f3ec718a2c6",
+  "title": "Schema and Marker model: optional beat on warp markers; regenerate the contract",
+  "description": "## Intent\nThe stored form of your warp markers.\n\n## Scope\n- `schema/sample-manifest.schema.json`: `annotations.markers.items.beat` (number), described as \"present only on warp markers (name `warp`): the beat this second is pinned to; two or more of yours replace rhythm.warp_markers\". The name/beat rule and ordering are checked in code (JSON Schema cannot), and the description says so.\n- `web/amplify/data/resource.ts`: `Marker.beat: a.float()`; regenerate `contract/` (`web/scripts/generate-contract.ts`), check mode clean. Coordinate with the storage initiative (apricitus-e70662) before merging; this is a contract version change.\n- Schema tests: Rust (`crates/apricity-score/tests`, validates fixture manifests) and `analysis/tests/test_manifests.py` (new cases).\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-score` · `PYTHONPATH=analysis analysis/.venv/bin/python -m pytest -q analysis/tests/test_manifests.py` · `npx --prefix web tsx web/scripts/generate-contract.ts --check`.\n\nCommit: `feat(<this id>): warp markers of yours in the manifest and the Marker model` (not breaking).\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0297cb89-801b-4961-bc6b-a7e1fb8bedb6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+      "type": "relates-to"
+    },
+    {
+      "target": "apricitus-5c98e6c5-cce0-4401-b7c9-0124a2a3f6b7",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:55.607792Z",
+  "updated_at": "2026-09-26T22:06:36.654034Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

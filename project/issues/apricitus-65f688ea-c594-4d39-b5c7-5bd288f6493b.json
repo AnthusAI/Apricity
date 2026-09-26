@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-65f688ea-c594-4d39-b5c7-5bd288f6493b",
+  "title": "Many samples, a folder or a whole library export into one browsable folder without collisions",
+  "description": "As a beatmaker with a big library, I want many samples exported into one folder in one go, each in its own sample folder, so that the whole library's markup is browsable in the DAW without collisions.\n\n```gherkin\nFeature: Many samples in one browsable folder\n  Scenario: A folder exports every analyzed sample under it\n    Given the folder \"marches\" holds the analyzed samples \"a.wav\" and \"b.wav\" and the unanalyzed audio \"c.wav\"\n    When I export the clips of \"marches\" to \"out\"\n    Then the folders \"out/a\" and \"out/b\" are written\n    And it says \"marches/c.wav is not analyzed; skipped\"\n\n  Scenario: Two samples with the same file name do not collide\n    Given the analyzed samples \"x/take.wav\" and \"y/take.wav\"\n    When I export the clips of \"x\" and \"y\" to \"out\"\n    Then the folders \"out/x-take\" and \"out/y-take\" are written\n\n  Scenario: Samples from a library are exported by their catalog path\n    Given a library holding \"marine-band/Thunderer.mp3\" with its automatic markup\n    When I export the clips of \"marine-band/Thunderer.mp3\" to \"out\" with \"--library\" pointing at the library\n    Then the folder \"out/Thunderer\" is written\n    And every clip file in it references the library's audio file for that sample\n\n  Scenario: A whole library\n    Given a library holding three analyzed samples\n    When I export the clips of the whole library to \"out\" with \"--library\" pointing at the library\n    Then \"out\" holds one folder per sample that has automatic markup\n\n  Scenario: Kind folders only appear when they hold something\n    Given the analyzed sample \"drums.wav\" with loops and one-shots but no sections\n    When I export the clips of \"drums.wav\" to \"out\"\n    Then \"out/drums\" holds the folders \"loops\" and \"shots\" and no \"sections\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:36.159576Z",
+  "updated_at": "2026-09-26T22:09:31.152493Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

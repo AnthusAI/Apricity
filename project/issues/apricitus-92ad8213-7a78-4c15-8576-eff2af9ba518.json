@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-92ad8213-7a78-4c15-8576-eff2af9ba518",
+  "title": "A kit track's step pattern exports as MIDI on the rack's pad notes",
+  "description": "As a beatmaker, I want my kit track's step pattern as MIDI on the rack's pad notes, so that it plays the exported rack the way Apricity plays the kit.\n\n```gherkin\nFeature: A kit track's notes exported as MIDI\n  Background:\n    Given a sample \"brk.wav\" of 2 bars in 4/4 at 120 BPM, analyzed\n    And the score \"flip.apr\":\n      \"\"\"\n      tempo 120\n      time 4/4\n      key C\n      bars 2\n      clip brk = brk.wav\n      kit b = slice brk by beats 1\n      track b steps \"1 . 2 . 3 _ 4 .\" grid 8\n      \"\"\"\n\n  Scenario: Each step becomes a note on its pad's note\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then the export writes \"b.adg\" and \"b.mid\"\n    And \"b.mid\" has 8 notes\n    And the first note is C1 at beat 0 lasting 0.5 beats\n    And the third note is D1 at beat 2 lasting 1 beat\n\n  Scenario: The file carries the score's tempo and time signature\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then \"b.mid\" has tempo 120 BPM and time signature 4/4\n\n  Scenario: Velocities are the notes' velocities\n    Given the track line says steps \"1@40 . 2! . 3 _ 4 .\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then the first note has velocity 40\n    And the second note has velocity 127\n    And the third note has velocity 100\n\n  Scenario: Swing and humanize move the notes as the compiler moved them\n    Given the track line adds \"swing 60 humanize 10ms 10%\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then every note starts where the compiled timeline starts it, within one MIDI tick\n\n  Scenario: A track that plays one pad plays that pad's note\n    Given the score also has \"track one = b.3 at 1 2\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps one\"\n    Then \"one.mid\" has 2 notes, both on D1\n\n  Scenario: A track limited to some bars keeps its place in the score (bar 1 is beat 0)\n    Given the track line adds \"bars 2\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then the first note is at beat 4\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:46.397Z",
+  "updated_at": "2026-09-26T22:05:06.138068Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

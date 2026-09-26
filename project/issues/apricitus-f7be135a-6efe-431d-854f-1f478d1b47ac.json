@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f7be135a-6efe-431d-854f-1f478d1b47ac",
+  "title": "apricity-daw kit_notes.rs: a track's compiled notes to pad notes, with warnings",
+  "description": "## Intent\n\nTurn one track's compiled notes into MIDI notes on the rack's pads.\n\n## Scope\n\n- `crates/apricity-daw/src/kit_notes.rs`: from `Timeline.events` of the track, group the events of one note (a note split at a chord change is one MIDI note), map `Event.piece` through `TrackInfo.pieces` to the pad and through M1's pad layout to the note; velocity from `Event.velocity` (100 when absent); start from `start_beat` in score time (bar 1 is beat 0), so the file lines up with the arrangement.\n- Check the track plays the exported kit or one of its pads; build the warnings list for reverse, filter, speed, chord-following or auto transposition and track effects, each with the score location from the parser's source map.\n- Confirm (and record in a comment) that gate and stutter reach the timeline as note lengths and extra notes; if one does not, add a warning for it rather than changing the compiler.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw\n```\nThe kit-midi scenarios for notes, velocities, swing and bars pass.\n\n## Release\n\n`feat(<this task id>): a kit track's notes as pad notes`. Not breaking.\n\n## Dependencies\n\nBlocked by the MIDI writer task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:46.711088Z",
+  "updated_at": "2026-09-26T22:05:06.200969Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

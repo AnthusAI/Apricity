@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-00c459dc-19fd-44b1-8b1d-3c3599813ad2",
+  "title": "Partition overlapping notes into the fewest audio tracks inside a group (lanes.rs)",
+  "description": "## Intent\n\nOverlapping notes on one track go to extra audio tracks inside a group track.\n\n## Steps\n\n- `crates/apricity-daw/src/lanes.rs`: partition a track's events into the fewest non-overlapping sequences (sort by start, greedy first-free; deterministic tie-break by event order). One sequence → a plain audio track; more → a group track named after the track holding audio tracks `<name> 1`, `<name> 2`, …\n- The group takes the track's place: its position in the track list and its own group membership (`TrackInfo.out`). Record in `design/daw-set.md` that from M3 on the track's effects, volume, pan and sends go on this group, and its lanes stay flat.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw` — unit tests for the partition (chords, `at` notes, humanize overlaps, none) and the \"Notes that overlap on one track\" scenarios pass.\n\n## Release\n\n`feat(<this task's id>): overlapping notes on extra audio tracks in a group`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a1d8df38-56e5-486b-b1fd-48f51fc729da",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-483f72db-bebe-4835-8bf9-7dff7927aeb4",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.033284Z",
+  "updated_at": "2026-09-26T22:06:50.126334Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

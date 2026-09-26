@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-feb24c49-dba3-44bd-864d-4720ba125c44",
+  "title": "UI needs for Link in the web app (for the web session): control, session status, tempo, waiting, lost",
+  "description": "## Intent\nTell the web session what the UI needs for Link. This task describes needs, not visuals; the web/docs session designs and builds it (AGENTS.md: `web/src/ui/*` and `web/src/style.css` belong to it).\n\n## Needs\n- A Link on/off control, offered only when `custom.apricity.link` is present (local mode through `apricity serve --link`).\n- Session status from `player.transport`: peers, session tempo, playing / waiting for the session to start / stopped, and \"Link lost, retrying\".\n- When linked, the score's tempo is shown as \"the score says 100\" next to the session tempo, and editing `tempo` shows that it is not used while linked.\n- Pressing play while the session is stopped (sharing start/stop) shows that it is waiting, not broken.\n- Keyboard and screen reader: the control and the state changes are announced (relates apricitus-7edd75).\n- The Docs tab already shows `docs/`; nothing extra.\n\n## Verify\nThe web session confirms in a comment that each need is covered, with the files they touched; `npm --prefix web run build`.\n\nCommit: by the web session, `feat(<this task id>)`.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-a8e11f1d-e029-4a8a-8b99-82d232184040",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-7edd75f4-7505-4109-bd3b-728364790b7c",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:49.964639Z",
+  "updated_at": "2026-09-26T22:07:50.988524Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

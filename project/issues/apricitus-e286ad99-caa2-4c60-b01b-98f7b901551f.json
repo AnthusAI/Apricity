@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-e286ad99-caa2-4c60-b01b-98f7b901551f",
+  "title": "Get the owner's decisions: pad note layout, MIDI file or clip, audio by reference, markup kinds",
+  "description": "## Intent\n\nGet the owner's decisions on the questions the format leaves open, before specs are written, and record them on the initiative (apricitus-5562e0).\n\n## Decisions to get\n\n1. Pad note layout: sliced kits from C1 (note 36) upward, named drum pads on the usual drum notes. Kits larger than 92 pads (notes 36-127): refuse, or start lower?\n2. The step pattern proof (M2): a Standard MIDI File (`.mid`) next to the preset, or a MIDI clip file (`.alc`)?\n3. Clip files and presets reference the library's audio in place (no copies), or copy the audio next to them (`--copy-audio`) so the folder can be moved to another machine?\n4. Which markup kinds go in the clip folder: sections, loops, shots only (as the initiative says), or holds and phrases too?\n5. The naming scheme draft in `design/daw-presets.md`: letter, length, key; what to do when a clip has no section or no key.\n6. Saved kits (planned in design/vocabulary.md) are not built yet: export kits from scores only for now?\n\n## Verification\n\nOne comment on the initiative listing each decision; the design note updated to match (`git diff design/daw-presets.md`).\n\n## Release\n\nNo commit of its own (board only). Not breaking.\n\n## Dependencies\n\nBlocked by the design note task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T21:59:39.161388Z",
+  "updated_at": "2026-09-26T22:00:40.590854Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

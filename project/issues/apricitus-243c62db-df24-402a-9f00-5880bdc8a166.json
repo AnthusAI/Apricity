@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-243c62db-df24-402a-9f00-5880bdc8a166",
+  "title": "Main track chain and loudness make-up measured with the engine; --no-measure",
+  "description": "## Intent\n\nThe master: its effects, the final limiter, the loudness make-up.\n\n## Steps\n\n- `crates/apricity-daw/src/master.rs`: `Timeline.master.effects` as devices on the main track, then a Limiter (−1 dB when the score has none), then a Utility for the make-up gain, in the engine's order (`crates/apricity-engine/src/master.rs`).\n- `crates/apricity-cli/src/export.rs`: measure the make-up gain with the same code as `apricity render` (`render::render` → `makeup_db`) and pass it in `SetOptions`; `--no-measure` skips it with a warning. The crate itself never renders.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` and `cargo test -p apricity-cli --test export_cli` — \"The master in the set\" passes.\n\n## Release\n\n`feat(<this task's id>): master chain and loudness in DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8d493b02-ec2a-44ef-a24f-a74519b4cce8",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-674527ca-0110-49e3-a07d-14ce47e7b68f",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:28.633374Z",
+  "updated_at": "2026-09-26T22:06:51.173324Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

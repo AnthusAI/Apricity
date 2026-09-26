@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-8398263d-e134-4b55-8e35-eae25aae74ec",
+  "title": "play.rs joins the Link session: capture at playback time with latency, session tempo, start/stop, messages",
+  "description": "## Intent\n`apricity play --link`: the play loop joins the session and the mixer follows it. Makes apricitus-5a32fd, apricitus-94776e and apricitus-392ae1 green.\n\n## Steps\n1. `crates/apricity-cli/src/play.rs`: when linked, join with the score's tempo and the quantum; in `open_device`'s cpal callback, capture the session at the buffer's playback instant plus output latency and the `--latency` offset, and pass the clock line to the `Mixer` (M1); the `silent_clock` path does the same on its virtual time.\n2. Arrange at the session's tempo through M1's tempo watcher; report \"tempo N is not used while linked\" on a save that changes `tempo`.\n3. Messages exactly as the stories say (peers, tempo, waiting, stopped, keeping tempo); the status line shows \"bar · beat · N peers · BPM\".\n4. Start/stop: wait for the session when sharing start/stop; `--no-start-stop` starts at the next bar line; Ctrl-C leaves the session without touching it.\n\n## Verify\n`cargo test -p apricity-cli --test link_play` (those stories green) and `cargo test -p apricity-engine` still green.\n\nCommit: `feat(<this task id>): apricity play --link`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8ab30485-a0a8-4f49-b9a8-c557e4ac6348",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:05:25.847563Z",
+  "updated_at": "2026-09-26T22:07:48.595087Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

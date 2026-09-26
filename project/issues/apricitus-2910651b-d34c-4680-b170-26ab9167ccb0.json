@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-2910651b-d34c-4680-b170-26ab9167ccb0",
+  "title": "apricity export --sidecars in apricity-cli: flags, help, report, errors",
+  "description": "## Intent\nThe command.\n\n## Scope\n- `crates/apricity-cli/src/export.rs` + `Cmd::Export` in `main.rs`: `apricity export --sidecars <PATH>... [--library DIR] [--dry-run] [--force]`. If apricitus-6edba8 already added `export`, add `--sidecars` as a mode beside `--daw-set` (exactly one mode per run, else \"choose one of --daw-set, --sidecars\").\n- Walks folders for audio with a manifest (the same audio extensions as analysis), reads manifests with `apricity_score::Clip::load`, calls `plan_sample_sidecar`, writes atomically (temp file + rename).\n- `--help` text: one line per flag, and an example.\n- Report: one line per sample, then a summary (\"3 sidecars written, 1 unchanged, 1 skipped\"); non-zero exit if anything was refused.\n- Errors: `path: reason` (no such file, not audio, stale analysis).\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-cli --test daw_cli` (file-mode scenarios green) and `./target/debug/apricity export --help`.\n\nCommit: `feat(<this id>): apricity export --sidecars`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-0fc9bf7a-12d2-4dea-86dd-95bf0ebe5307",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:43.795734Z",
+  "updated_at": "2026-09-26T22:06:36.041239Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

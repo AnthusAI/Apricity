@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-661b66d2-fe01-487d-ac6f-26bf1c52660d",
+  "title": "Annotate the preset XML: pad notes, sampler fields, warp markers and file references",
+  "description": "## Intent\n\nTurn the reference files into answers: which XML elements and values a kit preset needs, one question at a time (see the M0 epic's list).\n\n## Steps\n\n- Unzip each reference file (`gunzip -c`) and diff the two presets that differ by one setting; record the element that changed and how its value is encoded.\n- Answer, with the element paths: pad receiving note encoding and pad 1's note; sampler root key, transpose, detune units; volume units (linear or dB); sample start/end units (frames at the file's rate?); playback mode values; how warp markers inside the sampler are stored (seconds/beats pairs as in a clip?); file reference fields (absolute, relative, relative-to what; are size or checksum fields required).\n- Try a hand-trimmed preset (remove optional elements) and load it in the DAW to find the minimal set; keep the trimmed file as `minimal-kit.adg` in the same fixture folder.\n- Velocity: find the sampler's velocity-to-volume setting that best matches Apricity's `velocity_db` curve (crates/apricity-score/src/compile.rs); write the comparison table.\n\n## Out of scope\n\nProduct code. The clip folder's naming scheme (drafted in the design note task).\n\n## Verification\n\nA comment per question with the element path, an excerpt of the XML (element names only where needed), and the reference file it came from. The trimmed preset loads in the DAW (owner confirms in a comment).\n\n## Release\n\n`chore(<this task id>): annotate the preset format` (fixture only). Not breaking.\n\n## Dependencies\n\nBlocked by the reference-files task in this epic.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T21:59:39.038883Z",
+  "updated_at": "2026-09-26T22:00:40.475692Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

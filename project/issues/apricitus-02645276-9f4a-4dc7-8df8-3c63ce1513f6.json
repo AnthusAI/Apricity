@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "title": "M1: apricity-daw crate reads and writes the DAW's warp markers in .alc and .asd",
+  "description": "## Purpose\nOne Rust crate, `crates/apricity-daw`, that turns a sample's warp map and a clip's settings into the DAW's sidecar bytes and back, strictly: every malformed file reported with its location. It is the ground for export (M2, M3) and import (M5), and is shared with the set export (apricitus-6edba8, same AudioClip XML) and the kit/clip-folder export (apricitus-5562e0).\n\n```mermaid\nflowchart LR\n  M[\"manifest: rhythm.warp_markers\n+ your warp markers (M4)\n+ tuning, stem, saved clips\"] --> W[\"apricity_daw::WarpMap\n(markers, warp on/off, mode, transpose+detune)\"]\n  W -->|write| ALC[\".alc (gzip XML)\"]\n  W -->|write, if M0 go| ASD[\".asd (binary)\"]\n  ALC -->|read| W\n  ASD -->|read| W\n```\n\n## Scope\n- `WarpMap` model and the beat-numbering rule from `design/daw-sidecars.md` (Apricity beat 0 = first downbeat; pickups negative).\n- `.alc` reader and writer; `.asd` reader (versions M0 can decode) and writer (only on M0 **go**).\n- Fixture folder with the owner's DAW-saved reference files; generated WAVs only in temp dirs.\n- `design/daw-sidecars.md` §Mapping; vocabulary and glossary rows.\n\n## Out of scope\nAny CLI command (M2, M5); the set file (`.als`, apricitus-6edba8); `.adg` (apricitus-5562e0).\n\n## Definition of Done\nChecklist items that apply:\n1. `features/daw/sidecar_formats.feature` + `features/daw/STEPS.md`, cucumber-rs runner `crates/apricity-daw/tests/conformance.rs`; 100% of scenarios green.\n2. Rust only (no Python in this milestone; the manifest contract is unchanged).\n5. Real-format fixtures in `crates/apricity-daw/tests/fixtures/`, no audio in git.\n6. §Mapping in `design/daw-sidecars.md`; `design/vocabulary.md` gains **Sidecar**.\n7. `docs/glossary.md` (sidecar, `.asd`, `.alc`); README layout table row for the new crate.\n9. `safe-run.sh -- cargo test -p apricity-daw`.\n10, 11. Log on every task; `feat(<task id>)` / `chore(<task id>)`; nothing breaking.\nNot applicable: 3 (schema), 4 (CLI), 8 (web).\n\n## Dependencies\nBlocked by M0 (formats and the go/no-go). Coordinate the crate with apricitus-6edba8: whichever initiative starts first creates `apricity-daw`; the other extends it.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-9fb5fec4-4cf9-4f87-9db3-535b47e5a7ab",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:27.106438Z",
+  "updated_at": "2026-09-26T22:06:34.691121Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

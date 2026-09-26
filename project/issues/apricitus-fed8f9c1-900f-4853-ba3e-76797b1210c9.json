@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-fed8f9c1-900f-4853-ba3e-76797b1210c9",
+  "title": "A drum kit's named pads land on the usual drum notes",
+  "description": "As a beatmaker, I want a drum kit's named pads on the notes drummers expect (kick on C1, snare on D1, closed hat on F#1), so that the rack plays with any drum pattern and controller mapping.\n\nThe full word-to-note table lives in `design/daw-presets.md` (from M0); these scenarios pin the common words and the rule for the rest.\n\n```gherkin\nFeature: A drum kit exported with its pads on the usual drum notes\n  Background:\n    Given one-shot samples \"k.wav\", \"s.wav\", \"h.wav\", \"o.wav\", \"c.wav\", \"z.wav\" and \"y.wav\", analyzed\n    And the score \"kit.apr\":\n      \"\"\"\n      tempo 96\n      key C\n      clip k = k.wav\n      clip s = s.wav\n      clip h = h.wav\n      clip o = o.wav\n      clip c = c.wav\n      clip z = z.wav\n      clip y = y.wav\n      kit drums\n        kick  = k\n        snare = s\n        hat   = h\n        open  = o\n        crash = c\n        zap   = z\n        yell  = y\n      \"\"\"\n\n  Scenario Outline: Drum words land on their usual notes\n    When I export kit \"drums\" from \"kit.apr\"\n    Then pad \"<pad>\" is on note <note>\n\n    Examples:\n      | pad   | note |\n      | kick  | C1   |\n      | snare | D1   |\n      | hat   | F#1  |\n      | open  | A#1  |\n      | crash | C#2  |\n\n  Scenario: Other names fill the free notes from C1 upward, in alphabetical order\n    When I export kit \"drums\" from \"kit.apr\"\n    Then pad \"yell\" is on note C#1\n    And pad \"zap\" is on note D#1\n\n  Scenario: A pad that holds another kit's slice plays that slice\n    Given the score \"kit.apr\" also says \"kit b = slice k by beats 0.5\" and the pad \"rim = b.2\"\n    When I export kit \"drums\" from \"kit.apr\"\n    Then pad \"rim\" plays \"k.wav\" from the second slice's start to its end\n\n  Scenario: Pads are named in the rack\n    When I export kit \"drums\" from \"kit.apr\"\n    Then each pad's chain is named after its pad (\"kick\", \"snare\", ...)\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:20.611094Z",
+  "updated_at": "2026-09-26T22:02:20.611130Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

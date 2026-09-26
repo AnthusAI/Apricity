@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "title": "M3: The mix in the set: group and return tracks, sends, stock devices, sidechain, master and loudness",
+  "description": "## Purpose\n\nThe score's mix is in the set: group and return tracks, sends, volume and pan, every effect as the DAW's matching stock device in the written order, sidechains, and the master chain with the loudness target. Opening the set, the balance and processing match `apricity render` closely.\n\n```mermaid\nflowchart LR\n  eq --> E8[EQ Eight]\n  comp --> CP[Compressor]\n  limit --> LM[Limiter]\n  drive --> SA[Saturator]\n  lofi --> RX[Redux]\n  noisegate --> GT[Gate]\n  width --> UT[Utility]\n  reverb --> RV[Reverb]\n  delay --> DL[Delay]\n  filter --> AF[Auto Filter]\n  loudness --> MU[Utility gain on the master]\n```\n\n## Out of scope\n\nAutomation (M4). Third-party plugins. Bit-exact sound: the DAW's devices are not Apricity's DSP; settings are converted to the closest equivalent.\n\n## Definition of Done\n\n1. Specs: `features/daw/mix.feature` (+ STEPS.md); all green.\n2. Rust in `apricity-daw` (device templates + mapping) and `apricity-cli` (loudness measuring via `apricity-engine`). Python parity: not applicable.\n3. Schema: not applicable.\n4. CLI: `--no-measure` flag (skip the loudness measurement); warnings for left-out settings name the score location (`tracks[2].effects[1]` or the `.apr` line).\n5. Fixtures: device templates derived from the M0 reference sets; no audio in git.\n6. Design: `design/daw-set.md` device mapping table with every parameter's conversion.\n7. Docs: `docs/concepts.md` DAW section (the mix), `docs/tools.md` (`--no-measure`), `design/mixer.md` cross-link.\n8. Web: none.\n9. Verification: `CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw -p apricity-cli`; manual A/B of `examples/chop-shop-mixed.apr` in the DAW vs `apricity render`, and a loudness reading of the DAW's bounce within 1 LU of the render.\n10. Running log. 11. `feat(<task id>)` per task; not breaking.\n12. Depends on M1; the sidechain and lane-group rules depend on M2's overlapping-notes task. Blocks M4.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.535297Z",
+  "updated_at": "2026-09-26T22:06:48.929169Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

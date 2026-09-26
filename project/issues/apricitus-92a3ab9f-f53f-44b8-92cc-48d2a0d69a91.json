@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-92a3ab9f-f53f-44b8-92cc-48d2a0d69a91",
+  "title": "The clip folder handles unwarped samples, missing markup, own, edited and retired clips",
+  "description": "As a beatmaker, I want the clip export to handle the samples that are not tidy (no beat grid, no markup, my own clips mixed in), so that exporting never surprises me.\n\n```gherkin\nFeature: Clip folder edge cases\n  Scenario: A sample with no beat grid exports unwarped clips\n    Given a sample \"speech.wav\" with no beat grid whose automatic markup has one-shots\n    When I export the clips of \"speech.wav\" to \"out\"\n    Then every clip file in \"out/speech\" is unwarped\n\n  Scenario: A sample without automatic markup writes nothing and says how to get it\n    Given a sample \"raw.wav\", analyzed without markup\n    When I export the clips of \"raw.wav\" to \"out\"\n    Then the export succeeds with nothing written\n    And it says \"raw.wav has no automatic markup; run: python -m apricity_analyze.markup raw.wav\"\n\n  Scenario: Only automatic markup is exported\n    Given the sample \"Thunderer.wav\" also has my clip \"riff\" and a curated clip \"horn-stab\"\n    When I export the clips of \"Thunderer.wav\" to \"out\"\n    Then no clip file under \"out/Thunderer\" is for \"riff\" or \"horn-stab\"\n\n  Scenario: An ML clip I edited became mine and is not exported\n    Given the sample's clip \"loop-2\" was edited by me (its source is now \"user\")\n    When I export the clips of \"Thunderer.wav\" to \"out\"\n    Then no clip file is for \"loop-2\"\n\n  Scenario: A retired clip is not exported\n    Given the library's clip \"loop-3\" of \"Thunderer.mp3\" is retired\n    When I export the clips of \"marine-band/Thunderer.mp3\" to \"out\" with \"--library\" pointing at the library\n    Then no clip file is for \"loop-3\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:36.253182Z",
+  "updated_at": "2026-09-26T22:09:31.251602Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

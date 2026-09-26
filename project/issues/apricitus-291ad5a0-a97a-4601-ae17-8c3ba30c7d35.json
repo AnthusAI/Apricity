@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-291ad5a0-a97a-4601-ae17-8c3ba30c7d35",
+  "title": "web/src/audio/link-clock.ts: WebSocket client, ping offset filter, server time to AudioContext frames",
+  "description": "## Intent\n`web/src/audio/link-clock.ts`: turn the server's clock into clock lines in `AudioContext` frames. Makes the offset and loss scenarios of apricitus-0afc13 green.\n\n## Steps\n1. Read `custom.apricity.link.url` from the loaded outputs (where `web/src/data` reads `custom.apricity.mode`); no Link when absent.\n2. WebSocket client with reconnect and backoff; ping at the rate from `design/link.md`; offset from the lowest-round-trip pings in a window; pings slower than the threshold ignored.\n3. Map server micros to `performance.now()` and then to `AudioContext` frames with `getOutputTimestamp()` and `outputLatency`; produce a clock line for the worklet.\n4. Pure functions for the math and filter, unit-tested without a browser; states: off, connecting, linked, lost.\n\n## Verify\n`cd web && npx tsx --test test/link-clock.test.ts` and `npm --prefix web run build` (types).\n\nCommit: `feat(<this task id>): link clock in the page`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-c4e31a58-091b-4e1f-a051-3aac15aa1a86",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:49.790488Z",
+  "updated_at": "2026-09-26T22:07:49.322828Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

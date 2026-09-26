@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-0229888f-19da-4ad6-b9d3-1e7420afdfe3",
+  "title": "M0: Spike: Link from Rust, audio-clock mapping and the browser clock path",
+  "description": "## Purpose\nAnswer the questions that decide the design before any spec is written. Throwaway code only (a temp folder or a scratch branch that is never merged). The artifact is **`design/link.md`**, never product code.\n\n## Questions the spike answers\n1. **Binding.** The `rusty_link` crate (wraps the Link SDK's C API, `abl_link`) or our own bindgen over `abl_link`? Does it build with the rustup toolchain on macOS arm64 and x86_64 and for `aarch64-apple-ios`? What does it need (cmake, a C++ compiler) and what does that mean for CI (relates apricitus-1f0e91)? License: the SDK is GPL-2.0-or-later compatible on the desktop; what does iOS need (feeds apricitus-874f56)?\n2. **Real-time safety.** Can the session state be captured inside the cpal output callback with zero allocations (the counter in `crates/apricity-engine/tests/realtime.rs`)?\n3. **Host time.** How to map a cpal buffer's playback instant (`OutputCallbackInfo::timestamp().playback`) to the Link clock's microseconds, and how stable is it?\n4. **Harness.** Do two peers in one process find each other over loopback with no network?\n5. **Following strategy for the `Mixer`.** Between a tempo change and the re-warped arrangement: play the current arrangement at a varied speed (a *varispeed bridge*) or re-phase hard at bar lines? How to absorb slow drift between the audio device clock and the Link clock (a small rate trim, and a resync threshold)?\n6. **Browser path.** A page served by `apricity serve` gets the clock over a WebSocket. What accuracy do ping/pong offset estimation + `AudioContext.getOutputTimestamp()` + `outputLatency` reach in Chrome, Safari and Firefox? Can the cloud app (https) reach `ws://127.0.0.1` at all (mixed content, Private Network Access)? Shares ground with apricitus-92b5b5.\n7. **macOS Local Network permission.** Does joining from a terminal-run `apricity` prompt, and what does the user see when access is denied?\n\n```mermaid\nflowchart LR\n  Q1[binding + license] --> D[design/link.md decisions]\n  Q2[RT-safe capture] --> D\n  Q3[host-time mapping] --> D\n  Q4[two peers in-process] --> D\n  Q5[varispeed vs re-phase] --> D\n  Q6[browser clock accuracy] --> D\n  Q7[permission prompt] --> D\n  D --> M1[M1 engine] & M2[M2 native peer] & M3[M3 browser] & M4[M4 harness]\n```\n\n## Definition of Done\n- `design/link.md` holds **Findings** (answers 1 to 7, with measurements) and **Decisions**: binding, crate layout (proposal: a native-only `crates/apricity-link`, the clock math in `apricity-engine` so it builds for wasm), following strategy, words, tolerances.\n- \"In phase\" is written as numbers (proposal: native within 3 ms, browser within 10 ms, both at p99 and max) and the owner agrees in a comment on the initiative.\n- No product code merged; spike code is deleted.\n- Checklist items that apply: 6 (design note), 7 (proposed words for `design/vocabulary.md`), 10 (running log), 12 (dependencies). Not applicable: specs, schema, CLI, fixtures, web.\n\n## Out of scope\nAny product code; stories (the spike has no behavior of its own).\n\n## Dependencies\nNone upstream. Blocks M1, M2, M3 and M4.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2e6ec4df-c65d-4dd3-a78a-aa8b0610aa7b",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T21:59:38.086977Z",
+  "updated_at": "2026-09-26T21:59:38.087013Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

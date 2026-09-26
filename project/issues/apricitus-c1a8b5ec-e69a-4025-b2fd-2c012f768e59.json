@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-c1a8b5ec-e69a-4025-b2fd-2c012f768e59",
+  "title": "apricity-cli: apricity export --kit with --help, -o, --library, --force and located errors",
+  "description": "## Intent\n\nThe command a person runs.\n\n## Scope\n\n- `crates/apricity-cli/src/export.rs` and a `Cmd::Export` in `crates/apricity-cli/src/main.rs` (shared with the set export's `--daw-set` and M3's `--clips`: one subcommand, one mode flag each, mutually exclusive, clap `ArgGroup`).\n- `apricity export --kit <name> <score> [-o <file>] [--library <dir>] [--force]`; default output `<kit>.adg` in the current folder.\n- `--help`: one line per flag and an example, in the voice of the other commands.\n- Errors, all printed before exiting non-zero, nothing written on error: score problems as the compiler prints them (`file:line:col`); unknown kit with \"did you mean\"; a clip named instead of a kit; too many pads; missing audio; output exists without `--force`; unwritable output folder. Warnings (for example a pad whose sample has no beat grid) printed but not fatal.\n- On success, one line: `wrote b.adg (8 pads)`.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-cli --test export_cli\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw_conformance\n```\nAll M1 scenarios green. `apricity export --help` output pasted in a comment.\n\n## Release\n\n`feat(<this task id>): apricity export --kit`. Not breaking.\n\n## Dependencies\n\nBlocked by the warp task. If the set export has already added `Cmd::Export`, add the `--kit` mode to it.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.586519Z",
+  "updated_at": "2026-09-26T22:03:19.586564Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

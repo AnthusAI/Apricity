@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-bf1940a1-d84e-4f4c-90f0-6061aa4490db",
+  "title": "Document the round trip: tools, concepts walkthrough, README, glossary",
+  "description": "## Intent\nDocument the way back from the DAW.\n\n## Scope\n- `docs/tools.md` (DAW sidecars): `apricity import --markers`, `--sample`, `--beat-offset`, `--dry-run`, `--reset-markers`, library mode; how to save markers in the DAW (the clip view's Save button, or drag the clip to the browser for an `.alc`).\n- `docs/concepts.md`: a short \"Round trip with the DAW\" walkthrough (export → correct → import → compile), with the M5 diagram.\n- README: the import line in \"Making music\"; `docs/glossary.md` \"import\".\n\n## Verify\nEvery command in the walkthrough runs as written against the fixtures; docs render in the Docs tab.\n\nCommit: `docs(<this id>): importing warp markers from the DAW`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-17e814a6-46ea-457b-aa1e-b0235fe8b397",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.846752Z",
+  "updated_at": "2026-09-26T22:06:37.231332Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

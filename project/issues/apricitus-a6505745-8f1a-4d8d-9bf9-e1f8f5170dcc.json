@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-a6505745-8f1a-4d8d-9bf9-e1f8f5170dcc",
+  "title": "Following a beat clock starts bar 1 on the clock's next bar line",
+  "description": "As a performer, I want playback to start on the clock's next bar line, so that bar 1 of my score lands where the DAW's bar does.\n\nSpec file: `features/link/clock.feature` (runner `crates/apricity-engine/tests/clock.rs`). \"The tolerance\" is the native one in `design/link.md`. \"The click score\" is the M1 fixture: 4 bars of 4/4 at 100 BPM, a click on every beat, louder on beat 1.\n\n```gherkin\nFeature: Following a beat clock\n  The engine can follow a beat clock from outside instead of its own. The clock says which beat it\n  is at a given moment, how fast beats pass, whether it plays, and how many beats make a bar (the\n  quantum). These scenarios drive the engine with a scripted clock and listen to what it plays.\n\n  Background:\n    Given the click score\n\n  Scenario: Start on the next bar line\n    Given a clock at 120 BPM, playing, at beat 5.5, with a quantum of 4\n    When I start playback following the clock\n    Then nothing sounds before the clock reaches beat 8\n    And a loud click sounds at beat 8 within the tolerance\n    And every later click sounds on a whole beat of the clock within the tolerance\n\n  Scenario: Starting exactly on a bar line starts at once\n    Given a clock at 120 BPM, playing, at beat 8, with a quantum of 4\n    When I start playback following the clock\n    Then a loud click sounds at beat 8 within the tolerance\n\n  Scenario: The loop comes round on the clock's bar lines\n    Given playback started following a clock at 120 BPM at beat 8\n    When the clock has played 10 bars\n    Then bar 1 of the score has sounded at beats 8, 24 and 40\n\n  Scenario: A stopped clock keeps playback waiting\n    Given a clock at 120 BPM that is stopped\n    When I start playback following the clock\n    Then nothing sounds\n    When the clock plays from beat 0\n    Then a loud click sounds at beat 0 within the tolerance\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e661ebf4-0379-4220-98a3-f98ab66831ef",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:42.864049Z",
+  "updated_at": "2026-09-26T22:02:42.864182Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

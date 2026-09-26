@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-8ab30485-a0a8-4f49-b9a8-c557e4ac6348",
+  "title": "features/link/play.feature and the runner crates/apricity-cli/tests/link_play.rs (red first)",
+  "description": "## Intent\nWrite the M2 stories as `features/link/play.feature` and a cucumber runner, and watch them fail.\n\nStories: apricitus-5a32fd, apricitus-94776e, apricitus-a4072b, apricitus-627e11, apricitus-392ae1.\n\n## Steps\n1. `features/link/play.feature`: the Gherkin verbatim; extend `features/link/STEPS.md` with the session steps (peers, tempo, start/stop, \"within the tolerance\" = native tolerance from `design/link.md`).\n2. `crates/apricity-cli/tests/link_play.rs` (cucumber-rs, `harness = false`): runs the play loop with a `ScriptedSession` and the silent clock, capturing stderr and output. If `play.rs` is only reachable from the binary, move its core behind a small `src/lib.rs` in `apricity-cli` so the runner can inject the session (no hidden test flags).\n3. Usage-error scenarios run the real binary (`env!(\"CARGO_BIN_EXE_apricity\")`) as `tests/sync_cli.rs` does.\n\n## Verify\n`cargo test -p apricity-cli --test link_play` shows the scenarios failing on their Then steps.\n\nCommit: with the implementing tasks, or `test(<this task id>)`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-7f9af3b6-6214-48e5-b22b-a46ead899947",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:05:25.775432Z",
+  "updated_at": "2026-09-26T22:07:48.509592Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

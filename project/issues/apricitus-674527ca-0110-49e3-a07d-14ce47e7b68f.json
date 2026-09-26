@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-674527ca-0110-49e3-a07d-14ce47e7b68f",
+  "title": "Map each Effect and the track filter to its device, with located warnings for what has no equal",
+  "description": "## Intent\n\nEach effect becomes its device, in order.\n\n## Steps\n\n- `crates/apricity-daw/src/devices/map.rs`: `Effect` variants (`crates/apricity-score/src/score.rs`: `Eq`, `Comp`, `Limit`, `Drive`, `Lofi`, `NoiseGate`, `Width`, `Reverb`, `Delay`) to devices per the mapping table; track `filter` (`FilterSpec`, 12 dB/oct) as an Auto Filter first in the chain; default wet shares as `docs/language.md` states (25% on tracks and groups, 100% on returns).\n- Settings with no equal: left out or approximated per `design/daw-set.md`, each a warning located by the effect's path (`tracks[i].effects[j]`, mapped to the `.apr` line through the DSL source map when available).\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — \"Effects become stock devices\" and \"Settings with no stock equal are reported\" pass.\n\n## Release\n\n`feat(<this task's id>): effects as stock devices in DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8d493b02-ec2a-44ef-a24f-a74519b4cce8",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-de4d5ebd-b4a8-4493-abee-a4521a7c070b",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:28.502824Z",
+  "updated_at": "2026-09-26T22:06:50.927920Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

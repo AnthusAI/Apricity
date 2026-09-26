@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+  "title": "M0: Spike: the drum rack preset (.adg) anatomy, from files saved by the DAW",
+  "description": "## Purpose\n\nAnswer, with real files saved by the DAW, exactly what a drum rack preset (`.adg`) must contain for a kit to load with the right pads, pitches, levels and warping, before any spec or product code is written. The `.alc` clip format is owned by the sidecar initiative (apricitus-d7746d); this spike only confirms the parts the clip folder relies on (clip name, info text, region, file reference) and reuses that initiative's findings if its spike has already run.\n\n## Questions the spike answers\n\n1. Minimal preset: the root element's version attributes, the drum group device, one branch per pad, and which elements the DAW refuses to load without.\n2. Pad notes: how a branch's receiving note is stored (plain MIDI note or an inverted value), and the default note for pad 1 (expected C1 = 36).\n3. Sampler per pad: root key, transpose, detune (cents), volume (linear or dB), sample start/end (frames), playback mode (classic with note-off vs one-shot), release, loop off.\n4. Warping inside the sampler: are warp markers written the same way as in a clip (seconds to beats), and which warp modes exist there.\n5. File references: absolute path, relative path, or both; does the DAW relink by relative path when the preset sits in a user library folder; are size/CRC fields required.\n6. Velocity: the sampler's velocity-to-volume setting that comes closest to Apricity's velocity curve (`velocity_db`, 100 = matched level, 127 about +4 dB, 40 about -16 dB).\n7. Clip file (confirm only): clip name, info text, start/end/loop region, warp on/off for an unwarped sample.\n\n## Artifact it leaves (no product code)\n\n- `design/daw-presets.md`: an annotated minimal XML skeleton for the preset, the field-by-field mapping table (kit -> rack), the answers above, and a Mermaid diagram of the document tree.\n- Reference files saved by the DAW under `crates/apricity-daw/tests/fixtures/reference/` (gzipped XML only, pointing at audio paths; no audio in git).\n\n## Definition of Done\n\n- Every question above has an answer backed by a reference file.\n- The owner has decided the open questions recorded on the initiative (pad note layout, MIDI file vs MIDI clip, reference vs copy audio).\n- Applies: design note (6), fixtures (5), running log (10). Specs, code, schema, CLI, docs, web: not applicable (spike).\n\n## Dependencies\n\n- Shares findings with the sidecar spike (apricitus-d7746d) and the set export (apricitus-6edba8); whichever runs first writes the shared file-reference and warp-marker sections.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T21:58:00.647061Z",
+  "updated_at": "2026-09-26T21:58:00.647111Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

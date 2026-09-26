@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-a79cb80d-f5ce-4a82-afd3-9791447357f1",
+  "title": "Docs and words for Link: tools, concepts section, glossary, vocabulary, design/link.md Native peer",
+  "description": "## Intent\nDocumentation and words for the native peer.\n\n## Steps\n1. `docs/tools.md`: `apricity play … --link [--quantum N] [--no-start-stop] [--latency MS]` and `apricity link [--seconds S]` in \"The `apricity` command\", with what each message means.\n2. `docs/concepts.md`: new section \"Playing beside a DAW over Link\": what Link shares (tempo, beat in the bar, start/stop) and doesn't (song position, time signature); bar 1 lands on a session bar line; Apricity only follows; audio goes out through your own interface or a loopback driver.\n3. `docs/glossary.md`: Link, Link session, peer, quantum, phase, start/stop sync (alphabetical, in the existing `###` style).\n4. `design/vocabulary.md`: the same words in \"The words\" table (the DAW's word column says \"Link\" where it matches), and a line on why \"sync\" and \"follow\" are not used alone.\n5. `design/link.md`: \"Native peer\" section.\n\n## Verify\n`npm --prefix web run build` (the Docs tab renders the markdown); `grep -n \"### Link\" docs/glossary.md`.\n\nCommit: `docs(<this task id>): Link in the docs`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8398263d-e134-4b55-8e35-eae25aae74ec",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:05:26.055088Z",
+  "updated_at": "2026-09-26T22:07:48.996854Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
