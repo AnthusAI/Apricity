@@ -9,6 +9,7 @@ import { player } from "../audio/player";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
 import { StarRating } from "./stars";
+import type { PlayState } from "./play-button";
 import { computePeaks, Waveform } from "./waveform";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
@@ -29,7 +30,10 @@ export class Library {
   private jobsEl = el("div", { className: "jobs" });
   private decoded = new Map<string, Promise<AudioBuffer>>();
   private audition: AudioBufferSourceNode | null = null;
-  private auditionBtn: HTMLButtonElement | null = null;
+  /** What the top bar's play button plays here: the shown sample (a selection or a clip of it, else all of it). */
+  private playable: { buf: AudioBuffer; wave: Waveform; range: () => [number, number] | null } | null = null;
+  private playState: PlayState = { kind: "unavailable", why: "Pick a sample to hear it" };
+  private playListeners: ((s: PlayState) => void)[] = [];
   private jobsTimer = 0;
   private who: Me | null = null;
   private names: Handles | null = null;
@@ -195,6 +199,8 @@ export class Library {
     } else if (this.currentClip) this.list.current = this.currentClip.id;
     this.list.render();
     this.stopAudition();
+    this.playable = null;
+    this.setPlay({ kind: "loading", label: "Loading the sample" });
     const c = this.samples.find((x) => x.path === path);
     let m: Awaited<ReturnType<typeof manifest>>, buf: AudioBuffer;
     try {
@@ -207,6 +213,7 @@ export class Library {
       if (this.current !== path) return;
       const msg = e instanceof SignedOut ? "Sign in to see this sample." : `Couldn't load ${path}: ${(e as Error).message}`;
       this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
+      this.setPlay({ kind: "unavailable", why: msg });
       return;
     }
     if (this.current !== path) return;
@@ -229,7 +236,6 @@ export class Library {
     const errors = el("div", { className: "errors" });
     const save = el("button", { className: "btn primary", type: "button", disabled: true }, "Save clips");
     const makeClip = el("button", { className: "btn", type: "button", disabled: true }, "Make clip from selection");
-    const play = el("button", { className: "btn", type: "button" }, "▶ Audition");
     const snippet = el("button", { className: "btn", type: "button", disabled: true, title: "Copy a clip line for the score editor" }, "Copy for score");
     const table = el("table", { className: "slices" });
 
@@ -239,6 +245,8 @@ export class Library {
       if (s.selected !== null) return [s.clips[s.selected].start, s.clips[s.selected].end];
       return null;
     };
+    this.playable = { buf, wave, range: selectionOrClip };
+    this.setPlay({ kind: "idle" });
     const markDirty = () => {
       dirty = true;
       save.disabled = false;
@@ -315,11 +323,6 @@ export class Library {
       renderTable();
       wave.draw();
     });
-    play.addEventListener("click", () => {
-      if (this.audition) return this.stopAudition(play);
-      const r = selectionOrClip();
-      this.startAudition(buf, r ? r[0] : 0, r ? r[1] : null, wave, play);
-    });
     save.addEventListener("click", async () => {
       if (this.cloud() && !this.who) return signIn();
       errors.textContent = "";
@@ -363,8 +366,8 @@ export class Library {
         stat("Notes found", String(c.notes)),
       ),
       el("div", { className: "card" }, wave.canvas),
-      el("p", { className: "hint" }, "Drag to select (snaps to beats; hold ⌥ for free), double-click to play from a point. Drag a clip's edges or body in the lower lane; Delete removes the selected clip."),
-      el("div", { className: "toolbar" }, play, makeClip, save, snippet),
+      el("p", { className: "hint" }, "Play (top right, or space) plays the selection or the selected clip, else the whole sample. Drag to select (snaps to beats; hold ⌥ for free), double-click to play from a point. Drag a clip's edges or body in the lower lane; Delete removes the selected clip."),
+      el("div", { className: "toolbar" }, makeClip, save, snippet),
       errors,
       table,
     );
@@ -374,8 +377,9 @@ export class Library {
     window.onbeforeunload = () => (dirty ? true : null);
   }
 
-  private async startAudition(buf: AudioBuffer, from: number, to: number | null, wave: Waveform, button?: HTMLButtonElement) {
+  private async startAudition(buf: AudioBuffer, from: number, to: number | null, wave: Waveform) {
     this.stopAudition();
+    if (!player.started) this.setPlay({ kind: "loading", label: "Starting the audio engine" });
     await player.init();
     const ctx = player.ctx!;
     await ctx.resume();
@@ -385,8 +389,7 @@ export class Library {
     const t0 = ctx.currentTime;
     src.start(t0, from, to !== null ? to - from : undefined);
     this.audition = src;
-    this.auditionBtn = button ?? null;
-    if (button) button.textContent = "■ Stop";
+    this.setPlay({ kind: "playing" });
     const tick = () => {
       if (this.audition !== src) return;
       wave.state.playhead = from + (ctx.currentTime - t0);
@@ -395,22 +398,41 @@ export class Library {
     };
     tick();
     src.onended = () => {
-      if (this.audition === src) this.stopAudition(button);
+      if (this.audition === src) this.stopAudition();
       wave.state.playhead = null;
       wave.draw();
     };
   }
 
-  private stopAudition(button?: HTMLButtonElement) {
+  private stopAudition() {
     const a = this.audition;
     this.audition = null;
     a?.stop();
-    if (button) button.textContent = "▶ Audition";
+    if (a && this.playState.kind === "playing") this.setPlay({ kind: "idle" });
   }
 
   /** Stop any audition (the reader left this page). */
   silence() {
-    this.stopAudition(this.auditionBtn ?? undefined);
-    this.auditionBtn = null;
+    this.stopAudition();
+  }
+
+  /** The top bar's play button: play what is shown (the selection, else the selected clip, else it all), or stop. */
+  togglePlay() {
+    if (this.audition) return this.stopAudition();
+    const p = this.playable;
+    if (!p) return;
+    const r = p.range();
+    void this.startAudition(p.buf, r ? r[0] : 0, r ? r[1] : null, p.wave);
+  }
+
+  /** Follow the play button's state here (called at once with the current one). */
+  onPlay(fn: (s: PlayState) => void) {
+    this.playListeners.push(fn);
+    fn(this.playState);
+  }
+
+  private setPlay(s: PlayState) {
+    this.playState = s;
+    for (const f of this.playListeners) f(s);
   }
 }

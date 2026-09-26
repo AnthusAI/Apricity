@@ -1,5 +1,6 @@
 import "./style.css";
-import { player, type Transport } from "./audio/player";
+import { player, progressLabel, type Transport } from "./audio/player";
+import { PlayButton, type PlayState } from "./ui/play-button";
 import { Library } from "./ui/library";
 import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
@@ -47,6 +48,8 @@ const tabs = [...document.querySelectorAll<HTMLButtonElement>(".tabs button")];
 const brand = document.querySelector<HTMLButtonElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
 const loaded = new Set<string>();
+/** The transport's play button follows the page shown (set up below). */
+let syncTransport = () => {};
 function showTab(name: string) {
   if (!TABS.includes(name)) name = "scores";
   // Leaving a page stops what it was playing: the score, or an audition in Clips or Samples.
@@ -62,6 +65,7 @@ function showTab(name: string) {
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
   document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home";
+  syncTransport();
   if (kind) score.setKind(kind);
   else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
     loaded.add(name);
@@ -102,7 +106,7 @@ async function openScore(path: string, play: boolean) {
   showTab(TAB_OF_KIND[await score.kindOf(path)]);
   if (!play) return;
   for (let i = 0; i < 100 && !(score.timeline && score.path === path); i++) await new Promise((r) => setTimeout(r, 100));
-  if (score.timeline && score.path === path && !player.transport.playing) playBtn.click();
+  if (score.timeline && score.path === path && !player.transport.playing) void togglePlay();
 }
 
 // Deep links: #score=<path>[&play] (a breakdown's "Open in Score", or a shared link).
@@ -128,36 +132,53 @@ document.addEventListener("apricity:docs", (e) => {
   docs.open(file, anchor);
 });
 
-// ---- transport: plays the score open in the Score tab
-const bar = document.querySelector("#transport")!;
-const playBtn = Object.assign(document.createElement("button"), { className: "play", type: "button", ariaLabel: "Play score", innerHTML: "▶" });
+// ---- transport: one play button for every page. On a score's tab it plays the score (waiting for the score to open and
+// compile, then the engine, the sounds and the mix, and saying so on the button); on Clips and Samples it plays the
+// sample shown (its selection or clip, else all of it).
+const bar = document.querySelector<HTMLElement>("#transport")!;
+const play = new PlayButton("score", () => void togglePlay(), "space");
 const pos = Object.assign(document.createElement("span"), { className: "pos", textContent: "1.1" });
 const meta = Object.assign(document.createElement("span"), { className: "meta" });
 const pill = Object.assign(document.createElement("span"), { className: "pill", hidden: true, textContent: "change queued" });
 const meter = document.createElement("span");
 meter.className = "meter";
 meter.innerHTML = '<i style="width:0"></i>';
-bar.append(pill, meta, pos, meter, playBtn);
+bar.append(pill, meta, pos, meter, play.root);
 
-playBtn.addEventListener("click", async () => {
+const libraryOf = (tab = document.body.dataset.tab) => (tab === "clips" ? clips : tab === "samples" ? samples : null);
+const libraryState: Record<string, PlayState> = {};
+let scoreState: PlayState = { kind: "idle" };
+syncTransport = () => {
+  const tab = document.body.dataset.tab ?? "";
+  const lib = libraryOf(tab);
+  bar.dataset.plays = lib ? "sample" : "score";
+  play.set(lib ? (libraryState[tab] ?? { kind: "idle" }) : scoreState);
+};
+const setScore = (s: PlayState) => ((scoreState = s), syncTransport());
+clips.onPlay((s) => ((libraryState.clips = s), syncTransport()));
+samples.onPlay((s) => ((libraryState.samples = s), syncTransport()));
+syncTransport();
+
+async function togglePlay() {
+  const lib = libraryOf();
+  if (lib) return lib.togglePlay();
   if (player.transport.playing) return player.pause();
-  if (!score.timeline) {
-    showTab(TAB_OF_KIND[score.kind]);
-    return;
-  }
-  playBtn.disabled = true;
+  if (scoreState.kind === "loading") return;
   try {
+    setScore({ kind: "loading", label: "Getting the score ready" });
+    const tl = await score.ready();
+    if (!tl) return setScore({ kind: "idle" }); // nothing open, or it doesn't compile: the score's own panel says why
+    if (!player.started) setScore({ kind: "loading", label: "Starting the audio engine" });
     await player.init();
-    await score.send(); // renders the current score; starts immediately (nothing is playing yet)
+    await score.send(tl, (p) => setScore({ kind: "loading", label: progressLabel(p), ...(p.step === "sounds" ? { done: p.done, total: p.total } : {}) }));
     await player.play();
   } finally {
-    playBtn.disabled = false;
+    setScore({ kind: player.transport.playing ? "playing" : "idle" });
   }
-});
+}
 
 player.onTransport((t: Transport) => {
-  playBtn.innerHTML = t.playing ? "■" : "▶";
-  playBtn.ariaLabel = t.playing ? "Stop" : "Play score";
+  if (scoreState.kind !== "loading" && (scoreState.kind === "playing") !== t.playing) setScore({ kind: t.playing ? "playing" : "idle" });
   const beat = t.position / t.framesPerBeat;
   pos.textContent = `${Math.floor(beat / t.beatsPerBar) + 1}.${Math.floor(beat % t.beatsPerBar) + 1}`;
   const tl = score.timeline;
@@ -168,6 +189,6 @@ player.onTransport((t: Transport) => {
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space" && !(e.target as HTMLElement).closest(".cm-editor, input, textarea")) {
     e.preventDefault();
-    playBtn.click();
+    play.button.click();
   }
 });
