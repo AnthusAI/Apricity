@@ -80,7 +80,9 @@ const schema = a.schema({
       aliases: a.string().array(),
       collection: a.string().required(),
       title: a.string().required(),
-      role: a.enum(["source", "stem", "excerpt", "upload"]),
+      role: a.enum(["source", "stem", "excerpt", "upload", "generated"]),
+      /** How a generated sample was made (engine, version, backend, model, voice, text, options, request key, requester). */
+      generator: a.json(),
       stem: a.string(),
       stemModel: a.string(),
       parentSampleId: a.id(),
@@ -380,6 +382,8 @@ const schema = a.schema({
     .model({
       id: a.id().required(),
       kind: a.string().required(),
+      /** What the job was asked to do, e.g. a voice line's name, text and voice. */
+      input: a.json(),
       sampleId: a.id(),
       state: a.enum(["queued", "running", "done", "failed"]),
       error: a.string(),

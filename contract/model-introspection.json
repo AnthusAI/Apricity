@@ -282,6 +282,13 @@
           "isRequired": false,
           "attributes": []
         },
+        "generator": {
+          "name": "generator",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
         "stem": {
           "name": "stem",
           "isArray": false,
@@ -2924,6 +2931,13 @@
           "isRequired": true,
           "attributes": []
         },
+        "input": {
+          "name": "input",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
         "sampleId": {
           "name": "sampleId",
           "isArray": false,
@@ -3083,7 +3097,8 @@
         "source",
         "stem",
         "excerpt",
-        "upload"
+        "upload",
+        "generated"
       ]
     },
     "SampleStatus": {

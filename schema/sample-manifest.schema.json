@@ -355,6 +355,54 @@
         }
       }
     },
+    "generated_by": {
+      "type": "object",
+      "description": "This audio was generated, not recorded (e.g. a voice line spoken by Auritus); how it was made.",
+      "required": [
+        "engine",
+        "backend",
+        "voice",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "type": "string",
+          "description": "The generator, e.g. \"auritus\"."
+        },
+        "version": {
+          "type": "string"
+        },
+        "backend": {
+          "type": "string",
+          "description": "The speech backend, e.g. \"kokoro\"."
+        },
+        "model": {
+          "type": "string",
+          "description": "The model the backend ran, e.g. \"hexgrad/Kokoro-82M\"."
+        },
+        "voice": {
+          "type": "string",
+          "description": "The voice, as backend:id."
+        },
+        "text": {
+          "type": "string",
+          "description": "What was spoken, markers included."
+        },
+        "options": {
+          "type": "object",
+          "description": "Speaking options such as speed and seed."
+        },
+        "request_key": {
+          "type": "string",
+          "description": "The generator's key for this exact request."
+        },
+        "requester": {
+          "type": "string",
+          "description": "Who asked for it."
+        }
+      }
+    },
     "derived_from": {
       "type": "object",
       "description": "This clip was derived from another (e.g. a Demucs stem); its beat grid is the parent's.",
