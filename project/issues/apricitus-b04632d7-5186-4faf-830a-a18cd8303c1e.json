@@ -1,0 +1,28 @@
+{
+  "id": "apricitus-b04632d7-5186-4faf-830a-a18cd8303c1e",
+  "title": "Markup re-run renames the clips it made",
+  "description": "plan_merge matches existing ML clips by a kind field the Clip model doesn't have, so clips a merge created never match on the next run: they get new names and the old ones are retired or deleted. Derive the kind from the clip's tags or name prefix (loop-2 -> loop).",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "8b3f25ab-38be-4875-b4bd-4be44720ecc3",
+      "author": "home",
+      "text": "Done on develop; tests green, checked in a local browser where it shows.",
+      "created_at": "2026-09-26T10:02:52.110595Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-26T09:51:02.715930Z",
+  "updated_at": "2026-09-26T10:02:52.110623Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
