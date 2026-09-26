@@ -120,18 +120,28 @@ impl Arrangement {
     }
 }
 
-/// Sum placements into one loop-length stereo buffer (control thread).
+/// Sum placements into one loop-length stereo buffer (control thread). A placement that runs past
+/// `length` (e.g. a release tail) wraps to the start, the same way the master chain's effect tails
+/// wrap (`master::run_looped` runs the loop twice and keeps the second cycle).
 pub fn sum_placements(length: usize, placements: &[Placement]) -> Stereo {
     let mut out = [vec![0.0f32; length], vec![0.0f32; length]];
+    if length == 0 {
+        return out;
+    }
     for p in placements {
         if p.start >= length {
             continue;
         }
-        let n = p.len().min(length - p.start);
+        let n = p.len();
         for (c, dst) in out.iter_mut().enumerate() {
             let src = &p.buf[c][p.skip..p.skip + n];
-            for (d, s) in dst[p.start..p.start + n].iter_mut().zip(src) {
-                *d += s * p.gain;
+            let mut pos = p.start;
+            for &s in src {
+                dst[pos] += s * p.gain;
+                pos += 1;
+                if pos == length {
+                    pos = 0;
+                }
             }
         }
     }
