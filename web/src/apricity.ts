@@ -16,6 +16,9 @@ export interface SampleSummary {
   excerpt_start?: string;
   credit?: string;
   rights?: string;
+  /** When the recording was made, and the piece written, when known. */
+  recorded?: string;
+  composed?: number;
   duration: number;
   bpm: number | null;
   stability?: number;

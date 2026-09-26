@@ -24,6 +24,9 @@ const signIn = () => document.dispatchEvent(new CustomEvent("apricity:sign-in"))
 
 export type LibraryMode = "samples" | "clips";
 
+/** A sample's year for its list row: when it was recorded, else when the piece was written ("1889"), when known. */
+const yearOf = (c: Pick<SampleSummary, "recorded" | "composed">) => (c.recorded ? String(c.recorded).slice(0, 4) : c.composed ? `written ${c.composed}` : "");
+
 export class Library {
   root: HTMLElement;
   samples: SampleSummary[] = [];
@@ -66,7 +69,7 @@ export class Library {
         tallies: async () => (await ratings()).tallies("sample"),
         row: (c) => ({
           title: c.title + (c.excerpt_start ? ` @${c.excerpt_start.replace(/^00:/, "")}` : ""),
-          sub: `${c.undocumented ? "⚠ no license documented · " : ""}${GROUPS[c.group] ?? c.group} · ${keyLabel(c.key)} · ${c.bpm ? Math.round(c.bpm) + " BPM" : "no beat"} · ${fmt(c.duration)}${c.clips ? ` · ${c.clips} clip${c.clips > 1 ? "s" : ""}` : ""}`,
+          sub: `${c.undocumented ? "⚠ no license documented · " : ""}${GROUPS[c.group] ?? c.group}${yearOf(c) ? ` · ${yearOf(c)}` : ""} · ${keyLabel(c.key)} · ${c.bpm ? Math.round(c.bpm) + " BPM" : "no beat"} · ${fmt(c.duration)}${c.clips ? ` · ${c.clips} clip${c.clips > 1 ? "s" : ""}` : ""}`,
         }),
         text: (c) => [c.title, c.key, c.camelot, String(Math.round(c.bpm ?? 0)), c.group, GROUPS[c.group] ?? ""].join(" "),
         me: async () => this.who,
@@ -412,6 +415,8 @@ export class Library {
       el(
         "div",
         { className: "stats" },
+        ...(c.recorded ? [stat("Recorded", c.recorded)] : []),
+        ...(c.composed ? [stat("Composed", String(c.composed))] : []),
         stat("Tempo", m.rhythm.bpm ? `${m.rhythm.bpm} BPM` : "—"),
         stat("Steadiness", m.rhythm.bpm_stability !== undefined ? `${Math.round(m.rhythm.bpm_stability * 100)}%` : "—"),
         stat("Key", `${keyLabel(k.tonic)} ${k.mode} · ${k.camelot ?? ""}`),

@@ -299,6 +299,8 @@ export function toSummary(sample: SampleRecord, recordings: Map<string, Recordin
     excerpt_start: excerptLabel(sample.excerptStart),
     credit: rec?.credit ?? undefined,
     rights: rec?.rights ?? undefined,
+    ...(rec?.recorded ? { recorded: String(rec.recorded) } : {}),
+    ...(rec?.composed ? { composed: Number(rec.composed) } : {}),
     duration: sample.duration ?? 0,
     bpm: sample.bpm ?? null,
     stability: sample.bpmStability ?? undefined,
