@@ -16,7 +16,20 @@ type Msg =
   | { type: "source"; path: string; channels: Float32Array[]; sampleRate: number }
   | { type: "arrange"; id: number; part: number; parts: number; timeline: unknown; atNextBar: boolean };
 
-self.onmessage = async ({ data }: MessageEvent<Msg>) => {
+// Every failure goes back to the page with the reason (an init, a source, a render), so nothing waits forever.
+self.onmessage = async (e: MessageEvent<Msg>) => {
+  const data = e.data;
+  try {
+    await handle(data);
+  } catch (err) {
+    const error = String((err as Error)?.message ?? err);
+    if (data.type === "init") postMessage({ type: "init-error", error });
+    else if (data.type === "source") postMessage({ type: "source-error", path: data.path, error });
+    else postMessage({ type: "error", id: data.id, error });
+  }
+};
+
+async function handle(data: Msg) {
   if (data.type === "init") {
     rw = await instantiate(data.module);
     rw.exports.rw_renderer_new(data.sampleRate);
@@ -59,4 +72,4 @@ self.onmessage = async ({ data }: MessageEvent<Msg>) => {
     );
     postMessage({ type: "arranged", id: data.id, ms: performance.now() - t0, rendered: info.rendered, reused: info.reused, frames: info.frames });
   }
-};
+}

@@ -11,7 +11,9 @@ export type PlayState =
   /** Getting ready: `label` says what (short), `done`/`total` fill the ring when known. */
   | { kind: "loading"; label: string; done?: number; total?: number }
   /** Nothing to play here now; `why` is the tooltip. */
-  | { kind: "unavailable"; why: string };
+  | { kind: "unavailable"; why: string }
+  /** It tried and failed: the reason shows beside it, and a click tries again. */
+  | { kind: "error"; message: string };
 
 const R = 15.5;
 const C = 2 * Math.PI * R;
@@ -52,11 +54,13 @@ export class PlayButton {
     const known = s.kind === "loading" && s.total ? Math.min(1, (s.done ?? 0) / s.total) : null;
     b.classList.toggle("spin", s.kind === "loading" && known === null);
     this.ring.style.strokeDashoffset = String(s.kind === "loading" ? C * (1 - (known ?? 0.25)) : C);
-    const label = s.kind === "loading" ? `${s.label}${s.total ? ` ${Math.min(s.done ?? 0, s.total)} of ${s.total}` : ""}…` : "";
+    const label =
+      s.kind === "loading" ? `${s.label}${s.total ? ` ${Math.min(s.done ?? 0, s.total)} of ${s.total}` : ""}…` : s.kind === "error" ? `Couldn't play: ${s.message}` : "";
     this.status.textContent = label;
     this.status.hidden = !label;
-    b.ariaLabel = s.kind === "playing" ? `Stop the ${this.what}` : s.kind === "loading" ? `${label} (${this.what})` : `Play the ${this.what}`;
+    this.status.classList.toggle("bad", s.kind === "error");
+    b.ariaLabel = s.kind === "playing" ? `Stop the ${this.what}` : s.kind === "loading" || s.kind === "error" ? `${label} (${this.what})` : `Play the ${this.what}`;
     const key = this.key ? ` (${this.key})` : "";
-    b.title = s.kind === "unavailable" ? s.why : s.kind === "loading" ? label : s.kind === "playing" ? `Stop${key}` : `Play${key}`;
+    b.title = s.kind === "unavailable" ? s.why : s.kind === "loading" ? label : s.kind === "error" ? `${label}. Click to try again.` : s.kind === "playing" ? `Stop${key}` : `Play${key}`;
   }
 }

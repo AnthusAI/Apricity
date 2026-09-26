@@ -28,12 +28,16 @@ class ApricityEngine extends AudioWorkletProcessor {
     super();
     const handle = (msg: any) => this.onMessage(msg);
     this.port.onmessage = ({ data }) => handle(data);
-    instantiate(options.processorOptions.module).then((rw) => {
-      rw.exports.rw_engine_new();
-      this.out = rw.exports.rw_alloc(2 * QUANTUM);
-      this.rw = rw;
-      this.port.postMessage({ type: "ready" });
-    });
+    instantiate(options.processorOptions.module).then(
+      (rw) => {
+        rw.exports.rw_engine_new();
+        this.out = rw.exports.rw_alloc(2 * QUANTUM);
+        this.rw = rw;
+        this.port.postMessage({ type: "ready" });
+      },
+      // Say why, so the page can report it instead of waiting forever.
+      (e) => this.port.postMessage({ type: "failed", error: String((e as Error)?.message ?? e) }),
+    );
   }
 
   onMessage(msg: any) {

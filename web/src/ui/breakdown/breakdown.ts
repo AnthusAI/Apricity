@@ -7,6 +7,7 @@ import "./breakdown.css";
 import { highlightApr } from "../apr-highlight";
 import { el } from "../dom";
 import { PlayButton } from "../play-button";
+import { reasonOf } from "../../audio/pending";
 import type { FlowData, FlowRecording } from "../flow/model";
 import { readTheme } from "../flow/paint";
 import { rememberSound, soundRemembered, soundView, stateAfterProbe, type SoundState } from "../flow/hero-audio";
@@ -234,9 +235,10 @@ export class Breakdown {
       this.soundButton("on");
       if (this.opts.remember) rememberSound(true);
       this.start();
-    } catch {
-      // The library answered the probe but the sound could not be played: silent, and says so.
-      this.soundButton("missing");
+    } catch (e) {
+      // The library answered the probe but the sound could not be played: say why; a click tries again.
+      this.soundState = "ready";
+      this.play.set({ kind: "error", message: reasonOf(e) });
     }
   }
 
