@@ -3,17 +3,25 @@
   "title": "Playback keeps going after leaving the page",
   "description": "Play a score, then go to the home page: it keeps playing. Leaving a page must stop the score and any Clips/Samples audition.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "19ba5d74-c936-4bd9-a004-5cd53270ec37",
+      "author": "home",
+      "text": "Deployed (Amplify job 51); prod smoke passed; social-card.png served and og tags present.",
+      "created_at": "2026-09-26T14:32:03.457274Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T14:13:51.239895Z",
-  "updated_at": "2026-09-26T14:13:51.239931Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T14:32:03.505096Z",
+  "closed_at": "2026-09-26T14:32:03.505065Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
