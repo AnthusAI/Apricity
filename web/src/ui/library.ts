@@ -1,7 +1,7 @@
 // Samples and Clips: every analyzed sample (or every clip saved with one), ranked by stars, and a waveform editor for
 // the clips saved with a sample. The two tabs are one view: opening a clip opens its sample with that clip selected.
 
-import { reportError } from "./notices";
+import { notify, reportError } from "./notices";
 import { api, audioUrl, manifest, me, ratings, type SampleSummary, type SavedClip } from "../apricity";
 import { owns, SignedOut, type ClipItem, type Me } from "../data/catalog";
 import { byline, handles, type Handles } from "../data/handles";
@@ -11,6 +11,8 @@ import { reasonOf } from "../audio/pending";
 import { el } from "./dom";
 import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
+import { opened, type Opened } from "./at";
+import { sampleKey } from "../route";
 import { columnSplitter } from "./splitter";
 import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
@@ -73,7 +75,7 @@ export class Library {
         }),
         text: (c) => [c.title, c.key, c.camelot, String(Math.round(c.bpm ?? 0)), c.group, GROUPS[c.group] ?? ""].join(" "),
         me: async () => this.who,
-        open: (c) => this.show(c.path),
+        open: (c) => this.show(c.path, "user"),
       });
     } else {
       this.list = new RankedList<ClipItem>({
@@ -91,7 +93,7 @@ export class Library {
         text: (c) => `${c.name} ${c.sampleTitle} ${c.samplePath} ${byline(this.names, c.owner, false)}`,
         owner: (c) => c.owner,
         me: async () => this.who,
-        open: (c) => ((this.currentClip = c), this.show(c.samplePath)),
+        open: (c) => ((this.currentClip = c), this.show(c.samplePath, "user")),
       });
     }
     const drop = el("div", { className: "drop" }, "Drop audio here to add and analyze it");
@@ -127,18 +129,34 @@ export class Library {
   }
 
   /** Open a sample (Samples) or a clip (Clips) by its record id, e.g. from an Activity card. */
-  async openId(id: string) {
+  async openId(id: string, how: Opened = "user") {
     await this.list.refresh();
     if (this.mode === "clips") {
       const clip = this.clips.find((c) => c.id === id);
-      if (!clip) return;
-      this.currentClip = clip;
-      this.list.current = clip.id;
-      this.list.render();
-      return this.show(clip.samplePath);
+      return clip ? this.openClipItem(clip, how) : undefined;
     }
     const s = this.samples.find((x) => x.id === id);
-    if (s) return this.show(s.path);
+    if (s) return this.show(s.path, how);
+  }
+
+  /** Open what a URL names: a sample by its path without extension, or (Clips) one of its clips by name. */
+  async openKey(sample: string, clipName: string | undefined, how: Opened) {
+    await this.list.refresh();
+    if (this.mode === "clips") {
+      const clip = this.clips.find((c) => sampleKey(c.samplePath) === sample && c.name === clipName);
+      if (clip) return this.openClipItem(clip, how);
+      return notify(`There's no clip ${clipName} on ${sample}.`, { kind: "info" });
+    }
+    const s = this.samples.find((x) => sampleKey(x.path) === sample);
+    if (s) return this.show(s.path, how);
+    notify(`There's no sample ${sample} here${this.cloud() ? " (or it isn't public yet)" : ""}.`, { kind: "info" });
+  }
+
+  private openClipItem(clip: ClipItem, how: Opened) {
+    this.currentClip = clip;
+    this.list.current = clip.id;
+    this.list.render();
+    return this.show(clip.samplePath, how);
   }
 
   /** Load (or reload) the list; opens `select`, or what was open, or the top of the list. */
@@ -157,12 +175,12 @@ export class Library {
         this.list.current = clip.id;
         this.list.render();
         this.currentClip = clip;
-        this.show(clip.samplePath);
+        this.show(clip.samplePath, "auto");
       }
       return;
     }
     const target = select ?? this.current ?? (this.list as RankedList<SampleSummary>).top()?.path;
-    if (target && target !== this.current) this.show(target);
+    if (target && target !== this.current) this.show(target, "auto");
   }
   private jobs: { path: string; state: string; error?: string }[] = [];
 
@@ -226,8 +244,13 @@ export class Library {
     return this.decoded.get(path)!;
   }
 
-  async show(path: string) {
+  async show(path: string, how: Opened = "user") {
     this.current = path;
+    // The address bar follows: the sample, or (in Clips) the clip open on it.
+    const clipOpen = this.mode === "clips" ? this.currentClip : null;
+    const summary = this.samples.find((x) => x.path === path);
+    if (clipOpen) opened({ page: "clips", clip: { sample: sampleKey(clipOpen.samplePath), name: clipOpen.name } }, how, clipOpen.name);
+    else if (this.mode === "samples") opened({ page: "samples", sample: sampleKey(path) }, how, summary?.title);
     if (this.mode === "samples") {
       const c = this.samples.find((x) => x.path === path);
       if (c) this.list.current = c.id;

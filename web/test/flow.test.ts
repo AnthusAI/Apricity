@@ -229,15 +229,6 @@ test("story metronome: off when a kit comes first, to the finale when there is n
   assert.equal(blues.metronome().until, blues.plan.sessions.at(-1)!.from, "no kit: clicks until the finale");
 });
 
-test("deep links: #score=<path>[&play]", async () => {
-  const { parseRoute, routeFor } = await import("../src/route.ts");
-  assert.deepEqual(parseRoute("#score=examples/chop-shop.apr&play"), { score: "examples/chop-shop.apr", play: true });
-  assert.deepEqual(parseRoute("#score=examples/hero.apr"), { score: "examples/hero.apr", play: false });
-  assert.deepEqual(parseRoute(routeFor("examples/my piece.apr", true)), { score: "examples/my piece.apr", play: true });
-  assert.equal(routeFor("examples/chop-shop.apr", true), "#score=examples/chop-shop.apr&play");
-  for (const bad of ["", "#", "#play", "#score=", "#score=/etc/passwd", "#score=../x.apr"]) assert.equal(parseRoute(bad).score, undefined, bad);
-});
-
 test("every breakdown draws and captions its whole story without throwing", async () => {
   const { Story } = await import("../src/ui/flow/story.ts");
   const noop = () => {};

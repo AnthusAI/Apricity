@@ -260,6 +260,9 @@ export function isOAuthReturn(search: string): boolean {
   return q.has("code") && q.has("state");
 }
 
+/** Where to return after a sign-in redirect (sessionStorage). */
+const RETURN_KEY = "apricity.return";
+
 /** Auth events after which the views and the account control must re-read the session. */
 export const SESSION_EVENTS = ["signedIn", "signedOut", "tokenRefresh", "signInWithRedirect"] as const;
 
@@ -279,7 +282,14 @@ export function watchAuth(timeoutMs = 12000): Promise<void> {
       finished = true;
       clearTimeout(timer);
       try {
-        history.replaceState(null, "", location.pathname + location.hash);
+        // Back where you were when you signed in (Google's redirect always comes back to "/").
+        let back: string | null = null;
+        try {
+          back = sessionStorage.getItem(RETURN_KEY);
+          sessionStorage.removeItem(RETURN_KEY);
+        } catch {} // storage can be blocked (private browsing): nothing to report
+        history.replaceState(null, "", back ?? location.pathname + location.hash);
+        if (back) dispatchEvent(new PopStateEvent("popstate"));
       } catch {
         /* the address bar is cosmetic */
       }
@@ -395,6 +405,10 @@ export async function signOutAccount(): Promise<void> {
 /** Google via the hosted UI; leaves the page. */
 export async function signInWithGoogle(): Promise<void> {
   const api = await loadAuthApi();
+  // Come back to this page after Google (it returns to "/").
+  try {
+    sessionStorage.setItem(RETURN_KEY, location.pathname + location.search + location.hash);
+  } catch {} // storage can be blocked (private browsing): you land on the home page instead
   try {
     await api.signInWithRedirect({ provider: "Google" });
   } catch (err) {

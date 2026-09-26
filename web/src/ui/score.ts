@@ -17,6 +17,8 @@ import { RankedList } from "./ranked-list";
 import { CommentThread } from "./comments";
 import { columnSplitter } from "./splitter";
 import { scoreCredits } from "./credits";
+import { opened, type Opened } from "./at";
+import { PAGE_OF_KIND } from "../route";
 import { basedOn } from "../data/licenses";
 import { timeAgo } from "./time";
 import { mode } from "../data/client";
@@ -146,7 +148,7 @@ export class ScoreView {
       text: (x) => `${x.title} ${byline(this.names, x.owner, false)}`,
       owner: (x) => x.owner,
       me: async () => this.who,
-      open: (x) => this.open(x.path),
+      open: (x) => this.open(x.path, "user"),
       create: { label: "New score", run: () => this.create() },
     });
     document.addEventListener("apricity:handles-changed", () => void this.list.refresh());
@@ -296,16 +298,17 @@ export class ScoreView {
 
   private async listNow(select?: string) {
     const shown = await this.list.refresh();
-    const current = this.items.find((x) => x.path === (select ?? this.path));
+    // What to show: the one asked for, or one being opened now (a link), or what was open.
+    const current = this.items.find((x) => x.path === (select ?? this.opening ?? this.path));
     if (current && current.kind === this.kind) {
       this.list.current = current.id;
       this.list.render();
-      if (current.path !== this.path) this.open(current.path);
+      if (current.path !== this.path) this.open(current.path, "auto");
       return;
     }
     // Another kind's score is open (or none): open this list's top item.
     const top = this.list.top();
-    if (top && top.path !== this.path) this.open(top.path);
+    if (top && top.path !== this.path && !this.opening) this.open(top.path, "auto");
     else if (!shown.length && !this.dirty()) this.clear();
   }
 
@@ -396,7 +399,7 @@ export class ScoreView {
   /** Open a score in the tab of its kind (a fork's parent may be another kind). */
   private async openAny(x: ScoreItem) {
     if (x.kind !== this.kind) document.dispatchEvent(new CustomEvent("apricity:open-item", { detail: { type: "score", id: x.id } }));
-    else await this.open(x.path);
+    else await this.open(x.path, "user");
   }
 
   /** Make your own copy of the open score (its current text), linked back to it. */
@@ -433,16 +436,26 @@ export class ScoreView {
     return this.item(path)?.kind ?? "song";
   }
 
-  open(path: string) {
-    return this.track(this.openNow(path));
+  /**
+   * Open a score. `how` says who asked, for the address bar: a person ("user": a new history entry), the app
+   * itself ("auto": the top of a list; the entry is replaced), or the address bar ("route": it's already there).
+   */
+  open(path: string, how: Opened = "user") {
+    this.opening = path;
+    const seq = ++this.openSeq;
+    return this.track(this.openNow(path, how, seq).finally(() => seq === this.openSeq && (this.opening = null)));
   }
+  /** The newest open asked for (older ones still loading give way to it), and the path it opens. */
+  private openSeq = 0;
+  private opening: string | null = null;
 
-  private async openNow(path: string) {
+  private async openNow(path: string, how: Opened, seq: number) {
     if (this.dirty() && !confirm(`Discard unsaved changes to ${this.item()?.title ?? this.path}?`)) return;
     if (!this.items.length) await this.list.refresh();
     let text: string;
     try {
       text = await api.score(path);
+      if (seq !== this.openSeq) return; // a newer open (a click, a link) took over
     } catch (e) {
       this.statusEl.textContent = e instanceof SignedOut ? "sign in to open scores" : `couldn't open ${path}: ${(e as Error).message}`;
       return;
@@ -459,6 +472,7 @@ export class ScoreView {
       this.list.render();
     }
     this.header();
+    opened({ page: PAGE_OF_KIND[it?.kind ?? this.kind], score: path }, how, it?.title);
   }
 
   /** Where a new score of yours goes: your own folder, so two people's "my-beat" never collide. */
@@ -500,7 +514,7 @@ export class ScoreView {
     this.saved = "";
     this.path = null; // nothing unsaved to warn about: open the new one
     await this.loadList(path);
-    await this.open(path);
+    await this.open(path, "user");
   }
 
   private dirty() {

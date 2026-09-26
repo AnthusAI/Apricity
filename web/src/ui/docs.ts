@@ -5,7 +5,7 @@
 import { columnSplitter } from "./splitter";
 import { marked } from "marked";
 import { breakdown } from "../breakdowns";
-import { routeFor } from "../route";
+import { go, opened, type Opened } from "./at";
 import { highlightApr } from "./apr-highlight";
 import { Breakdown } from "./breakdown/breakdown";
 import { el } from "./dom";
@@ -64,14 +64,21 @@ export class DocsView {
     try {
       start = localStorage.getItem("apricity.docs") ?? start;
     } catch {} // storage can be blocked (private browsing): nothing to report
-    this.open(pages.some((p) => p.file === start) ? start : this.current);
+    this.open(pages.some((p) => p.file === start) ? start : this.current, undefined, "auto");
   }
 
-  /** Show a page, optionally scrolled to a heading. */
-  open(file: string, anchor?: string) {
+  /** Say which page is open (Help's tab was chosen: the address bar names the page on show). */
+  report() {
+    const page = pages.find((p) => p.file === this.current);
+    if (page) opened({ page: "help", help: { file: page.file } }, "auto", page.title);
+  }
+
+  /** Show a page (and a heading on it); `how` is who asked, for the address bar (see ./at.ts). */
+  open(file: string, anchor?: string, how: Opened = "user") {
     const page = pages.find((p) => p.file === file);
     if (!page) return;
     this.current = file;
+    opened({ page: "help", help: { file, ...(anchor ? { anchor } : {}) } }, how, page.title);
     try {
       localStorage.setItem("apricity.docs", file);
     } catch {} // storage can be blocked (private browsing): nothing to report
@@ -82,7 +89,7 @@ export class DocsView {
     for (const code of this.article.querySelectorAll("pre code.language-breakdown")) {
       const slug = (code.textContent ?? "").trim();
       const b = breakdown(slug);
-      code.parentElement!.replaceWith(b ? new Breakdown(b, { variant: "card", open: (path) => (location.hash = routeFor(path, true)) }).root : el("p", { className: "hint" }, `No breakdown named “${slug}”.`));
+      code.parentElement!.replaceWith(b ? new Breakdown(b, { variant: "card", open: (path) => go({ page: "scores", score: path, play: true }) }).root : el("p", { className: "hint" }, `No breakdown named “${slug}”.`));
     }
     for (const a of this.article.querySelectorAll<HTMLAnchorElement>("a[href]")) {
       const href = a.getAttribute("href")!;
