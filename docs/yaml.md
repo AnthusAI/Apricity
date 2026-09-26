@@ -155,7 +155,10 @@ tracks:
 | `name` | text | Track name (must be unique; defaults to what it plays). | `as riff` |
 | `transpose` | `auto` · `follow` · whole number | How to transpose per chord. Default `auto`. | `follow`, `transpose -3` |
 | `role` | `any` · `chord` · `root` · `third` · `fifth` · `seventh` | Where the clip's root should land. Default `any`. | `role third` |
-| `pattern` | `loop` · `{ every: <duration> }` · `{ at: [positions] }` · `{ steps: "<pattern>" }` | When it plays. Default `loop`. | `loop`, `every 1bar`, `at 3 7:2`, `steps "1 . 3 ."` |
+| `pattern` | `loop` · `{ every: <duration> }` · `{ at: [positions] }` · `{ steps: "<pattern>" }` · `{ notes: "<melody>" }` | When it plays (`notes`: a melody in scale degrees). Default `loop`. | `loop`, `every 1bar`, `at 3 7:2`, `steps "1 . 3 ."`, `notes "1 . 3 5"` |
+| `voicing` | `root` · `power` · `triad` · `seventh` | Play the clip at the chord's tones, together (a pitched track). | `voicing triad` |
+| `strum` | number (ms), 0–200 | With `voicing`: each tone starts this long after the one below. | `strum 20ms` |
+| `octave` | whole number, 0–7 | With `voicing` or `notes`: the octave of the chord root (or degree 1). Default: nearest the clip's own pitch. | `octave 3` |
 | `grid` | whole number, 1–64 | Step size for `steps` as a note value. Default `16`. | `grid 8` |
 | `swing` | number, 50–75 | Delay every other step. Default: the score's, else `50` (straight). | `swing 58` |
 | `swing_base` | 2 · 4 · 8 · 16 · 32 | The note value swing works on. Default: the step size. | `swing 58 1/8` |

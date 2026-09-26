@@ -251,6 +251,13 @@ A transposition moves every note of a clip together, so it can't change a clip's
 passage stays major. When a clip keeps a lot of its sound outside the key, the compiler warns and
 names the bars. The fix is usually a different clip, or a smaller role for it.
 
+A **pitched track** works the other way round: instead of moving a whole clip to fit, it plays one
+short sound at exact pitches, like a sampler playing one sample across a keyboard. Apricity hears the
+sound's own note in its transcription, then shifts it to each pitch it's asked for: the tones of each
+chord together (`voicing triad`, strummed if you like), or a melody in scale degrees
+(`notes "1 . 3 5"`). So one horn hit can play every chord of a progression, or a tune. See
+[pitched tracks](language.md#pitched-tracks).
+
 ## Tuning and levels
 
 Before transposing, every clip is **detuned** to A = 440 Hz using its measured tuning, so recordings

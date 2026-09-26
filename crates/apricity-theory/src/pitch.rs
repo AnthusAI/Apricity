@@ -97,9 +97,75 @@ impl fmt::Display for PitchClass {
     }
 }
 
+/// A note with its octave, as a MIDI number (C4 = 60, scientific pitch: `Bb2` = 46, `C-1` = 0).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Note(pub i32);
+
+impl Note {
+    pub fn class(self) -> PitchClass {
+        PitchClass::new(self.0)
+    }
+    pub fn octave(self) -> i32 {
+        self.0.div_euclid(12) - 1
+    }
+    /// A pitch class in an octave: `Note::at(Bb, 2)` = Bb2.
+    pub fn at(pc: PitchClass, octave: i32) -> Self {
+        Note(12 * (octave + 1) + pc.index() as i32)
+    }
+    /// Parse `Bb2`, `C#4`, `F-1`: a note name and an octave. `Ok(None)` when there is no octave (a bare `Bb`).
+    pub fn parse_optional(s: &str) -> Result<(PitchClass, Option<Note>), String> {
+        let s = s.trim();
+        let (pc, n) = PitchClass::parse_prefix(s).ok_or_else(|| format!("{s:?} is not a note (expected e.g. Bb, Bb2 or C#4)"))?;
+        let rest = &s[n..];
+        if rest.is_empty() {
+            return Ok((pc, None));
+        }
+        let oct: i32 = rest.parse().map_err(|_| format!("{s:?}: after the note name comes an octave number (e.g. Bb2)"))?;
+        if !(-1..=9).contains(&oct) {
+            return Err(format!("{s:?}: octave {oct} is out of range (-1 to 9)"));
+        }
+        // The octave counts from C: Cb4 is B3 and B#3 is C4, as spelled.
+        let letter = PitchClass::parse_prefix(&s[..1]).map(|x| x.0.index() as i32).unwrap_or(0);
+        let offset = pc.index() as i32 - letter;
+        let wrap = if offset > 6 { -12 } else if offset < -6 { 12 } else { 0 };
+        Ok((pc, Some(Note(12 * (oct + 1) + letter + offset + wrap))))
+    }
+}
+
+impl std::str::FromStr for Note {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, String> {
+        match Note::parse_optional(s)? {
+            (_, Some(n)) => Ok(n),
+            (_, None) => Err(format!("{s:?} needs an octave (e.g. {}3)", s.trim())),
+        }
+    }
+}
+
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{}", self.class().name(), self.octave())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn notes_with_octaves() {
+        for (s, midi) in [("C4", 60), ("A4", 69), ("Bb2", 46), ("B♭2", 46), ("C#4", 61), ("C-1", 0), ("G9", 127), ("Cb4", 59), ("B#3", 60), ("E3", 52)] {
+            assert_eq!(s.parse::<Note>().unwrap(), Note(midi), "{s}");
+        }
+        assert_eq!(Note(46).to_string(), "Bb2");
+        assert_eq!(Note(60).to_string(), "C4");
+        assert_eq!(Note::at(PitchClass::new(10), 2), Note(46));
+        assert_eq!((Note(46).class().index(), Note(46).octave()), (10, 2));
+        assert_eq!(Note::parse_optional("Bb").unwrap(), (PitchClass::new(10), None));
+        assert!("Bb".parse::<Note>().unwrap_err().contains("octave"));
+        assert!("Bbx".parse::<Note>().is_err());
+        assert!("C12".parse::<Note>().is_err());
+    }
 
     #[test]
     fn parses_names() {

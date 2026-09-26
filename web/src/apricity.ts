@@ -100,7 +100,7 @@ export interface Timeline {
   sources: { clip: string; path: string; bpm?: number | null; key?: string; region?: [number, number] }[];
   events: TimelineEvent[];
   harmony: { start_beat: number; end_beat: number; label: string; fit: { chord: string; coverage: number } | null }[];
-  tracks: { name: string; clip: string; region_key: string; kit?: string; chops?: number; pieces?: TimelinePiece[]; voice?: TrackVoice }[];
+  tracks: { name: string; clip: string; region_key: string; kit?: string; chops?: number; pieces?: TimelinePiece[]; voice?: TrackVoice; pitch?: string }[];
   warnings: string[];
 }
 

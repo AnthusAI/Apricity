@@ -26,7 +26,9 @@ pub fn chords_view(text: &str) -> Result<Value, Vec<String>> {
     for (i, t) in score.tracks.iter().enumerate() {
         let kit = score.kits.contains_key(&t.clip) || t.clip.split_once('.').is_some_and(|(k, _)| score.kits.contains_key(k));
         let repitch = score.clips.get(&t.clip).is_some_and(|c| c.warp == WarpModeSpec::Repitch);
-        if kit || repitch {
+        // Strings are the tracks that play the chords: moved by the solver, or voiced (a re-pitched clip that is
+        // voiced plays chords too). Kits, melodies and unvoiced re-pitched clips aren't strings.
+        if kit || matches!(t.pattern, crate::score::Pattern::Notes(_)) || (repitch && t.voicing.is_none()) {
             continue;
         }
         let line = map.tracks.get(i).copied().unwrap_or(0);
@@ -39,6 +41,9 @@ pub fn chords_view(text: &str) -> Result<Value, Vec<String>> {
             "role": t.role,
             "transpose": t.transpose,
             "bars": t.bars,
+            "voicing": t.voicing.map(|v| v.name()),
+            "strum": t.strum,
+            "octave": t.octave,
         }));
     }
 
@@ -59,7 +64,7 @@ pub fn chords_view(text: &str) -> Result<Value, Vec<String>> {
 mod tests {
     use super::*;
 
-    const BLUES: &str = "# blues\ntempo 92\nkey F mixolydian   # dominant sevenths in key\nclip groove = a.wav warp beats\nclip tuba = b.wav\nclip bell = c.wav warp repitch\nclip k = d.wav\nkit drums\n  k = k\n\nchords I7 IV7 I7 . | IV7 . I7 .\nchords [V7 IV7] I7*2\n\ntrack groove  transpose 0\ntrack tuba    follow\ntrack tuba as t3 role third\ntrack bell\ntrack drums.k steps \"x . . .\"\n";
+    const BLUES: &str = "# blues\ntempo 92\nkey F mixolydian   # dominant sevenths in key\nclip groove = a.wav warp beats\nclip tuba = b.wav\nclip bell = c.wav warp repitch\nclip k = d.wav\nkit drums\n  k = k\n\nchords I7 IV7 I7 . | IV7 . I7 .\nchords [V7 IV7] I7*2\n\ntrack groove  transpose 0\ntrack tuba    follow\ntrack tuba as t3 role third\ntrack bell\ntrack drums.k steps \"x . . .\"\ntrack bell as chime voicing triad strum 15ms\ntrack tuba as tune notes \"1 3\"\n";
 
     #[test]
     fn key_lines_progression_and_strings() {
@@ -72,7 +77,8 @@ mod tests {
         assert_eq!(p[2], ("I7".to_string(), 2.0), "a held chord");
         assert!(p.iter().any(|(l, b)| l == "V7" && *b == 0.5), "a split bar: {p:?}");
         let s = v["strings"].as_array().unwrap();
-        assert_eq!(s.iter().map(|x| x["name"].as_str().unwrap()).collect::<Vec<_>>(), ["groove", "tuba", "t3"], "no re-pitched clip, no kit");
+        assert_eq!(s.iter().map(|x| x["name"].as_str().unwrap()).collect::<Vec<_>>(), ["groove", "tuba", "t3", "chime"], "no unvoiced re-pitched clip, no kit, no melody");
+        assert_eq!((s[3]["voicing"].as_str(), s[3]["strum"].as_f64()), (Some("triad"), Some(15.0)));
         assert_eq!(s[0]["transpose"], 0);
         assert_eq!(s[1]["transpose"], "follow");
         assert_eq!((s[2]["role"].as_str(), s[2]["line"].as_u64()), (Some("third"), Some(16)));

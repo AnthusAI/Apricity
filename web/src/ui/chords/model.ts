@@ -24,7 +24,12 @@ export interface StringView {
   role: Role;
   transpose: "auto" | "follow" | number;
   bars: string | null;
+  /** Set when the string plays the chord itself (a pitched track): root, power, triad or seventh. */
+  voicing?: Voicing | null;
+  strum?: number | null;
+  octave?: number | null;
 }
+export type Voicing = "root" | "power" | "triad" | "seventh";
 export interface PaletteChord {
   numeral: string;
   name: string;
@@ -34,10 +39,14 @@ export interface PaletteChord {
 }
 export type Role = "any" | "chord" | "root" | "third" | "fifth" | "seventh";
 
-/** A string's job: move with the chord root, take a chord tone (the solver's hint), or stay put. */
-export type Job = { kind: "follow" } | { kind: "role"; role: Role } | { kind: "fixed"; semitones: number };
+/**
+ * A string's job: move with the chord root, take a chord tone (the solver's hint), stay put, or play the chord
+ * itself (the clip at each of the chord's tones, strummed).
+ */
+export type Job = { kind: "follow" } | { kind: "role"; role: Role } | { kind: "fixed"; semitones: number } | { kind: "voiced"; voicing: Voicing; strum: number };
 
 export function jobOf(s: StringView): Job {
+  if (s.voicing) return { kind: "voiced", voicing: s.voicing, strum: s.strum ?? 0 };
   if (s.transpose === "follow") return { kind: "follow" };
   if (typeof s.transpose === "number") return { kind: "fixed", semitones: s.transpose };
   return { kind: "role", role: s.role };
@@ -140,8 +149,11 @@ export function setJob(text: string, s: StringView, job: Job): string {
   code = code
     .replace(/\s+follow\b/g, "")
     .replace(/\s+role\s+\S+/g, "")
-    .replace(/\s+transpose\s+\S+/g, "");
-  if (job.kind === "follow") code += "  follow";
+    .replace(/\s+transpose\s+\S+/g, "")
+    .replace(/\s+voicing\s+\S+/g, "")
+    .replace(/\s+strum\s+\S+/g, "");
+  if (job.kind === "voiced") code += `  voicing ${job.voicing}${job.strum > 0 ? `  strum ${job.strum}ms` : ""}`;
+  else if (job.kind === "follow") code += "  follow";
   else if (job.kind === "fixed") code += `  transpose ${job.semitones}`;
   else if (job.role !== "any") code += `  role ${job.role}`;
   lines[s.line - 1] = comment ? `${code}   ${comment}` : code;

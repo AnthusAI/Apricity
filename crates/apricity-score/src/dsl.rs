@@ -23,7 +23,7 @@ use crate::score::{
     ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
     Transpose, WarpModeSpec, Humanize,
 };
-use apricity_theory::Role;
+use apricity_theory::{Role, Voicing};
 use std::collections::BTreeMap;
 
 /// Where things came from, so compiler errors (which name `tracks[2]`, `clips.tuba`,
@@ -449,7 +449,7 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
 }
 const CLIP_OPTIONS: &[&str] = &["beats", "seconds", "pick", "root", "ratio", "warp", "speed"];
 const TRACK_OPTIONS: &[&str] = &[
-    "as", "role", "follow", "transpose", "every", "at", "steps", "bars", "volume", "loop", "grid", "swing", "velocity", "humanize", "seed", "reverse", "filter", "gate", "stutter", "half", "double", "speed", "group",
+    "as", "role", "follow", "transpose", "every", "at", "steps", "notes", "voicing", "strum", "octave", "bars", "volume", "loop", "grid", "swing", "velocity", "humanize", "seed", "reverse", "filter", "gate", "stutter", "half", "double", "speed", "group",
 ];
 
 fn suggest(word: &str, options: &[&str]) -> String {
@@ -912,6 +912,9 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                         pan: None,
                         group: None,
                         sends: BTreeMap::new(),
+                        voicing: None,
+                        strum: None,
+                        octave: None,
                     };
                     while let Some(opt) = l.peek() {
                         l.pos += 1;
@@ -951,6 +954,31 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                             "steps" => {
                                 let p = l.next("a quoted step pattern, e.g. \"1 . 3 .\"")?;
                                 t.pattern = Pattern::Steps(p.text.to_string());
+                            }
+                            "notes" => {
+                                let p = l.next("a quoted melody in scale degrees, e.g. \"1 . 3 5\"")?;
+                                crate::score::parse_notes(p.text).map_err(|e| l.err(p.col, e))?;
+                                t.pattern = Pattern::Notes(p.text.to_string());
+                            }
+                            "voicing" => {
+                                let v = l.next("root, power, triad or seventh")?;
+                                t.voicing = Some(Voicing::parse(v.text).map_err(|e| l.err(v.col, e))?);
+                            }
+                            "strum" => {
+                                let v = l.next("a time like 20ms")?;
+                                let x = ms(v.text).ok_or_else(|| l.err(v.col, format!("strum is a time like 20ms, not `{}`", v.text)))?;
+                                if !(0.0..200.0).contains(&x) {
+                                    return Err(l.err(v.col, format!("strum is 0 to 200ms between tones, not {}", v.text)));
+                                }
+                                t.strum = Some(x);
+                            }
+                            "octave" => {
+                                let v = l.next("an octave number like 3")?;
+                                let n: i32 = v.text.parse().map_err(|_| l.err(v.col, format!("octave is a whole number like 3 (C3 is an octave below middle C), not `{}`", v.text)))?;
+                                if !(0..=7).contains(&n) {
+                                    return Err(l.err(v.col, format!("octave {n} is out of range (0 to 7)")));
+                                }
+                                t.octave = Some(n);
                             }
                             "grid" => {
                                 let g = l.next("a note value like 16 or 8")?;
@@ -1421,6 +1449,16 @@ pub fn format(s: &Score) -> String {
             Pattern::Every(d) => out += &format!("  every {d}"),
             Pattern::At(v) => out += &format!("  at {}", v.iter().map(|p| p.strip_suffix(":1").unwrap_or(p)).collect::<Vec<_>>().join(" ")),
             Pattern::Steps(p) => out += &format!("  steps \"{p}\""),
+            Pattern::Notes(p) => out += &format!("  notes \"{p}\""),
+        }
+        if let Some(v) = t.voicing {
+            out += &format!("  voicing {}", v.name());
+        }
+        if let Some(x) = t.strum {
+            out += &format!("  strum {}ms", num(x));
+        }
+        if let Some(o) = t.octave {
+            out += &format!("  octave {o}");
         }
         if let Some(g) = t.grid {
             out += &format!("  grid {g}");
@@ -1743,6 +1781,30 @@ track v  at 1\n\ngroup music\n  comp 4:1 -30dB attack 5ms release 250ms sidechai
         let t: Vec<String> = e.iter().map(|e| e.to_string()).collect();
         assert!(t.iter().any(|x| x.starts_with("line 3 ") && x.contains("humanize takes a timing like 12ms")), "{t:#?}");
         assert!(t.iter().any(|x| x.starts_with("line 4 ") && x.contains("humanize takes a timing like 12ms")), "{t:#?}");
+    }
+
+    #[test]
+    fn pitched_tracks_parse_format_and_round_trip_through_yaml() {
+        let src = "tempo 100\nkey F\n\nclip stab = x/horns.wav  shot-3  root Bb2\nclip lead = x/horns.wav  shot-7\n\nchords I IV\n\ntrack stab  voicing triad  strum 20ms  octave 3\ntrack lead  notes \"1 . 3 5' | b7, _ [1 2] 5@80\"\ntrack stab  as hits  voicing seventh  steps \"x . x .\"\n";
+        let (s, _) = parse(src).unwrap();
+        let t = &s.tracks[0];
+        assert_eq!((t.voicing, t.strum, t.octave), (Some(Voicing::Triad), Some(20.0), Some(3)));
+        assert!(t.pitched());
+        assert_eq!(s.tracks[1].pattern, Pattern::Notes("1 . 3 5' | b7, _ [1 2] 5@80".into()));
+        assert!(s.tracks[1].pitched() && !s.tracks[1].voicing.is_some());
+        assert_eq!(s.clips["stab"].root.as_deref(), Some("Bb2"));
+        let again = format(&s);
+        assert!(again.contains("voicing triad  strum 20ms  octave 3") && again.contains("notes \"1 . 3 5' | b7, _ [1 2] 5@80\""), "{again}");
+        assert_eq!(parse(&again).unwrap().0, s, "\n{again}");
+        let yaml = serde_yaml::to_string(&s).unwrap();
+        assert!(yaml.contains("voicing: triad") && yaml.contains("notes:"), "{yaml}");
+        assert_eq!(serde_yaml::from_str::<Score>(&yaml).unwrap(), s, "\n{yaml}");
+        let e = parse("tempo 90\nkey C\nclip a = x/a.wav\ntrack a  voicing cluster\ntrack a  as b  strum fast\ntrack a  as c  notes \"1 9 3\"\ntrack a  as d  octave 12\n").unwrap_err();
+        let t: Vec<String> = e.iter().map(|e| e.to_string()).collect();
+        assert!(t.iter().any(|x| x.starts_with("line 4 ") && x.contains("voicing is root, power, triad or seventh")), "{t:#?}");
+        assert!(t.iter().any(|x| x.starts_with("line 5 ") && x.contains("strum is a time like 20ms")), "{t:#?}");
+        assert!(t.iter().any(|x| x.starts_with("line 6 ") && x.contains("`9` isn't a note")), "{t:#?}");
+        assert!(t.iter().any(|x| x.starts_with("line 7 ") && x.contains("octave 12 is out of range")), "{t:#?}");
     }
 
     #[test]

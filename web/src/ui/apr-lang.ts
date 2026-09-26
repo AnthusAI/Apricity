@@ -8,7 +8,7 @@ const OPTIONS = new Set([
   // clips and kits
   "beats", "seconds", "pick", "root", "ratio", "warp", "slice", "by", "into", "transients", "phrases", "bar", "repitch", "complex", "texture",
   // tracks
-  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "grid", "swing", "velocity", "humanize", "seed",
+  "as", "role", "follow", "transpose", "every", "at", "bars", "volume", "loop", "steps", "notes", "voicing", "strum", "octave", "grid", "swing", "velocity", "humanize", "seed",
   "reverse", "filter", "lp", "hp", "lowpass", "highpass", "gate", "stutter", "half", "double", "speed",
   // mix lines and bus options
   "group", "lowcut", "highcut", "low", "high", "peak", "attack", "release", "knee", "makeup",

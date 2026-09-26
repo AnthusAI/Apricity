@@ -1,6 +1,6 @@
 //! The score format (YAML or JSON). Unknown fields are errors, so typos can't be silently ignored.
 
-use apricity_theory::Role;
+use apricity_theory::{Role, Voicing};
 use serde::Deserialize;
 use std::collections::BTreeMap;
 
@@ -572,6 +572,22 @@ pub struct TrackSpec {
     /// Post-fader sends: return track → level (0–1, linear; 0.25 ≈ −12 dB).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub sends: BTreeMap<String, f64>,
+    /// Play the clip at the tones of each chord, together (a pitched track): root, power, triad or seventh.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub voicing: Option<Voicing>,
+    /// Milliseconds between the tones of a voiced chord, low to high (a strum).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub strum: Option<f64>,
+    /// The octave a pitched track plays in: where the chord root (or degree 1) sits; default nearest the clip's own pitch.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub octave: Option<i32>,
+}
+
+impl TrackSpec {
+    /// Whether it plays its clip at chosen pitches (voiced chords or a `notes` melody), not moved as a whole.
+    pub fn pitched(&self) -> bool {
+        self.voicing.is_some() || matches!(self.pattern, Pattern::Notes(_))
+    }
 }
 
 /// A simple filter on a track: `{lowpass: 800}` or `{highpass: 200}` (Hz).
@@ -686,6 +702,8 @@ pub enum Pattern {
     At(Vec<String>),
     /// A step sequence over a kit: "1 . 3 . [5 5] . 7 _" (numbers are chops; `.` rest; `_` hold).
     Steps(String),
+    /// A melody in scale degrees of the key, on the step grid: "1 . 3 5 | 6 _ 5 ." (see `parse_notes`).
+    Notes(String),
 }
 
 impl serde::Serialize for Pattern {
@@ -706,6 +724,11 @@ impl serde::Serialize for Pattern {
             Pattern::Steps(v) => {
                 let mut m = s.serialize_map(Some(1))?;
                 m.serialize_entry("steps", v)?;
+                m.end()
+            }
+            Pattern::Notes(v) => {
+                let mut m = s.serialize_map(Some(1))?;
+                m.serialize_entry("notes", v)?;
                 m.end()
             }
         }
@@ -730,20 +753,27 @@ impl<'de> Deserialize<'de> for Pattern {
             steps: String,
         }
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Notes {
+            notes: String,
+        }
+        #[derive(Deserialize)]
         #[serde(untagged)]
         enum Raw {
             Text(String),
             Every(Every),
             At(At),
             Steps(Steps),
+            Notes(Notes),
         }
-        let raw = Raw::deserialize(d).map_err(|_| serde::de::Error::custom("pattern must be \"loop\", {every: 1bar}, {at: [3, \"7:2\"]} or {steps: \"1 . 3 .\"}"))?;
+        let raw = Raw::deserialize(d).map_err(|_| serde::de::Error::custom("pattern must be \"loop\", {every: 1bar}, {at: [3, \"7:2\"]}, {steps: \"1 . 3 .\"} or {notes: \"1 3 5 .\"}"))?;
         match raw {
             Raw::Text(s) if s == "loop" => Ok(Pattern::Loop),
             Raw::Text(s) => Err(serde::de::Error::custom(format!("pattern must be \"loop\", {{every: 1bar}} or {{at: [\"1:1\"]}}, not {s:?}"))),
             Raw::Every(e) => Ok(Pattern::Every(e.every)),
             Raw::At(a) => Ok(Pattern::At(a.at.into_iter().map(TextOrNumber::text).collect())),
             Raw::Steps(st) => Ok(Pattern::Steps(st.steps)),
+            Raw::Notes(n) => Ok(Pattern::Notes(n.notes)),
         }
     }
 }
@@ -757,6 +787,8 @@ pub enum Sound {
     Name(String),
     /// `x`: the track's own sound (a clip, or one pad).
     This,
+    /// A scale degree of the key, in a `notes` melody: `3`, `b7` (accidental −1), `5'` (an octave up), `1,,`.
+    Degree { degree: u8, accidental: i8, octave: i8 },
 }
 
 /// Humanize, like Live's groove "random": each note moves by up to ±`timing_ms` milliseconds and
@@ -803,6 +835,35 @@ fn split_velocity(t: &str) -> Result<(&str, Option<u32>), String> {
 /// sound; `.` or `~` = rest; `_` = hold the previous sound one more step; `[a b c]` = one step split
 /// evenly; `|` is ignored (for reading). A note can carry a velocity: `snare@40`, or `kick!` (127).
 pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
+    parse_pattern(src, false)
+}
+
+/// Parse a `notes` melody: the step grammar, where each note is a scale degree of the key: `1`–`7`, with
+/// accidentals before it (`b3`, `#4`) and octave marks after it (`5'` an octave up, `5,` an octave down).
+/// Rests, holds, splits, `|` and velocities (`5@80`, `1!`) work as in steps.
+pub fn parse_notes(src: &str) -> Result<(Vec<Step>, f64), String> {
+    parse_pattern(src, true)
+}
+
+/// A melody token: `b3`, `#4'`, `1,,` → (degree, accidental, octave).
+fn degree(t: &str) -> Option<(u8, i8, i8)> {
+    let acc_len = t.chars().take_while(|c| matches!(c, 'b' | '#' | '♭' | '♯')).map(char::len_utf8).sum::<usize>();
+    let (acc, rest) = t.split_at(acc_len);
+    let mut chars = rest.chars();
+    let d = chars.next()?.to_digit(10)?;
+    if !(1..=7).contains(&d) {
+        return None;
+    }
+    let marks: String = chars.collect();
+    if !marks.chars().all(|c| c == '\'' || c == ',') {
+        return None;
+    }
+    let accidental = acc.chars().map(|c| if matches!(c, '#' | '♯') { 1 } else { -1 }).sum::<i8>();
+    let octave = marks.chars().map(|c| if c == '\'' { 1 } else { -1 }).sum::<i8>();
+    Some((d as u8, accidental, octave))
+}
+
+fn parse_pattern(src: &str, notes: bool) -> Result<(Vec<Step>, f64), String> {
     fn tokens(s: &str) -> Vec<String> {
         let mut out = Vec::new();
         let mut cur = String::new();
@@ -827,7 +888,7 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
         }
         out
     }
-    fn group(toks: &[String], i: &mut usize, at: f64, width: f64, whole: bool, out: &mut Vec<Step>) -> Result<(), String> {
+    fn group(toks: &[String], i: &mut usize, at: f64, width: f64, whole: bool, notes: bool, out: &mut Vec<Step>) -> Result<(), String> {
         // Parse items until the matching ']' (or the end), laid out evenly over `width`.
         let start = *i;
         let mut items = Vec::new();
@@ -863,7 +924,7 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
             match t {
                 "[" => {
                     let mut j = idx + 1;
-                    group(toks, &mut j, pos, w, false, out)?;
+                    group(toks, &mut j, pos, w, false, notes, out)?;
                     if toks.get(j).map(String::as_str) != Some("]") {
                         return Err("a `[` is never closed".into());
                     }
@@ -872,6 +933,10 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
                 "_" => match out.last_mut() {
                     Some(prev) => prev.len += w,
                     None => return Err("`_` holds the previous sound, but nothing has played yet".into()),
+                },
+                n if notes => match degree(n) {
+                    Some((degree, accidental, octave)) => out.push(Step { at: pos, len: w, sound: Some(Sound::Degree { degree, accidental, octave }), offbeat: whole && k % 2 == 1, vel }),
+                    None => return Err(format!("`{n}` isn't a note: a scale degree 1–7, with b or # before it and ' or , after it (e.g. b3, 5'), or `.`, `_`, `[ ]`")),
                 },
                 "x" | "X" => out.push(Step { at: pos, len: w, sound: Some(Sound::This), offbeat: whole && k % 2 == 1, vel }),
                 n if n.chars().all(|c| c.is_ascii_digit()) => {
@@ -891,7 +956,7 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
     }
     let toks = tokens(src);
     if toks.is_empty() {
-        return Err("the step pattern is empty".into());
+        return Err(if notes { "the melody is empty" } else { "the step pattern is empty" }.into());
     }
     // Top level: one item per step (a bracket group counts as one step).
     let mut out = Vec::new();
@@ -902,7 +967,7 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
             "[" => {
                 i += 1;
                 let mut j = i;
-                group(&toks, &mut j, step as f64, 1.0, false, &mut out)?;
+                group(&toks, &mut j, step as f64, 1.0, false, notes, &mut out)?;
                 if toks.get(j).map(String::as_str) != Some("]") {
                     return Err("a `[` is never closed".into());
                 }
@@ -912,7 +977,7 @@ pub fn parse_steps(src: &str) -> Result<(Vec<Step>, f64), String> {
             _ => {
                 let mut j = i;
                 let single = [toks[i].clone()];
-                group(&single, &mut 0, step as f64, 1.0, true, &mut out)?;
+                group(&single, &mut 0, step as f64, 1.0, true, notes, &mut out)?;
                 // Mark offbeat by the step's position, not the item's index in its (1-item) group.
                 if let Some(last) = out.last_mut() {
                     if (last.at - step as f64).abs() < 1e-9 {
@@ -988,6 +1053,36 @@ pub fn parse_bars(s: &str, meter: u32) -> Result<(f64, f64), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn melodies_in_scale_degrees() {
+        let (notes, n) = parse_notes("1 . b3 5' | [1, #4] _ 7@80 1!").unwrap();
+        assert_eq!(n, 8.0);
+        let d = |st: &Step| match &st.sound {
+            Some(Sound::Degree { degree, accidental, octave }) => Some((*degree, *accidental, *octave)),
+            _ => None,
+        };
+        let got: Vec<_> = notes.iter().map(|st| (st.at, st.len, d(st), st.vel)).collect();
+        assert_eq!(
+            got,
+            [
+                (0.0, 1.0, Some((1, 0, 0)), None),
+                (1.0, 1.0, None, None),
+                (2.0, 1.0, Some((3, -1, 0)), None),
+                (3.0, 1.0, Some((5, 0, 1)), None),
+                (4.0, 0.5, Some((1, 0, -1)), None),
+                (4.5, 1.5, Some((4, 1, 0)), None),
+                (6.0, 1.0, Some((7, 0, 0)), Some(80)),
+                (7.0, 1.0, Some((1, 0, 0)), Some(127)),
+            ]
+        );
+        for bad in ["8", "0", "x", "kick", "3''x", ""] {
+            assert!(parse_notes(bad).is_err(), "{bad:?}");
+        }
+        assert_eq!(parse_notes("5,,").unwrap().0[0].sound, Some(Sound::Degree { degree: 5, accidental: 0, octave: -2 }));
+        // Steps don't take degrees: `3` there is still pad 3.
+        assert_eq!(parse_steps("3").unwrap().0[0].sound, Some(Sound::Index(3)));
+    }
 
     #[test]
     fn durations_positions_bars() {

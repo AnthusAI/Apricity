@@ -36,6 +36,7 @@ pub(crate) fn last_line(lines: &[&str], line: usize) -> usize {
 /// Tracks without steps (`at 1`, `loop`) are not on the grid at all; the editor leaves them alone.
 fn has_other(t: &TrackSpec) -> bool {
     t.name.is_some()
+        || t.pitched()
         || t.role != Default::default()
         || t.transpose != Default::default()
         || t.bars.is_some()
@@ -60,6 +61,7 @@ fn sound(s: &Option<Sound>) -> Value {
         Some(Sound::This) => json!("x"),
         Some(Sound::Name(n)) => json!(n),
         Some(Sound::Index(i)) => json!(i),
+        Some(Sound::Degree { .. }) => Value::Null,
     }
 }
 

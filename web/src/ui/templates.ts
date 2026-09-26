@@ -47,24 +47,30 @@ samples ../samples
 clip tuba  = marine-band/stems/WashingtonPost/bass.wav   pick 1bar
 clip horns = marine-band/stems/WashingtonPost/other.wav  pick 1bar
 clip bugle = citizen-dj/loc-jukebox-popular/Army-bugle-calls_jukebox-118367_001_00-00-56.wav  pick 1bar
+clip stab  = marine-band/stems/Thunderer/other.wav  shot-1
 
 chords I7 . IV7 . | I7 . V7 IV7
 
 track tuba   follow
 track horns  role third  volume -2
 track bugle  role fifth  volume -6
+# One horn hit, played as each chord: its own pitch is heard from the recording, then moved to every chord tone.
+track stab   voicing seventh  strum 20ms  volume -4
 `;
 
-const MELODY = `# A new melody: one line over the chords. (Note-by-note melodies are coming; for now a clip follows the chords.)
-tempo 92
-key Bb major
+const MELODY = `# A new melody: one horn note, played at the pitches of a tune. Notes are scale degrees of the key
+# (1 is its root); _ holds a note, . rests, 7, is the seventh an octave down, 5' the fifth an octave up.
+tempo 100
+key F major
 samples ../samples
 
-clip lead = marine-band/stems/Thunderer/other.wav  pick 1bar
+clip horn = marine-band/stems/Thunderer/other.wav  shot-7
+clip tuba = marine-band/stems/WashingtonPost/bass.wav  pick 1bar
 
-chords I . vi . | IV . V .
+chords I | IV | V7 | I
 
-track lead  follow
+track horn  notes "5 _ 3 _ 1 _ 3 5 | 6 _ 4 _ 1 _ . . | 5 _ 4 3 2 _ 7, _ | 1 _ _ _ . . . ."  grid 8
+track tuba  follow  volume -4
 `;
 
 export const TEMPLATES: Record<ScoreKind, string> = { song: SONG, beat: BEAT, chords: CHORDS, melody: MELODY };

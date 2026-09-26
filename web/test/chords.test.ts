@@ -148,3 +148,25 @@ describe("degrees and qualities", () => {
       }
   });
 });
+
+describe("voiced strings", () => {
+  const text = TEMPLATES.chords;
+  it("the template's stab plays the chord itself", () => {
+    const stab = view(text).strings.find((s) => s.name === "stab")!;
+    assert.deepEqual(jobOf(stab), { kind: "voiced", voicing: "seventh", strum: 20 });
+  });
+  it("a job can become voiced and back", () => {
+    const horns = view(text).strings.find((s) => s.name === "horns")!;
+    let out = setJob(text, horns, { kind: "voiced", voicing: "triad", strum: 15 });
+    assert.match(out, /^track horns\s+volume -2  voicing triad  strum 15ms$/m);
+    const h2 = view(out).strings.find((s) => s.name === "horns")!;
+    assert.deepEqual(jobOf(h2), { kind: "voiced", voicing: "triad", strum: 15 });
+    out = setJob(out, h2, { kind: "follow" });
+    assert.match(out, /^track horns\s+volume -2  follow$/m);
+    assert.equal(view(out).errors, undefined);
+  });
+  it("a bass with no strum writes none", () => {
+    const tuba = view(text).strings.find((s) => s.name === "tuba")!;
+    assert.match(setJob(text, tuba, { kind: "voiced", voicing: "root", strum: 0 }), /^track tuba\s+voicing root$/m);
+  });
+});

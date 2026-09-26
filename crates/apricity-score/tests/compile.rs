@@ -739,3 +739,165 @@ tracks:
     let played: Vec<usize> = tl.events.iter().filter(|e| e.track == "k").map(|e| e.piece).collect();
     assert_eq!(played, [0, 2], "steps 1 and 3");
 }
+
+// ---- pitched tracks: one clip played at chosen pitches
+
+/// A one-second stab (60 BPM, one beat per second). With `notes`, its transcription says it is a C3 (and a
+/// quieter G3 an octave-and-a-fifth up); without, it can't be heard and gets guessed.
+fn stab_fixture(dir: &Path, name: &str, notes: bool) {
+    std::fs::write(dir.join(name), b"not real audio").unwrap();
+    let manifest = serde_json::json!({
+        "apricity_manifest": 1,
+        "source": { "path": name, "sha256": "0".repeat(64), "sample_rate": 48000, "channels": 1, "duration": 3.0 },
+        "rhythm": { "bpm": 60.0, "bpm_stability": 1.0, "beats": [0.0, 1.0, 2.0, 3.0], "downbeats": [], "meter": 4,
+                    "warp_markers": [{"seconds": 0.0, "beat": 0.0}, {"seconds": 3.0, "beat": 3.0}] },
+        "tonal": { "key": {"tonic": "C", "mode": "major", "strength": 0.9}, "tuning_hz": 440.0, "tuning_cents": 10.0,
+                   "pitch_class_profile": [1.0, 0, 0, 0, 0.7, 0, 0, 0.8, 0, 0, 0, 0], "beat_chroma": [] },
+        "notes": if notes { serde_json::json!([{"start": 0.01, "end": 0.8, "midi": 48, "velocity": 0.8}, {"start": 0.02, "end": 0.6, "midi": 55, "velocity": 0.5}]) } else { serde_json::json!([]) },
+        "annotations": { "clips": [] }
+    });
+    std::fs::write(dir.join(format!("{name}.apricity.json")), manifest.to_string()).unwrap();
+}
+
+fn run_pitched(yaml: &str) -> Result<apricity_score::Timeline, Vec<String>> {
+    let dir = tmp();
+    stab_fixture(&dir, "stab.wav", true);
+    stab_fixture(&dir, "thud.wav", false);
+    let score: Score = serde_yaml::from_str(yaml).map_err(|e| vec![e.to_string()])?;
+    compile(&score, &dir)
+}
+
+fn pitched_events(tl: &apricity_score::Timeline, track: &str) -> Vec<(f64, i32)> {
+    tl.events.iter().filter(|e| e.track == track).map(|e| ((e.start_beat * 1000.0).round() / 1000.0, e.semitones)).collect()
+}
+
+#[test]
+fn a_voiced_track_strums_each_chord_from_the_clips_own_pitch() {
+    let tl = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips: { stab: { source: stab.wav, beats: [0, 1] } }
+progression: [ { chord: I, bars: 1 }, { chord: IV, bars: 1 } ]
+tracks:
+  - { clip: stab, voicing: triad, strum: 20 }
+"#)
+    .unwrap();
+    let t = tl.tracks.iter().find(|t| t.name == "stab").unwrap();
+    assert_eq!(t.pitch.as_deref(), Some("C3 (heard)"), "the lowest strong note at the onset");
+    assert!(t.voice.is_none(), "a pitched track sits out of the harmony solver");
+    // F major from C3: F3 A3 C4 (+5 +9 +12), strummed 20 ms (0.02 beats at 60 BPM) apart; then B♭ nearest: B♭2 D3 F3.
+    assert_eq!(pitched_events(&tl, "stab"), [(0.0, 5), (0.02, 9), (0.04, 12), (4.0, -2), (4.02, 2), (4.04, 5)]);
+    let e = tl.events.iter().find(|e| e.track == "stab").unwrap();
+    assert!((e.dur_beats - 1.0).abs() < 1e-9, "the one-second stab plays at its natural length, not stretched to the bar");
+    assert!((e.src_end - e.src_start - 1.0).abs() < 1e-9);
+    assert!(tl.events.iter().filter(|e| e.track == "stab").all(|e| (e.dur_beats - 1.0).abs() < 1e-9), "every strummed tone rings its full length");
+    assert_eq!(e.tuning_cents, -10.0);
+    assert!(tl.harmony.iter().all(|h| h.fit.is_none()), "no solver voices: nothing else plays");
+    assert!(tl.explain().contains("one sound at C3"));
+}
+
+#[test]
+fn octave_and_voicings_and_steps_rhythm() {
+    let tl = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips: { stab: { source: stab.wav, beats: [0, 1] } }
+progression: [ { chord: V7, bars: 1 } ]
+tracks:
+  - { clip: stab, name: bass, voicing: root, octave: 2 }
+  - { clip: stab, name: hits, voicing: seventh, pattern: { steps: "x . . . x . . ." } }
+"#)
+    .unwrap();
+    // C2 = 36: one octave below the stab's C3.
+    assert_eq!(pitched_events(&tl, "bass"), [(0.0, -12)]);
+    // C7 nearest to C3: C3 E3 G3 B♭3, on steps 1 and 5 of the sixteenths (beats 0 and 1), the 8-step pattern twice.
+    let hits: Vec<f64> = pitched_events(&tl, "hits").iter().map(|e| e.0).collect();
+    assert_eq!(hits, [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0]);
+    assert_eq!(pitched_events(&tl, "hits")[..4].iter().map(|e| e.1).collect::<Vec<_>>(), [0, 4, 7, 10]);
+}
+
+#[test]
+fn a_melody_plays_scale_degrees_of_the_key() {
+    let tl = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips: { stab: { source: stab.wav, beats: [0, 1] } }
+bars: 1
+tracks:
+  - { clip: stab, pattern: { notes: "1 . 3 . 5 _ b7 1' | . . . . . . . ." } }
+"#)
+    .unwrap();
+    // Degree 1 = F3 (nearest F to the stab's C3), +5; 3 = A3 +9; 5 = C4 +12; b7 = Eb4 +15; 1' = F4 +17.
+    let ev = pitched_events(&tl, "stab");
+    assert_eq!(ev, [(0.0, 5), (0.5, 9), (1.0, 12), (1.5, 15), (1.75, 17)]);
+    let five = tl.events.iter().find(|e| e.semitones == 12).unwrap();
+    assert!((five.dur_beats - 0.5).abs() < 1e-9, "a held note lasts its two steps (still under the stab's own second)");
+}
+
+#[test]
+fn pinned_and_guessed_pitches_and_the_sampler_mode() {
+    let tl = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips:
+  stab: { source: stab.wav, beats: [0, 1], root: Bb2 }
+  thud: { source: thud.wav, beats: [0, 1] }
+  vinyl: { source: stab.wav, beats: [0, 1], warp: repitch }
+progression: [ { chord: I, bars: 1 } ]
+tracks:
+  - { clip: stab, voicing: root }
+  - { clip: thud, voicing: root }
+  - { clip: vinyl, pattern: { notes: "1' _ _ _" } }
+"#)
+    .unwrap();
+    let pitch = |n: &str| tl.tracks.iter().find(|t| t.name == n).unwrap().pitch.clone().unwrap();
+    assert_eq!(pitch("stab"), "Bb2 (pinned)");
+    assert_eq!(pitch("thud"), "C3 (guessed)", "no notes: the region's key in octave 3");
+    assert!(tl.warnings.iter().any(|w| w.contains("thud") && w.contains("root C3")), "{:?}", tl.warnings);
+    // From B♭2, F nearest is F2 (−5).
+    assert_eq!(pitched_events(&tl, "stab"), [(0.0, -5)]);
+    // Re-pitched, an octave up (F4 from C3 is +17) plays 2^(17/12) ≈ 2.67× faster: the second-long stab lasts ~0.37 s.
+    let v = tl.events.iter().find(|e| e.track == "vinyl").unwrap();
+    assert_eq!(v.semitones, 17);
+    assert!((v.dur_beats - 1.0 / 2f64.powf(17.0 / 12.0)).abs() < 1e-6, "{}", v.dur_beats);
+    assert!((v.src_end - v.src_start - 1.0).abs() < 1e-6, "it reads the whole stab, faster");
+    assert_eq!(v.tuning_cents, 0.0);
+}
+
+#[test]
+fn pitched_track_mistakes_are_reported() {
+    let errs = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips: { stab: { source: stab.wav, beats: [0, 1] }, far: { source: stab.wav, beats: [0, 1], root: C7 } }
+progression: [ { chord: I, bars: 1 } ]
+tracks:
+  - { clip: stab, name: both, voicing: triad, pattern: { notes: "1 3" } }
+  - { clip: stab, name: moved, voicing: triad, transpose: follow }
+  - { clip: stab, name: loose, strum: 20 }
+"#)
+    .unwrap_err()
+    .join("\n");
+    assert!(errs.contains("tracks[0]: a track plays either chords (voicing) or a melody (notes)"), "{errs}");
+    assert!(errs.contains("tracks[1]: a pitched track"), "{errs}");
+    assert!(errs.contains("tracks[2]: strum and octave go with voicing or notes"), "{errs}");
+    let far = run_pitched(r#"
+apricity: 0.1
+tempo: 60
+key: F
+clips: { far: { source: stab.wav, beats: [0, 1], root: C7 } }
+progression: [ { chord: I, bars: 1 } ]
+tracks:
+  - { clip: far, voicing: root, octave: 1 }
+"#)
+    .unwrap_err()
+    .join("\n");
+    assert!(far.contains("F1 is -67 semitones from the clip's own pitch (C7)"), "{far}");
+    let none = run_pitched("apricity: 0.1\ntempo: 60\nkey: F\nbars: 1\nclips: { stab: { source: stab.wav, beats: [0, 1] } }\ntracks:\n  - { clip: stab, voicing: triad }\n").unwrap_err().join("\n");
+    assert!(none.contains("the score has none"), "{none}");
+}

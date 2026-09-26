@@ -6,7 +6,7 @@ pub mod harmony;
 pub mod key;
 pub mod pitch;
 
-pub use chord::{Chord, Member, Quality};
+pub use chord::{Chord, Member, Quality, Voicing};
 pub use harmony::{solve, Fit, Role, Voice, VoiceFit, Weights};
 pub use key::{rank_keys, Key, Mode};
-pub use pitch::PitchClass;
+pub use pitch::{Note, PitchClass};

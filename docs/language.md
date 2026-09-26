@@ -108,7 +108,7 @@ first word after the path names a saved clip unless it's one of the options belo
 | `beats <a>..<b>` | `beats 32..48` | Region from sample beat *a* to *b* (the sample's own beat numbers; 0 is its first downbeat). Must lie inside the sample. |
 | `seconds <a>..<b>` | `seconds 12.5..20` | Region by time in the recording. Must lie inside the sample. |
 | `pick <duration>` | `pick 2bars` | Let the compiler choose the best region of that length (in score time). See [Concepts: Clips](concepts.md#clips). |
-| `root <note>` | `root C` | What the region is built on. Used by `follow` and `role`. Default: the key detected in the region. |
+| `root <note>` | `root C`, `root Bb2` | What the region is built on. Used by `follow` and `role`. With an octave (`Bb2`), it also pins the pitch a [pitched track](#pitched-tracks) plays the clip from. Default: the key detected in the region; for a pitched track, the note heard at the clip's start. |
 | `ratio <n>` | `ratio 2` | Sample beats per score beat. Default: ½, 1 or 2, whichever stretches least. |
 | `warp <mode>` | `warp beats` | `complex` (default), `beats` (drums: crisp attacks), `texture` (pads) or `repitch` (Live's Re-Pitch: not stretched to the grid; the clip plays like a record at its `speed`, so its pitch moves with it, and it isn't transposed for the chords). |
 | `speed <x>` | `speed 1.5`, `speed 1.5x` | For `warp repitch` only: play 1.5× as fast (and a fifth higher), 0.25–4. A re-pitched clip needs its region from a saved clip, `beats` or `seconds`, not `pick`. |
@@ -215,6 +215,10 @@ Then any options. Each time a track sounds is a **note**: each repeat of a loop,
 | `every <duration>` | `every 1bar` | Restart the sound at that interval; each note plays at most that long. | |
 | `at <positions…>` | `at 3 7 11`, `at 3:1 3:3` | One note at each position: a bar number, or `bar:beat` (both start at 1). Each note plays the whole sound. | |
 | `steps "<pattern>"` | `steps "1 . 3 ."` | A step sequence. See [step patterns](#step-patterns). | |
+| `notes "<melody>"` | `notes "1 . 3 5 \| 6 _ 5 ."` | A melody in scale degrees of the key, played with the track's one clip. See [pitched tracks](#pitched-tracks). | |
+| `voicing <v>` | `voicing triad` | Play the clip at the chord's tones, together: `root`, `power` (root and fifth), `triad` or `seventh`. See [pitched tracks](#pitched-tracks). | |
+| `strum <ms>ms` | `strum 20ms` | With `voicing`: each tone starts this long after the one below it, 0–200 ms. | `0ms` |
+| `octave <n>` | `octave 3` | With `voicing` or `notes`: the octave the chord root (or degree 1) sits in; C3 is an octave below middle C. | nearest the clip's own pitch |
 | `grid <n>` | `grid 8`, `grid 1/8` | Step size for `steps` as a note value, 1–64: 16 = sixteenths, 8 = eighths, 4 = beats. | `16` |
 | `swing <percent> [1/<n>]` | `swing 58`, `swing 58%`, `swing 60 1/8` | Delay every other step: 50 = straight, 56–62 classic, 66 ≈ triplets; 50–75. `1/8` swings eighths even when the steps are sixteenths. See [groove](#groove). | the score's, else `50` |
 | `velocity <1–127>` | `velocity 90` | Velocity of every note that doesn't give its own; 100 = the pad's matched level. | `100` |
@@ -229,8 +233,8 @@ Then any options. Each time a track sounds is a **note**: each repeat of a loop,
 | `volume <dB>` | `volume -3` | The track's fader: its level relative to the other tracks (every track is level-matched first). | `0` |
 | `group <name>` | `group beat` | Play into a group track instead of straight into the master. See [group and return tracks](#group-and-return-tracks). | the master |
 
-`loop`, `every`, `at` and `steps` are alternatives; the last one on the line wins. `half`, `double`
-and `speed` likewise.
+`loop`, `every`, `at`, `steps` and `notes` are alternatives; the last one on the line wins. `half`,
+`double` and `speed` likewise.
 
 ## Step patterns
 
@@ -256,6 +260,60 @@ Each step is a sixteenth note unless `grid` says otherwise. A note lasts its wri
 plus any `_` holds) but never longer than the slice or pad itself. The pattern starts at the track's
 first bar and repeats to fill its bars. With `swing`, every second step is delayed; notes inside a
 split step are not.
+
+## Pitched tracks
+
+Most tracks move a whole clip to fit each chord: every note in it moves together. A **pitched track**
+plays one sound, usually a single hit (a horn stab, a piano note, a sung syllable), at the pitches
+you choose instead, the way a sampler plays one sample across a keyboard.
+
+```apr
+key F major
+clip stab = marine-band/stems/Thunderer/other.wav  shot-1      # a horn hit: C3
+clip horn = marine-band/stems/Thunderer/other.wav  shot-7      # one horn note: A4
+
+chords I | IV | V7 | I
+
+track stab  voicing triad  strum 20ms                           # each chord, strummed
+track horn  notes "5 _ 3 _ 1 _ 3 5 | 6 _ 4 _ 1 _ . . | 5 _ 4 3 2 _ 7, _ | 1 _ _ _ . . . ."  grid 8
+```
+
+**Its pitch.** A pitched track needs to know what note its clip plays. It reads it from the notes
+transcribed in the sample: of the notes starting at the clip's start, the lowest loud one (a stab
+voiced as a chord gives its bass note). Pin it with the clip's `root` and an octave (`root Bb2`)
+when that's wrong or the sample has no notes; without either, the track plays as if the clip were
+the region's key in octave 3, and says so. The compiler's explanation shows each pitched track's
+pitch and how it was found (heard, pinned or guessed).
+
+**Voiced chords.** `voicing root|power|triad|seventh` plays the chord's tones together from each
+chord's root: a seventh chord's seventh only when the chord has one. With no pattern, the track
+strums once at every chord change and rings until the next one; with `steps "x . x ."`, `every` or
+`at`, it strums the chord of the moment on those hits. `strum 20ms` starts each tone a little after
+the one below it, like a hand across strings. The chord sits nearest the clip's own pitch (the
+smallest move) unless `octave` says where its root goes: `voicing root  octave 2` is a bass line.
+
+**Melodies.** `notes "…"` is a step pattern whose notes are scale degrees of the key, 1 to 7:
+
+| Symbol | Means |
+|---|---|
+| `1`–`7` | a degree of the key: in F major, `1` is F and `5` is C |
+| `b3`, `#4` | a degree lowered or raised a semitone |
+| `5'`, `1,` | an octave up, an octave down (`''` two octaves) |
+| `.` or `~` | rest |
+| `_` | hold the note one more step |
+| `[a b]` | split one step |
+| `\|` | nothing (for reading) |
+| `5@80`, `1!` | a note's velocity (see [groove](#groove)) |
+
+Steps are sixteenths unless `grid` says otherwise, as in any step pattern. Degree 1 sits nearest the
+clip's own pitch unless `octave` places it.
+
+**How it sounds.** Every note plays the clip at its own length, shifted to its pitch without
+stretching, so a horn stays a horn and a short hit stays short. A note ends at its step (or holds),
+or at the clip's end if that comes first. A clip with `warp repitch` plays like a classic sampler
+instead: faster and brighter to go up, slower to go down, so higher notes run shorter. A pitched
+track plays one clip (not a kit), sits out of the harmony solver (it plays exact tones), and
+refuses a note more than two octaves from the clip's own pitch.
 
 ## Groove
 
@@ -463,7 +521,8 @@ clip-option = "beats" RANGE | "seconds" RANGE | "pick" DURATION
             | "speed" NUMBER [ "x" ] ;
 track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER )
             | "role" ( "any" | "chord" | "root" | "third" | "fifth" | "seventh" )
-            | "loop" | "every" DURATION | "at" POSITION { POSITION } | "steps" QUOTED
+            | "loop" | "every" DURATION | "at" POSITION { POSITION } | "steps" QUOTED | "notes" QUOTED
+            | "voicing" ( "root" | "power" | "triad" | "seventh" ) | "strum" NUMBER "ms" | "octave" INTEGER
             | "grid" INTEGER | "swing" PERCENT [ "1/" INTEGER ] | "half" | "double" | "speed" NUMBER
             | "velocity" INTEGER | "humanize" HUMANIZE | "seed" INTEGER
             | "reverse" | "filter" ( "lp" | "hp" ) NUMBER | "gate" PERCENT | "stutter" INTEGER
@@ -501,7 +560,7 @@ RATIO       = NUMBER ":1" ;
 LUFS        = NUMBER "LUFS" ;
 NOTE-VALUE  = "1/" INTEGER [ "." | "t" ] | NUMBER ( "beat" | "beats" ) ;
 key-text    = the rest of the line, e.g. "Abm" or "F mixolydian"   (* see chords.md#keys *)
-NOTE        = a note name, e.g. C, F#, Bb, E♭                      (* see chords.md#notes *)
+NOTE        = a note name, e.g. C, F#, Bb, E♭, with an optional octave: Bb2, C#4   (* see chords.md#notes *)
 CHORD       = a roman numeral or chord symbol, e.g. iv, V7/V, Dbm7  (* see chords.md *)
 ```
 

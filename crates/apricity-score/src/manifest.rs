@@ -11,6 +11,19 @@ pub struct Manifest {
     pub tonal: Tonal,
     #[serde(default)]
     pub annotations: Annotations,
+    /// Notes found in the audio (polyphonic transcription), in time order. Absent for unpitched audio.
+    #[serde(default)]
+    pub notes: Vec<Note>,
+}
+
+/// One transcribed note.
+#[derive(Debug, Clone, Copy, Deserialize)]
+pub struct Note {
+    pub start: f64,
+    pub end: f64,
+    pub midi: i32,
+    #[serde(default)]
+    pub velocity: f64,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -262,6 +275,18 @@ impl Clip {
     }
 }
 
+impl Clip {
+    /// The note a short clip plays, heard from the transcription: of the notes that start at the region's onset
+    /// (from 30 ms before to 120 ms after it), the lowest one that is at least half as loud as the loudest there.
+    /// A stab voiced as a chord gives its bass note; `None` when nothing starts there (unpitched, or not analyzed).
+    pub fn pitch(&self, seconds: (f64, f64)) -> Option<i32> {
+        let (lo, hi) = (seconds.0 - 0.03, (seconds.0 + 0.12).min(seconds.1));
+        let onset: Vec<&Note> = self.manifest.notes.iter().filter(|n| n.start >= lo && n.start <= hi).collect();
+        let loudest = onset.iter().map(|n| n.velocity).fold(0.0f64, f64::max);
+        onset.iter().filter(|n| n.velocity >= loudest * 0.5).map(|n| n.midi).min()
+    }
+}
+
 /// Piecewise-linear interpolation over sorted markers, extrapolating from the end segments.
 fn interp<T>(m: &[T], x: f64, fx: impl Fn(&T) -> f64, fy: impl Fn(&T) -> f64) -> f64 {
     let n = m.len();
@@ -278,6 +303,29 @@ fn interp<T>(m: &[T], x: f64, fx: impl Fn(&T) -> f64, fy: impl Fn(&T) -> f64) ->
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn with_notes(notes: &[(f64, f64, i32, f64)]) -> Clip {
+        let json = serde_json::json!({
+            "source": { "path": "a.wav", "sha256": "x", "duration": 10.0 },
+            "rhythm": { "bpm": 120.0, "beats": [0.0, 0.5, 1.0], "meter": 4, "warp_markers": [{ "seconds": 0.0, "beat": 0.0 }, { "seconds": 0.5, "beat": 1.0 }] },
+            "tonal": { "key": { "tonic": "C", "mode": "major" }, "pitch_class_profile": [1.0,0,0,0,0,0,0,0,0,0,0,0] },
+            "notes": notes.iter().map(|&(start, end, midi, velocity)| serde_json::json!({ "start": start, "end": end, "midi": midi, "velocity": velocity })).collect::<Vec<_>>(),
+        });
+        Clip::from_json(Path::new("a.wav"), &json.to_string()).unwrap()
+    }
+
+    #[test]
+    fn a_shots_pitch_is_its_lowest_strong_onset_note() {
+        // Real shots from the Thunderer horns: C in octaves, and a B♭ chord with its bass on B♭2.
+        let c = with_notes(&[(0.2786, 0.45, 48, 0.59), (0.2902, 0.44, 72, 0.276), (0.30, 0.5, 60, 0.5)]);
+        assert_eq!(c.pitch((0.204, 0.704)), Some(48));
+        let bb = with_notes(&[(163.17, 163.4, 62, 0.4), (163.18, 163.4, 65, 0.5), (163.2, 163.5, 58, 0.6), (163.21, 163.5, 46, 0.55), (163.25, 163.4, 74, 0.3)]);
+        assert_eq!(bb.pitch((163.162, 163.662)), Some(46));
+        // A note that began well before the shot, a faint low note, and nothing at all.
+        let early = with_notes(&[(4.0, 4.6, 41, 0.9), (4.26, 4.5, 60, 0.8), (4.27, 4.5, 36, 0.1)]);
+        assert_eq!(early.pitch((4.256, 4.756)), Some(60));
+        assert_eq!(with_notes(&[]).pitch((1.0, 2.0)), None);
+    }
 
     #[test]
     fn interpolates_and_extrapolates() {

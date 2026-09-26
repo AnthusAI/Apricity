@@ -31,6 +31,7 @@ import {
   type Role,
   type Slot,
   type StringView,
+  type Voicing,
 } from "./model";
 
 export interface HarpDeps {
@@ -55,6 +56,10 @@ const MODES: [string, string][] = [
   ["melodic_minor", "Melodic minor"],
 ];
 const JOBS: [string, string][] = [
+  ["voiced:triad", "Play the chord (triad)"],
+  ["voiced:seventh", "Play the chord (seventh)"],
+  ["voiced:power", "Play the chord (root + fifth)"],
+  ["voiced:root", "Bass (the root)"],
   ["follow", "Follow the root"],
   ["role:root", "Root"],
   ["role:third", "Third"],
@@ -76,6 +81,17 @@ export function splitKey(key: string): [string, string] {
   const mode = ["", "maj", "major", "ionian"].includes(rest) ? "major" : ["m", "min", "minor", "aeolian"].includes(rest) ? "minor" : rest === "mixo" ? "mixolydian" : rest;
   return [tonic, mode];
 }
+
+const NOTE_NAMES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+/** "Bb2 (heard)" → 46. */
+export function midiOf(pitch: string): number | null {
+  const m = /^([A-G])([b#]?)(-?\d+)/.exec(pitch);
+  if (!m) return null;
+  const pc = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1] as "C"]! + (m[2] === "b" ? -1 : m[2] === "#" ? 1 : 0);
+  return 12 * (Number(m[3]) + 1) + pc;
+}
+/** 46 → "Bb2". */
+export const noteName = (midi: number) => `${NOTE_NAMES[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
 
 const pretty = (numeral: string) => numeral.replace(/o7$/, "°7").replace(/o$/, "°");
 const flat = (name: string) => name.replace(/b(?=\d|m|$|aug|dim|sus)/, "♭").replace(/^([A-G])b/, "$1♭");
@@ -318,7 +334,7 @@ export class HarpView {
         const job = el("select", { ariaLabel: `${s.name}'s job` });
         for (const [val, label] of JOBS) job.append(el("option", { value: val, textContent: label }));
         const j = jobOf(s);
-        job.value = j.kind === "follow" ? "follow" : j.kind === "fixed" ? "fixed" : `role:${j.role}`;
+        job.value = j.kind === "voiced" ? `voiced:${j.voicing}` : j.kind === "follow" ? "follow" : j.kind === "fixed" ? "fixed" : `role:${j.role}`;
         job.addEventListener("change", () => this.setJob(s, job.value));
         const mute = el("button", { type: "button", className: "ms", title: "Mute (only while listening; not saved)" }, "M");
         const solo = el("button", { type: "button", className: "ms", title: "Solo (only while listening; not saved)" }, "S");
@@ -328,10 +344,21 @@ export class HarpView {
         solo.addEventListener("click", () => this.flip(this.soloed, s.name));
         const del = el("button", { type: "button", className: "ms", title: `Remove ${s.name}` }, "×");
         del.addEventListener("click", () => this.deps.edit(removeString(this.deps.text(), s)));
+        const info = this.timeline?.tracks.find((t) => t.name === s.name);
+        const root = info?.pitch ? midiOf(info.pitch) : null;
         const shifts = el(
           "div",
           { className: "shifts" },
           ...Array.from({ length: bars }, (_, b) => {
+            if (s.voicing) {
+              // A voiced string: the notes it plays in this bar, from the compiled events.
+              const lo = b * meter;
+              const tones = [...new Set((this.timeline?.events ?? []).filter((e) => e.track === s.name && e.start_beat >= lo - 1e-6 && e.start_beat < lo + meter - 1e-6).map((e) => e.semitones))].sort((x, y) => x - y);
+              const names = root === null ? [] : tones.map((t) => noteName(root + t));
+              const cell = el("span", { className: "sh voiced" }, names.map((n) => n.replace(/-?\d+$/, "")).join(" "));
+              cell.title = names.length ? `bar ${b + 1}: plays ${names.join(" ")}` : `bar ${b + 1}: not playing`;
+              return cell;
+            }
             const x = shiftAt(s.name, b);
             const cell = el("span", { className: "sh" }, x ? (x.semitones > 0 ? `+${x.semitones}` : String(x.semitones)) : "");
             if (x) cell.style.setProperty("--on", String(x.on_chord));
@@ -340,7 +367,8 @@ export class HarpView {
           }),
         );
         const quiet = this.muted.has(s.name) || (this.soloed.size > 0 && !this.soloed.has(s.name));
-        const row = el("div", { className: `string${quiet ? " quiet" : ""}` }, el("span", { className: "s-name", title: s.clip }, s.name), job, mute, solo, del, shifts);
+        const pitch = s.voicing && info?.pitch ? el("span", { className: "s-pitch", title: "The clip's own pitch: pinned with root, heard from its notes, or guessed" }, info.pitch.replace(/\s*\((\w+)\)$/, " · $1")) : null;
+        const row = el("div", { className: `string${quiet ? " quiet" : ""}` }, el("span", { className: "s-name", title: s.clip }, s.name, ...(pitch ? [pitch] : [])), job, mute, solo, del, shifts);
         return row;
       }),
     );
@@ -356,7 +384,9 @@ export class HarpView {
 
   private setJob(s: StringView, value: string) {
     let job: Job;
-    if (value === "follow") job = { kind: "follow" };
+    // A voiced string strums 20 ms apart unless it already had a strum.
+    if (value.startsWith("voiced:")) job = { kind: "voiced", voicing: value.slice(7) as Voicing, strum: s.strum ?? (value === "voiced:root" ? 0 : 20) };
+    else if (value === "follow") job = { kind: "follow" };
     else if (value === "fixed") job = { kind: "fixed", semitones: 0 };
     else job = { kind: "role", role: value.slice(5) as Role };
     this.deps.edit(setJob(this.deps.text(), s, job));
@@ -532,7 +562,10 @@ export class HarpView {
     if (!c) return;
     const text = this.deps.text();
     const name = freshName(text, c.name);
-    const job: Job = this.view.strings.some((s) => s.transpose === "follow") ? { kind: "role", role: "third" } : { kind: "follow" };
+    // A one-shot plays the chord itself; a phrase or loop follows it (or takes a chord tone beside one that does).
+    const job: Job = /^(shot|hit)/.test(c.name) || c.end - c.start < 1.2
+      ? { kind: "voiced", voicing: "triad", strum: 20 }
+      : this.view.strings.some((s) => s.transpose === "follow") ? { kind: "role", role: "third" } : { kind: "follow" };
     this.deps.edit(addString(text, this.view, name, c.samplePath.replace(/^samples\//, ""), c.name, job));
   }
 }

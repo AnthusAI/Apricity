@@ -2,7 +2,7 @@
 //! split notes at chord changes, and attach warp maps.
 
 use crate::manifest::Clip;
-use crate::score::{parse_bars, parse_duration, parse_position, parse_steps, Effect, FilterSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
+use crate::score::{parse_bars, parse_duration, parse_notes, parse_position, parse_steps, Effect, FilterSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
 use apricity_theory::{rank_keys, solve, Chord, Fit, Key, PitchClass, Voice, Weights};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -407,6 +407,9 @@ pub struct TrackInfo {
     /// Set when the clip plays re-pitched (`warp repitch`): its playback speed (1 = as recorded).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub varispeed: Option<f64>,
+    /// A pitched track's clip pitch and how it was found: "C3 (heard)", "Bb2 (pinned)", "F3 (guessed)".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pitch: Option<String>,
     /// What the harmony solver knows about it, so an editor can ask how it would fit any chord (`assist::fit_chords`).
     /// Absent when it plays re-pitched and sits out of the harmony.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -473,6 +476,8 @@ struct ResolvedClip {
     pick: Option<f64>,
     /// Pinned root (`root:`), else detected from the region.
     root: Option<PitchClass>,
+    /// Pinned root with its octave (`root Bb2`): the pitch a pitched track plays the clip from.
+    root_note: Option<apricity_theory::Note>,
 }
 
 /// Every track's region is brought to this RMS level before its own `gain`, so `gain` is a mix
@@ -745,15 +750,16 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                         continue;
                     }
                 };
-                let root = match spec.root.as_deref().map(str::parse::<PitchClass>) {
-                    None => None,
-                    Some(Ok(pc)) => Some(pc),
+                // `root Bb` pins the pitch class; `root Bb2` also pins the octave (for pitched tracks).
+                let (root, root_note) = match spec.root.as_deref().map(apricity_theory::Note::parse_optional) {
+                    None => (None, None),
+                    Some(Ok((pc, note))) => (Some(pc), note),
                     Some(Err(e)) => {
                         errors.push(format!("{at}.root: {e}"));
                         continue;
                     }
                 };
-                clips.insert(name.clone(), ResolvedClip { name: name.clone(), clip, source: sources.len() - 1, from, to, mode: spec.warp, ratio, pick, root });
+                clips.insert(name.clone(), ResolvedClip { name: name.clone(), clip, source: sources.len() - 1, from, to, mode: spec.warp, ratio, pick, root, root_note });
             }
             Err(e) => errors.push(e),
         }
@@ -1016,6 +1022,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         clip_from: f64,
         /// 1–127; 100 plays the pad at its matched level.
         vel: f64,
+        /// A `notes` melody's scale degree (degree, accidental, octave marks).
+        degree: Option<(u8, i8, i8)>,
     }
     check_groove("", score.swing, score.swing_base, None, score.humanize, &mut errors);
     let mut srcs: Vec<Option<TrackSrc>> = Vec::new();
@@ -1025,6 +1033,16 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         let at = format!("tracks[{i}]");
         if tr.transpose == Transpose::Follow && !matches!(tr.role, apricity_theory::Role::Any | apricity_theory::Role::Root) {
             errors.push(format!("{at}: transpose: follow always puts the clip's root on the chord root, so role: {} can't apply; drop the role or use transpose: auto", format!("{:?}", tr.role).to_lowercase()));
+        }
+        if tr.pitched() {
+            if tr.voicing.is_some() && matches!(tr.pattern, Pattern::Notes(_)) {
+                errors.push(format!("{at}: a track plays either chords (voicing) or a melody (notes), not both; make two tracks"));
+            }
+            if tr.transpose != Transpose::Auto || tr.role != apricity_theory::Role::Any {
+                errors.push(format!("{at}: a pitched track (voicing or notes) plays exact pitches, so follow, transpose and role don't apply; drop them"));
+            }
+        } else if tr.strum.is_some() || tr.octave.is_some() {
+            errors.push(format!("{at}: strum and octave go with voicing or notes (a pitched track)"));
         }
         let name = tr.name.clone().unwrap_or_else(|| tr.clip.clone());
         if track_names.contains(&name) {
@@ -1097,15 +1115,20 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         let first_hit = hits.len();
         let piece_len = |p: &Piece| (p.to - p.from) / (clips[&p.clip].ratio * speed); // score beats
         let track_vel = tr.velocity.unwrap_or(100) as f64;
-        let mut push = |start: f64, max_len: f64, piece: usize, vel: f64| {
+        let pitched = tr.pitched();
+        let mut push = |start: f64, max_len: f64, piece: usize, vel: f64, degree: Option<(u8, i8, i8)>| {
             let p = &src.pieces[piece];
-            let dur = piece_len(p).min(max_len).min(s1 - start);
+            // A pitched hit keeps the room it's given; each of its tones is cut to the clip's natural length later.
+            let dur = if pitched { max_len } else { piece_len(p).min(max_len) }.min(s1 - start);
             if dur > 1e-6 {
-                hits.push(Hit { track: i, start, dur, piece, clip_from: p.from, vel });
+                hits.push(Hit { track: i, start, dur, piece, clip_from: p.from, vel, degree });
             }
         };
         let single = src.kit.is_none();
-        if !single && !matches!(tr.pattern, Pattern::Steps(_)) {
+        if pitched && !single {
+            errors.push(format!("{at}: `{}` is a kit; a pitched track (voicing or notes) plays one clip (or one pad: {}.<pad>)", tr.clip, tr.clip));
+        }
+        if !single && !matches!(tr.pattern, Pattern::Steps(_) | Pattern::Notes(_)) {
             let example = if src.pieces.iter().any(|p| p.name.is_some()) {
                 let names: Vec<&str> = src.pieces.iter().filter_map(|p| p.name.as_deref()).take(2).collect();
                 format!("steps \"{} . {} .\" (or one pad: {}.{})", names.first().unwrap_or(&"kick"), names.get(1).unwrap_or(&"snare"), tr.clip, names.first().unwrap_or(&"kick"))
@@ -1115,8 +1138,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             errors.push(format!("{at}.pattern: `{}` is a kit; play it with {example}", tr.clip));
         }
         match &tr.pattern {
-            Pattern::Steps(p) => match parse_steps(p) {
-                Err(e) => errors.push(format!("{at}.pattern.steps: {e}")),
+            Pattern::Steps(p) | Pattern::Notes(p) => match if matches!(tr.pattern, Pattern::Notes(_)) { parse_notes(p) } else { parse_steps(p) } {
+                Err(e) => errors.push(format!("{at}.pattern.{}: {e}", if matches!(tr.pattern, Pattern::Notes(_)) { "notes" } else { "steps" })),
                 Ok((steps, n_steps)) => {
                     // Map each step's sound to a piece of this track's source.
                     let named = src.pieces.iter().any(|p| p.name.is_some());
@@ -1125,6 +1148,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                     for st in &steps {
                         let w = match (&st.sound, single, named) {
                             (None, ..) => Ok(None),
+                            (Some(Sound::Degree { .. }), true, _) => Ok(Some(0)),
+                            (Some(Sound::Degree { .. }), false, _) => Err(format!("a melody plays one sound; `{}` is a kit (play one pad: {}.<pad>)", tr.clip, tr.clip)),
                             (Some(Sound::This), true, _) => Ok(Some(0)),
                             (Some(Sound::This), false, _) => Err(format!("`x` plays the track's own sound, but this track is the whole kit `{}`; name the {} to play", tr.clip, if named { "pad" } else { "pad number" })),
                             (Some(Sound::Index(n)), false, false) if *n <= src.pieces.len() => Ok(Some(n - 1)),
@@ -1167,7 +1192,11 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                                 let offbeat = (slot - slot.round()).abs() < 1e-6 && (slot.round() as i64).rem_euclid(2) == 1;
                                 let start = on + if offbeat { delay } else { 0.0 };
                                 if start < s1 - 1e-9 {
-                                    push(start, st.len * step_beats, k, st.vel.map_or(track_vel, |v| v as f64));
+                                    let degree = match st.sound {
+                                        Some(Sound::Degree { degree, accidental, octave }) => Some((degree, accidental, octave)),
+                                        _ => None,
+                                    };
+                                    push(start, st.len * step_beats, k, st.vel.map_or(track_vel, |v| v as f64), degree);
                                 }
                             }
                             rep += plen;
@@ -1175,11 +1204,23 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                     }
                 }
             },
+            // A voiced track strums at every chord change and rings until the next.
+            Pattern::Loop if single && tr.voicing.is_some() => {
+                if !spans.iter().any(|sp| sp.2.is_some()) {
+                    errors.push(format!("{at}.voicing: it plays the chords, but the score has none; add a chords line"));
+                }
+                for (a, b, ch, _) in spans.iter() {
+                    if ch.is_some() && *a < s1 - 1e-9 && *b > s0 + 1e-9 {
+                        let start = a.max(s0);
+                        push(start, b.min(s1) - start, 0, track_vel, None);
+                    }
+                }
+            }
             Pattern::Loop if single => {
                 let len = piece_len(&src.pieces[0]);
                 let mut p = s0;
                 while p < s1 - 1e-9 {
-                    push(p, len, 0, track_vel);
+                    push(p, len, 0, track_vel, None);
                     p += len;
                 }
             }
@@ -1187,7 +1228,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 Ok(step) => {
                     let mut p = s0;
                     while p < s1 - 1e-9 {
-                        push(p, step, 0, track_vel);
+                        push(p, step, 0, track_vel, None);
                         p += step;
                     }
                 }
@@ -1196,7 +1237,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             Pattern::At(list) if single => {
                 for (j, pos) in list.iter().enumerate() {
                     match position(pos, meter, score.tempo) {
-                        Ok(p) if p >= s0 && p < s1 => push(p, f64::INFINITY, 0, track_vel),
+                        Ok(p) if p >= s0 && p < s1 => push(p, f64::INFINITY, 0, track_vel, None),
                         Ok(_) => errors.push(format!("{at}.pattern.at[{j}]: {pos:?} is outside the bars this track plays")),
                         Err(e) => errors.push(format!("{at}.pattern.at[{j}]: {e}")),
                     }
@@ -1223,7 +1264,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 let part = h.dur / stutter as f64;
                 for k in 0..stutter {
                     if part * gate > 1e-6 {
-                        hits.push(Hit { track: h.track, start: h.start + part * k as f64, dur: part * gate, piece: h.piece, clip_from: h.clip_from, vel: h.vel });
+                        hits.push(Hit { track: h.track, start: h.start + part * k as f64, dur: part * gate, piece: h.piece, clip_from: h.clip_from, vel: h.vel, degree: h.degree });
                     }
                 }
             }
@@ -1258,6 +1299,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
     // ---- per-track region info (kits: pitch profile summed over their pieces; level per piece)
     let mut infos = Vec::new();
     let mut voices_base = Vec::new();
+    let mut pitches: Vec<Option<i32>> = vec![None; score.tracks.len()];
     let mut piece_levels: Vec<Vec<f64>> = Vec::new();
     let mut warned_irregular: Vec<String> = Vec::new();
     let level_of = |p: &Piece| clips[&p.clip].clip.loudness((p.from, p.to)).map_or(0.0, |l| ((TARGET_DBFS - l) * 10.0).round() / 10.0).clamp(-24.0, 30.0);
@@ -1322,12 +1364,29 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             sends: tr.sends.clone(),
             varispeed: unwarped.then(|| score.tempo / rc.clip.manifest.rhythm.bpm.unwrap_or(score.tempo) * tr.speed.unwrap_or(1.0)),
             voice: None,
+            pitch: None,
         });
         piece_levels.push(levels);
+        // A pitched track plays its clip from the clip's own pitch: pinned (`root Bb2`), heard from its notes, or guessed.
+        if tr.pitched() {
+            let (s0, s1) = (rc.clip.seconds_at(first.from), rc.clip.seconds_at(first.to));
+            let (midi, how) = match (rc.root_note, rc.clip.pitch((s0, s1))) {
+                (Some(n), _) => (n.0, "pinned"),
+                (None, Some(m)) => (m, "heard"),
+                (None, None) => {
+                    let pc = rc.root.or(region_key.map(|k| k.tonic)).unwrap_or(apricity_theory::PitchClass::C);
+                    let n = apricity_theory::Note::at(pc, 3);
+                    warnings.push(format!("{}: couldn't hear a pitch in it, so it plays as if it were {n}; pin it with the clip's root (e.g. root {n})", rc.name));
+                    (n.0, "guessed")
+                }
+            };
+            pitches[ti] = Some(midi);
+            infos.last_mut().unwrap().pitch = Some(format!("{} ({how})", apricity_theory::Note(midi)));
+        }
         let mut v = Voice::new(infos.last().unwrap().name.clone(), pcp);
         v.tonic = if src.kit.is_none() { rc.root } else { None }.or(region_key.map(|k| k.tonic));
         v.role = tr.role;
-        if !unwarped {
+        if !unwarped && !tr.pitched() {
             infos.last_mut().unwrap().voice = Some(crate::assist::VoiceInfo { name: v.name.clone(), pcp, tonic: v.tonic, role: tr.role, transpose: tr.transpose.clone() });
         }
         v.fixed = match tr.transpose {
@@ -1345,7 +1404,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
     for (si, (a, b, chord, label)) in spans.iter().enumerate() {
         // Unwarped tracks play as recorded: they sit out of the harmony (their shift stays 0).
         let active: Vec<usize> = (0..score.tracks.len())
-            .filter(|&ti| infos[ti].varispeed.is_none() && hits.iter().any(|h| h.track == ti && h.start < *b && h.start + h.dur > *a))
+            .filter(|&ti| infos[ti].varispeed.is_none() && !score.tracks[ti].pitched() && hits.iter().any(|h| h.track == ti && h.start < *b && h.start + h.dur > *a))
             .collect();
         let fit = match chord {
             Some(ch) if !active.is_empty() => {
@@ -1394,10 +1453,15 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
 
     // ---- events: split hits at chord boundaries, attach warp maps
     let mut events = Vec::new();
+    let mut pitch_errors = Vec::new();
     for h in &hits {
         let tr = &score.tracks[h.track];
         let piece = &srcs[h.track].as_ref().unwrap().pieces[h.piece];
         let rc = &clips[&piece.clip];
+        if let Some(root) = pitches[h.track] {
+            pitched_events(PitchedHit { tr, name: &infos[h.track].name, rc, piece, start: h.start, dur: h.dur, degree: h.degree, vel: h.vel, level: piece_levels[h.track][h.piece], piece_index: h.piece }, root, &spans, key, score.tempo, &mut events, &mut pitch_errors);
+            continue;
+        }
         let ratio = rc.ratio * tr.speed.unwrap_or(1.0);
         let unwarped = rc.mode == WarpModeSpec::Repitch;
         // Unwarped hits don't follow the chords, so they stay whole (no seams at chord changes).
@@ -1438,10 +1502,102 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             });
         }
     }
+    if !pitch_errors.is_empty() {
+        return Err(pitch_errors);
+    }
     events.sort_by(|a, b| a.start_beat.total_cmp(&b.start_beat).then(a.track.cmp(&b.track)));
 
     let master = MasterSpec { loudness: Some(master.loudness.unwrap_or(DEFAULT_LOUDNESS)), ..master };
     Ok(Timeline { tempo: score.tempo, meter, key: key.to_string(), length_beats: length, sources, events, harmony, tracks: infos, warnings, buses, master })
+}
+
+/// One note of a pitched track (a voiced chord's strum, or a melody note), before it becomes events.
+struct PitchedHit<'a> {
+    tr: &'a crate::score::TrackSpec,
+    name: &'a str,
+    rc: &'a ResolvedClip,
+    piece: &'a Piece,
+    start: f64,
+    dur: f64,
+    degree: Option<(u8, i8, i8)>,
+    vel: f64,
+    level: f64,
+    piece_index: usize,
+}
+
+/// The pitch of `pc` nearest to `near` (a MIDI note), or `pc` in the given octave.
+fn place(pc: apricity_theory::PitchClass, near: i32, octave: Option<i32>) -> i32 {
+    match octave {
+        Some(o) => apricity_theory::Note::at(pc, o).0,
+        None => near + apricity_theory::PitchClass::new(near).signed_interval_to(pc),
+    }
+}
+
+/// A pitched hit's events: one per tone (a voiced chord's tones, strummed low to high; or a melody's note), each
+/// the clip at its natural length shifted from the clip's own pitch `root` (a MIDI note) to the tone. Warped clips
+/// are pitch-shifted without stretching; `warp repitch` clips play faster or slower, like a sampler.
+fn pitched_events(h: PitchedHit, root: i32, spans: &[(f64, f64, Option<Chord>, String)], key: Key, tempo: f64, events: &mut Vec<Event>, errors: &mut Vec<String>) {
+    let beats_per_second = tempo / 60.0;
+    let tones: Vec<(i32, f64)> = if let Some(v) = h.tr.voicing {
+        let Some(ch) = spans.iter().find(|s| s.0 <= h.start + 1e-9 && s.1 > h.start + 1e-9).and_then(|s| s.2.as_ref()) else { return };
+        let base = place(ch.root, root, h.tr.octave);
+        let strum = h.tr.strum.unwrap_or(0.0) / 1000.0 * beats_per_second;
+        ch.voiced(v).iter().enumerate().map(|(k, iv)| (base + iv, k as f64 * strum)).collect()
+    } else if let Some((degree, accidental, octave)) = h.degree {
+        let tonic = place(key.tonic, root, h.tr.octave);
+        let step = key.mode.steps()[(degree - 1) as usize];
+        vec![(tonic + step + accidental as i32 + 12 * octave as i32, 0.0)]
+    } else {
+        return;
+    };
+    let c = &h.rc.clip;
+    let from = c.seconds_at(h.piece.from);
+    let natural = c.seconds_at(h.piece.to) - from;
+    let unwarped = h.rc.mode == WarpModeSpec::Repitch;
+    let speed = h.tr.speed.unwrap_or(1.0);
+    for (midi, offset) in tones {
+        let st = midi - root;
+        if st.abs() > 24 {
+            errors.push(format!(
+                "track {}: {} is {} semitones from the clip's own pitch ({}); that's too far to sound right (24 at most). Pick another octave, or another clip",
+                h.name,
+                apricity_theory::Note(midi),
+                st,
+                apricity_theory::Note(root)
+            ));
+            continue;
+        }
+        let start = h.start + offset;
+        let room = h.dur - offset; // a strummed tone still ends with the chord
+        if room < 1e-6 {
+            continue;
+        }
+        // Seconds of output, and seconds of source they read: the same when pitch-shifted; scaled when re-pitched.
+        let rate = if unwarped { 2f64.powf(st as f64 / 12.0) * speed } else { 1.0 };
+        let out = (room / beats_per_second).min(natural / rate);
+        if out < 1e-4 {
+            continue;
+        }
+        let dur_beats = out * beats_per_second;
+        let src_end = from + out * rate;
+        events.push(Event {
+            track: h.name.to_string(),
+            source: h.rc.source,
+            start_beat: start,
+            dur_beats,
+            src_start: from,
+            src_end,
+            warp: vec![(from, 0.0), (src_end, dur_beats)],
+            semitones: st,
+            tuning_cents: if unwarped { 0.0 } else { -c.manifest.tonal.tuning_cents },
+            gain_db: h.tr.volume + h.level + velocity_db(h.vel),
+            velocity: ((h.vel - 100.0).abs() > 0.05).then(|| (h.vel * 10.0).round() / 10.0),
+            mode: h.rc.mode,
+            reverse: h.tr.reverse,
+            filter: h.tr.filter,
+            piece: h.piece_index,
+        });
+    }
 }
 
 /// A velocity as a level change: 100 is the pad's matched level, 127 about +4 dB, 40 about −16 dB.
@@ -1551,6 +1707,10 @@ impl Timeline {
         for t in &self.tracks {
             if let Some(v) = t.varispeed {
                 s += &format!("  {:<14} {:<10} seconds {:>6.1}–{:<6.1} re-pitched, plays as recorded at {v}× (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0 * 60.0 * v / (self.tempo * t.beat_ratio), t.region_beats.1 * 60.0 * v / (self.tempo * t.beat_ratio), t.level_db);
+                continue;
+            }
+            if let Some(p) = &t.pitch {
+                s += &format!("  {:<14} {:<10} one sound at {p}, played at the pitches it's given (not in the harmony)  level {:+.1} dB\n", t.name, t.clip, t.level_db);
                 continue;
             }
             s += &format!("  {:<14} {:<10} clip beats {:>6.1}–{:<6.1} (×{}) sounds in {:<5} stretch {:<7} retune {:+.0}¢  level {:+.1} dB\n", t.name, t.clip, t.region_beats.0, t.region_beats.1, t.beat_ratio, t.region_key,

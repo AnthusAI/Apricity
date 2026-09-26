@@ -258,6 +258,10 @@ When a track plays: `loop`, `every <length>` or `at <positions>`.
 
 Letting the compiler choose which part of a sample a clip plays: the window of a given length that fits the chords, has steady beats, holds one harmony and is actually playing.
 
+### Pitched track
+
+A track that plays one sound at chosen pitches, like a sampler playing one sample across a keyboard: the tones of each chord together (`voicing triad`, optionally strummed), or a melody in scale degrees (`notes "1 . 3 5"`). The sound's own note is heard from its transcription, or pinned with `root Bb2`. See [pitched tracks](language.md#pitched-tracks).
+
 ### Pitch class
 
 A note regardless of octave: all Cs are one pitch class. There are 12.
@@ -367,6 +371,10 @@ A [flip](#flip) that replays the start of each note several times within it (`st
 Replacing the playing [arrangement](#arrangement) with a newly rendered one, at the next
 bar line.
 
+### Strum
+
+On a voiced [pitched track](#pitched-track): starting each tone of a chord a little after the one below it, like a hand across strings (`strum 20ms`).
+
 ### Swing
 
 Delaying every other step for a loose, human feel (`swing 58`). 50 is straight, 56–62 the classic sampler range, 66 a triplet feel. `swing 58 1/8` swings the eighths under sixteenth steps; a `swing` line on its own sets it for every step track. See [groove](language.md#groove).
@@ -403,6 +411,10 @@ In a march, the contrasting section, usually in a new key a fourth higher.
 ### Tuning
 
 Where a recording's A sits relative to 440 Hz, in hertz and cents.
+
+### Voicing
+
+Which tones of each chord a [pitched track](#pitched-track) plays together: `root`, `power` (root and fifth), `triad` or `seventh`.
 
 ### Velocity
 

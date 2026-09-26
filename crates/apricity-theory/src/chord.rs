@@ -59,6 +59,40 @@ impl Quality {
     }
 }
 
+/// Which tones of a chord a pitched track plays together (`voicing triad`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Voicing {
+    /// The root alone (a bass line).
+    Root,
+    /// Root and fifth.
+    Power,
+    /// Root, third and fifth.
+    Triad,
+    /// Root, third, fifth and seventh (a triad stays a triad).
+    Seventh,
+}
+
+impl Voicing {
+    pub fn parse(s: &str) -> Result<Self, String> {
+        match s {
+            "root" => Ok(Voicing::Root),
+            "power" => Ok(Voicing::Power),
+            "triad" => Ok(Voicing::Triad),
+            "seventh" => Ok(Voicing::Seventh),
+            _ => Err(format!("voicing is root, power, triad or seventh, not {s:?}")),
+        }
+    }
+    pub fn name(self) -> &'static str {
+        match self {
+            Voicing::Root => "root",
+            Voicing::Power => "power",
+            Voicing::Triad => "triad",
+            Voicing::Seventh => "seventh",
+        }
+    }
+}
+
 /// Which chord member a pitch is. Used by the solver's `role` hints.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -90,6 +124,17 @@ impl Chord {
 
     pub fn contains(&self, pc: PitchClass) -> bool {
         self.pitch_classes().contains(&pc)
+    }
+
+    /// The tones a voicing plays, in semitones above the root, low to high.
+    pub fn voiced(&self, v: Voicing) -> Vec<i32> {
+        let iv = self.quality.intervals();
+        match v {
+            Voicing::Root => vec![0],
+            Voicing::Power => vec![0, iv[2]],
+            Voicing::Triad => iv[..3].to_vec(),
+            Voicing::Seventh => iv.to_vec(),
+        }
     }
 
     /// Pitch class of a chord member (sus chords use the suspended tone as "third").
@@ -236,6 +281,19 @@ mod tests {
         assert_eq!(roman("iiø", "C").name(), "Dm7b5");
         assert_eq!(roman("viiø", "C").name(), "Bm7b5");
         assert_eq!(roman("i°", "Am").name(), "Adim");
+    }
+
+    #[test]
+    fn voicings() {
+        let c7 = roman("V7", "F");
+        assert_eq!(c7.voiced(Voicing::Root), [0]);
+        assert_eq!(c7.voiced(Voicing::Power), [0, 7]);
+        assert_eq!(c7.voiced(Voicing::Triad), [0, 4, 7]);
+        assert_eq!(c7.voiced(Voicing::Seventh), [0, 4, 7, 10]);
+        assert_eq!(roman("I", "F").voiced(Voicing::Seventh), [0, 4, 7], "a triad stays a triad");
+        assert_eq!(roman("viio", "C").voiced(Voicing::Power), [0, 6], "a diminished fifth");
+        assert_eq!(Voicing::parse("triad"), Ok(Voicing::Triad));
+        assert!(Voicing::parse("cluster").is_err());
     }
 
     #[test]
