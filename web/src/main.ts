@@ -110,10 +110,6 @@ async function followRoute() {
 window.addEventListener("hashchange", () => void followRoute());
 
 new Landing(document.querySelector("#home")!, {
-  library: () => showTab("samples"),
-  score: () => showTab("scores"),
-  docs: () => showTab("docs"),
-  hear: () => openScore("examples/chop-shop.apr", true),
   open: (path) => (location.hash = routeFor(path, true)),
 });
 showTab(initial);

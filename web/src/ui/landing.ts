@@ -32,10 +32,6 @@ function highlight(code: string) {
 }
 
 export interface LandingActions {
-  library(): void;
-  score(): void;
-  docs(): void;
-  hear(): Promise<void>;
   /** Open a score in the Score tab and play it (a breakdown's "Open in Score"). */
   open(score: string): void;
 }
@@ -48,21 +44,6 @@ export class Landing {
 
   constructor(root: HTMLElement, go: LandingActions) {
     this.root = root;
-    const cta = (label: string, cls: string, f: () => void, icon = "") => {
-      const b = el("button", { className: `cta ${cls}`, type: "button" }, ...(icon ? [el("span", { className: "icon", ariaHidden: "true" }, icon)] : []), label);
-      b.addEventListener("click", f);
-      return b;
-    };
-    const hear = cta("Hear “Chop Shop”", "primary", async () => {
-      hear.disabled = true;
-      hear.lastChild!.textContent = "Warming up…";
-      try {
-        await go.hear();
-      } finally {
-        hear.disabled = false;
-        hear.lastChild!.textContent = "Hear “Chop Shop”";
-      }
-    }, "▶");
     const stats = el("div", { className: "stats" });
 
     root.append(
@@ -79,7 +60,6 @@ export class Landing {
             el("div", { className: "eyebrow" }, "The mashup machine"),
             el("h1", { className: "wordmark" }, "Apricity"),
             el("p", { className: "tagline", innerHTML: "Intelligent sampling. It <em>hears the beat, key and tuning</em> of every sample, then <em>warps them to one groove</em> and <em>tunes them to your chords</em>, so they play as one." }),
-            el("div", { className: "actions" }, hear, cta("Browse samples", "ghost", go.library), cta("Write a score", "ghost", go.score), cta("Help", "ghost", go.docs)),
           ),
           new Breakdown(breakdown(HERO)!, { variant: "hero", open: go.open, remember: true }).root,
         ),

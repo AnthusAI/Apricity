@@ -54,12 +54,6 @@
 .landing .say { font-family: "Iowan Old Style", Palatino, Georgia, serif; font-style: italic; color: var(--ink-soft); font-size: 15px; margin: 10px 0 26px; }
 .landing .tagline { font-size: clamp(19px, 2.6vw, 26px); line-height: 1.35; max-width: 640px; margin: 0 auto; font-weight: 450; }
 .landing .tagline em { font-style: normal; color: var(--sun); }
-.landing .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
-.landing .cta { border: 0; border-radius: 999px; padding: 12px 22px; font-size: 15px; font-weight: 560; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s; }
-.landing .cta:hover { transform: translateY(-1px); }
-.landing .cta.primary { background: linear-gradient(135deg, var(--ember), var(--sun)); color: #fff; box-shadow: 0 8px 30px -8px color-mix(in srgb, var(--ember) 70%, transparent); }
-.landing .cta.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--card-line); backdrop-filter: blur(8px); }
-.landing .cta .icon { display: inline-block; margin-right: 6px; }
 
 
 .landing section.band { max-width: 1080px; margin: 0 auto; padding: 72px 24px; }
