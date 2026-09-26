@@ -10,9 +10,22 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "4e54c8f3-d2a0-4ee6-9589-ba4f94e4c02a",
+      "author": "home",
+      "text": "Implemented (Haiku agent + reviewer finishing 2c: comp.mix/reverb.mix/delay.mix, effect-index bug, --bars offset for effect lanes, tests). PR #6. Verified: score+engine tests green; existing examples render bit-identically; brass-floor automated version matches copied-track version within 0.5 dB/bar. Master automation left out per spec.",
+      "created_at": "2026-09-26T21:53:18.794609Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-26T19:11:15.968499Z",
-  "updated_at": "2026-09-26T19:12:34.042356Z",
+  "updated_at": "2026-09-26T21:53:18.795182Z",
   "closed_at": null,
   "agent": {
     "platform": "claude-code",
