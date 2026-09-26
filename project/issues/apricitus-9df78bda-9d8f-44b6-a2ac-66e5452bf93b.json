@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-9df78bda-9d8f-44b6-a2ac-66e5452bf93b",
+  "title": "Per-note attack and release envelopes on tracks",
+  "description": "## Why\nWhile writing the demo `examples/brass-floor.apr`, every brass note started at full punch and was chopped when its step ended. The renderer only puts a 4 ms edge fade on each note (render.rs `FADE_S`). Listening was fatiguing (\"too short/abrupt/clippy/punchy\"). A sampler has an amplitude envelope; Apricity needs at least attack and release.\n\n## The feature\nTwo new **track options** (on the track line, like `gate`):\n```apr\ntrack stab  voicing triad  steps \". . . x _ _ x _ _ _ . . .\"  attack 30ms  release 400ms\ntrack pad   voicing seventh  attack 250ms  release 1.5s\n```\n- **`attack <time>`** (0–2000 ms; `ms` or `s`): each note fades in from silence over this time, with a raised-cosine (half-Hann) shape. It is capped at the note's length.\n- **`release <time>`** (0–5000 ms): each note keeps sounding **past its written end** for this long, fading to silence with a raised-cosine shape. The extra audio is the source's own continuation: the note's source region is extended past `src_end` by the source time that corresponds to the release, given the note's stretch ratio or speed. If the sample runs out first, the fade still ends at the release time and the missing samples are silence.\n  - With `gate`, the release starts at the gated end.\n  - With a pitched track, the tail is at the note's pitch.\n  - With `warp repitch`, the tail plays at the same speed.\n  - With `reverse`, apply the envelope after reversing, so attack is still at the start as heard.\n- **No `attack` / `release`:** today's behaviour (4 ms edge fades), **bit-identical** renders for existing scores.\n- **Overlap is fine:** a release tail overlaps the next note and they sum, like a sampler with polyphony.\n- A release tail that runs past the loop end wraps to the loop start, as effect tails already do. Check how placements past the loop end are handled in `sum_placements` (arrangement.rs:124) and make the tail wrap rather than be cut.\n\n## Where it goes\n- `TrackSpec`: `attack: Option<f64>`, `release: Option<f64>` (in seconds, or ms; pick one and keep YAML consistent with `gate`/`humanize` conventions in docs/yaml.md). Parse them in dsl.rs's track options (around 953-1016) with the `ms` helper, and `format()` prints them in the header options.\n- `Event` (compile.rs:321): add `attack_s` and `release_s`, skipped in JSON when zero or None.\n  - Compile sets them on every note from the track (normal notes at ~1541, pitched notes at ~1638).\n  - Range checks go in the per-track validation block (~1083-1105) in house style: \"attack: 3000ms is outside 0ms to 2000ms\".\n- **Render** (crates/apricity-engine/src/render.rs):\n  - `CacheKey` (24-34) must include attack and release.\n  - `render_event` (225) extends the source region for the release. Output length = note length + release.\n  - `finish()` (272) applies the attack and release curves instead of the 4 ms fades when they're set. Keep the 4 ms fade on whichever edge has no envelope, so there are no clicks.\n  - Placement lengths grow by the release.\n- **Web:** nothing, as long as it's inside `Renderer::arrange`. The web workers call it through `rw_arrange`.\n- `explain`: show `attack 30ms release 400ms` in the track's description line if there's an obvious place; otherwise skip.\n\n## Docs\n- `docs/language.md`: Track options table rows for `attack` and `release`, with an example and a sentence on how release reads past the note. A line in \"How it sounds\" under Pitched tracks. Grammar: `track-option … | \"attack\" TIME | \"release\" TIME`.\n- `docs/yaml.md`: the new track fields.\n\n## Tests\n- **dsl.rs:** parse and format round-trip, and range errors with \"line N\".\n- **tests/compile.rs:** events carry `attack_s`/`release_s`; YAML round-trip.\n- **Engine:**\n  - Attack 100 ms on a constant-amplitude source: the first 10 ms RMS is at least 20 dB below the RMS at 150 ms.\n  - Release 300 ms: the rendered note is 300 ms longer. The audio 100 ms past the written end is non-silent and comes from the source continuation: compare against the source samples times the envelope. The last 1 ms is below −60 dBFS.\n  - The release runs off the end of a short sample and gives silence without panicking.\n  - No attack/release: output is bit-identical to the old path.\n  - The cache key distinguishes two notes that differ only in release.\n- `cargo test -p apricity-score -p apricity-engine`, plus the examples round-trip test.\n\n## Out of scope\n- Decay/sustain (full ADSR).\n- Velocity-to-envelope.\n- Envelope automation.\n- Any UI.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T19:11:16.033364Z",
+  "updated_at": "2026-09-26T19:11:16.033401Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
