@@ -162,8 +162,11 @@ export class ScoreView {
       ...this.dockPanels(),
     );
     // The list and the side panel are as wide as you drag them.
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: "score-list", min: 180, max: (w) => Math.min(480, w * 0.35) });
-    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 260, max: (w) => w * 0.6 });
+    // Neither may squeeze the editor below its minimum (--editor-min in style.css), so its buttons always fit.
+    const editorMin = () => parseFloat(getComputedStyle(root).getPropertyValue("--editor-min")) || 440;
+    const widthOf = (e: HTMLElement) => e.getBoundingClientRect().width;
+    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: "score-list", min: 180, max: (w) => Math.min(480, w - widthOf(this.sideEl) - editorMin()) });
+    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 280, max: (w) => w - widthOf(this.list.el) - editorMin() });
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     document.addEventListener("apricity:auth-changed", () => this.loadList());
     this.list.rename(KIND_LABEL[this.kind].many, `New ${KIND_LABEL[this.kind].one}`);

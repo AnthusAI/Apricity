@@ -104,7 +104,7 @@ export class Library {
     drop.hidden = mode === "clips" || this.cloud();
     this.list.el.append(this.jobsEl, drop, pick);
     root.append(this.list.el, this.detailEl);
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w * 0.5) });
+    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w - 420) });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
   }
 

@@ -59,7 +59,7 @@ export class DocsView {
     });
     const side = el("aside", { className: "sidebar docs-side" }, el("div", { className: "search" }, this.search), this.results, this.nav);
     root.append(side, el("div", { className: "docs-scroll" }, this.article));
-    columnSplitter({ view: root, panel: side, edge: "right", prop: "--nav-w", key: "docs-nav", min: 180, max: (w) => Math.min(480, w * 0.45) });
+    columnSplitter({ view: root, panel: side, edge: "right", prop: "--nav-w", key: "docs-nav", min: 180, max: (w) => Math.min(480, w - 360) });
     let start = this.current;
     try {
       start = localStorage.getItem("apricity.docs") ?? start;

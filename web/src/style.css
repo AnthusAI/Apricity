@@ -81,7 +81,7 @@ main { flex: 1; min-height: 0; }
 .view { height: 100%; display: grid; min-height: 0; position: relative; }
 
 /* ---- library */
-.view.library { grid-template-columns: var(--list-w, minmax(260px, 340px)) minmax(0, 1fr); }
+.view.library { grid-template-columns: minmax(200px, var(--list-w, 340px)) minmax(420px, 1fr); }
 .sidebar { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; background: var(--panel); }
 .sidebar .search { padding: 10px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; }
 .sidebar input[type="search"] { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
@@ -119,7 +119,9 @@ main { flex: 1; min-height: 0; }
 code, .mono { font-family: var(--mono); font-size: 12.5px; }
 
 /* ---- score */
-#score { grid-template-columns: var(--list-w, minmax(200px, 240px)) minmax(0, 1.2fr) var(--side-w, minmax(320px, 1fr)); grid-template-rows: minmax(0, 1fr) auto; }
+/* The editor keeps room for its bar and code (--editor-min); the list and the side panel grow to the width they were
+   dragged to (--list-w, --side-w) only while there's room, and give way first when there isn't. */
+#score { --editor-min: 440px; grid-template-columns: minmax(180px, var(--list-w, 240px)) minmax(var(--editor-min), 1.2fr) minmax(280px, var(--side-w, 1fr)); grid-template-rows: minmax(0, 1fr) auto; }
 #score .sidebar { grid-row: 1 / span 2; }
 .editor .bar .btn.on { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 
@@ -146,8 +148,11 @@ body.col-resizing iframe, body.col-resizing canvas { pointer-events: none; }
 .flow-host canvas { display: block; width: 100%; }
 .flow-info { padding: 5px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--fg); background: var(--panel); min-height: 1.5em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .flow-info .muted { color: var(--muted); }
-.editor { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); }
-.editor .bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.editor { display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; border-right: 1px solid var(--line); }
+/* When the editor is narrow the bar wraps onto a second row instead of running under the side panel; the status line
+   shrinks (and ellipsizes) before any button moves. */
+.editor .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.editor .bar .status { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .editor .bar .name { font-family: var(--mono); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .editor .cm-host { flex: 1; min-height: 0; overflow: hidden; }
 .editor .cm-editor { height: 100%; font-size: 13.5px; }
@@ -191,7 +196,7 @@ body.col-resizing iframe, body.col-resizing canvas { pointer-events: none; }
 }
 
 /* ---- docs */
-#docs { grid-template-columns: var(--nav-w, minmax(220px, 280px)) minmax(0, 1fr); }
+#docs { grid-template-columns: minmax(180px, var(--nav-w, 280px)) minmax(360px, 1fr); }
 .docs-side { overflow: auto; }
 .docs-side .toc { display: block; width: 100%; text-align: left; border: 0; background: none; color: var(--muted); padding: 4px 12px 4px 24px; font-size: 13px; }
 .docs-side .toc:hover { color: var(--fg); }
