@@ -7,6 +7,7 @@ pub mod chords;
 pub mod compile;
 pub mod dsl;
 pub mod manifest;
+pub mod melody;
 pub mod score;
 
 pub use compile::{compile, compile_file, compile_text, compile_with, parse_score, normalize, source_paths, references, ChordSpan, Event, Timeline, TrackInfo};

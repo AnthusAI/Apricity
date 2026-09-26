@@ -150,6 +150,20 @@ pub unsafe extern "C" fn rw_chords(text: *const u8, text_len: usize) {
     });
 }
 
+/// What the Melodies editor needs: the key's scale, and the `notes` tracks with their lines and notes.
+/// Result: the view (see `apricity_score::melody`) or `{"errors": [...]}`.
+///
+/// # Safety
+/// UTF-8 (ptr, len) in wasm memory.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_melody(text: *const u8, text_len: usize) {
+    let text = unsafe { str_arg(text, text_len) };
+    set_result(match apricity_score::melody::melody_view(text) {
+        Ok(v) => v,
+        Err(errors) => json!({ "errors": errors }),
+    });
+}
+
 /// How well a score's strings fit each chord: `key` ("F mixolydian"), `voices` (the compiled timeline's
 /// `tracks[].voice`, as a JSON array) and `labels` (a JSON array of chords). Result: `{"fits": [...]}` or
 /// `{"errors": [...]}`.

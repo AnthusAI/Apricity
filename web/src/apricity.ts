@@ -137,6 +137,11 @@ export async function stepsView(text: string): Promise<import("./ui/beat/model")
   return (await getCompiler()).call("rw_steps", text);
 }
 
+/** What the piano roll needs from a score's text (the key's scale, and the `notes` tracks with their lines). */
+export async function melodyView(text: string): Promise<import("./ui/melody/model").MelodyView> {
+  return (await getCompiler()).call("rw_melody", text);
+}
+
 /** What the chord harp needs from a score's text (key, palette, progression, strings and their lines). */
 export async function chordsView(text: string): Promise<import("./ui/chords/model").ChordsView> {
   return (await getCompiler()).call("rw_chords", text);

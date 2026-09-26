@@ -391,3 +391,65 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .cb-menu span { font-size: 12px; color: var(--muted); }
 .strings .s-pitch { display: block; font-size: 10.5px; font-weight: 400; color: var(--muted); font-family: var(--mono); }
 .strings .sh.voiced { max-width: none; flex: 1 0 44px; font-size: 10px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* ---- the piano roll (Melodies): rows of the key's pitches, notes laid over shaded lanes */
+.roll {
+  grid-column: 2 / span 2; position: relative; display: flex; flex-direction: column; min-height: 0;
+  border-top: 1px solid var(--line); background: var(--bg); outline: none;
+  --key-w: 92px; --cell: minmax(16px, 1fr); --row-h: 20px; --note: #f5a36b;
+}
+.roll[hidden] { display: none; }
+.roll-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); font-size: 12.5px; }
+.roll-bar select { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 6px; padding: 3px 6px; font-size: 12.5px; }
+.roll-bar .seg button[aria-pressed="true"], .roll-bar .btn.tog[aria-pressed="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 560; }
+.roll-bar .btn.tog { padding: 4px 10px; font-size: 12.5px; }
+.roll-pitch { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.roll-pos { margin-left: auto; color: var(--fg); font-size: 13px; }
+.roll-note { flex-basis: 100%; color: var(--warn); }
+.roll-note:empty { display: none; }
+.roll-body { flex: 1; min-height: 0; overflow: auto; padding: 8px 12px 12px; }
+.roll-grid {
+  display: grid; grid-template-columns: var(--key-w) repeat(var(--steps), var(--cell));
+  grid-template-rows: auto repeat(var(--rows), var(--row-h)) auto; row-gap: 1px; user-select: none; touch-action: none; min-width: min-content; position: relative;
+}
+.roll-grid .corner, .roll-grid .bar-no { font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 0 2px 3px; }
+.roll-grid .corner { grid-column: 1; position: sticky; left: 0; background: var(--bg); z-index: 3; }
+.roll-grid .bar-no { grid-row: 1; border-left: 1px solid var(--line); padding-left: 4px; }
+.roll .key {
+  grid-column: 1; position: sticky; left: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  padding: 0 8px; border: 0; border-radius: 3px 0 0 3px; background: var(--panel); color: var(--fg); font-size: 11px; cursor: pointer; margin-right: 2px;
+}
+.roll .key b { font-family: var(--mono); font-weight: 620; }
+.roll .key span { color: var(--muted); font-family: var(--mono); }
+.roll .key.root { background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.roll .key.out { background: color-mix(in srgb, var(--fg) 6%, var(--bg)); color: var(--muted); }
+.roll .key:active { filter: brightness(1.1); }
+.roll .lane {
+  grid-column: 2 / -1; cursor: crosshair;
+  background-color: color-mix(in srgb, var(--fg) 5%, transparent);
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--fg) 22%, transparent) 0 1px, transparent 1px var(--bar-pct)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--fg) 6%, transparent) 0 var(--beat-pct), transparent var(--beat-pct) calc(2 * var(--beat-pct))),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--fg) 10%, transparent) 0 1px, transparent 1px var(--step-pct));
+}
+.roll .lane.out { background-color: color-mix(in srgb, var(--fg) 2%, transparent); }
+.roll .nt {
+  position: relative; z-index: 2; display: flex; align-items: center; min-width: 0; margin: 1px 1px; padding: 0 5px;
+  border-radius: 3px; background: var(--note); color: #1b1b1a; font-family: var(--mono); font-size: 10px; cursor: grab; overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+}
+.roll .nt.sel { box-shadow: inset 0 0 0 2px var(--fg); }
+.roll .nt .edge { position: absolute; top: 0; right: 0; bottom: 0; width: 7px; cursor: ew-resize; }
+.roll .nt .edge:hover { background: rgba(0,0,0,.15); }
+.roll .ch { display: flex; gap: 6px; align-items: baseline; padding: 4px 6px; margin-top: 4px; border-left: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 7%, transparent); font-size: 11px; overflow: hidden; white-space: nowrap; }
+.roll .ch b { font-family: var(--mono); }
+.roll .ch span { color: var(--muted); }
+.roll .chords-h { margin-top: 4px; align-self: center; }
+.roll .ph { grid-column: 2; z-index: 1; background: color-mix(in srgb, var(--accent) 22%, transparent); pointer-events: none; }
+.roll .ph[hidden] { display: none; }
+.roll.readonly .lane, .roll.readonly .nt { cursor: default; }
+.roll .empty .btn { margin-top: 8px; }
+@media (max-width: 900px) {
+  .roll { grid-column: auto; --key-w: 76px; }
+  #score .roll { order: 1; }
+}
