@@ -27,10 +27,25 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "58b750da-88ff-4ebb-a59a-f8e1c9173060",
+      "author": "home",
+      "text": "Sources found (all parsed as data, nothing executed). {V} stands for the vendor's seven-letter name, which appears in several repository names and paths and is masked here on purpose.\n- g-lok/chirashi @538a860 (MIT): tests/testdata/{v}_kit/{drum kit.adg, rack kit.adg, ABAHAMBI - Abahambi.adv}, header MinorVersion 12.0_12300, creator 12.3.2. Real DAW-saved drum rack presets (Drum Sampler pads; Simpler pads, 64 pads). COPYABLE.\n- owenbush/{v}-inspector @2ff369a (MIT): packages/core/test/fixtures/Broom Bap.als (12.2) holds 5 drum racks incl. 'Slice to New Drum Rack' output (slices of one WAV by SampleStart/SampleEnd frames). COPYABLE.\n- live-daw-tools/als-parser @94fe482 (MIT): Michelle.als (11.3.21) and Michelle-12.3.als (12.3.2), the same set resaved: a natural upgrade diff (12 only adds elements).\n- andrewcb/alsd (Apache-2.0, 9.1.1) old drum rack; cite only.\n- ben-juodvalkis/{V}-Device-Creator @e702589 (NO licence): 20 .adg/.adv 12.1 to 12.4.5b7; cite only, kept in scratchpad.\n- ununu-p2p/als-parser, craffel/live-sets, radiogoddess/{v}-presets, eristoy/{V}-Drum-Racks (NO licence): cite only.\nNo public .alc was found (GitHub code search for extension alc returns only unrelated languages); Q7 is answered from AudioClip elements inside MIT sets, provisional.\nDecision: fixtures = the MIT DAW-saved files above (renamed, with licence notices in README.md) plus spike-written candidate presets for the owner's load test (clearly marked not DAW-saved).",
+      "created_at": "2026-09-26T23:10:52.670797Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
     }
   ],
   "created_at": "2026-09-26T21:59:38.976131Z",
-  "updated_at": "2026-09-26T23:00:26.894885Z",
+  "updated_at": "2026-09-26T23:11:19.367420Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
