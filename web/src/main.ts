@@ -9,6 +9,7 @@ import { Landing } from "./ui/landing";
 import { ActivityView } from "./ui/activity";
 import { TagsView } from "./ui/tags";
 import { HomeView } from "./ui/home";
+import { mountNav } from "./ui/nav";
 import { stopFeed } from "./audio/feed-audio";
 import { bootstrap, bootstrapError, mode } from "./data/client";
 import { mountNotices, notify } from "./ui/notices";
@@ -138,6 +139,8 @@ document.addEventListener("apricity:at", (e) => {
   // From the address bar: only correct it (a beat asked for under /scores moves to /beats), keeping ?play off.
   history[how === "user" ? "pushState" : "replaceState"](null, "", url);
 });
+// Tabs that don't fit fold into a menu that fills the screen.
+mountNav(document.querySelector<HTMLElement>(".topbar")!, document.querySelector<HTMLElement>(".tabs")!, (page) => navigate({ page }));
 for (const t of tabs)
   t.addEventListener("click", (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // a new tab or window: the link does it
