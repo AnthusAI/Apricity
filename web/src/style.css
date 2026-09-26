@@ -590,3 +590,4 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .notice span { flex: 1; overflow-wrap: anywhere; }
 .notice-action { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 7px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
 .notice-close { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.account .acct-pill.local { cursor: default; }

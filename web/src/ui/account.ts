@@ -65,7 +65,19 @@ export class AccountControl {
   private abort: AbortController | null = null;
 
   constructor(private host: HTMLElement, private deps: AccountDeps) {
-    if (!deps.cloud()) return; // local mode and `apricity serve`: no accounts, nothing shown
+    if (!deps.cloud()) {
+      // Local mode (`apricity serve`): no accounts, but the same place says who you are: the library's one person.
+      host.hidden = false;
+      host.replaceChildren(
+        el(
+          "div",
+          { className: "acct-pill local", title: "You're working on your own library on this computer: no account needed, and everything is yours to change." },
+          el("span", { className: "acct-avatar", ariaHidden: "true" }, "L"),
+          el("span", { className: "acct-email" }, "Local library"),
+        ),
+      );
+      return;
+    }
     host.hidden = false;
     document.body.append(this.dlg);
     this.dlg.setAttribute("aria-labelledby", "acct-title");
