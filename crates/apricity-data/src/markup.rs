@@ -64,6 +64,18 @@ pub struct MergePlan {
     pub name_counters: HashMap<String, u32>,          // updated counters
 }
 
+/// An existing clip's kind: its own, or (clips have no kind field) the one in its name, `loop` of `loop-2`, which is
+/// how this merge names what it creates.
+fn kind_of(clip: &ExistingClip) -> &str {
+    if !clip.kind.is_empty() {
+        return &clip.kind;
+    }
+    match clip.name.rsplit_once('-') {
+        Some((kind, n)) if !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()) => kind,
+        _ => "",
+    }
+}
+
 /// Plan a merge of proposed clips with existing active clips.
 /// Matches same-kind ML clips with ≥0.8 IoU, keeping ids/names.
 /// Unmatched clips get new names. Old clips not proposed become retired (if used by a score) or deleted.
@@ -92,7 +104,7 @@ pub fn plan_merge(
             if matched_existing.contains(&eidx) {
                 continue; // Already matched
             }
-            if existing.kind != proposed.kind {
+            if kind_of(existing) != proposed.kind {
                 continue; // Different kind
             }
 
