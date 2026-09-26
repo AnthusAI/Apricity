@@ -18,7 +18,8 @@ import { timeAgo } from "./time";
 import { ratings } from "../apricity";
 import { player } from "../audio/player";
 import { mode } from "../data/client";
-import { compiledScore, playingKey, playSample, playScore, stopFeed } from "../audio/feed-audio";
+import { compiledScore, decodeSample, playingKey, playSample, playScore, stopFeed } from "../audio/feed-audio";
+import { computePeaks } from "./waveform";
 import { envelopeModel, stripModel, type EnvelopeModel, type StripModel } from "../data/feed-visual";
 
 export interface FeedItem {
@@ -71,6 +72,8 @@ export interface FeedDeps {
 
 const signIn = () => document.dispatchEvent(new CustomEvent("apricity:sign-in"));
 const STAGE_H = 132;
+/** Samples this short with no beats are one-shots, drawn from their audio. */
+const ONE_SHOT_S = 20;
 
 /** Compiles (and manifests) one card at a time, so a page of cards doesn't compile everything at once. */
 let queue: Promise<unknown> = Promise.resolve();
@@ -93,6 +96,9 @@ export class FeedCard {
   private play: PlayButton;
   private strip: StripModel | null = null;
   private envelope: EnvelopeModel | null = null;
+  /** A one-shot's waveform (min/max pairs), when its analysis has no beats. */
+  private peaks: Float32Array | null = null;
+  private peaksDuration = 0;
   private placeholder = "";
   private blocked: "sign-in" | null = null;
   private playhead: number | null = null; // beats (a score) or seconds (a sample)
@@ -202,6 +208,12 @@ export class FeedCard {
       } else if (it.sample) {
         const m = await inTurn(() => manifest(it.sample!.path));
         if (m) this.envelope = envelopeModel(m as never, await this.clipRange());
+        // A one-shot (a drum hit) has no beats to chart: short enough to draw from its own audio instead.
+        if (m && (this.envelope?.bars.length ?? 0) < 2 && m.source.duration <= ONE_SHOT_S) {
+          const buf = await decodeSample(it.sample.path);
+          this.peaks = computePeaks(Array.from({ length: buf.numberOfChannels }, (_, i) => buf.getChannelData(i)));
+          this.peaksDuration = buf.duration;
+        }
       }
     } catch (e) {
       const signedOut = e instanceof SignedOut || /sign in/i.test((e as Error).message);
@@ -275,6 +287,7 @@ export class FeedCard {
     const accent = col("--accent", "#36f");
     g.clearRect(0, 0, w, STAGE_H);
     if (this.strip) drawStrip(g, this.strip, w, STAGE_H, { fg, muted, line, accent }, this.playhead);
+    else if (this.peaks) drawPeaks(g, this.peaks, w, STAGE_H, { fg, muted, line, accent }, this.playhead === null ? null : this.playhead / (this.peaksDuration || 1));
     else if (this.envelope) drawEnvelope(g, this.envelope, w, STAGE_H, { fg, muted, line, accent }, this.playhead);
     else {
       g.fillStyle = muted;
@@ -373,5 +386,27 @@ function drawEnvelope(g: CanvasRenderingContext2D, m: EnvelopeModel, w: number, 
   if (playhead !== null) {
     g.fillStyle = c.fg;
     g.fillRect(x(playhead), 0, 2, base);
+  }
+}
+
+/** A one-shot's waveform: min/max per column, mirrored; `at` is the playhead as a fraction of it. */
+function drawPeaks(g: CanvasRenderingContext2D, peaks: Float32Array, w: number, h: number, c: Colors, at: number | null) {
+  const cols = peaks.length / 2;
+  const mid = h / 2;
+  const top = Math.max(1e-3, ...Array.from(peaks, Math.abs));
+  g.fillStyle = c.accent;
+  g.globalAlpha = 0.85;
+  for (let x = 0; x < w; x++) {
+    const i = Math.min(cols - 1, Math.floor((x / w) * cols));
+    const lo = peaks[i * 2] / top;
+    const hi = peaks[i * 2 + 1] / top;
+    const y0 = mid - hi * (mid - 8);
+    const y1 = mid - lo * (mid - 8);
+    g.fillRect(x, y0, 1, Math.max(1, y1 - y0));
+  }
+  g.globalAlpha = 1;
+  if (at !== null) {
+    g.fillStyle = c.fg;
+    g.fillRect(at * w, 0, 2, h);
   }
 }

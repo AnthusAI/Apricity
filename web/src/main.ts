@@ -61,6 +61,7 @@ const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
 const loaded = new Set<string>();
+let landing: Landing | null = null;
 /** The transport's play button follows the page shown (set up below). */
 let syncTransport = () => {};
 function showTab(name: string) {
@@ -74,6 +75,8 @@ function showTab(name: string) {
     document.dispatchEvent(new CustomEvent("apricity:page-changed")); // breakdowns fall silent
   }
   document.body.dataset.tab = name;
+  // The landing page (its player, its sounds) is made the first time it's shown, not on every page's start.
+  if (name === "home") landing ??= new Landing(document.querySelector("#home")!, { open: (path) => navigate({ page: "scores", score: path, play: true }) });
   const kind = KIND_OF_TAB[name];
   const view = kind ? "score" : name;
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
@@ -199,9 +202,6 @@ document.addEventListener("apricity:open-item", async (e) => {
   await (type === "clip" ? clips : samples).openId(id, "auto");
 });
 
-new Landing(document.querySelector("#home")!, {
-  open: (path) => navigate({ page: "scores", score: path, play: true }),
-});
 // Where to start: the URL, or (at "/" with a remembered tab) that tab.
 const start = parse(location.pathname, location.search, location.hash);
 if (start.page === "home" && location.pathname === "/" && saved && saved !== "home") navigate({ page: pageOfTab(saved) }, true);

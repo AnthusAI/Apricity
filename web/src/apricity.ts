@@ -251,6 +251,8 @@ export const api = {
   },
   setScoreKind: async (path: string, kind: ScoreKind) => (await ready()).setScoreKind(path, kind),
   setScoreTags: async (path: string, tags: string[]) => (await ready()).setScoreTags(path, tags),
+  scoreById: async (id: string) => (await ready()).scoreById(id),
+  sampleById: async (id: string) => (await ready()).sampleById(id),
   /** Saves the clips (as Clip records); markers and tags are not edited here. */
   saveAnnotations: async (path: string, ann: Manifest["annotations"]) => {
     const r = await (await ready()).saveClips(path, ann?.clips ?? []);

@@ -697,6 +697,21 @@ export class Catalog {
     this.scoreList = null;
   }
 
+  /** One score as the lists show it, by id, without listing them all (a card on a page of them); null if it's gone. */
+  async scoreById(id: string): Promise<ScoreItem | null> {
+    const r = await this.models.Score.get({ id });
+    if (r.errors?.length) fail(r.errors);
+    return r.data ? toScoreItem(r.data as ScoreRecord) : null;
+  }
+
+  /** One sample's path and title, by id, without loading the library; null if it's gone. */
+  async sampleById(id: string): Promise<{ path: string; title: string } | null> {
+    const r = await this.models.Sample.get({ id });
+    if (r.errors?.length) fail(r.errors);
+    const smp = r.data as SampleRecord | null;
+    return smp ? { path: samplePath(smp), title: fileTitle(smp.path) } : null;
+  }
+
   /** Set a score's tags (normalized by the caller; see ./tags.ts). Only its owner (or a curator) may. */
   async setScoreTags(path: string, tags: string[]) {
     const found = (await this.listScores()).find((s) => scorePath(s) === path);
