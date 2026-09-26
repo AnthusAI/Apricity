@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+  "title": "DAW integration: warp marker and clip sidecars (.asd, .alc)",
+  "description": "## Intent\n\nAs a producer, I want Apricity's warp maps and saved clips written as DAW sidecar files, so that a sample dragged from the library into the DAW lands already warped, named and keyed; and I want the DAW's hand-corrected warp markers imported back, so that my corrections feed Apricity's analysis instead of fighting it.\n\n## Both directions\n\n- **Out**: for each analyzed sample, write a `.asd` beside it (warp markers from the manifest, tempo, warp mode) and a `.alc` per saved clip (region, warp settings, name carries key and section letter).\n- **In**: `apricity import --markers sample.asd` merges the DAW's markers into the sample manifest as user markers (source: user), which ML markup never overwrites.\n\n## Definition of done\n\n- A sample from the library opens in the DAW on the grid with no re-warping.\n- Importing an edited `.asd` changes the compiled timeline the way the markers say.\n- Stories cover both directions; formats verified against real files in a fixture folder (no audio in git).",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T20:14:35.611246Z",
+  "updated_at": "2026-09-26T20:14:35.611283Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Ideas"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
