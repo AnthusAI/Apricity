@@ -3,17 +3,25 @@
   "title": "Activity backfill script",
   "description": "See epic apricitus-a73b8c and the approved plan.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-a73b8c24-645e-40b1-9be9-810ca775f804",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "d70156f8-1089-4183-8f33-7658343beebd",
+      "author": "home",
+      "text": "Backfill written to production: 75 lines on 73 cards; the feed's newest cards are the two example melodies and the two ratings.",
+      "created_at": "2026-09-26T15:24:00.622876Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T14:37:58.767969Z",
-  "updated_at": "2026-09-26T14:37:58.767990Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T15:24:00.666610Z",
+  "closed_at": "2026-09-26T15:24:00.666579Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}

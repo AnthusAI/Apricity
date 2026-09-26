@@ -3,17 +3,25 @@
   "title": "Example melodies for the Melodies tab",
   "description": "There are no melody scores, so the piano roll can't be seen working. Add examples/saints.apr (the traditional tune, public domain) and examples/minor-line.apr, kind melody, in the library and on the site.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b7d8e65f-7a25-4482-b63b-2f186cb1a27d",
+      "author": "home",
+      "text": "Added to production (saints, minor-line; kind melody, owned by the site owner); the activity Lambda made their cards.",
+      "created_at": "2026-09-26T15:24:00.691800Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T14:16:59.538990Z",
-  "updated_at": "2026-09-26T14:16:59.539015Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T15:24:00.720397Z",
+  "closed_at": "2026-09-26T15:24:00.720368Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
