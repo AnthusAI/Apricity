@@ -244,6 +244,8 @@ const schema = a.schema({
       folder: a.string().required(),
       format: a.enum(["apr", "yaml"]),
       kind: a.ref("ScoreKind"),
+      // Its owner's tags ("techno", "deep-house"; see src/data/tags.ts): each has a leaderboard at /tags/<tag>.
+      tags: a.string().array(),
       text: a.string().required(),
       lastErrors: a.string().array(),
       legacyPath: a.string(),

@@ -8,13 +8,14 @@
 //                                  ?kind=loop&stars=4… narrows and sorts the list (see data/clip-filter.ts)
 //   /samples  /samples/<sample>             a sample, by its path without its extension
 //   /help  /help/<page>#<section>           a Help page ("language" for language.md), and a heading on it
+//   /tags  /tags/<tag>                      every tag, and one tag's leaderboard (?kind=beat&window=month)
 //
 // Pure: parse and href are inverses (tested in test/route.test.ts). main.ts follows them; the views report what
 // they opened so the address bar keeps up.
 
 import type { ScoreKind } from "./data/catalog";
 
-export type Page = "home" | "activity" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help";
+export type Page = "home" | "activity" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
 
 export interface Route {
   page: Page;
@@ -26,13 +27,15 @@ export interface Route {
   sample?: string;
   /** A clip: its sample (as above) and its name. */
   clip?: { sample: string; name: string };
-  /** Clips: how the list is narrowed and sorted, as a query ("kind=loop&stars=4"; see data/clip-filter.ts). */
+  /** A tag's leaderboard ("techno"). */
+  tag?: string;
+  /** Clips and tags: how the list is narrowed and sorted, as a query ("kind=loop&stars=4"; see data/clip-filter.ts). */
   list?: string;
   /** A Help page (its file, "language.md") and a heading on it. */
   help?: { file: string; anchor?: string };
 }
 
-export const PAGES: Page[] = ["home", "activity", "scores", "beats", "chords", "melodies", "clips", "samples", "help"];
+export const PAGES: Page[] = ["home", "activity", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
 export const KIND_OF_PAGE: Partial<Record<Page, ScoreKind>> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
 export const PAGE_OF_KIND: Record<ScoreKind, Page> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
 
@@ -54,7 +57,7 @@ export function parse(pathname: string, search = "", hash = ""): Route {
   } catch {
     return { page }; // a malformed escape: just the page
   }
-  const list = page === "clips" ? search.replace(/^\?/, "") : "";
+  const list = page === "clips" || page === "tags" ? search.replace(/^\?/, "") : "";
   const listed = list ? { list } : {};
   if (!rest.length || !safe(rest)) return { page, ...listed };
   if (KIND_OF_PAGE[page]) {
@@ -65,6 +68,7 @@ export function parse(pathname: string, search = "", hash = ""): Route {
   }
   if (page === "samples") return { page, sample: rest.join("/") };
   if (page === "clips" && rest.length >= 2) return { page, clip: { sample: rest.slice(0, -1).join("/"), name: rest[rest.length - 1] }, ...listed };
+  if (page === "tags" && rest.length === 1) return { page, tag: rest[0], ...listed };
   if (page === "help") {
     const anchor = decodeURIComponent(hash.replace(/^#/, ""));
     return { page, help: { file: `${rest.join("/")}.md`, ...(anchor ? { anchor } : {}) } };
@@ -80,7 +84,8 @@ export function href(r: Route): string {
     return `/${r.page}/${enc(parts)}${r.play ? "?play" : ""}`;
   }
   if (r.page === "samples" && r.sample) return `/samples/${enc(r.sample.split("/"))}`;
-  const list = r.page === "clips" && r.list ? `?${r.list}` : "";
+  const list = (r.page === "clips" || r.page === "tags") && r.list ? `?${r.list}` : "";
+  if (r.page === "tags" && r.tag) return `/tags/${enc([r.tag])}${list}`;
   if (r.page === "clips" && r.clip) return `/clips/${enc([...r.clip.sample.split("/"), r.clip.name])}${list}`;
   if (r.page === "help" && r.help) return `/help/${enc(r.help.file.replace(/\.md$/, "").split("/"))}${r.help.anchor ? `#${encodeURIComponent(r.help.anchor)}` : ""}`;
   return `/${r.page}${list}`;
@@ -91,6 +96,6 @@ export const tabOf = (r: Route) => (r.page === "help" ? "docs" : r.page);
 
 /** The page title for a route and the name of what's open ("Salamander Beat · Beats · Apricity"). */
 export function titleOf(r: Route, name?: string): string {
-  const label: Record<Page, string> = { home: "", activity: "Activity", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help" };
+  const label: Record<Page, string> = { home: "", activity: "Activity", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
   return [name, label[r.page], "Apricity"].filter(Boolean).join(" · ");
 }

@@ -635,3 +635,14 @@ body[data-tab="home"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: au
 .slices tr.talk td { background: color-mix(in srgb, var(--fg) 3%, transparent); padding: 4px 12px 12px 36px; }
 .slices tr.talk .comments { margin: 0; }
 .slices .pill, .slices td.mono { white-space: nowrap; }
+/* Tags: "#techno" chips that link to their leaderboard; the score's author edits them under the bar. */
+.tags { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.tag { font-size: 12px; color: var(--accent); text-decoration: none; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); white-space: nowrap; }
+.tag:hover { text-decoration: underline; }
+.tag-chip { display: inline-flex; align-items: center; border-radius: 999px; background: var(--accent-soft); }
+.tag-chip .tag { background: none; padding-right: 2px; }
+.tag-x { border: 0; background: none; color: var(--muted); padding: 0 7px 0 2px; font-size: 13px; line-height: 1; cursor: pointer; }
+.tag-x:hover { color: var(--bad); }
+.tag-input { width: 9ch; border: 1px dashed var(--line); border-radius: 999px; background: none; padding: 1px 8px; font-size: 12px; }
+.tag-input:focus { width: 16ch; border-style: solid; border-color: var(--accent); outline: none; }
+.editor > .tag-editor { display: flex; padding: 5px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }

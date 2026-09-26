@@ -1,5 +1,5 @@
 {
-  "version": "9bcb4878674102ce",
+  "version": "4915573286f95fce",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -1491,6 +1491,13 @@
           "isRequired": false,
           "isArray": false,
           "kind": "enum"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "String",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "scalar"
         },
         "text": {
           "name": "text",

@@ -198,6 +198,7 @@ type Score @model @auth(rules: [{allow: public, provider: identityPool, operatio
   folder: String! @index(sortKeyFields: ["title"], queryField: "scoresByFolder")
   format: ScoreFormat
   kind: ScoreKind @index(queryField: "scoresByKind")
+  tags: [String]
   text: String!
   lastErrors: [String]
   legacyPath: String

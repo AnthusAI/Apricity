@@ -14,6 +14,8 @@ import { api, compile, me, ratings, type Timeline } from "../apricity";
 import { byline, handles, type Handles } from "../data/handles";
 import { forkFrom, freeTitle, owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
+import { TagEditor } from "./tag-chips";
+import { tagCounts } from "../data/tags";
 import { CommentThread } from "./comments";
 import { columnSplitter } from "./splitter";
 import { scoreCredits } from "./credits";
@@ -63,6 +65,12 @@ export class ScoreView {
   private list: RankedList<ScoreItem>;
   private stars = new StarRating((n) => this.rate(n), signIn);
   private kindSel = el("select", { className: "kind", ariaLabel: "What this score is" });
+  /** Its tags, under the bar: chips linking to each tag's leaderboard; its author adds and removes them. */
+  private tagEditor = new TagEditor(async (tags) => {
+    if (!this.path) return;
+    await api.setScoreTags(this.path, tags);
+    await this.list.refresh();
+  });
   private nameEl = el("span", { className: "name" }, "—");
   private saveBtn = el("button", { className: "btn", type: "button", disabled: true }, "Save");
   private forkBtn = el("button", { className: "btn", type: "button", title: "Make your own copy of this score, linked back to it" }, "Fork");
@@ -143,9 +151,10 @@ export class ScoreView {
       tallies: async () => (await ratings()).tallies("score"),
       row: (x) => ({
         title: x.title,
-        sub: [x.undocumented ? "⚠ plays a sample with no license documented" : "", byline(this.names, x.owner, owns(this.who, x.owner)), x.forks ? `${x.forks} fork${x.forks > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · "),
+        sub: [x.undocumented ? "⚠ plays a sample with no license documented" : "", byline(this.names, x.owner, owns(this.who, x.owner)), x.forks ? `${x.forks} fork${x.forks > 1 ? "s" : ""}` : "", x.tags.map((t) => `#${t}`).join(" ")].filter(Boolean).join(" · "),
       }),
-      text: (x) => `${x.title} ${byline(this.names, x.owner, false)}`,
+      // "#techno" finds its tag; so does "techno".
+      text: (x) => `${x.title} ${byline(this.names, x.owner, false)} ${x.tags.map((t) => `#${t}`).join(" ")}`,
       owner: (x) => x.owner,
       me: async () => this.who,
       open: (x) => this.open(x.path, "user"),
@@ -160,7 +169,7 @@ export class ScoreView {
     });
     root.append(
       this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.forkBtn, this.saveBtn), this.tagEditor.root, this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
       this.sideEl,
       ...this.dockPanels(),
     );
@@ -354,6 +363,8 @@ export class ScoreView {
     this.kindSel.disabled = !mine;
     this.kindSel.title = mine ? "What this score is: it decides the tab it is listed under" : "Only its author can change what it is";
     this.stars.el.hidden = !it;
+    this.tagEditor.show(it?.tags ?? [], mine, tagCounts(this.items).map((t) => t.tag));
+    this.tagEditor.root.hidden ||= !it;
     this.changedDirty();
     if (!it) return;
     const standing = this.list.standingOf(it.id);

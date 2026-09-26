@@ -187,6 +187,7 @@ type Score @aws_iam @aws_cognito_user_pools {
   folder: String!
   format: ScoreFormat
   kind: ScoreKind
+  tags: [String]
   text: String!
   lastErrors: [String]
   legacyPath: String
@@ -1509,6 +1510,7 @@ input ModelScoreFilterInput {
   folder: ModelStringInput
   format: ModelScoreFormatInput
   kind: ModelScoreKindInput
+  tags: ModelStringInput
   text: ModelStringInput
   lastErrors: ModelStringInput
   legacyPath: ModelStringInput
@@ -1527,6 +1529,7 @@ input ModelScoreConditionInput {
   folder: ModelStringInput
   format: ModelScoreFormatInput
   kind: ModelScoreKindInput
+  tags: ModelStringInput
   text: ModelStringInput
   lastErrors: ModelStringInput
   legacyPath: ModelStringInput
@@ -1546,6 +1549,7 @@ input CreateScoreInput {
   folder: String!
   format: ScoreFormat
   kind: ScoreKind
+  tags: [String]
   text: String!
   lastErrors: [String]
   legacyPath: String
@@ -1560,6 +1564,7 @@ input UpdateScoreInput {
   folder: String
   format: ScoreFormat
   kind: ScoreKind
+  tags: [String]
   text: String
   lastErrors: [String]
   legacyPath: String
@@ -1578,6 +1583,7 @@ input ModelSubscriptionScoreFilterInput {
   folder: ModelSubscriptionStringInput
   format: ModelSubscriptionStringInput
   kind: ModelSubscriptionStringInput
+  tags: ModelSubscriptionStringInput
   text: ModelSubscriptionStringInput
   lastErrors: ModelSubscriptionStringInput
   legacyPath: ModelSubscriptionStringInput
