@@ -63,6 +63,7 @@ type Sample @aws_iam @aws_cognito_user_pools {
   collection: String!
   title: String!
   role: SampleRole
+  generator: AWSJSON
   stem: String
   stemModel: String
   parentSampleId: ID
@@ -292,6 +293,7 @@ type Tally @aws_iam @aws_cognito_user_pools {
 type Job @aws_iam @aws_cognito_user_pools {
   id: ID!
   kind: String!
+  input: AWSJSON
   sampleId: ID
   state: JobState
   error: String
@@ -327,6 +329,7 @@ enum SampleRole {
   stem
   excerpt
   upload
+  generated
 }
 
 enum SampleStatus {
@@ -816,6 +819,7 @@ input ModelSampleFilterInput {
   collection: ModelStringInput
   title: ModelStringInput
   role: ModelSampleRoleInput
+  generator: ModelStringInput
   stem: ModelStringInput
   stemModel: ModelStringInput
   parentSampleId: ModelIDInput
@@ -850,6 +854,7 @@ input ModelSampleConditionInput {
   collection: ModelStringInput
   title: ModelStringInput
   role: ModelSampleRoleInput
+  generator: ModelStringInput
   stem: ModelStringInput
   stemModel: ModelStringInput
   parentSampleId: ModelIDInput
@@ -885,6 +890,7 @@ input CreateSampleInput {
   collection: String!
   title: String!
   role: SampleRole
+  generator: AWSJSON
   stem: String
   stemModel: String
   parentSampleId: ID
@@ -917,6 +923,7 @@ input UpdateSampleInput {
   collection: String
   title: String
   role: SampleRole
+  generator: AWSJSON
   stem: String
   stemModel: String
   parentSampleId: ID
@@ -953,6 +960,7 @@ input ModelSubscriptionSampleFilterInput {
   collection: ModelSubscriptionStringInput
   title: ModelSubscriptionStringInput
   role: ModelSubscriptionStringInput
+  generator: ModelSubscriptionStringInput
   stem: ModelSubscriptionStringInput
   stemModel: ModelSubscriptionStringInput
   parentSampleId: ModelSubscriptionIDInput
@@ -2145,6 +2153,7 @@ input ModelJobStateInput {
 input ModelJobFilterInput {
   id: ModelIDInput
   kind: ModelStringInput
+  input: ModelStringInput
   sampleId: ModelIDInput
   state: ModelJobStateInput
   error: ModelStringInput
@@ -2157,6 +2166,7 @@ input ModelJobFilterInput {
 
 input ModelJobConditionInput {
   kind: ModelStringInput
+  input: ModelStringInput
   sampleId: ModelIDInput
   state: ModelJobStateInput
   error: ModelStringInput
@@ -2170,6 +2180,7 @@ input ModelJobConditionInput {
 input CreateJobInput {
   id: ID
   kind: String!
+  input: AWSJSON
   sampleId: ID
   state: JobState
   error: String
@@ -2178,6 +2189,7 @@ input CreateJobInput {
 input UpdateJobInput {
   id: ID!
   kind: String
+  input: AWSJSON
   sampleId: ID
   state: JobState
   error: String
@@ -2190,6 +2202,7 @@ input DeleteJobInput {
 input ModelSubscriptionJobFilterInput {
   id: ModelSubscriptionIDInput
   kind: ModelSubscriptionStringInput
+  input: ModelSubscriptionStringInput
   sampleId: ModelSubscriptionIDInput
   state: ModelSubscriptionStringInput
   error: ModelSubscriptionStringInput
