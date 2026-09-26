@@ -19,9 +19,22 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b65be627-9b79-4862-aa00-19cd40513b00",
+      "author": "home",
+      "text": "Findings from 2026-09-26, while adding features/data/generated.feature:\n1. `test/conformance/world.ts` defines ConformanceWorld but never calls `setWorldConstructor(ConformanceWorld)`, and `cucumber.mjs` `require` doesn't load world.ts. So every scenario's Before hook crashes (`this.remembered` is undefined).\n2. With both fixed locally, against `apricity serve` on a fresh empty library, auth.feature plus crud.feature give **16 of 18 scenarios failing**. Creates return \"Unknown error\" and unauthorized cases don't return errorType Unauthorized. So TARGET=local isn't working yet.\n3. The CLI can't restrict `--paths`, because config paths merge in. A small config that spreads the base and overrides `paths` works.\nThe generated-samples feature relies on the step-vocabulary check until this runner works.",
+      "created_at": "2026-09-26T19:41:46.962911Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
   "created_at": "2026-09-24T04:45:39.330301Z",
-  "updated_at": "2026-09-24T04:45:51.697815Z",
+  "updated_at": "2026-09-26T19:41:46.962941Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
