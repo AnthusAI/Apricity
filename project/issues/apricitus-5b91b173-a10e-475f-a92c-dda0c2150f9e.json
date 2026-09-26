@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-5b91b173-a10e-475f-a92c-dda0c2150f9e",
+  "title": "How it was solved: a tab beside the code, not always shown",
+  "description": "The compiler's explanation (tempo/key/tuning found, warp and transposition per chord, and why) sat in the score's side panel on every page. Move it to a second tab of the code editor (Code | How it was solved), hidden until asked for. Problems and warnings stay in the side panel.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T15:40:39.173965Z",
+  "updated_at": "2026-09-26T15:40:39.174010Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
