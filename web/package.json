@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "node test/wasm.test.mjs",
-    "test:flow": "tsx --test test/flow.test.ts test/account-state.test.ts test/data/auth-signin.test.ts test/data/oauth-return.test.ts test/data/import-library.test.ts test/data/client.test.ts test/data/ratings.test.ts test/rank-window.test.ts test/beat.test.ts test/chords.test.ts amplify/auth/pre-sign-up-decision.test.ts test/catalog.test.ts test/catalog.live.test.ts",
+    "test:flow": "tsx --test test/flow.test.ts test/account-state.test.ts test/data/auth-signin.test.ts test/data/oauth-return.test.ts test/data/import-library.test.ts test/data/client.test.ts test/data/ratings.test.ts test/rank-window.test.ts test/beat.test.ts test/chords.test.ts test/melody.test.ts amplify/auth/pre-sign-up-decision.test.ts test/catalog.test.ts test/catalog.live.test.ts",
     "contract": "tsx scripts/generate-contract.ts",
     "contract:check": "tsx scripts/generate-contract.ts --check"
   },
