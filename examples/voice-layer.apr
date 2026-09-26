@@ -4,7 +4,10 @@
 # line comes back at 1.5× speed, pitched up like a record played fast. The beat and horns sit on
 # a `music` group track that ducks under the voice (sidechain compression, the radio DJ's move); the break
 # gets SP-1200-style grit, the horns a little tape drive.
-# The voice was made with macOS `say` (see design/voice-layer notes in design/mixer.md).
+# The voice was generated with Auritus (kokoro:am_adam, speed 1.1). It says: "Ladies and gentlemen. |
+# The United States Marine Band, | playing a march written more than a century ago. | Chopped. |
+# Looped. | And played again. | Listen closely. | Every sound gets a second life." (one phrase per |;
+# the Thunderer was composed in 1889 and recorded by the band in 2017).
 tempo 88
 key F mixolydian
 samples ../samples
