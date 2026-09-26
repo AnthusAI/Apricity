@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-7173fab3-46df-4ae0-b635-527021309285",
+  "title": "Example melodies for the Melodies tab",
+  "description": "There are no melody scores, so the piano roll can't be seen working. Add examples/saints.apr (the traditional tune, public domain) and examples/minor-line.apr, kind melody, in the library and on the site.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T14:16:59.538990Z",
+  "updated_at": "2026-09-26T14:16:59.539015Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
