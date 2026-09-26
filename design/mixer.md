@@ -44,7 +44,7 @@ ping-pong, filtered feedback), and seamless loop tails. Demo: `examples/chop-sho
 
 **Voice layer built** (2026-09-24, asked for by the user): `warp off` clips, varispeed `speed`,
 cues in seconds, speech phrases, and a piece that grows to hold a long voice. Demo:
-`examples/voice-layer.apr` (the voice is `samples/voice/announcer.wav`, made with macOS `say`).
+`examples/voice-layer.apr` (the voice is `samples/voice/announcer.wav`, generated with Auritus: kokoro:am_adam).
 - An unwarped clip gets an even beat grid at tempo ÷ speed (`Clip::unwarp`), so every existing
   primitive (regions, slices, chops, steps, `at`, hit lengths) works unchanged, and "warping" it
   onto the score's grid is exactly varispeed. The renderer plays it by band-limited resampling

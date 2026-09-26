@@ -16011,153 +16011,18 @@
    ]
   },
   {
-   "id": "c-fbeff15428",
+   "id": "c-8a360bb4ab",
    "clip": "voice/announcer.wav",
-   "start": 0.0,
-   "end": 1.424,
+   "start": 0.237,
+   "end": 1.505,
    "kind": "phrase",
-   "name": "phrase-fbef",
+   "name": "phrase-8a36",
    "recording": "announcer",
    "context": {
-    "seconds": 1.424,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
-    "stem": null
-   },
-   "proposers": [
-    {
-     "by": "analyzer:markup/phrases",
-     "score": 0.6,
-     "why": "a 1.4 s spoken phrase between pauses",
-     "evidence": {
-      "seconds": 1.424
-     },
-     "at": "2026-09-24T03:55:46+00:00"
-    }
-   ]
-  },
-  {
-   "id": "c-048126c016",
-   "clip": "voice/announcer.wav",
-   "start": 2.083,
-   "end": 4.251,
-   "kind": "phrase",
-   "name": "phrase-0481",
-   "recording": "announcer",
-   "context": {
-    "seconds": 2.168,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
-    "stem": null
-   },
-   "proposers": [
-    {
-     "by": "analyzer:markup/phrases",
-     "score": 0.6,
-     "why": "a 2.2 s spoken phrase between pauses",
-     "evidence": {
-      "seconds": 2.168
-     },
-     "at": "2026-09-24T03:55:46+00:00"
-    }
-   ]
-  },
-  {
-   "id": "c-58d5da9e84",
-   "clip": "voice/announcer.wav",
-   "start": 4.8,
-   "end": 7.229,
-   "kind": "phrase",
-   "name": "phrase-58d5",
-   "recording": "announcer",
-   "context": {
-    "seconds": 2.429,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
-    "stem": null
-   },
-   "proposers": [
-    {
-     "by": "analyzer:markup/phrases",
-     "score": 0.6,
-     "why": "a 2.4 s spoken phrase between pauses",
-     "evidence": {
-      "seconds": 2.4290000000000003
-     },
-     "at": "2026-09-24T03:55:46+00:00"
-    }
-   ]
-  },
-  {
-   "id": "c-78f7aff4dd",
-   "clip": "voice/announcer.wav",
-   "start": 8.016,
-   "end": 8.669,
-   "kind": "phrase",
-   "name": "phrase-78f7",
-   "recording": "announcer",
-   "context": {
-    "seconds": 0.653,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
-    "stem": null
-   },
-   "proposers": [
-    {
-     "by": "analyzer:markup/phrases",
-     "score": 0.6,
-     "why": "a 0.7 s spoken phrase between pauses",
-     "evidence": {
-      "seconds": 0.6530000000000005
-     },
-     "at": "2026-09-24T03:55:46+00:00"
-    }
-   ]
-  },
-  {
-   "id": "c-69106b838f",
-   "clip": "voice/announcer.wav",
-   "start": 9.101,
-   "end": 9.679,
-   "kind": "phrase",
-   "name": "phrase-6910",
-   "recording": "announcer",
-   "context": {
-    "seconds": 0.578,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
-    "stem": null
-   },
-   "proposers": [
-    {
-     "by": "analyzer:markup/phrases",
-     "score": 0.6,
-     "why": "a 0.6 s spoken phrase between pauses",
-     "evidence": {
-      "seconds": 0.5779999999999994
-     },
-     "at": "2026-09-24T03:55:46+00:00"
-    }
-   ]
-  },
-  {
-   "id": "c-321a3bd5c1",
-   "clip": "voice/announcer.wav",
-   "start": 10.106,
-   "end": 11.357,
-   "kind": "phrase",
-   "name": "phrase-321a",
-   "recording": "announcer",
-   "context": {
-    "seconds": 1.251,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
+    "seconds": 1.268,
+    "bpm": 93.75,
+    "beats": 2.0,
+    "key": "Gb minor",
     "stem": null
    },
    "proposers": [
@@ -16166,63 +16031,252 @@
      "score": 0.6,
      "why": "a 1.3 s spoken phrase between pauses",
      "evidence": {
-      "seconds": 1.2509999999999994
+      "seconds": 1.2679999999999998
      },
-     "at": "2026-09-24T03:55:46+00:00"
+     "at": "2026-09-26T17:38:29+00:00"
     }
    ]
   },
   {
-   "id": "c-f735588875",
+   "id": "c-f92d800444",
    "clip": "voice/announcer.wav",
-   "start": 12.23,
-   "end": 13.423,
+   "start": 2.693,
+   "end": 4.42,
    "kind": "phrase",
-   "name": "phrase-f735",
+   "name": "phrase-f92d",
    "recording": "announcer",
    "context": {
-    "seconds": 1.193,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
+    "seconds": 1.727,
+    "bpm": 93.75,
+    "beats": 2.7,
+    "key": "Gb minor",
     "stem": null
    },
    "proposers": [
     {
      "by": "analyzer:markup/phrases",
      "score": 0.6,
-     "why": "a 1.2 s spoken phrase between pauses",
+     "why": "a 1.7 s spoken phrase between pauses",
      "evidence": {
-      "seconds": 1.1929999999999996
+      "seconds": 1.7269999999999999
      },
-     "at": "2026-09-24T03:55:46+00:00"
+     "at": "2026-09-26T17:38:29+00:00"
     }
    ]
   },
   {
-   "id": "c-9042429c44",
+   "id": "c-d241026dd2",
    "clip": "voice/announcer.wav",
-   "start": 13.96,
-   "end": 16.349,
+   "start": 5.612,
+   "end": 7.827,
    "kind": "phrase",
-   "name": "phrase-9042",
+   "name": "phrase-d241",
    "recording": "announcer",
    "context": {
-    "seconds": 2.389,
-    "bpm": null,
-    "beats": null,
-    "key": "Ab minor",
+    "seconds": 2.215,
+    "bpm": 93.75,
+    "beats": 3.5,
+    "key": "Gb minor",
     "stem": null
    },
    "proposers": [
     {
      "by": "analyzer:markup/phrases",
      "score": 0.6,
-     "why": "a 2.4 s spoken phrase between pauses",
+     "why": "a 2.2 s spoken phrase between pauses",
      "evidence": {
-      "seconds": 2.3889999999999993
+      "seconds": 2.215
      },
-     "at": "2026-09-24T03:55:46+00:00"
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-3adc2b7dbb",
+   "clip": "voice/announcer.wav",
+   "start": 9.043,
+   "end": 9.627,
+   "kind": "phrase",
+   "name": "phrase-3adc",
+   "recording": "announcer",
+   "context": {
+    "seconds": 0.584,
+    "bpm": 93.75,
+    "beats": 0.9,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/phrases",
+     "score": 0.6,
+     "why": "a 0.6 s spoken phrase between pauses",
+     "evidence": {
+      "seconds": 0.5840000000000014
+     },
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-61fad8a6a1",
+   "clip": "voice/announcer.wav",
+   "start": 10.547,
+   "end": 11.136,
+   "kind": "phrase",
+   "name": "phrase-61fa",
+   "recording": "announcer",
+   "context": {
+    "seconds": 0.589,
+    "bpm": 93.75,
+    "beats": 0.9,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/phrases",
+     "score": 0.6,
+     "why": "a 0.6 s spoken phrase between pauses",
+     "evidence": {
+      "seconds": 0.5889999999999986
+     },
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-929c2682f2",
+   "clip": "voice/announcer.wav",
+   "start": 12.114,
+   "end": 13.069,
+   "kind": "phrase",
+   "name": "phrase-929c",
+   "recording": "announcer",
+   "context": {
+    "seconds": 0.955,
+    "bpm": 93.75,
+    "beats": 1.5,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/phrases",
+     "score": 0.6,
+     "why": "a 1.0 s spoken phrase between pauses",
+     "evidence": {
+      "seconds": 0.9550000000000001
+     },
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-b11c671f56",
+   "clip": "voice/announcer.wav",
+   "start": 14.21,
+   "end": 15.223,
+   "kind": "phrase",
+   "name": "phrase-b11c",
+   "recording": "announcer",
+   "context": {
+    "seconds": 1.013,
+    "bpm": 93.75,
+    "beats": 1.6,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/phrases",
+     "score": 0.6,
+     "why": "a 1.0 s spoken phrase between pauses",
+     "evidence": {
+      "seconds": 1.013
+     },
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-f17c7ec108",
+   "clip": "voice/announcer.wav",
+   "start": 16.363,
+   "end": 18.108,
+   "kind": "phrase",
+   "name": "phrase-f17c",
+   "recording": "announcer",
+   "context": {
+    "seconds": 1.745,
+    "bpm": 93.75,
+    "beats": 2.7,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/phrases",
+     "score": 0.6,
+     "why": "a 1.7 s spoken phrase between pauses",
+     "evidence": {
+      "seconds": 1.745000000000001
+     },
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-678c827a59",
+   "clip": "voice/announcer.wav",
+   "start": 4.0,
+   "end": 4.64,
+   "kind": "hit",
+   "name": "hit-678c",
+   "recording": "announcer",
+   "context": {
+    "seconds": 0.64,
+    "bpm": 93.75,
+    "beats": 1.0,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/hits",
+     "score": 1.0,
+     "why": "a hit standing out 13093124096× over its surroundings",
+     "evidence": {
+      "standout": 13093124096.0
+     },
+     "at": "2026-09-26T17:38:29+00:00"
+    }
+   ]
+  },
+  {
+   "id": "c-f4dc459a8b",
+   "clip": "voice/announcer.wav",
+   "start": 12.151,
+   "end": 12.791,
+   "kind": "hit",
+   "name": "hit-f4dc",
+   "recording": "announcer",
+   "context": {
+    "seconds": 0.64,
+    "bpm": 93.75,
+    "beats": 1.0,
+    "key": "Gb minor",
+    "stem": null
+   },
+   "proposers": [
+    {
+     "by": "analyzer:markup/hits",
+     "score": 1.0,
+     "why": "a hit standing out 22523103232× over its surroundings",
+     "evidence": {
+      "standout": 22523103232.0
+     },
+     "at": "2026-09-26T17:38:29+00:00"
     }
    ]
   }
