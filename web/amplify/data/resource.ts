@@ -280,6 +280,58 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.owner()]),
 
+  // A comment on a sample, clip or score; `parentId` threads replies. Deleting one keeps it (blank, `deleted`) so its
+  // replies keep their place. Anyone reads; the owner writes (the app asks for a handle first); curators moderate.
+  Comment: a
+    .model({
+      id: a.id().required(),
+      targetType: a.ref("RatingTarget").required(),
+      targetId: a.id().required(),
+      parentId: a.id(),
+      body: a.string().required(),
+      deleted: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+    })
+    .secondaryIndexes((i) => [i("targetId").sortKeys(["createdAt"]).queryField("commentsByTarget")])
+    .authorization((allow) => [...everyone(allow), allow.owner(), allow.group("curators")]),
+
+  // The Activity page: one card per item (id `<targetType>#<targetId>`), moved to the top by anything new about it.
+  // Written only by the activity Lambda from the tables' streams (amplify/functions/activity); `feed` is always "all",
+  // so the index lists every card by its latest activity.
+  Activity: a
+    .model({
+      id: a.id().required(),
+      feed: a.string().required(),
+      targetType: a.ref("RatingTarget").required(),
+      targetId: a.id().required(),
+      title: a.string(),
+      kind: a.string(),
+      owner: a.string(),
+      samplePath: a.string(),
+      lastAt: a.datetime().required(),
+      lastWhat: a.string(),
+      lastBy: a.string(),
+      comments: a.integer(),
+      ratings: a.integer(),
+    })
+    .secondaryIndexes((i) => [i("feed").sortKeys(["lastAt"]).queryField("activityByFeed")])
+    .authorization(everyone),
+
+  // One line of a card: made, changed, rated (with the stars), commented. Written only by the activity Lambda.
+  ActivityEvent: a
+    .model({
+      id: a.id().required(),
+      targetKey: a.string().required(),
+      at: a.datetime().required(),
+      what: a.string().required(),
+      by: a.string(),
+      stars: a.integer(),
+      commentId: a.id(),
+    })
+    .secondaryIndexes((i) => [i("targetKey").sortKeys(["at"]).queryField("eventsByTarget")])
+    .authorization(everyone),
+
   // A person's public name. The id is the handle itself (lowercase), so a create for a taken handle fails, even when
   // two people ask at once. The owner is set by AppSync, so the handle → person link can be trusted; changing a handle
   // is create-new-then-delete-old, and the newest one wins if both are briefly there. Curators can remove one.

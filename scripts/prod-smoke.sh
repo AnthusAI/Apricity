@@ -99,6 +99,14 @@ gql 'query { listHandles(limit: 5) { items { id owner } } }'
 field 'isinstance(d["data"]["listHandles"]["items"], list)' | grep -q True; check "a guest reads handles" $?
 gql 'mutation { createHandle(input: {id: "smoke-guest"}) { id } }'
 field '"Unauthorized" in json.dumps(d.get("errors", ""))' | grep -q True; check "a guest cannot take a handle" $?
+gql 'query { activityByFeed(feed: "all", limit: 5, sortDirection: DESC) { items { id lastAt } } }'
+field 'isinstance(d["data"]["activityByFeed"]["items"], list)' | grep -q True; check "a guest reads the Activity page" $?
+gql 'query { listComments(limit: 5) { items { id body } } }'
+field 'isinstance(d["data"]["listComments"]["items"], list)' | grep -q True; check "a guest reads comments" $?
+gql 'mutation { createComment(input: {targetType: score, targetId: "smoke", body: "smoke"}) { id } }'
+field '"Unauthorized" in json.dumps(d.get("errors", ""))' | grep -q True; check "a guest cannot comment" $?
+gql 'mutation { createActivity(input: {feed: "all", targetType: score, targetId: "smoke", lastAt: "2026-01-01T00:00:00Z"}) { id } }'
+field '"Unauthorized" in json.dumps(d.get("errors", ""))' | grep -q True; check "a guest cannot write the Activity page" $?
 
 # --- the bucket as a guest: public data reads, private records do not
 if [ -n "$AUDIO_KEY" ]; then s3get "files/$AUDIO_KEY"; check "guest can read a sample's audio (files/$AUDIO_KEY)" $?; fi

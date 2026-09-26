@@ -2152,6 +2152,443 @@
         "sortKeyFieldNames": []
       }
     },
+    "Comment": {
+      "name": "Comment",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetType": {
+          "name": "targetType",
+          "isArray": false,
+          "type": {
+            "enum": "RatingTarget"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetId": {
+          "name": "targetId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "parentId": {
+          "name": "parentId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "body": {
+          "name": "body",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "deleted": {
+          "name": "deleted",
+          "isArray": false,
+          "type": "Boolean",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": []
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Comments",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "commentsByTargetIdAndCreatedAt",
+            "queryField": "commentsByTarget",
+            "fields": [
+              "targetId",
+              "createdAt"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "allow": "public",
+                "provider": "identityPool",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Activity": {
+      "name": "Activity",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "feed": {
+          "name": "feed",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetType": {
+          "name": "targetType",
+          "isArray": false,
+          "type": {
+            "enum": "RatingTarget"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetId": {
+          "name": "targetId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "kind": {
+          "name": "kind",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "samplePath": {
+          "name": "samplePath",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lastAt": {
+          "name": "lastAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        },
+        "lastWhat": {
+          "name": "lastWhat",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lastBy": {
+          "name": "lastBy",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "comments": {
+          "name": "comments",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "ratings": {
+          "name": "ratings",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Activities",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "activitiesByFeedAndLastAt",
+            "queryField": "activityByFeed",
+            "fields": [
+              "feed",
+              "lastAt"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "allow": "public",
+                "provider": "identityPool",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "ActivityEvent": {
+      "name": "ActivityEvent",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetKey": {
+          "name": "targetKey",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "at": {
+          "name": "at",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        },
+        "what": {
+          "name": "what",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "by": {
+          "name": "by",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "stars": {
+          "name": "stars",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "commentId": {
+          "name": "commentId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "ActivityEvents",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "activityEventsByTargetKeyAndAt",
+            "queryField": "eventsByTarget",
+            "fields": [
+              "targetKey",
+              "at"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "allow": "public",
+                "provider": "identityPool",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
     "Handle": {
       "name": "Handle",
       "fields": {

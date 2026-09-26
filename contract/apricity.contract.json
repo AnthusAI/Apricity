@@ -1,5 +1,5 @@
 {
-  "version": "b1435a16a6d1e0c2",
+  "version": "ef8dd41bb8c12b44",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -1835,6 +1835,376 @@
         "owner"
       ]
     },
+    "Comment": {
+      "name": "Comment",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "RatingTarget",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "parentId": {
+          "name": "parentId",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "body": {
+          "name": "body",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "deleted": {
+          "name": "deleted",
+          "type": "Boolean",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "commentsByTargetIdAndCreatedAt",
+          "queryField": "commentsByTarget",
+          "partitionField": "targetId",
+          "sortFields": [
+            "createdAt"
+          ],
+          "sortArgument": "createdAt"
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "identityClaim": "cognito:username",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "groups": [
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
+    "Activity": {
+      "name": "Activity",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "feed": {
+          "name": "feed",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "RatingTarget",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "kind": {
+          "name": "kind",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "samplePath": {
+          "name": "samplePath",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastAt": {
+          "name": "lastAt",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastWhat": {
+          "name": "lastWhat",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastBy": {
+          "name": "lastBy",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "comments": {
+          "name": "comments",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "ratings": {
+          "name": "ratings",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "activitiesByFeedAndLastAt",
+          "queryField": "activityByFeed",
+          "partitionField": "feed",
+          "sortFields": [
+            "lastAt"
+          ],
+          "sortArgument": "lastAt"
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": []
+    },
+    "ActivityEvent": {
+      "name": "ActivityEvent",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetKey": {
+          "name": "targetKey",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "at": {
+          "name": "at",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "what": {
+          "name": "what",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "by": {
+          "name": "by",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "stars": {
+          "name": "stars",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "commentId": {
+          "name": "commentId",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "activityEventsByTargetKeyAndAt",
+          "queryField": "eventsByTarget",
+          "partitionField": "targetKey",
+          "sortFields": [
+            "at"
+          ],
+          "sortArgument": "at"
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": []
+    },
     "Handle": {
       "name": "Handle",
       "fields": {
@@ -2623,6 +2993,80 @@
         ]
       }
     ],
+    "Comment": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "identityClaim": "cognito:username",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "groups": [
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
+    "Activity": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      }
+    ],
+    "ActivityEvent": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      }
+    ],
     "Handle": [
       {
         "provider": "iam",
@@ -2865,6 +3309,45 @@
       {
         "path": "Rating/*",
         "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Comment/*",
+        "readable": [
+          "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Activity/*",
+        "readable": [
+          "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "ActivityEvent/*",
+        "readable": [
+          "guest",
           "authenticated",
           "members",
           "curators",

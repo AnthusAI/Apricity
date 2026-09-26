@@ -218,6 +218,48 @@ type Rating {
   updatedAt: AWSDateTime!
 }
 
+type Comment @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  targetType: RatingTarget!
+  targetId: ID!
+  parentId: ID
+  body: String!
+  deleted: Boolean
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime!
+}
+
+type Activity @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  feed: String!
+  targetType: RatingTarget!
+  targetId: ID!
+  title: String
+  kind: String
+  owner: String
+  samplePath: String
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
+  comments: Int
+  ratings: Int
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type ActivityEvent @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  targetKey: String!
+  at: AWSDateTime!
+  what: String!
+  by: String
+  stars: Int
+  commentId: ID
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
 type Handle @aws_iam @aws_cognito_user_pools {
   id: ID!
   owner: String
@@ -524,6 +566,15 @@ type Query {
   refsByScore(scoreId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsBySample(sampleId: ID!, scoreId: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
   refsByClip(clipId: ID!, sortDirection: ModelSortDirection, filter: ModelScoreRefFilterInput, limit: Int, nextToken: String): ModelScoreRefConnection @aws_iam @aws_cognito_user_pools
+  getComment(id: ID!): Comment @aws_iam @aws_cognito_user_pools
+  listComments(id: ID, filter: ModelCommentFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCommentConnection @aws_iam @aws_cognito_user_pools
+  commentsByTarget(targetId: ID!, createdAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCommentFilterInput, limit: Int, nextToken: String): ModelCommentConnection @aws_iam @aws_cognito_user_pools
+  getActivity(id: ID!): Activity @aws_iam @aws_cognito_user_pools
+  listActivities(id: ID, filter: ModelActivityFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelActivityConnection @aws_iam @aws_cognito_user_pools
+  activityByFeed(feed: String!, lastAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelActivityFilterInput, limit: Int, nextToken: String): ModelActivityConnection @aws_iam @aws_cognito_user_pools
+  getActivityEvent(id: ID!): ActivityEvent @aws_iam @aws_cognito_user_pools
+  listActivityEvents(id: ID, filter: ModelActivityEventFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelActivityEventConnection @aws_iam @aws_cognito_user_pools
+  eventsByTarget(targetKey: String!, at: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelActivityEventFilterInput, limit: Int, nextToken: String): ModelActivityEventConnection @aws_iam @aws_cognito_user_pools
   getHandle(id: ID!): Handle @aws_iam @aws_cognito_user_pools
   listHandles(id: ID, filter: ModelHandleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelHandleConnection @aws_iam @aws_cognito_user_pools
   handlesByOwner(owner: String!, sortDirection: ModelSortDirection, filter: ModelHandleFilterInput, limit: Int, nextToken: String): ModelHandleConnection @aws_iam @aws_cognito_user_pools
@@ -618,6 +669,15 @@ type Mutation {
   createRating(input: CreateRatingInput!, condition: ModelRatingConditionInput): Rating
   updateRating(input: UpdateRatingInput!, condition: ModelRatingConditionInput): Rating
   deleteRating(input: DeleteRatingInput!, condition: ModelRatingConditionInput): Rating
+  createComment(input: CreateCommentInput!, condition: ModelCommentConditionInput): Comment
+  updateComment(input: UpdateCommentInput!, condition: ModelCommentConditionInput): Comment
+  deleteComment(input: DeleteCommentInput!, condition: ModelCommentConditionInput): Comment
+  createActivity(input: CreateActivityInput!, condition: ModelActivityConditionInput): Activity
+  updateActivity(input: UpdateActivityInput!, condition: ModelActivityConditionInput): Activity
+  deleteActivity(input: DeleteActivityInput!, condition: ModelActivityConditionInput): Activity
+  createActivityEvent(input: CreateActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
+  updateActivityEvent(input: UpdateActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
+  deleteActivityEvent(input: DeleteActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
   createHandle(input: CreateHandleInput!, condition: ModelHandleConditionInput): Handle
   updateHandle(input: UpdateHandleInput!, condition: ModelHandleConditionInput): Handle
   deleteHandle(input: DeleteHandleInput!, condition: ModelHandleConditionInput): Handle
@@ -680,6 +740,15 @@ type Subscription {
   onCreateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["createScoreRef"]) @aws_iam @aws_cognito_user_pools
   onUpdateScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["updateScoreRef"]) @aws_iam @aws_cognito_user_pools
   onDeleteScoreRef(filter: ModelSubscriptionScoreRefFilterInput, owner: String): ScoreRef @aws_subscribe(mutations: ["deleteScoreRef"]) @aws_iam @aws_cognito_user_pools
+  onCreateComment(filter: ModelSubscriptionCommentFilterInput, owner: String): Comment @aws_subscribe(mutations: ["createComment"]) @aws_iam @aws_cognito_user_pools
+  onUpdateComment(filter: ModelSubscriptionCommentFilterInput, owner: String): Comment @aws_subscribe(mutations: ["updateComment"]) @aws_iam @aws_cognito_user_pools
+  onDeleteComment(filter: ModelSubscriptionCommentFilterInput, owner: String): Comment @aws_subscribe(mutations: ["deleteComment"]) @aws_iam @aws_cognito_user_pools
+  onCreateActivity(filter: ModelSubscriptionActivityFilterInput): Activity @aws_subscribe(mutations: ["createActivity"]) @aws_iam @aws_cognito_user_pools
+  onUpdateActivity(filter: ModelSubscriptionActivityFilterInput): Activity @aws_subscribe(mutations: ["updateActivity"]) @aws_iam @aws_cognito_user_pools
+  onDeleteActivity(filter: ModelSubscriptionActivityFilterInput): Activity @aws_subscribe(mutations: ["deleteActivity"]) @aws_iam @aws_cognito_user_pools
+  onCreateActivityEvent(filter: ModelSubscriptionActivityEventFilterInput): ActivityEvent @aws_subscribe(mutations: ["createActivityEvent"]) @aws_iam @aws_cognito_user_pools
+  onUpdateActivityEvent(filter: ModelSubscriptionActivityEventFilterInput): ActivityEvent @aws_subscribe(mutations: ["updateActivityEvent"]) @aws_iam @aws_cognito_user_pools
+  onDeleteActivityEvent(filter: ModelSubscriptionActivityEventFilterInput): ActivityEvent @aws_subscribe(mutations: ["deleteActivityEvent"]) @aws_iam @aws_cognito_user_pools
   onCreateHandle(filter: ModelSubscriptionHandleFilterInput, owner: String): Handle @aws_subscribe(mutations: ["createHandle"]) @aws_iam @aws_cognito_user_pools
   onUpdateHandle(filter: ModelSubscriptionHandleFilterInput, owner: String): Handle @aws_subscribe(mutations: ["updateHandle"]) @aws_iam @aws_cognito_user_pools
   onDeleteHandle(filter: ModelSubscriptionHandleFilterInput, owner: String): Handle @aws_subscribe(mutations: ["deleteHandle"]) @aws_iam @aws_cognito_user_pools
@@ -1631,6 +1700,254 @@ input ModelSubscriptionRatingFilterInput {
   and: [ModelSubscriptionRatingFilterInput]
   or: [ModelSubscriptionRatingFilterInput]
   owner: ModelStringInput
+}
+
+type ModelCommentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Comment]!
+  nextToken: String
+}
+
+input ModelCommentFilterInput {
+  id: ModelIDInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  parentId: ModelIDInput
+  body: ModelStringInput
+  deleted: ModelBooleanInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCommentFilterInput]
+  or: [ModelCommentFilterInput]
+  not: ModelCommentFilterInput
+}
+
+input ModelCommentConditionInput {
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  parentId: ModelIDInput
+  body: ModelStringInput
+  deleted: ModelBooleanInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  and: [ModelCommentConditionInput]
+  or: [ModelCommentConditionInput]
+  not: ModelCommentConditionInput
+  updatedAt: ModelStringInput
+}
+
+input CreateCommentInput {
+  id: ID
+  targetType: RatingTarget!
+  targetId: ID!
+  parentId: ID
+  body: String!
+  deleted: Boolean
+  owner: String
+  createdAt: AWSDateTime
+}
+
+input UpdateCommentInput {
+  id: ID!
+  targetType: RatingTarget
+  targetId: ID
+  parentId: ID
+  body: String
+  deleted: Boolean
+  owner: String
+  createdAt: AWSDateTime
+}
+
+input DeleteCommentInput {
+  id: ID!
+}
+
+input ModelSubscriptionCommentFilterInput {
+  id: ModelSubscriptionIDInput
+  targetType: ModelSubscriptionStringInput
+  targetId: ModelSubscriptionIDInput
+  parentId: ModelSubscriptionIDInput
+  body: ModelSubscriptionStringInput
+  deleted: ModelSubscriptionBooleanInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCommentFilterInput]
+  or: [ModelSubscriptionCommentFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelActivityConnection @aws_iam @aws_cognito_user_pools {
+  items: [Activity]!
+  nextToken: String
+}
+
+input ModelActivityFilterInput {
+  id: ModelIDInput
+  feed: ModelStringInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  title: ModelStringInput
+  kind: ModelStringInput
+  owner: ModelStringInput
+  samplePath: ModelStringInput
+  lastAt: ModelStringInput
+  lastWhat: ModelStringInput
+  lastBy: ModelStringInput
+  comments: ModelIntInput
+  ratings: ModelIntInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelActivityFilterInput]
+  or: [ModelActivityFilterInput]
+  not: ModelActivityFilterInput
+}
+
+input ModelActivityConditionInput {
+  feed: ModelStringInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  title: ModelStringInput
+  kind: ModelStringInput
+  owner: ModelStringInput
+  samplePath: ModelStringInput
+  lastAt: ModelStringInput
+  lastWhat: ModelStringInput
+  lastBy: ModelStringInput
+  comments: ModelIntInput
+  ratings: ModelIntInput
+  and: [ModelActivityConditionInput]
+  or: [ModelActivityConditionInput]
+  not: ModelActivityConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateActivityInput {
+  id: ID
+  feed: String!
+  targetType: RatingTarget!
+  targetId: ID!
+  title: String
+  kind: String
+  owner: String
+  samplePath: String
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
+  comments: Int
+  ratings: Int
+}
+
+input UpdateActivityInput {
+  id: ID!
+  feed: String
+  targetType: RatingTarget
+  targetId: ID
+  title: String
+  kind: String
+  owner: String
+  samplePath: String
+  lastAt: AWSDateTime
+  lastWhat: String
+  lastBy: String
+  comments: Int
+  ratings: Int
+}
+
+input DeleteActivityInput {
+  id: ID!
+}
+
+input ModelSubscriptionActivityFilterInput {
+  id: ModelSubscriptionIDInput
+  feed: ModelSubscriptionStringInput
+  targetType: ModelSubscriptionStringInput
+  targetId: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  kind: ModelSubscriptionStringInput
+  owner: ModelSubscriptionStringInput
+  samplePath: ModelSubscriptionStringInput
+  lastAt: ModelSubscriptionStringInput
+  lastWhat: ModelSubscriptionStringInput
+  lastBy: ModelSubscriptionStringInput
+  comments: ModelSubscriptionIntInput
+  ratings: ModelSubscriptionIntInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionActivityFilterInput]
+  or: [ModelSubscriptionActivityFilterInput]
+}
+
+type ModelActivityEventConnection @aws_iam @aws_cognito_user_pools {
+  items: [ActivityEvent]!
+  nextToken: String
+}
+
+input ModelActivityEventFilterInput {
+  id: ModelIDInput
+  targetKey: ModelStringInput
+  at: ModelStringInput
+  what: ModelStringInput
+  by: ModelStringInput
+  stars: ModelIntInput
+  commentId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelActivityEventFilterInput]
+  or: [ModelActivityEventFilterInput]
+  not: ModelActivityEventFilterInput
+}
+
+input ModelActivityEventConditionInput {
+  targetKey: ModelStringInput
+  at: ModelStringInput
+  what: ModelStringInput
+  by: ModelStringInput
+  stars: ModelIntInput
+  commentId: ModelIDInput
+  and: [ModelActivityEventConditionInput]
+  or: [ModelActivityEventConditionInput]
+  not: ModelActivityEventConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateActivityEventInput {
+  id: ID
+  targetKey: String!
+  at: AWSDateTime!
+  what: String!
+  by: String
+  stars: Int
+  commentId: ID
+}
+
+input UpdateActivityEventInput {
+  id: ID!
+  targetKey: String
+  at: AWSDateTime
+  what: String
+  by: String
+  stars: Int
+  commentId: ID
+}
+
+input DeleteActivityEventInput {
+  id: ID!
+}
+
+input ModelSubscriptionActivityEventFilterInput {
+  id: ModelSubscriptionIDInput
+  targetKey: ModelSubscriptionStringInput
+  at: ModelSubscriptionStringInput
+  what: ModelSubscriptionStringInput
+  by: ModelSubscriptionStringInput
+  stars: ModelSubscriptionIntInput
+  commentId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionActivityEventFilterInput]
+  or: [ModelSubscriptionActivityEventFilterInput]
 }
 
 type ModelHandleConnection @aws_iam @aws_cognito_user_pools {
