@@ -10330,6 +10330,38 @@
      "static": 0.965,
      "level_db": 3.3
     }
+   },
+   {
+    "name": "hold-1",
+    "start": 36.366,
+    "end": 37.453,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Bb0",
+     "0.92s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 22,
+     "velocity": 0.404
+    }
+   },
+   {
+    "name": "hold-2",
+    "start": 41.849,
+    "end": 42.878,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "B1",
+     "0.86s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 35,
+     "velocity": 0.361
+    }
    }
   ]
  }

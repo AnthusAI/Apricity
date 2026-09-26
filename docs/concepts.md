@@ -67,6 +67,7 @@ are ready-made clips to use by name. Everything it marks is saved in the manifes
 | `trio`, `intro` | Sections recognized by role: the march trio (in the subdominant), the opening. |
 | `loop-1`, `loop-2`, … | **Loops**: 4-, 8- or 16-beat spans that repeat cleanly, with a steady beat, one harmony and a good level. Best first. |
 | `shot-1`, `shot-2`, … | **One-shots**: single accents (a band stab, a drum hit), a beat long, with a `transient` marker at each. |
+| `hold-1`, `hold-2`, … | **Held notes**: a sustained note or chord, from its attack to its release, the smooth alternative to a one-shot for pads, bass and melodies; tagged with the pitch a pitched track hears, and `clean` (≤ 2 interfering notes) or `busy` (otherwise). |
 | `phrase-1`, … | **Phrases**: what lies between pauses, made for speech. |
 
 Use a saved clip by naming it right after the sample's path, `clip riff = … loop-1`, or slice a clip

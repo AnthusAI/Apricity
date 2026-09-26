@@ -25589,6 +25589,198 @@
     "evidence": {
      "standout": 12.4
     }
+   },
+   {
+    "name": "hold-1",
+    "start": 26.839,
+    "end": 27.81,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "F2",
+     "0.8s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 41,
+     "velocity": 0.592
+    }
+   },
+   {
+    "name": "hold-2",
+    "start": 38.816,
+    "end": 39.834,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "F2",
+     "0.85s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 41,
+     "velocity": 0.586
+    }
+   },
+   {
+    "name": "hold-3",
+    "start": 66.838,
+    "end": 67.915,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "F3",
+     "0.91s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 53,
+     "velocity": 0.493
+    }
+   },
+   {
+    "name": "hold-4",
+    "start": 86.506,
+    "end": 87.524,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Bb2",
+     "0.85s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 46,
+     "velocity": 0.629
+    }
+   },
+   {
+    "name": "hold-5",
+    "start": 101.552,
+    "end": 102.616,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Gb2",
+     "0.89s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 42,
+     "velocity": 0.71
+    }
+   },
+   {
+    "name": "hold-6",
+    "start": 103.538,
+    "end": 104.649,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Gb2",
+     "0.94s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 42,
+     "velocity": 0.687
+    }
+   },
+   {
+    "name": "hold-7",
+    "start": 109.591,
+    "end": 110.608,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A2",
+     "0.85s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 45,
+     "velocity": 0.609
+    }
+   },
+   {
+    "name": "hold-8",
+    "start": 111.473,
+    "end": 112.63,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A2",
+     "0.99s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 45,
+     "velocity": 0.725
+    }
+   },
+   {
+    "name": "hold-9",
+    "start": 157.408,
+    "end": 158.588,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Gb2",
+     "1.01s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 42,
+     "velocity": 0.639
+    }
+   },
+   {
+    "name": "hold-10",
+    "start": 159.441,
+    "end": 160.656,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "Gb2",
+     "1.04s",
+     "busy"
+    ],
+    "evidence": {
+     "held": 42,
+     "velocity": 0.666
+    }
+   },
+   {
+    "name": "hold-11",
+    "start": 165.529,
+    "end": 166.511,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A2",
+     "0.81s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 45,
+     "velocity": 0.678
+    }
+   },
+   {
+    "name": "hold-12",
+    "start": 167.504,
+    "end": 168.602,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A2",
+     "0.93s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 45,
+     "velocity": 0.722
+    }
    }
   ]
  }
