@@ -3,7 +3,7 @@
   "title": "Inversions: slash chords (IV/3, Bb/D) and a bass string",
   "description": "Chords can't say which chord tone is in the bass. Add slash chords to the chord parser and a bass role the solver puts on the slash note; show them in the harp.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Done on develop; tests green, checked in a local browser where it shows.",
       "created_at": "2026-09-26T10:02:52.185466Z",
       "comment_type": "default"
+    },
+    {
+      "id": "563089ab-291b-4063-8cc9-d2f8701eb223",
+      "author": "home",
+      "text": "Deployed (Amplify job 49, fc49485); prod smoke passed.",
+      "created_at": "2026-09-26T10:12:52.196507Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-25T20:18:07.031427Z",
-  "updated_at": "2026-09-26T10:02:52.185499Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T10:12:52.222394Z",
+  "closed_at": "2026-09-26T10:12:52.222364Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
