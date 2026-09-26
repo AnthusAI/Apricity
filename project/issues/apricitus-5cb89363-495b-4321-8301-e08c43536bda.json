@@ -3,17 +3,25 @@
   "title": "Browser audio: failures hang or become permanent instead of surfacing as errors",
   "description": "In `web/src/audio/`:\n- Render workers get no `onerror` or `onmessageerror` handler (`player.ts:82-90`). A wasm trap in a worker leaves the `waiting` promise and the `source-ready` waits pending forever.\n- In the worklet, `instantiate(...).then(...)` has no catch (`engine-worklet.ts:31`), so `engineReady` never resolves on failure.\n- `loadSources` stores each decode promise in `this.decoding` and never removes it on failure, so a failed decode can never be retried without a reload. Compare `peaks.ts:50` and `apricity.ts:126`, which delete the cache entry on rejection.\n- `init()` caches `this.ready` (`player.ts:60`) even when it rejects, so a failed `addModule` or wasm fetch is permanent.\n\nDone when: every worker and worklet failure rejects the waiting promise with a message, failed decode and init promises are evicted from their caches, and the play button shows the error. A test drives a worker error and asserts the player reports it and can recover.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-0aa1f157-3a16-4e12-b2d5-e0238cef669f",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "3a167a85-b381-49af-a241-a5e303832870",
+      "author": "home",
+      "text": "Deployed (Amplify job 58, 7958c12); prod smoke passed.",
+      "created_at": "2026-09-26T17:51:02.713970Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T05:32:12.961115Z",
-  "updated_at": "2026-09-26T17:28:24.931775Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T17:51:02.795225Z",
+  "closed_at": "2026-09-26T17:51:02.795183Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude",
