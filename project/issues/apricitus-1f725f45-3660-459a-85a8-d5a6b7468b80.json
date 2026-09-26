@@ -3,7 +3,7 @@
   "title": "Write design/daw-sidecars.md §Formats and the go/no-go on writing .asd",
   "description": "## Intent\nTurn the spike's findings into the design note every later milestone cites, and put the go/no-go to the owner.\n\n## Scope\n- New `design/daw-sidecars.md`, section **§Formats**: `.asd` table (fields, encoding, versions), `.alc` minimal document, how each ties to its audio, beat numbering (negative beats, before-first/after-last behaviour), detune range, warp-mode table.\n- Section **§Decision**: go / no-go on writing `.asd`, and what M2 writes in each case.\n- Section **§Open**: anything unknown, with the evidence.\n- A Mermaid diagram of the round trip (Apricity manifest → sidecar → the DAW → edited sidecar → import).\n\n## Out of scope\nThe Apricity mapping and naming rules (M1 adds §Mapping, M3 §Naming).\n\n## Verify\na case-insensitive grep of `design/daw-sidecars.md` for the DAW's brand and product names finds nothing; the owner's sign-off comment is on the M0 epic.\n\nCommit: `chore(<this id>): design note for DAW sidecar formats`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -21,10 +21,33 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "f0995afc-02c9-4326-8938-3ae5eeeb51ca",
+      "author": "home",
+      "text": "Done (draft for sign-off): design/daw-sidecars.md. It has: Evidence (per file: URL, commit, version, licence); §Formats with the .asd byte table (offsets in the 12.x fixture), the .alc element table and two Mermaid document trees; questions 1-5 answered, or marked unknown or provisional, with the evidence for each; an Apricity-to-format mapping table using the crate names; §Decision, a no-go on writing .asd (M2 writes an .alc beside the sample; M1 builds an .asd reader only), with a Mermaid diagram of the round trip; the initiative's decisions applied; the fixture recipe; owner test steps; §Open; Shared findings; and a re-check list. Verification: grep -n -i ableton design/daw-sidecars.md and grep -n -w -i live design/daw-sidecars.md both print nothing. Not done: the owner's sign-off comment on the epic.",
+      "created_at": "2026-09-26T23:29:46.719898Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "a497f028-4b33-47f2-ba5b-bcff3fb37fe9",
+      "author": "home",
+      "text": "Note landed in 0e258d0; no-go accepted on the epic.",
+      "created_at": "2026-09-26T23:33:32.715676Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-26T21:59:44.163447Z",
-  "updated_at": "2026-09-26T23:00:13.857995Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T23:33:32.787345Z",
+  "closed_at": "2026-09-26T23:33:32.787311Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

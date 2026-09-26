@@ -3,7 +3,7 @@
   "title": "Record the mapping decisions and the owner's open questions",
   "description": "## Intent\n\nSettle the mapping decisions the specs will encode, and list what the owner must decide.\n\n## Decisions to record in `design/daw-set.md`\n\n- Warp mode per Apricity mode (`complex`, `beats`, `texture`, `repitch`), given that the DAW's algorithms are not Rubber Band: which mode sounds closest.\n- Notes that overlap on one track (pitched chords, `at` notes, humanize): split into as few extra tracks as needed inside a group track named after the track (the proposal), or something else.\n- Reverse: the DAW's own reverse flag (if the set can express it without a pre-rendered file) or Apricity writes a reversed copy of the region into the project.\n- Tuning correction plus transposition: how semitones and cents combine within the DAW's detune range.\n- Where level beyond the DAW's clip gain or fader range goes (a Utility device).\n- Loudness target: measure make-up gain with the engine at export time, or leave it to the user.\n- Locators: one per chord change (proposal) or one per bar.\n- Effects with no stock match (e.g. `lofi wow`, reverb types) and how they're reported.\n- Target DAW version(s).\n\n## Verification\n\nEach item above has a dated \"Decisions\" or \"Open questions\" entry in `design/daw-set.md`; open questions are copied as a comment on the initiative apricitus-6edba8.\n\n## Release\n\nRides on the design-note commit (`docs(...)`).",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -32,11 +32,18 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "b2b348c3-81b9-4ec8-a016-f9b54f4fbe1a",
+      "author": "home",
+      "text": "Decisions and owner questions recorded in design/daw-set.md and on the initiative; landed in 71d06e0.",
+      "created_at": "2026-09-26T23:33:32.564839Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-26T22:06:25.120467Z",
-  "updated_at": "2026-09-26T23:22:01.286499Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T23:33:32.624709Z",
+  "closed_at": "2026-09-26T23:33:32.624674Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

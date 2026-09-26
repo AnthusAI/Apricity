@@ -17,9 +17,25 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2a63707e-b539-455d-a3ac-247b8341c974",
+      "author": "home",
+      "text": "Machine half done; the rest waits on the licensed install. Audio: scripts/daw-fixture-audio.py (chore apricitus-2831a6). Candidate .alc files to drag in: crates/apricity-daw/tests/fixtures/reference/sidecars/candidates/ (their absolute paths point at /Users/Shared/apricity-daw-fixtures/, so generate the WAVs there with --out /Users/Shared/apricity-daw-fixtures). The click-by-click owner steps and the list of library files to copy are in design/daw-sidecars.md, sections 'Owner test' and 'Re-check when the licensed install arrives'. Remaining: the owner saves steady-120.wav.asd (Save in the clip view), steady-120-edited.wav.asd, steady-120.alc, tempo-change .asd/.alc, detuned.alc (Beats, detune -30, loop 2 bars), free-time .asd/.alc (warp off), and records the DAW version and the markers the DAW shows. Leaving this in_progress.",
+      "created_at": "2026-09-26T23:29:46.588999Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
   "created_at": "2026-09-26T21:59:43.889122Z",
-  "updated_at": "2026-09-26T23:00:13.798867Z",
+  "updated_at": "2026-09-26T23:29:46.589030Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

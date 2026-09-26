@@ -3,7 +3,7 @@
   "title": "Write design/daw-presets.md: the kit to drum rack mapping and a minimal preset skeleton",
   "description": "## Intent\n\nLeave the spike's answer where the implementers will read it: `design/daw-presets.md`.\n\n## Contents\n\n- The mapping, kit -> drum rack:\n\n| Apricity | In the preset |\n|---|---|\n| kit | drum rack preset (`<kit>.adg`) |\n| slice n of a sliced kit | pad n, note 35 + n (pad 1 = C1) |\n| named pad (`kick`, `snare`, `hat.closed` ...) | the usual drum note for that word; other names fill free pads |\n| piece region (source seconds) | sampler sample start / end |\n| level group gain (`apricity explain`) | sampler volume |\n| A440 correction (`tuning_cents`) | sampler detune |\n| the slice's root | sampler root key |\n| warp markers of the sample (`rhythm.warp_markers`) | sampler warp markers, warp on |\n| sample with no beat grid | warp off |\n\n- An annotated minimal XML skeleton (element names, no vendor prose), and a Mermaid tree of it.\n- The velocity comparison and the chosen sampler setting.\n- The clip folder layout for M3 (a folder per sample, a folder per kind); file names are the sidecar initiative's rule (apricitus-f5b805), linked, not repeated.\n- A short \"what a preset cannot hold\" list (chord-following transposition, reverse, filter, track effects) with where each goes instead (the set export, apricitus-6edba8).\n- Keep `design/vocabulary.md` in step: add rows for drum rack preset and clip file.\n\n## Verification\n\n`grep -c \"|\" design/daw-presets.md` shows the mapping table; the note links the reference fixtures by path; a reviewer checks each row against a reference file. a case-insensitive grep of design/ and docs/ for the vendor's name prints nothing.\n\n## Release\n\n`docs(<this task id>): design note for kit presets and the clip folder`. Not breaking.\n\n## Dependencies\n\nBlocked by the annotation task in this epic.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -47,11 +47,18 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "7e241181-47fd-4a30-b4c6-a28787be77c7",
+      "author": "home",
+      "text": "Note landed in 1243880.",
+      "created_at": "2026-09-26T23:33:33.000778Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-26T21:59:39.099841Z",
-  "updated_at": "2026-09-26T23:19:04.219941Z",
-  "closed_at": null,
+  "updated_at": "2026-09-26T23:33:33.063665Z",
+  "closed_at": "2026-09-26T23:33:33.063634Z",
   "agent": {
     "platform": "claude_code",
     "model": "Claude Opus 5.5",

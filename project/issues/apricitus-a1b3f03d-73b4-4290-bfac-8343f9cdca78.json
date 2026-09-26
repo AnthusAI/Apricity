@@ -17,9 +17,25 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8e41bd6d-639b-42ad-afbd-0c1f405d196b",
+      "author": "home",
+      "text": "## Findings (provisional: public files, no local DAW)\n\n**Evidence.** 301 public .als/.alc (8.x to 12.4.5b10; 8,488 audio clips with warp markers) scanned in the scratchpad; the AudioClip element of an MIT 12.3.2 set (live-daw-tools/als-parser@94fe482, Michelle-12.3.als) is the reference layout; 12.2.6 .alc pair from elixirbeats/abletoolz@9b23618 (GPL, cited only): one saved by the DAW, one hand-edited (markers, CurrentStart/End, Loop only) that the tool's author reports the DAW accepted on drag-in.\n\n- An .alc is a whole set document (root element with MajorVersion 5 / MinorVersion 12.0_122xx / SchemaChangeCount / Creator / Revision) holding one AudioTrack; the clip sits at LiveSet/Tracks/AudioTrack/DeviceChain/MainSequencer/ClipSlotList/ClipSlot/ClipSlot/Value/AudioClip. Content cannot tell .als from .alc; only the extension.\n- WarpMarker has Id/SecTime/BeatTime attributes (Id from 10.x on). 8,486 of 8,488 clips end with a hidden marker exactly 1/32 beat after the last one (vendor API docs: the last marker is not visible); the two exceptions include the hand-edited 12.2.6 file the DAW accepted.\n- Negative BeatTime: 43 clips in two 9.0.1 sets pin beat -124 before beat 0; the accepted 12.2.6 hand edit uses CurrentStart/LoopStart -191.72 beats (audio before the first marker, extrapolated at the first segment's tempo). So pickups are representable; untested in 12.3.\n- FileRef (12.x): RelativePathType, RelativePath (string), Path (absolute), Type, OriginalFileSize, OriginalCrc (16-bit, algorithm unknown), then LastModDate, DefaultDuration (frames), DefaultSampleRate. 9.x/10.x used RelativePathElement lists, a UTF-16 hex Data blob, SearchHint FileSize/Crc/MaxCrcSize 16384.\n- WarpMode enum (vendor API docs): 0 Beats, 1 Tones, 2 Texture, 3 Re-Pitch, 4 Complex, 5 REX, 6 Complex Pro. PitchCoarse -48..48 semitones, PitchFine -50..49 cents (float; -22.58 seen).\n\n**Machine half done.** 9 hand-written candidate .alc files in crates/apricity-daw/tests/fixtures/reference/sidecars/candidates/ (throwaway generator: scratchpad work/make_alc.py), one per step-3 variation: full clip, bare clip (only mapped elements), zero size/CRC, relative path only, partial markers, no hidden tail marker, tempo change at 6.5, detune -70 as coarse -1 + fine +30, unwarped. Click-by-click test steps are in design/daw-sidecars.md. The drag-in results wait on the licensed install.",
+      "created_at": "2026-09-26T23:25:25.787415Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
   "created_at": "2026-09-26T21:59:44.073216Z",
-  "updated_at": "2026-09-26T23:00:13.739758Z",
+  "updated_at": "2026-09-26T23:25:25.787449Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
