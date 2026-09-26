@@ -3949,25 +3949,6 @@
     ]
   },
   {
-    "id": "ccmixter-27808",
-    "title": "Dear Mr Williams (ccMixter)",
-    "credit": "loveshadow, “Dear Mr Williams”, ccMixter.",
-    "rights": "CC BY 3.0, loveshadow; credit required. http://creativecommons.org/licenses/by/3.0/",
-    "license": "cc-by-3.0",
-    "author": "loveshadow",
-    "source_page": "https://ccmixter.org/files/Loveshadow/27808",
-    "files": [
-      {
-        "path": "ccmixter/Loveshadow/Dear-Mr-Williams_27808.mp3",
-        "url": "https://ccmixter.org/content/Loveshadow/Loveshadow_-_Dear_Mr_Williams.mp3",
-        "fetch": "manual",
-        "title": "Dear Mr Williams",
-        "size": 4658913,
-        "sha256": "d666cd8b7672e3318f909e801fb64a2c43b1a0fe828907fa02c1df29915794cc"
-      }
-    ]
-  },
-  {
     "id": "ccmixter-27821",
     "title": "We Hold These Truths (ccMixter)",
     "credit": "essesq, “We Hold These Truths”, ccMixter.",
@@ -4078,25 +4059,6 @@
         "title": "The Remixin' Blues",
         "size": 3081240,
         "sha256": "a6213fa8945d1bbbd9f4a397d0cea830879c763bfe8ac92b2e3df50f8e622c41"
-      }
-    ]
-  },
-  {
-    "id": "ccmixter-27918",
-    "title": "Why? (ccMixter)",
-    "credit": "Admiral Bob, “Why?”, ccMixter.",
-    "rights": "CC BY 3.0, Admiral Bob; credit required. http://creativecommons.org/licenses/by/3.0/",
-    "license": "cc-by-3.0",
-    "author": "Admiral Bob",
-    "source_page": "https://ccmixter.org/files/admiralbob77/27918",
-    "files": [
-      {
-        "path": "ccmixter/admiralbob77/Why_27918.mp3",
-        "url": "https://ccmixter.org/content/admiralbob77/admiralbob77_-_Why_.mp3",
-        "fetch": "manual",
-        "title": "Why?",
-        "size": 2245930,
-        "sha256": "cf1ad067aa11cddefbecbd80d46942798af71bc935ccce9e719d83d0d8fc58b0"
       }
     ]
   },

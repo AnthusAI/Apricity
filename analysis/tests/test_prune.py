@@ -194,3 +194,29 @@ def test_curation_candidates_of_a_pruned_file_are_dropped_too(tmp_path):
     (repo / "library/candidates.json").write_text(json.dumps({"candidates": [{"clip": "a/b_1.mp3"}, {"clip": "a/c_2.mp3"}, {"clip": "a/b_1.mp3"}]}))
     prune.apply(plan(db, repo, lib), Fake(), repo)
     assert json.loads((repo / "library/candidates.json").read_text())["candidates"] == [{"clip": "a/c_2.mp3"}]
+
+
+def test_a_kept_sample_is_left_alone_by_id_or_path(tmp_path):
+    a, b = sample("smp_a", "x/a_1.mp3", rec="rec_1"), sample("smp_b", "x/b_2.mp3", rec="rec_2")
+    db, repo, lib = world(tmp_path, [a, b], [rating("smp_a", 1), rating("smp_b", 1)])
+    assert [i.id for i in prune.build_plan(db, {CUR}, repo, lib, keep={"smp_a"})] == ["smp_b"]
+    assert [i.id for i in prune.build_plan(db, {CUR}, repo, lib, keep={"x/b_2.mp3"})] == ["smp_a"]
+
+
+def test_the_rows_are_backed_up_before_anything_is_deleted(tmp_path):
+    db, repo, lib = world(tmp_path, [sample("smp_1", "a/b_1.mp3")], [rating("smp_1", 1)])
+    p = plan(db, repo, lib)
+    out = prune.backup(p, tmp_path / "bk/x.json")
+    saved = json.loads(out.read_text())
+    assert {r["model"] for r in saved} >= {"Sample", "Rating"} and (repo / "samples/a/b_1.mp3").exists()
+
+
+def test_local_ratings_of_a_pruned_target_go_from_the_library_folder(tmp_path):
+    db, repo, lib = world(tmp_path, [sample("smp_1", "a/b_1.mp3")], [rating("smp_1", 1)],
+                          Clip=[{"id": "clp_1", "sampleId": "smp_1", "name": "c1"}])
+    (lib / "Rating").mkdir()
+    mine, other = lib / "Rating/clip#clp_1#local.json", lib / "Rating/clip#clp_9#local.json"
+    mine.write_text("x")
+    other.write_text("x")
+    prune.apply(plan(db, repo, lib), Fake(), repo)
+    assert not mine.exists() and other.exists()

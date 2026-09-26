@@ -100,13 +100,15 @@ def _denoise_survivors(audio: pathlib.Path, pruned_paths: set[pathlib.Path]) -> 
     return out
 
 
-def build_plan(db: dict[str, list[dict]], trusted: set[str], repo: pathlib.Path, library: pathlib.Path | None) -> list[Item]:
+def build_plan(db: dict[str, list[dict]], trusted: set[str], repo: pathlib.Path, library: pathlib.Path | None,
+               keep: set[str] = frozenset()) -> list[Item]:  # keep: sample ids or paths to leave alone
     samples = {s["id"]: s for s in db["Sample"]}
     clips = {c["id"]: c for c in db["Clip"]}
     by = lambda model, field_: _index(db[model], field_)  # noqa: E731
     refs_by_sample, refs_by_clip = by("ScoreRef", "sampleId"), by("ScoreRef", "clipId")
     children = by("Sample", "parentSampleId")
-    targets = one_star_targets(db["Rating"], trusted)
+    kept_ids = set(keep) | {s["id"] for s in db["Sample"] if s["path"] in keep}
+    targets = [t for t in one_star_targets(db["Rating"], trusted) if t[1] not in kept_ids]
     plan: list[Item] = []
     pruned_sample_ids: set[str] = set()
 
@@ -183,7 +185,7 @@ def _target_rows(db, target_ids: set[str]) -> list[tuple[str, dict]]:
 
 def _fill_clip(item: Item, db, c: dict, samples: dict, repo, library) -> None:
     item.rows += [("Clip", c)] + _target_rows(db, {c["id"]}) + [("CrateItem", r) for r in db["CrateItem"] if r.get("clipId") == c["id"]]
-    _finish(item, library)
+    _finish(item, library, {c["id"]})
     s = samples.get(c["sampleId"])
     if s:
         m = _manifest(repo / "samples" / s["path"])
@@ -227,10 +229,10 @@ def _fill_sample(item: Item, db, group: list[str], group_clips: list[dict], samp
                 item.catalog_paths.append(s["path"])
                 item.tombstones.append({"path": s["path"], "sha256": s.get("audio", {}).get("sha256"), "title": s.get("title"),
                                         "reason": "rated one star by the curators", "at": datetime.date.today().isoformat()})
-    _finish(item, library)
+    _finish(item, library, gset | {c["id"] for c in group_clips})
 
 
-def _finish(item: Item, library: pathlib.Path | None) -> None:
+def _finish(item: Item, library: pathlib.Path | None, targets: set[str]) -> None:
     for model, row in item.rows:
         if model in SYNCED:
             item.objects.append(object_key(model, row))
@@ -238,6 +240,8 @@ def _finish(item: Item, library: pathlib.Path | None) -> None:
                 item.files.append(library / object_key(model, row))
     if library:
         item.files += [library / o for o in item.objects if o.startswith("files/")]
+        # ratings made while running locally live in the library folder as Rating/<type>#<target>#<who>.json
+        item.files += [f for t in sorted(targets) for f in (library / "Rating").glob(f"*#{t}#*.json")]
     item.objects = sorted(dict.fromkeys(item.objects))
     item.files = list(dict.fromkeys(item.files))
 
@@ -261,6 +265,14 @@ def describe(plan: list[Item]) -> str:
     n = sum(1 for it in plan if not it.blocked)
     lines.append(f"\n{n} to prune, {len(plan) - n} kept because something still uses them. Run again with --apply to do it.")
     return "\n".join(lines)
+
+
+def backup(plan: list[Item], where: pathlib.Path) -> pathlib.Path:
+    """Every backend row that apply() will delete, as JSON, so nothing is unrecoverable."""
+    where.parent.mkdir(parents=True, exist_ok=True)
+    rows = [{"model": m, "row": r} for it in plan if not it.blocked for m, r in it.rows]
+    where.write_text(json.dumps(rows, indent=1, default=str) + "\n")
+    return where
 
 
 def apply(plan: list[Item], backend, repo: pathlib.Path) -> None:
@@ -354,6 +366,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--library", type=pathlib.Path, default=pathlib.Path.home() / "Apricity-Library")
     ap.add_argument("--region", default="us-east-1")
     ap.add_argument("--curators-only", dest="owners", action="store_const", const=None, help=argparse.SUPPRESS)
+    ap.add_argument("--keep", action="append", default=[], metavar="ID_OR_PATH",
+                    help="leave this sample alone even though it is one star (repeatable); re-rate it to stop being asked")
     ap.add_argument("--owner", action="append", help="count this Cognito sub instead of the curators group (repeatable)")
     a = ap.parse_args(argv)
     from .prune_aws import AwsBackend
@@ -364,9 +378,11 @@ def main(argv: list[str] | None = None) -> int:
         print("no curators found: nothing to trust", file=sys.stderr)
         return 1
     db = {m: backend.scan(m) for m in MODELS}
-    plan = build_plan(db, trusted, a.repo.resolve(), a.library if a.library.exists() else None)
+    plan = build_plan(db, trusted, a.repo.resolve(), a.library if a.library.exists() else None, set(a.keep))
     print(describe(plan))
     if a.apply and plan:
+        saved = backup(plan, a.repo.resolve() / "renders/prune-backups" / (datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".json"))
+        print(f"backed up the backend rows to {saved}")
         apply(plan, backend, a.repo.resolve())
         print("done.")
     return 0
