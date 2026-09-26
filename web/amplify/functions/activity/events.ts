@@ -8,7 +8,7 @@
 import { ratingOf } from "../tally/deltas";
 
 export type TargetType = "sample" | "clip" | "score";
-export type What = "made" | "changed" | "rated" | "commented";
+export type What = "made" | "changed" | "rated" | "commented" | "forked" | "copied";
 
 /** What the item's own record says about it (to fill in its card). */
 export interface CardInfo {
@@ -25,10 +25,10 @@ export interface Change {
   targetId: string;
   /** The line: `put` writes it (only if new, unless `overwrite`); `remove` deletes it (only if there). A line already
    *  written, or already gone, means this change was applied before: the counts are left alone. */
-  line: { id: string; op: "put" | "remove"; overwrite?: boolean; what?: What; at: string; by?: string; stars?: number; commentId?: string };
+  line: { id: string; op: "put" | "remove"; overwrite?: boolean; what?: What; at: string; by?: string; stars?: number; commentId?: string; otherId?: string; otherTitle?: string };
   /** Move the card to the top (not for a take-back: an unrated or deleted comment doesn't bump). */
   bump: boolean;
-  counts?: { comments?: number; ratings?: number };
+  counts?: { comments?: number; ratings?: number; forks?: number };
   card?: CardInfo;
 }
 
@@ -55,7 +55,12 @@ export function changesOf(model: string, event: "INSERT" | "MODIFY" | "REMOVE", 
     case "Score": {
       const key = cardKey("score", id);
       const card: CardInfo = { title: str(after, "title"), kind: str(after, "kind") ?? "song", owner: str(after, "owner") };
-      if (event === "INSERT") return [{ key, targetType: "score", targetId: id, bump: true, card, line: { id: `made#${key}`, op: "put", what: "made", at: at("createdAt"), by: card.owner } }];
+      if (event === "INSERT") {
+        const parent = str(after, "forkOf");
+        if (!parent) return [{ key, targetType: "score", targetId: id, bump: true, card, line: { id: `made#${key}`, op: "put", what: "made", at: at("createdAt"), by: card.owner } }];
+        // A fork is news twice: a new score, and something that happened to the one it came from.
+        return forked("score", key, id, parent, card, at("createdAt"));
+      }
       // Only a new text is news: a kind change or an import re-run (the same text) says nothing.
       if (event === "MODIFY" && str(before, "text") !== str(after, "text")) {
         const by = card.owner;
@@ -75,6 +80,8 @@ export function changesOf(model: string, event: "INSERT" | "MODIFY" | "REMOVE", 
       if (event !== "INSERT" || str(after, "source") === "ml") return [];
       const key = cardKey("clip", id);
       const card: CardInfo = { title: str(after, "name"), kind: "clip", owner: str(after, "owner"), sampleId: str(after, "sampleId") };
+      const parent = str(after, "copyOf");
+      if (parent) return forked("clip", key, id, parent, card, at("createdAt"));
       return [{ key, targetType: "clip", targetId: id, bump: true, card, line: { id: `made#${key}`, op: "put", what: "made", at: at("createdAt"), by: card.owner } }];
     }
     case "Rating": {
@@ -107,3 +114,23 @@ export function changesOf(model: string, event: "INSERT" | "MODIFY" | "REMOVE", 
 }
 
 const isTarget = (t: string): t is TargetType => t === "sample" || t === "clip" || t === "score";
+
+/**
+ * A fork of a score (or someone's copy of a clip): a line on its own card ("@bo forked beat-1") and one on the
+ * original's ("@bo forked it as beat-1b"), which moves the original up and counts it.
+ */
+function forked(type: "score" | "clip", key: string, id: string, parent: string, card: CardInfo, at: string): Change[] {
+  const what: What = type === "score" ? "forked" : "copied";
+  const parentKey = cardKey(type, parent);
+  return [
+    { key, targetType: type, targetId: id, bump: true, card, line: { id: `${what}#${key}`, op: "put", what, at, by: card.owner, otherId: parent } },
+    {
+      key: parentKey,
+      targetType: type,
+      targetId: parent,
+      bump: true,
+      counts: { forks: 1 },
+      line: { id: `${type === "score" ? "fork" : "copy"}#${parentKey}#${id}`, op: "put", what, at, by: card.owner, otherId: id, ...(card.title ? { otherTitle: card.title } : {}) },
+    },
+  ];
+}

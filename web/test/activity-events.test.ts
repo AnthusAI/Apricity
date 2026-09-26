@@ -56,3 +56,14 @@ test("comments count and bump; deleting one removes its line and uncounts", () =
   assert.equal(changesOf("Comment", "REMOVE", c({ deleted: true }), null, NOW).length, 0, "already counted out");
   assert.equal(changesOf("Comment", "REMOVE", c(), null, NOW)[0].counts!.comments, -1);
 });
+
+test("a fork is news twice: on its own card and on the original's, which it moves up and counts", () => {
+  const fork = img({ id: "scr_2", title: "funk-2", kind: "beat", owner: "u2", text: "tempo 96", forkOf: "scr_1", forkRoot: "scr_1", createdAt: "2026-09-26T16:00:00Z" });
+  const [own, parent] = changesOf("Score", "INSERT", null, fork, NOW);
+  assert.deepEqual([own.key, own.line.id, own.line.what, own.line.otherId, own.bump], ["score#scr_2", "forked#score#scr_2", "forked", "scr_1", true]);
+  assert.deepEqual([parent.key, parent.line.id, parent.line.otherId, parent.line.otherTitle, parent.bump, parent.counts], ["score#scr_1", "fork#score#scr_1#scr_2", "scr_2", "funk-2", true, { forks: 1 }]);
+  assert.equal(parent.card, undefined, "the original's card keeps its own facts");
+  const copy = img({ id: "clp_2", name: "loop-1-bo", source: "user", sampleId: "smp_1", owner: "u2", copyOf: "clp_1" });
+  const [c1, c2] = changesOf("Clip", "INSERT", null, copy, NOW);
+  assert.deepEqual([c1.line.id, c1.line.what, c2.key, c2.line.id], ["copied#clip#clp_2", "copied", "clip#clp_1", "copy#clip#clp_1#clp_2"]);
+});

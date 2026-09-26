@@ -126,7 +126,7 @@ export class ActivityView {
       el("div", { className: "act-top" }, el("span", { className: `act-kind k-${c.kind ?? c.targetType}` }, kindName(c)), open, by, el("span", { style: "flex:1" }), stars),
       lines,
       preview,
-      el("div", { className: "act-foot" }, talk, el("span", { className: "act-when", title: c.lastAt }, timeAgo(c.lastAt))),
+      el("div", { className: "act-foot" }, talk, ...(c.forks ? [el("span", { className: "act-forks" }, `${c.forks} ${c.targetType === "clip" ? "cop" : "fork"}${c.forks === 1 ? (c.targetType === "clip" ? "y" : "") : c.targetType === "clip" ? "ies" : "s"}`)] : []), el("span", { style: "flex:1" }), el("span", { className: "act-when", title: c.lastAt }, timeAgo(c.lastAt))),
       threadHost,
     );
     // The details arrive after the card is on the page.

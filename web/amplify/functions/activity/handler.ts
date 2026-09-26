@@ -31,6 +31,8 @@ const S = (v: string): AttributeValue => ({ S: v });
 export async function apply(c: Change) {
   const now = new Date().toISOString();
   const card = await cardInfo(c);
+  // A fork line names the other score (or clip): from the change, else from its record.
+  const otherTitle = c.line.otherTitle ?? (c.line.otherId ? await titleOf(c.targetType, c.line.otherId) : undefined);
   const line: TransactWriteItem =
     c.line.op === "remove"
       ? { Delete: { TableName: EVENTS, Key: { id: S(c.line.id) }, ConditionExpression: "attribute_exists(id)" } }
@@ -46,6 +48,8 @@ export async function apply(c: Change) {
               ...(c.line.by ? { by: S(c.line.by) } : {}),
               ...(c.line.stars !== undefined ? { stars: { N: String(c.line.stars) } } : {}),
               ...(c.line.commentId ? { commentId: S(c.line.commentId) } : {}),
+              ...(c.line.otherId ? { otherId: S(c.line.otherId) } : {}),
+              ...(otherTitle ? { otherTitle: S(otherTitle) } : {}),
               createdAt: S(now),
               updatedAt: S(now),
             },
@@ -92,6 +96,13 @@ export async function apply(c: Change) {
     if ((e as { name?: string }).name === "TransactionCanceledException" && /ConditionalCheckFailed/.test(String((e as Error).message) + JSON.stringify((e as any).CancellationReasons ?? ""))) return;
     throw e;
   }
+}
+
+async function titleOf(type: string, id: string): Promise<string | undefined> {
+  const table = TABLE_OF[type];
+  if (!table) return undefined;
+  const item = (await db.send(new GetItemCommand({ TableName: table, Key: { id: S(id) } }))).Item;
+  return item?.title?.S ?? item?.name?.S;
 }
 
 /** What the card needs to show: from the change itself, else from the card or the item's own record (a rating or a

@@ -19,6 +19,7 @@ export interface Card {
   lastBy?: string | null;
   comments?: number | null;
   ratings?: number | null;
+  forks?: number | null;
 }
 
 export interface Line {
@@ -29,6 +30,8 @@ export interface Line {
   by?: string | null;
   stars?: number | null;
   commentId?: string | null;
+  otherId?: string | null;
+  otherTitle?: string | null;
 }
 
 /** The filter chips, and the `kind` each one lists. */
@@ -48,8 +51,16 @@ export function kindName(card: Pick<Card, "targetType" | "kind">): string {
   return { song: "Score", beat: "Beat", chords: "Chords", melody: "Melody", sample: "Sample", clip: "Clip" }[k] ?? "Score";
 }
 
-/** A line as words, after its author: "made it", "added it", "rated it ★★★★☆", "commented". */
-export function lineText(line: Pick<Line, "what" | "stars">, type: ItemType): string {
+/**
+ * A line as words, after its author: "made it", "added it", "rated it ★★★★☆", "commented", and for forks, on the
+ * fork's card "forked “beat-1”", on the original's "forked it as “beat-1b”" (clips: "copied").
+ */
+export function lineText(line: Pick<Line, "what" | "stars"> & Partial<Pick<Line, "id" | "otherTitle">>, type: ItemType): string {
+  if (line.what === "forked" || line.what === "copied") {
+    const other = line.otherTitle ? `“${line.otherTitle}”` : type === "clip" ? "a clip" : "a score";
+    const onOriginal = /^(fork|copy)#/.test(line.id ?? "");
+    return onOriginal ? `${line.what} it as ${other}` : `${line.what} ${other}`;
+  }
   switch (line.what) {
     case "made":
       return type === "sample" ? "added it" : "made it";
