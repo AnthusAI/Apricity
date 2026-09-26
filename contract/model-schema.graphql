@@ -67,6 +67,7 @@ type Sample @model @auth(rules: [{allow: public, provider: identityPool, operati
   collection: String! @index(sortKeyFields: ["path"], queryField: "samplesByCollection")
   title: String!
   role: SampleRole
+  generator: AWSJSON
   stem: String
   stemModel: String
   parentSampleId: ID @index(queryField: "samplesByParent")
@@ -309,6 +310,7 @@ type Job @model @auth(rules: [{allow: public, provider: identityPool, operations
 {
   id: ID! @primaryKey
   kind: String!
+  input: AWSJSON
   sampleId: ID
   state: JobState @index(queryField: "jobsByState")
   error: String
@@ -345,6 +347,7 @@ enum SampleRole {
   stem
   excerpt
   upload
+  generated
 }
 
 enum SampleStatus {

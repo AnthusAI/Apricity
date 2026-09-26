@@ -1,5 +1,5 @@
 {
-  "version": "9bcb4878674102ce",
+  "version": "f6d123c446ec98b0",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -245,6 +245,13 @@
           "isRequired": false,
           "isArray": false,
           "kind": "enum"
+        },
+        "generator": {
+          "name": "generator",
+          "type": "AWSJSON",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
         },
         "stem": {
           "name": "stem",
@@ -2486,6 +2493,13 @@
           "isArray": false,
           "kind": "scalar"
         },
+        "input": {
+          "name": "input",
+          "type": "AWSJSON",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
         "sampleId": {
           "name": "sampleId",
           "type": "ID",
@@ -2602,7 +2616,8 @@
       "source",
       "stem",
       "excerpt",
-      "upload"
+      "upload",
+      "generated"
     ],
     "SampleStatus": [
       "pending",
