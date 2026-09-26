@@ -43,7 +43,7 @@
     {
       "id": "b34f978f-0444-499e-97d0-1f930e55bbc2",
       "author": "home",
-      "text": "Reference files: the DAW is not installed here and production holds no DAW-written files. Spikes gather public reference files (git repositories, the vendor's free trial library) and test against production audio; acceptance in the DAW waits on the owner installing the trial. Details on each M0 spike epic.",
+      "text": "Reference files (corrected): the DAW is not installed on this Mac and production holds no DAW-written files, but the owner has a licensed Studio install on the studio machine. Spikes list exact files to copy from that install's library and the owner's sets, and test against production audio; acceptance happens in the licensed install. Details on each M0 spike epic.",
       "created_at": "2026-09-26T22:26:29.785758Z",
       "comment_type": "default",
       "agent": {
@@ -54,7 +54,7 @@
     }
   ],
   "created_at": "2026-09-26T20:14:35.579925Z",
-  "updated_at": "2026-09-26T22:26:29.785794Z",
+  "updated_at": "2026-09-26T22:29:47.314326Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
