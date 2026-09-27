@@ -185,12 +185,29 @@ pub fn stems_manifest(tl: &Timeline, beats: Option<(f64, f64)>, stems: &[TrackSt
                 "label": h.label,
                 "chord": h.fit.as_ref().map(|f| f.chord.clone()),
                 "chord_tones": chord_tones,
+                "bass": h.bass.map(|b| b.name()),
             })
         })
         .collect();
     let tracks: Vec<serde_json::Value> = stems
         .iter()
         .map(|s| serde_json::json!({"name": s.name, "pitched": s.pitched, "kit": s.kit, "out": s.out, "sends": s.sends, "pitch": s.pitch}))
+        .collect();
+    // Pitched single-note tracks (`voicing`/`notes`) are ground truth: the engine already knows exactly
+    // what they played, so the analyzer reads their notes here instead of re-detecting them from audio.
+    let pitched_names: std::collections::HashSet<&str> = stems.iter().filter(|s| s.pitched && s.pitch.is_some()).map(|s| s.name.as_str()).collect();
+    let events: Vec<serde_json::Value> = tl
+        .events
+        .iter()
+        .filter(|e| e.midi.is_some() && pitched_names.contains(e.track.as_str()))
+        .map(|e| {
+            serde_json::json!({
+                "track": e.track,
+                "start_beat": e.start_beat,
+                "end_beat": e.start_beat + e.dur_beats,
+                "midi": e.midi,
+            })
+        })
         .collect();
     let manifest = serde_json::json!({
         "sample_rate": OUT_SR,
@@ -201,6 +218,7 @@ pub fn stems_manifest(tl: &Timeline, beats: Option<(f64, f64)>, stems: &[TrackSt
         "length": length,
         "harmony": harmony,
         "tracks": tracks,
+        "events": events,
     });
     serde_json::to_string_pretty(&manifest).unwrap()
 }
@@ -260,6 +278,7 @@ mod tests {
             warp: Vec::new(),
             semitones: 0,
             tuning_cents: 0.0,
+            midi: None,
             gain_db: 0.0,
             mode: apricity_score::score::WarpModeSpec::Repitch,
             reverse: false,
@@ -357,12 +376,70 @@ mod tests {
 
     #[test]
     fn stems_json_shifts_by_offset_beats() {
-        let harmony = vec![apricity_score::ChordSpan { start_beat: 0.0, end_beat: 4.0, label: "I".into(), fit: None }];
+        let harmony = vec![apricity_score::ChordSpan { start_beat: 0.0, end_beat: 4.0, label: "I".into(), fit: None, bass: None }];
         let mut tl = timeline(Vec::new(), Vec::new(), Vec::new(), Vec::new());
         tl.harmony = harmony;
         let json = stems_manifest(&tl, Some((4.0, 8.0)), &[]);
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         assert_eq!(v["offset_beats"], 4.0);
         assert_eq!(v["harmony"][0]["start_beat"], 0.0, "the span itself keeps its absolute beats");
+    }
+
+    #[test]
+    fn stems_json_carries_the_slash_chord_bass() {
+        use apricity_score::PitchClass;
+        // `Ab/C`: root Ab, bass C.
+        let harmony = vec![apricity_score::ChordSpan {
+            start_beat: 0.0,
+            end_beat: 4.0,
+            label: "Ab/C".into(),
+            fit: None,
+            bass: Some(PitchClass::new(0)), // C
+        }];
+        let mut tl = timeline(Vec::new(), Vec::new(), Vec::new(), Vec::new());
+        tl.harmony = harmony;
+        let json = stems_manifest(&tl, None, &[]);
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(v["harmony"][0]["bass"], "C");
+    }
+
+    #[test]
+    fn stems_json_carries_no_bass_when_the_span_has_no_chord() {
+        let harmony = vec![apricity_score::ChordSpan { start_beat: 0.0, end_beat: 4.0, label: "I".into(), fit: None, bass: None }];
+        let mut tl = timeline(Vec::new(), Vec::new(), Vec::new(), Vec::new());
+        tl.harmony = harmony;
+        let json = stems_manifest(&tl, None, &[]);
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert!(v["harmony"][0]["bass"].is_null());
+    }
+
+    #[test]
+    fn stems_json_lists_events_for_a_voicing_root_octave_track() {
+        // A `voicing root octave 2` track: a pinned single-note track whose sounding pitches
+        // come straight from the compiled timeline, not from re-analysing its audio.
+        let mut e1 = event("low", 0, 0.0);
+        e1.midi = Some(36); // C2
+        e1.dur_beats = 2.0;
+        let mut e2 = event("low", 0, 2.0);
+        e2.midi = Some(41); // F2
+        e2.dur_beats = 2.0;
+        // A loop track that also has `pitched: true` (it follows the harmony solver) but no
+        // `pitch` string: its notes are NOT ground truth and must not appear in `events`.
+        let mut e3 = event("bright", 0, 0.0);
+        e3.midi = Some(60);
+        let tl = timeline(vec!["low.wav", "bright.wav"], Vec::new(), vec![e1, e2, e3], Vec::new());
+        let stems = vec![
+            TrackStemOut { name: "low".into(), buf: [vec![0.0], vec![0.0]], pitched: true, kit: None, out: "master".into(), sends: Vec::new(), pitch: Some("C2 (pinned)".into()) },
+            TrackStemOut { name: "bright".into(), buf: [vec![0.0], vec![0.0]], pitched: true, kit: None, out: "master".into(), sends: Vec::new(), pitch: None },
+        ];
+        let json = stems_manifest(&tl, None, &stems);
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        let events = v["events"].as_array().unwrap();
+        assert_eq!(events.len(), 2, "only the pinned single-note track's events are listed, got {events:?}");
+        assert_eq!(events[0]["track"], "low");
+        assert_eq!(events[0]["midi"], 36);
+        assert_eq!(events[0]["start_beat"], 0.0);
+        assert_eq!(events[0]["end_beat"], 2.0);
+        assert_eq!(events[1]["midi"], 41);
     }
 }

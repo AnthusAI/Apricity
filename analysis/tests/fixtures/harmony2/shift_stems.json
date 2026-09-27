@@ -1,0 +1,40 @@
+{
+  "sample_rate": 22050,
+  "tempo": 120,
+  "meter": 4,
+  "key": "A minor",
+  "offset_beats": 0,
+  "harmony": [
+    {
+      "start_beat": 0,
+      "end_beat": 8,
+      "label": "i7 (Am7)",
+      "chord": "Am7",
+      "chord_tones": [
+        "A",
+        "C",
+        "E",
+        "G"
+      ],
+      "bass": "A"
+    }
+  ],
+  "tracks": [
+    {
+      "name": "shift_loop",
+      "pitched": true,
+      "kit": null,
+      "out": "master",
+      "sends": [],
+      "pitch": null
+    },
+    {
+      "name": "shift_bass",
+      "pitched": true,
+      "kit": null,
+      "out": "master",
+      "sends": [],
+      "pitch": "A2 (pinned)"
+    }
+  ]
+}
