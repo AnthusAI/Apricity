@@ -16,12 +16,13 @@ truth; pure logic written once and specified in Gherkin).
    only query.
 3. **A ranked row carries what its card shows** (title, path, kind, owner, tags, stars), so a page is
    one query, not a query plus a lookup per card.
-4. **The math is specified once.** The Bayesian standing, the windows and their widening, and the home
-   page's worth are Gherkin scenarios (`features/ranking/`), implemented in TypeScript (the Lambdas and
-   the web) and Rust (`apricity serve`) and run against both, as the rest of the data layer is.
-5. **The same schema everywhere.** The cloud keeps ranked rows with Lambdas on the tables' streams; a
-   local library (`apricity serve`) answers the same queries by computing them from its tables, which
-   is cheap at a local library's size and means no second copy to keep in step.
+4. **The math is written once.** The Bayesian standing, the windows, the home page's worth and the sort
+   keys live in `web/src/data/ranked.ts` (with `rank-window.ts` and `home-feed.ts`), used by the ranking
+   Lambda and the web alike and tested there (`test/ranked.test.ts`: the keys sort exactly as the rank
+   functions order).
+5. **The same pages everywhere.** The cloud keeps ranked rows with a Lambda on the tables' streams; a
+   local library computes the same rows in the web app from its tables with the same functions
+   (`data/ranked-read.ts`), which is instant at a local library's size and leaves nothing to keep in step.
 
 ## §1 What pages read today
 
@@ -70,9 +71,8 @@ Ranked: a.model({
 
 | List | Order | Page |
 |---|---|---|
-| `home` | worth (stars × kind weight × freshness; `data/home-feed.ts`) | Home |
-| `activity\|top\|<kind or all>` | rated first by all-time Bayesian score, then latest activity | Activity, Top |
-| `activity\|recent\|<kind or all>` | latest activity | Activity, Recent (replaces the filter-after-read) |
+| `feed\|top\|<kind or all>` | worth: all-time stars × kind weight × freshness (`data/home-feed.ts`) | Home, Top |
+| `feed\|recent\|<kind or all>` | latest activity | Home, Recent (replaces the filter-after-read) |
 | `<kind>\|<window>` (`beat\|week`, `clip\|all`, `sample\|month`…) | Bayesian score in the window, then newest | each tab |
 | `tag\|<tag>\|<window>` | Bayesian score in the window | a tag's leaderboard |
 | `tags` | how many scores use the tag (one row per tag) | `/tags`, autocomplete, Activity's tag strip |
@@ -86,9 +86,9 @@ most recent, as `rank()` in `data/rank-window.ts` orders them today.
 name with that suffix), which only curators read; the public lists never contain them. That replaces
 the hidden-item check (§1) with a choice of partition.
 
-**Window widening** (a quiet week shows the month) needs to know how many items are rated in each
-window. A `…|stats` row per list keeps that count, and the page reads it with the first page: one
-extra single-row get.
+**Window widening** (a quiet week shows the month): a leaderboard whose window's first page has no
+rated rows reads the next wider window's list instead, and says so. The feed's Top counts stars over
+all time (a stored order can't widen), with freshness lifting what's new.
 
 ### §2.2 Who writes `Ranked`
 
@@ -102,8 +102,8 @@ A **nightly job** (EventBridge, once a day) ages the windows: for every item rat
 recomputes the week, month and year standings and the home page's freshness, and rewrites the rows
 whose sort keys changed. Tally day rows stay the source of truth, so the job can rebuild everything.
 
-A **backfill script** builds every row from the current tables, as the Activity backfill did; it is
-also the recovery path.
+The **backfill** is the nightly pass run once by hand (the Lambda invoked with an empty event) after the
+first deploy; it is also the recovery path.
 
 ### §2.3 Leaner reads elsewhere
 
@@ -127,17 +127,16 @@ when phase 3 starts:
 
 ### §2.5 A local library
 
-`apricity serve` implements `rankedByList` by computing the list from its tables with the same
-specified math (a Rust port of `rank-window.ts` and `home-feed.ts`), so the web app makes the same
-query in both modes. A local library is small enough that this stays instant, and nothing has to be
-kept in step on each write.
+The web app's `rankedPage` (`data/ranked-read.ts`) computes a local library's rows from its scores and
+ratings with the same functions and pages them the same way, so the views don't know which mode they
+are in. (A local library has no Activity cards; a score's news there is its last change.)
 
 ## §3 Phases
 
 | Phase | When | What |
 |---|---|---|
-| **1** | before ~1k scores or ~2k activity cards (soon) | `Ranked` with the `home`, `activity\|…` and `tag\|…` lists; the ranking Lambda and backfill; the nightly job; score lists without text; handles on demand. Home, Activity and tag pages each become one query. |
-| **2** | before ~10k clips or ~5k samples | the per-kind tab lists (`<kind>\|<window>`); `…\|curator` lists replacing the hidden-item check; the Clips and Samples tabs paged from `Ranked`; `tags` rows for `/tags`. |
+| **1** | before ~1k scores or ~2k activity cards (built 2026-09-27) | `Ranked` with the `feed\|…` and `tag\|…` lists; the ranking Lambda, its nightly pass and backfill; score lists without text. Home and tag pages each read a page at a time. |
+| **2** | before ~10k clips or ~5k samples | the per-kind tab lists (`<kind>\|<window>`); `…\|curator` lists replacing the hidden-item check; the Clips and Samples tabs paged from `Ranked`; `tags` rows for `/tags`; handles on demand (every name label reads them synchronously today). |
 | **3** | before ~50k items, or when search matters | search (§2.4); the curation candidates feed (`storage.md` §1.5, §7). |
 
 Each phase ships behind the same web views: a view switches from "list and rank" to "query a page"
