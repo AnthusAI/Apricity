@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-55297ec0-325d-4b84-bbe1-1880dbe80972",
+  "title": "Fix CLI OAuth callback deadlock",
+  "description": "The Apricity login command blocks because its loopback callback reads to EOF before sending the browser response. Read only through HTTP headers, validate the callback, and reply immediately.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "15741bc9-863b-4afe-a515-e1f0ddd7e132",
+      "author": "home",
+      "text": "Root cause confirmed from the callback implementation: read_to_string waits for EOF, while browsers retain the request connection awaiting an HTTP response.",
+      "created_at": "2026-09-27T22:35:36.325441Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T22:35:30.616713Z",
+  "updated_at": "2026-09-27T22:35:36.325481Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
