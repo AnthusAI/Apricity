@@ -1393,6 +1393,30 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "A#",
+            "quality": "maj7",
+            "extensions": [
+              "maj9"
+            ],
+            "bass": "A",
+            "inversion": "3rd",
+            "confidence": 1.3932,
+            "score": 0.0458
+          },
+          "consonance_v1": 73.7831,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 1.0,
+            "spacing": 0.75,
+            "voice_leading": 1.0,
+            "Q": 0.6125
+          },
+          "objective_v2": 79.9081,
+          "mass": 12918.913591304741
         }
       },
       {
@@ -2786,6 +2810,28 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "F#",
+            "quality": "mMaj7",
+            "extensions": [],
+            "bass": "F",
+            "inversion": "3rd",
+            "confidence": 0.0,
+            "score": -0.0327
+          },
+          "consonance_v1": 72.8969,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 1.0,
+            "spacing": 0.4,
+            "voice_leading": 0.75,
+            "Q": 0.5225
+          },
+          "objective_v2": 78.1219,
+          "mass": 13740.612716407506
         }
       },
       {
@@ -4179,6 +4225,28 @@
               0.000121
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "D",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "D",
+            "inversion": "root",
+            "confidence": 0.0,
+            "score": -0.1897
+          },
+          "consonance_v1": 73.0441,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 0.75,
+            "voice_leading": 0.8778,
+            "Q": 0.9442
+          },
+          "objective_v2": 82.4861,
+          "mass": 13265.996198160392
         }
       },
       {
@@ -5571,15 +5639,37 @@
               0.000113
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "G#",
+            "quality": "mMaj7",
+            "extensions": [],
+            "bass": "G",
+            "inversion": "3rd",
+            "confidence": 0.0,
+            "score": -0.0609
+          },
+          "consonance_v1": 72.4616,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 0.5,
+            "spacing": 0.5,
+            "voice_leading": 0.4375,
+            "Q": 0.3906
+          },
+          "objective_v2": 76.3676,
+          "mass": 13625.97906032082
         }
       }
     ],
     "window": {
       "consonance_v1": 73.0364,
       "guard_penalty": 0.0,
-      "Q_mean": 0.6362,
+      "Q_mean": 0.6175,
       "objective_v1": 73.0364,
-      "objective_v2": 79.3984
+      "objective_v2": 79.2109
     }
   },
   "comeup": {
@@ -6976,6 +7066,28 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "A",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "A",
+            "inversion": "root",
+            "confidence": 0.8388,
+            "score": 0.215
+          },
+          "consonance_v1": 77.2969,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 1.0,
+            "voice_leading": 1.0,
+            "Q": 1.0
+          },
+          "objective_v2": 87.2969,
+          "mass": 14743.161086492719
         }
       },
       {
@@ -8369,6 +8481,30 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "F",
+            "quality": "maj7",
+            "extensions": [
+              "maj9"
+            ],
+            "bass": "F",
+            "inversion": "root",
+            "confidence": 0.0,
+            "score": -0.0823
+          },
+          "consonance_v1": 74.9795,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 0.5,
+            "voice_leading": 0.7745,
+            "Q": 0.8912
+          },
+          "objective_v2": 83.8915,
+          "mass": 15230.278690628667
         }
       },
       {
@@ -9762,6 +9898,28 @@
               0.000121
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "D",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "D",
+            "inversion": "root",
+            "confidence": 0.9557,
+            "score": 0.1667
+          },
+          "consonance_v1": 76.3047,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 0.5,
+            "voice_leading": 0.7639,
+            "Q": 0.8896
+          },
+          "objective_v2": 85.2007,
+          "mass": 15130.426984315036
         }
       },
       {
@@ -11154,15 +11312,37 @@
               0.000113
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "G#",
+            "quality": "mMaj7",
+            "extensions": [],
+            "bass": "G",
+            "inversion": "3rd",
+            "confidence": 0.7983,
+            "score": 0.2684
+          },
+          "consonance_v1": 71.8645,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 0.5,
+            "spacing": 0.6,
+            "voice_leading": 0.7281,
+            "Q": 0.4492
+          },
+          "objective_v2": 76.3565,
+          "mass": 13372.197501898074
         }
       }
     ],
     "window": {
       "consonance_v1": 75.1943,
       "guard_penalty": 0.0,
-      "Q_mean": 0.8262,
+      "Q_mean": 0.8075,
       "objective_v1": 75.1943,
-      "objective_v2": 83.4568
+      "objective_v2": 83.2693
     }
   },
   "csoul": {
@@ -12559,6 +12739,28 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "A",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "A",
+            "inversion": "root",
+            "confidence": 0.3527,
+            "score": 0.3171
+          },
+          "consonance_v1": 81.4148,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 1.0,
+            "voice_leading": 1.0,
+            "Q": 1.0
+          },
+          "objective_v2": 91.4148,
+          "mass": 20027.949178530893
         }
       },
       {
@@ -13952,6 +14154,28 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "A",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "F",
+            "inversion": "root",
+            "confidence": 0.0,
+            "score": -0.1316
+          },
+          "consonance_v1": 78.4457,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 1.0,
+            "spacing": 0.4,
+            "voice_leading": 0.875,
+            "Q": 0.5413
+          },
+          "objective_v2": 83.8587,
+          "mass": 20572.647764268797
         }
       },
       {
@@ -15345,6 +15569,28 @@
               0.000121
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "D",
+            "quality": "7",
+            "extensions": [],
+            "bass": "D",
+            "inversion": "root",
+            "confidence": 0.1405,
+            "score": 0.2027
+          },
+          "consonance_v1": 79.1939,
+          "guard_penalty": 2.0,
+          "Q": {
+            "target": 0.8,
+            "extension": 1.0,
+            "spacing": 1.0,
+            "voice_leading": 0.4697,
+            "Q": 0.8205
+          },
+          "objective_v2": 85.3989,
+          "mass": 18346.48818587781
         }
       },
       {
@@ -16737,6 +16983,28 @@
               0.000113
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "E",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "G",
+            "inversion": "1st",
+            "confidence": 0.2432,
+            "score": 0.2309
+          },
+          "consonance_v1": 79.4808,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 0.5,
+            "spacing": 0.6,
+            "voice_leading": 0.5,
+            "Q": 0.415
+          },
+          "objective_v2": 83.6308,
+          "mass": 18365.724779491073
         }
       }
     ],
@@ -18142,6 +18410,28 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "A",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "A",
+            "inversion": "root",
+            "confidence": 0.0,
+            "score": -0.0148
+          },
+          "consonance_v1": 79.779,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 1.0,
+            "voice_leading": 1.0,
+            "Q": 1.0
+          },
+          "objective_v2": 89.779,
+          "mass": 16870.195619838727
         }
       },
       {
@@ -19535,6 +19825,30 @@
               0.0
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "F",
+            "quality": "maj7",
+            "extensions": [
+              "maj9"
+            ],
+            "bass": "F",
+            "inversion": "root",
+            "confidence": 0.0,
+            "score": -0.1986
+          },
+          "consonance_v1": 79.3376,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 1.0,
+            "extension": 1.0,
+            "spacing": 0.3333,
+            "voice_leading": 0.7698,
+            "Q": 0.8655
+          },
+          "objective_v2": 87.9926,
+          "mass": 17764.971428545552
         }
       },
       {
@@ -20928,6 +21242,30 @@
               0.000121
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "D",
+            "quality": "7",
+            "extensions": [
+              "9"
+            ],
+            "bass": "D",
+            "inversion": "root",
+            "confidence": 0.0,
+            "score": -0.1941
+          },
+          "consonance_v1": 78.7284,
+          "guard_penalty": 2.0,
+          "Q": {
+            "target": 0.8,
+            "extension": 1.0,
+            "spacing": 1.0,
+            "voice_leading": 0.8667,
+            "Q": 0.88
+          },
+          "objective_v2": 85.5284,
+          "mass": 17018.40622780865
         }
       },
       {
@@ -22320,6 +22658,28 @@
               0.000113
             ]
           ]
+        },
+        "python_result": {
+          "heard": {
+            "root": "A",
+            "quality": "m7",
+            "extensions": [],
+            "bass": "G",
+            "inversion": "3rd",
+            "confidence": 0.0,
+            "score": -0.0512
+          },
+          "consonance_v1": 78.6083,
+          "guard_penalty": 0.0,
+          "Q": {
+            "target": 0.3,
+            "extension": 0.5,
+            "spacing": 1.0,
+            "voice_leading": 0.7681,
+            "Q": 0.5152
+          },
+          "objective_v2": 83.7603,
+          "mass": 17403.955755438143
         }
       }
     ],
