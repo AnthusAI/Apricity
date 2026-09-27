@@ -10,6 +10,7 @@ import { activity } from "./functions/activity/resource";
 import { voiceRequest } from "./functions/voice-request/resource";
 import { voiceIngest } from "./functions/voice-ingest/resource";
 import { Rule } from "aws-cdk-lib/aws-events";
+import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import { SpeechRenderer } from "@anthusai/auritus-construct";
 
@@ -92,8 +93,32 @@ for (const model of fed) {
 const AURITUS_VERSION = "0.27.1";
 const voiceStack = backend.createStack("Voice");
 const files = backend.storage.resources.bucket;
+
+// The GPU jobs run in an existing VPC (the account's default one): they only need outbound internet
+// for the image and model weights, and the account's VPC quota is used up. Amplify stacks can't
+// look a VPC up, so the build names it: APRICITY_VOICE_VPC_ID, and APRICITY_VOICE_SUBNETS as
+// comma-separated public subnet:availability-zone pairs, in zones that offer g4dn.xlarge.
+function voiceVpc() {
+  const vpcId = process.env.APRICITY_VOICE_VPC_ID?.trim();
+  const pairs = (process.env.APRICITY_VOICE_SUBNETS ?? "")
+    .split(",")
+    .map((p) => p.trim().split(":"))
+    .filter((p) => p.length === 2 && p[0] && p[1]);
+  if (!vpcId || !pairs.length) {
+    throw new Error(
+      "Voice rendering needs a VPC: set APRICITY_VOICE_VPC_ID and APRICITY_VOICE_SUBNETS " +
+        "(e.g. subnet-0123:us-east-1a,subnet-4567:us-east-1b) in the build environment.",
+    );
+  }
+  return Vpc.fromVpcAttributes(voiceStack, "VoiceVpc", {
+    vpcId,
+    availabilityZones: pairs.map(([, az]) => az),
+    publicSubnetIds: pairs.map(([subnet]) => subnet),
+  });
+}
 const renderer = new SpeechRenderer(voiceStack, "Renderer", {
   name: "apricity-voice",
+  vpc: voiceVpc(),
   image: `${voiceStack.account}.dkr.ecr.${voiceStack.region}.amazonaws.com/auritus-worker:${AURITUS_VERSION}`,
   outputBucket: files,
   outputPrefix: "voice-renders/",
