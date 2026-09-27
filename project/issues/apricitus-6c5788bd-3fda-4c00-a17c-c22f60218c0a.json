@@ -10,9 +10,22 @@
   "parent": "apricitus-6fc75c46-36d8-4d00-a3cf-18877a0e5d70",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a85a8c28-9061-42eb-9f5e-b5782055ae84",
+      "author": "home",
+      "text": "First real layer slice (Funky Nurykabe stack, pad role, 20 of 287 ccMixter holds rendered, scores 69.8-75.8): the user preferred the STACK ALONE over all three top pads. Two design gaps to fix before the next run. (1) A null control: every layer ranking must include 'no new layer' (the stack scored by the same composite), and a candidate is offered only if it beats the null by a margin (the design's stop rule; not built in the slice). (2) The composite is all penalties (clash, masking, doubling), so adding any pitched layer can only lower it, and it can't express what a layer contributes. Add positive terms: filling an unoccupied role or Bark band, adding motion or energy where the stack is static, register complementarity. Calibrate them from the user's picks, including null picks like this one. Also: the slice's stack used the old D-minor chords; the current Ave House is A minor. The screen proxy's rho was -0.16 (not predictive): build the per-beat kernel proxy.",
+      "created_at": "2026-09-27T03:29:05.116967Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T03:02:53.564819Z",
-  "updated_at": "2026-09-27T03:02:53.564864Z",
+  "updated_at": "2026-09-27T03:29:05.116989Z",
   "closed_at": null,
   "agent": {
     "platform": "claude-code",
