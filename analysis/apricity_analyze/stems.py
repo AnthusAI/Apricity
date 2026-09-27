@@ -2,7 +2,7 @@
 
     PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.stems samples/marine-band/WashingtonPost.mp3
 
-Stems go to <folder>/stems/<name>/<stem>.wav next to the original. Each stem gets its own
+Stems go to <folder>/stems/<name>/<stem>.flac next to the original (lossless, about half a WAV's size). Each stem gets its own
 manifest, but reuses the *parent's* beat grid: beat tracking on an isolated bass line or horn
 part is unreliable, and sharing the grid keeps stems of one recording locked together.
 Stems that are essentially silent (e.g. vocals in a band march) are skipped.
@@ -69,8 +69,8 @@ def run(audio: pathlib.Path, with_notes: bool = True, threads: int = 4) -> list[
         if 20 * np.log10(rms) < SILENT_DBFS:
             print(f"    skip {name:7} (silent)")
             continue
-        path = out_dir / f"{name}.wav"
-        sf.write(path, data, sr, subtype="PCM_16")
+        path = out_dir / f"{name}.flac"
+        sf.write(path, data, sr, format="FLAC", subtype="PCM_16")
         m = analyze(path, with_notes=with_notes and name != "drums", rhythm_from=parent)
         m["derived_from"] = {"source": str(audio.relative_to(root)), "stem": name, "model": MODEL}
         write(m, path)
