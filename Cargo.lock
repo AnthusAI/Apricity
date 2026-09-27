@@ -257,7 +257,9 @@ name = "apricity-web"
 version = "0.1.0"
 dependencies = [
  "apricity-data",
+ "apricity-dsp",
  "apricity-engine",
+ "apricity-harmony",
  "apricity-score",
  "serde",
  "serde_json",
