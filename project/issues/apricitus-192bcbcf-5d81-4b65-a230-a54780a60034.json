@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-192bcbcf-5d81-4b65-a230-a54780a60034",
+  "title": "Compose and publish a mushroom-jazz beat",
+  "description": "Exercise the mushroom-jazz score-writing skill by composing, rendering, and listening to a new Apricity beat inspired structurally by the existing Salamander beat. Publish the approved .apr text as a new authenticated production Score record.",
+  "type": "chore",
+  "status": "in_progress",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "a7d43adb-1f3c-4ad6-9812-6f03d1e366b6",
+      "author": "home",
+      "text": "Studied the Salamander beat: one re-pitched one-shot clip per drum, assembled into a named kit, then played in a clear step pattern. The first mushroom-jazz sketch will keep that durable drum-kit structure but use a slower 92 BPM hip-hop pocket, a minor seventh progression, and sparse organic layers.",
+      "created_at": "2026-09-27T19:53:39.284678Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "869a6cd8-567e-43a2-97a4-e69ae91b4b91",
+      "author": "home",
+      "text": "Built and auditioned a 16-bar 92 BPM mushroom-jazz sketch using the Salamander one-shot kit. The initial harmonic loop created broad chromatic clashes; a four-candidate swap audition selected a different loop that raised the checker objective from 79.8 to 94.1. The latest render has a clean compact drum pocket and a remaining mild +9-cent tuning guard, ready for listener feedback before production publication.",
+      "created_at": "2026-09-27T19:56:33.906447Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T19:52:57.494222Z",
+  "updated_at": "2026-09-27T19:56:33.906486Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

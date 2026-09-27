@@ -2,8 +2,8 @@
 """Listening cycles: publish a blind round of a score's candidates for people to rate, and pull the
 verdicts back (Kanbus apricitus-2101dd).
 
-    scripts/cycle.py publish --score examples/ave-house.apr --incumbent-score-id scr_examples_ave-house_apr \\
-        --incumbent-audio renders/ave-house.m4a \\
+    scripts/cycle.py publish --score <score.apr> --incumbent-score-id <score id> \\
+        --incumbent-audio <incumbent audio> \\
         --candidate renders/c/a.apr renders/c/a.m4a --candidate renders/c/b.apr renders/c/b.m4a \\
         --question "Which main loop should it keep?" --target local
     scripts/cycle.py list --target cloud --owner '<sub>::<username>'

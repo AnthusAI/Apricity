@@ -47,14 +47,14 @@ class Archive:
         `max_per_source` per source sample (kept for backward compatibility), and (when
         `min_per_role`) at least one per non-empty role before filling the rest by rank.
 
-        Round 3 (per review): `key_fn`/`max_per_key` generalize the dedup key beyond just
-        `genome.source` -- e.g. `key_fn=lambda e: (e.genome.source, e.genome.entry, e.genome.role)`
-        diversifies by (source, entry window, role), not source alone. This was needed because
-        deduping on source alone, even with the cap raised 2 -> 3, still collapsed the L1 pool to
-        a handful of candidates: the top of the ranking was dominated by a few (source, window)
-        combinations scoring near-identically, so a source-only cap discarded almost everything
-        else regardless of how high it raised the cap (apricitus-a9ad5b round 2's report). When
-        both `max_per_source` and `key_fn`/`max_per_key` are given, an entry must clear both caps."""
+        `key_fn`/`max_per_key` generalize the dedup key beyond just `genome.source` -- e.g.
+        `key_fn=lambda e: (e.genome.source, e.genome.entry, e.genome.role)` diversifies by
+        (source, entry window, role), not source alone. This matters because deduping on source
+        alone can collapse the L1 pool to a handful of candidates: when the top of the ranking is
+        dominated by a few (source, window) combinations scoring near-identically, a source-only
+        cap discards almost everything else regardless of how high the cap is raised (see Kanbus
+        apricitus-a9ad5b). When both `max_per_source` and `key_fn`/`max_per_key` are given, an
+        entry must clear both caps."""
         ranked = sorted(self.all_entries(), key=lambda e: (-e.J, e.genome.key()))
         kept: list[Entry] = []
         seen_source: dict[str, int] = {}
