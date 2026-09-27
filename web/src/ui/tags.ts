@@ -7,9 +7,8 @@ import { api, me } from "../apricity";
 import { SCORE_KINDS, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { handles } from "../data/handles";
 import { WINDOWS, WINDOW_LABEL, widenedNote, type Window } from "../data/rank-window";
-import { rankedPage } from "../data/ranked-read";
+import { rankedPage, tagTotals } from "../data/ranked-read";
 import type { RankedRow } from "../data/ranked";
-import { tagCounts } from "../data/tags";
 import { opened } from "./at";
 import { reportError } from "./notices";
 import { tagLink } from "./tag-chips";
@@ -56,19 +55,25 @@ export class TagsView {
   private async render() {
     const seq = ++this.seq;
     this.root.replaceChildren(el("div", { className: "feed-page" }, el("div", { className: "empty" }, "Loading…")));
-    let scores: ScoreItem[], deps: FeedDeps, hidden: Set<string>;
+    let scores: ScoreItem[], deps: FeedDeps, hidden: Set<string>, totals: { tag: string; count: number }[];
     try {
-      const [s, who, names, h] = await Promise.all([api.scores(), me().catch(() => null), handles(), api.hiddenIds().catch(() => new Set<string>())]);
+      if (!this.tag) {
+        // The index is the stored tag counts alone (design/scale.md): no scores to list.
+        totals = await tagTotals();
+        if (seq === this.seq) this.renderIndex(totals);
+        return;
+      }
+      const [s, who, names, h, t] = await Promise.all([api.scores(), me().catch(() => null), handles(), api.hiddenIds().catch(() => new Set<string>()), tagTotals().catch(() => [])]);
       scores = s.scores;
       deps = { who, names };
       hidden = h;
+      totals = t;
     } catch (e) {
       reportError("load the scores", e);
       this.root.replaceChildren(el("div", { className: "feed-page" }, el("div", { className: "empty" }, `Couldn't load the scores: ${(e as Error).message}`)));
       return;
     }
     if (seq !== this.seq) return;
-    if (!this.tag) return this.renderIndex(scores);
 
     const tagged = scores.filter((s) => s.tags.includes(this.tag!));
     // The tag's list in the window, a page at a time (design/scale.md); a window nobody has rated in yet steps out to
@@ -123,13 +128,12 @@ export class TagsView {
         el("div", { className: "feed-bar" }, el("h1", { className: "feed-tag" }, `#${this.tag}`), kinds, el("span", { style: "flex:1" }), seg),
         ...(note ? [el("div", { className: "rank-note" }, note)] : []),
         cards.length ? feedGrid(cards, more) : el("div", { className: "empty" }, tagged.length ? "Nothing of this kind with this tag." : `No scores are tagged #${this.tag} yet. Tag one from its page, under the title.`),
-        el("div", { className: "feed-more-tags" }, el("span", { className: "hint" }, "Other tags: "), ...tagCounts(scores).filter((t) => t.tag !== this.tag).slice(0, 24).map((t) => tagLink(t.tag))),
+        el("div", { className: "feed-more-tags" }, el("span", { className: "hint" }, "Other tags: "), ...totals.filter((t) => t.tag !== this.tag).slice(0, 24).map((t) => tagLink(t.tag))),
       ),
     );
   }
 
-  private renderIndex(scores: ScoreItem[]) {
-    const counts = tagCounts(scores);
+  private renderIndex(counts: { tag: string; count: number }[]) {
     this.root.replaceChildren(
       el(
         "div",

@@ -75,16 +75,22 @@ Ranked: a.model({
 | `feed\|recent\|<kind or all>` | latest activity | Home, Recent (replaces the filter-after-read) |
 | `<kind>\|<window>` (`beat\|week`, `clip\|all`, `sample\|month`…) | Bayesian score in the window, then newest | each tab |
 | `tag\|<tag>\|<window>` | Bayesian score in the window | a tag's leaderboard |
-| `tags` | how many scores use the tag (one row per tag) | `/tags`, autocomplete, Activity's tag strip |
+| `tags` | how many scores use the tag (one row per tag; built) | `/tags`, Home's tag strip, a tag page's "Other tags" |
+| `hidden` | none: one row per hidden item, its id only (built) | anyone not a curator, to leave hidden items out |
 
 **Sort keys** are strings that sort in list order: fixed-width, zero-padded fields, most significant
 first, e.g. `1|3.8421|2026-09-26T22:10:00Z` for a rated item (rated flag, Bayesian score to four
 places, latest activity). Queries read the index descending, so the best comes first and ties go to the
 most recent, as `rank()` in `data/rank-window.ts` orders them today.
 
-**Hidden items** (an undocumented license) get their rows in a parallel `…|curator` list (the same list
-name with that suffix), which only curators read; the public lists never contain them. That replaces
-the hidden-item check (§1) with a choice of partition.
+**Hidden items** (a sample whose recording has no documented license, its clips, and the scores that
+use it) are listed in `hidden`: one row per item, carrying its id and nothing else. Readers who aren't
+curators read that list (a few rows) and leave those items out; curators see them flagged. That
+replaces the hidden-item check (§1), which listed every Clip, ScoreRef, Recording and Sample. It lists
+every score, and the samples and clips that have a card (only those show in a list the Lambda keeps).
+The feed and tag lists still hold hidden items' rows, as in phase 1; a page skips them. A `…|curator`
+partition (the public lists never holding them) remains possible if that ever matters: hidden items are
+rare, so pages are rarely thinned.
 
 **Window widening** (a quiet week shows the month): a leaderboard whose window's first page has no
 rated rows reads the next wider window's list instead, and says so. The feed's Top counts stars over
@@ -97,6 +103,11 @@ new, deleted), `Sample` and `Clip` (new, renamed, retired), `Activity` (latest a
 (license documented or not). For each change it computes the item's standings (all time and each
 window, from its Tally rows) and writes that item's rows in every list it belongs to: 5–15 writes per
 rating, in one or two `TransactWriteItems`.
+
+The Lambda also follows **Recording** (documented or not), **Sample** (its recording changed) and
+**ScoreRef** (a score's samples) streams: a change rebuilds everything whose hiding could follow it (a
+recording's samples, their clips and the scores using them). A score's tags changing recounts those
+tags' rows in `tags` (a COUNT query of each tag's `tag|<tag>|all` list).
 
 A **nightly job** (EventBridge, once a day) ages the windows: for every item rated in the last year it
 recomputes the week, month and year standings and the home page's freshness, and rewrites the rows
@@ -136,8 +147,8 @@ are in. (A local library has no Activity cards; a score's news there is its last
 | Phase | When | What |
 |---|---|---|
 | **1** | before ~1k scores or ~2k activity cards (built 2026-09-27) | `Ranked` with the `feed\|…` and `tag\|…` lists; the ranking Lambda, its nightly pass and backfill; score lists without text. Home and tag pages each read a page at a time. |
-| **2** | before ~10k clips or ~5k samples | the per-kind tab lists (`<kind>\|<window>`); `…\|curator` lists replacing the hidden-item check; the Clips and Samples tabs paged from `Ranked`; `tags` rows for `/tags`; handles on demand (every name label reads them synchronously today). |
-| **3** | before ~50k items, or when search matters | search (§2.4); the curation candidates feed (`storage.md` §1.5, §7). |
+| **2** | before ~10k clips or ~5k samples | **Built 2026-09-27:** the `hidden` list replacing the hidden-item check; `tags` rows for `/tags` and Home's tag strip. **Moved to phase 3** (they lose features until search is paged too: the tabs' search boxes, "Mine" and the Clips filters all work on the whole list): the per-kind tab lists (`<kind>\|<window>`) and the Clips and Samples tabs paged from `Ranked`; handles on demand (needs an owner index people can't spoof, and every name label reads them synchronously today). |
+| **3** | before ~50k items, or when search matters | search (§2.4), with the tabs paged from `Ranked` and "Mine" and the Clips filters as lists or search facets; handles on demand; the curation candidates feed (`storage.md` §1.5, §7). |
 
 Each phase ships behind the same web views: a view switches from "list and rank" to "query a page"
 list by list, with the old path kept only until its list's backfill has run in production.

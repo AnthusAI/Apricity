@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { itemOf, rowItem, talliesOf, targetOf } from "../amplify/functions/ranking/item.ts";
+import { documentedRecording, hidingChanged, itemOf, rowItem, talliesOf, targetOf } from "../amplify/functions/ranking/item.ts";
 import { rowsFor } from "../src/data/ranked.ts";
 
 const S = (s: string) => ({ S: s });
@@ -59,4 +59,20 @@ test("rows as Ranked items, and which item a stream record is about", () => {
   assert.equal(item.tags, undefined);
   assert.deepEqual(targetOf("Score", { id: S("scr_9") } as never), ["score", "scr_9"]);
   assert.deepEqual(targetOf("Tally", { targetType: S("clip"), targetId: S("clp_2") } as never), ["clip", "clp_2"]);
+});
+
+test("hiding: a recording is documented as licenses.ts says; only what can change hiding sets off a rebuild", () => {
+  const pd = { id: S("rec_1"), license: S("public-domain") } as never;
+  const ccNoAuthor = { id: S("rec_2"), license: S("cc-by-4.0") } as never;
+  const ccAuthor = { id: S("rec_2"), license: S("cc-by-4.0"), author: S("Speck") } as never;
+  assert.equal(documentedRecording(pd), true);
+  assert.equal(documentedRecording(ccNoAuthor), false, "CC BY needs someone to credit");
+  assert.equal(documentedRecording(ccAuthor), true);
+  assert.equal(documentedRecording({ id: S("rec_3"), title: S("uploads_announcer") } as never), false);
+  assert.equal(documentedRecording(undefined), false);
+  assert.equal(hidingChanged("Recording", ccNoAuthor, ccAuthor), true);
+  assert.equal(hidingChanged("Recording", pd, { ...(pd as object), title: S("renamed") } as never), false);
+  assert.equal(hidingChanged("Sample", { recordingId: S("a"), bpm: N(90) } as never, { recordingId: S("a"), bpm: N(120) } as never), false);
+  assert.equal(hidingChanged("Sample", { recordingId: S("a") } as never, { recordingId: S("b") } as never), true);
+  assert.equal(hidingChanged("Sample", undefined, { recordingId: S("a") } as never), true);
 });

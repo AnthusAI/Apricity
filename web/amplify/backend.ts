@@ -83,28 +83,32 @@ for (const model of fed) {
 
 // The ranked lists (design/scale.md) are kept by the ranking Lambda: fed by the streams of the Activity cards (an item's
 // news), the Tally rows (its stars) and the Score records (a score's title, kind and tags), and run once a day to age
-// the windows. Only it writes the Ranked table.
+// the windows. The Recording, Sample and ScoreRef streams keep its `hidden` list (what uses an undocumented sample).
+// Only it writes the Ranked table.
 const rk = backend.ranking.resources.lambda;
 for (const [env, model] of [
   ["ACTIVITY_TABLE", "Activity"],
   ["SCORE_TABLE", "Score"],
   ["SAMPLE_TABLE", "Sample"],
   ["CLIP_TABLE", "Clip"],
+  ["RECORDING_TABLE", "Recording"],
+  ["SCOREREF_TABLE", "ScoreRef"],
   ["TALLY_TABLE", "Tally"],
   ["RANKED_TABLE", "Ranked"],
 ] as const)
   backend.ranking.addEnvironment(env, tables[model].tableName);
-for (const m of ["Activity", "Score", "Sample", "Clip", "Tally"]) tables[m].grantReadData(rk);
+for (const m of ["Activity", "Score", "Sample", "Clip", "Recording", "ScoreRef", "Tally"]) tables[m].grantReadData(rk);
 tables["Ranked"].grantReadWriteData(rk);
-// The table grants above don't reach the indexes: an item's tallies and its existing rows are index queries.
+// The table grants above don't reach the indexes: an item's tallies, its existing rows, a score's samples, a sample's
+// clips and scores, and a recording's samples are index queries.
 rk.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ["dynamodb:Query"],
-    resources: ["Tally", "Ranked"].map((m) => `${tables[m].tableArn}/index/*`),
+    resources: ["Tally", "Ranked", "Sample", "Clip", "ScoreRef"].map((m) => `${tables[m].tableArn}/index/*`),
   }),
 );
-const rankingFed = ["Activity", "Tally", "Score"];
+const rankingFed = ["Activity", "Tally", "Score", "Recording", "Sample", "ScoreRef"];
 const rankingStreams = new Policy(Stack.of(rk), "RankingReadsStreams", {
   statements: [
     new PolicyStatement({

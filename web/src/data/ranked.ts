@@ -6,6 +6,8 @@
 //   feed|top|<kind or all>      the home page's Top: worth (data/home-feed.ts), stars over all time
 //   feed|recent|<kind or all>   the newest activity first
 //   tag|<tag>|<window>          a tag's leaderboard: stars in the window (rated first), then the most rated, the newest
+//   tags                        every tag, the most used first (one row per tag; its `ratings` is how many scores)
+//   hidden                      what only curators see: items using a sample with no documented license (id only)
 
 import { standing, totals, WINDOWS, type DayTally, type Standing, type Window } from "./rank-window";
 import { worthOf, type HomeKind } from "./home-feed";
@@ -94,6 +96,60 @@ export function rowsFor(item: RankItem, tallies: DayTally[], now: Date): RankedR
     const w = (list.startsWith("tag|") ? list.split("|")[2] : "all") as Window;
     return { ...item, id: rowId(list, item), list, sort: sortOf(list, item, st, ratedAt, now), stars: st[w].average, ratings: st[w].count };
   });
+}
+
+export const TAGS = "tags";
+export const HIDDEN = "hidden";
+
+/** A tag's row in the `tags` list: sorted by how many scores use it, then by name (A first). */
+export function tagRow(tag: string, count: number, at: string): RankedRow {
+  // Names sort A first while the list reads descending: each letter's code is flipped, and "~" (above any flipped
+  // letter) ends it, so "tech" comes before "techno".
+  const flipped = [...tag].map((c) => String.fromCharCode(0x7e - (c.charCodeAt(0) - 0x20))).join("") + "~";
+  return {
+    id: `${TAGS}|${tag}`,
+    list: TAGS,
+    sort: `${fixed(count, 7)}|${flipped}`,
+    targetType: "score",
+    targetId: `tag:${tag}`,
+    kind: "song",
+    title: tag,
+    owner: null,
+    path: null,
+    tags: [],
+    lastAt: at,
+    stars: null,
+    ratings: count,
+  };
+}
+
+/** An item's row in the `hidden` list: just which item it is (nothing about it shows to those who can't see it). */
+export function hiddenRow(item: Pick<RankItem, "targetType" | "targetId">, at: string): RankedRow {
+  return {
+    id: rowId(HIDDEN, item),
+    list: HIDDEN,
+    sort: `${item.targetType}#${item.targetId}`,
+    targetType: item.targetType,
+    targetId: item.targetId,
+    kind: item.targetType === "score" ? "song" : item.targetType,
+    title: "",
+    owner: null,
+    path: null,
+    tags: [],
+    lastAt: at,
+    stars: null,
+    ratings: 0,
+  };
+}
+
+/** The tags an item's rows put it under (from its `tag|<tag>|all` rows' ids or lists). */
+export function tagsIn(listsOrIds: string[]): Set<string> {
+  const out = new Set<string>();
+  for (const s of listsOrIds) {
+    const [family, tag, window] = s.split("|");
+    if (family === "tag" && window === "all" && tag) out.add(tag);
+  }
+  return out;
 }
 
 /** One list's rows, best first, from many items' rows (how a local library answers what the cloud's index does). */

@@ -3,7 +3,8 @@
 // functions (ranked.ts), paged the same way.
 
 import { client, mode } from "./client.js";
-import { rowsFor, listRows, type RankedRow } from "./ranked.js";
+import { rowsFor, listRows, HIDDEN, TAGS, type RankedRow } from "./ranked.js";
+import { tagCounts } from "./tags.js";
 import type { ScoreItem } from "./catalog.js";
 
 export interface RankedPage {
@@ -63,9 +64,37 @@ async function localPage(list: string, next: string | null, limit: number): Prom
   return { rows: rows.slice(at, at + limit), next: at + limit < rows.length ? String(at + limit) : null };
 }
 
-/** Forget the local rows (a score or a rating changed). */
+/** Every row of a small list (`hidden`, `tags`), in order. */
+async function allOf(list: string): Promise<RankedRow[]> {
+  const rows: RankedRow[] = [];
+  let next: string | null = null;
+  do {
+    const p = await rankedPage(list, next, 1000);
+    rows.push(...p.rows);
+    next = p.next;
+  } while (next);
+  return rows;
+}
+
+let hidden: Promise<Set<string>> | null = null;
+
+/** In the cloud, what only curators see (the ranking Lambda's `hidden` list): ids of scores, and of feed samples and clips. */
+export function hiddenIds(): Promise<Set<string>> {
+  hidden ??= allOf(HIDDEN).then((rows) => new Set(rows.map((r) => r.targetId)));
+  hidden.catch(() => (hidden = null));
+  return hidden;
+}
+
+/** How many scores use each tag, most used first: the `tags` list in the cloud, counted from the scores locally. */
+export async function tagTotals(): Promise<{ tag: string; count: number }[]> {
+  if (mode() === "local") return tagCounts((await (await import("../apricity.js")).api.scores()).scores);
+  return (await allOf(TAGS)).map((r) => ({ tag: r.title, count: r.ratings }));
+}
+
+/** Forget the local rows (a score or a rating changed), and what's hidden. */
 export function forgetRanked() {
   local = null;
+  hidden = null;
 }
 if (typeof document !== "undefined") {
   document.addEventListener("apricity:rated", forgetRanked);

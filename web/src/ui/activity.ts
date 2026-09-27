@@ -11,9 +11,8 @@ import { api, me } from "../apricity";
 import { mode } from "../data/client";
 import { handles } from "../data/handles";
 import { cards, FILTERS } from "../data/activity";
-import { rankedPage } from "../data/ranked-read";
+import { rankedPage, tagTotals } from "../data/ranked-read";
 import type { RankedRow } from "../data/ranked";
-import { tagCounts } from "../data/tags";
 import { href, sampleKey, type Route } from "../route";
 import { tagLink } from "./tag-chips";
 import { go } from "./at";
@@ -144,9 +143,8 @@ export class ActivityView {
       .catch(() => null)
       .then((who) => seq === this.seq && this.showIntro(!who && mode() !== "local"));
     // The top tags fill in when the scores have listed; nothing waits for them.
-    void api
-      .scores()
-      .then(({ scores }) => seq === this.seq && this.tags.replaceChildren(...tagCounts(scores).slice(0, 10).map((t) => tagLink(t.tag)), ...(scores.some((s) => s.tags.length) ? [allTags()] : [])))
+    void tagTotals()
+      .then((totals) => seq === this.seq && this.tags.replaceChildren(...totals.slice(0, 10).map((t) => tagLink(t.tag)), ...(totals.length ? [allTags()] : [])))
       .catch(() => undefined);
     try {
       // One page of the ranked list (design/scale.md): each row carries its card, so a page is one query.

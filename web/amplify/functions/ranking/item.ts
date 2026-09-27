@@ -5,6 +5,7 @@ import type { AttributeValue } from "@aws-sdk/client-dynamodb";
 import type { RankedRow, RankItem, TargetType } from "../../../src/data/ranked";
 import type { HomeKind } from "../../../src/data/home-feed";
 import type { DayTally } from "../../../src/data/rank-window";
+import { documented, type Provenance } from "../../../src/data/licenses";
 
 type Image = Record<string, AttributeValue> | undefined;
 
@@ -91,6 +92,27 @@ export function rowItem(r: RankedRow, now: string): Record<string, AttributeValu
   n("comments", r.comments);
   if (r.tags.length) out.tags = { L: r.tags.map((t) => ({ S: t })) };
   return out;
+}
+
+/** Whether a Recording record says enough to use its sound (licenses.ts `documented`); no record: no. */
+export function documentedRecording(image: Image): boolean {
+  if (!image) return false;
+  const p: Provenance = {};
+  for (const k of ["license", "rights", "credit", "author", "attribution"] as const) p[k] = str(image, k) ?? null;
+  return documented(p);
+}
+
+/** A string field of a record (for the handler's lookups). */
+export const field = str;
+
+/**
+ * Which stored fields changing can change what's hidden: a sample's recording, or whether a recording is documented.
+ * An insert or removal always can.
+ */
+export function hidingChanged(table: "Sample" | "Recording", oldImage: Image, newImage: Image): boolean {
+  if (!oldImage || !newImage) return true;
+  if (table === "Sample") return str(oldImage, "recordingId") !== str(newImage, "recordingId");
+  return documentedRecording(oldImage) !== documentedRecording(newImage);
 }
 
 /** Which item a stream record is about: [type, id], from any of the tables the Lambda listens to. */

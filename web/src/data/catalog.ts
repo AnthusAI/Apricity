@@ -484,6 +484,11 @@ export interface CatalogDeps {
   me?: () => Promise<Me | null>;
   /** That person's public handle, which names their copies of other people's clips. */
   handle?: (me: Me) => Promise<string | undefined>;
+  /**
+   * What only curators see, as the ranking Lambda lists it (the `hidden` list: scores, and the samples and clips in the
+   * feed), so nobody lists every clip, reference and recording to work it out. Null (or absent): work it out here.
+   */
+  hidden?: () => Promise<Set<string> | null>;
 }
 
 interface Index {
@@ -629,6 +634,8 @@ export class Catalog {
    */
   async hiddenIds(): Promise<Set<string>> {
     if (await this.seesAll()) return new Set();
+    const listed = await this.deps.hidden?.();
+    if (listed) return listed;
     const undoc = await this.undocumented();
     if (!undoc.size) return new Set();
     const [clips, refs] = await Promise.all([
@@ -694,6 +701,8 @@ export class Catalog {
 
   /** Scores that use an undocumented sample (to flag them for curators). */
   private async flaggedScores(): Promise<Set<string>> {
+    const listed = await this.deps.hidden?.();
+    if (listed) return listed;
     const [undoc, refs] = await Promise.all([this.undocumented(), this.scoreRefs()]);
     return new Set(refs.filter((r) => r.sampleId && undoc.has(r.sampleId)).map((r) => r.scoreId));
   }

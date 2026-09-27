@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { listRows, listsOf, rowsFor, type RankItem } from "../src/data/ranked.ts";
+import { hiddenRow, listRows, listsOf, rowsFor, tagRow, tagsIn, type RankItem } from "../src/data/ranked.ts";
 import { homeRank } from "../src/data/home-feed.ts";
 import { rank, type DayTally } from "../src/data/rank-window.ts";
 
@@ -78,4 +78,19 @@ test("a row carries its card and its stars in the list's window", () => {
   assert.equal(a.stars, 5);
   assert.equal(a.id, "feed|top|all|score#song-b");
   assert.equal(a.path, "examples/song-b.apr");
+});
+
+test("the tags list: the most used first, then by name, A first, a prefix before what it starts", () => {
+  const at = now.toISOString();
+  const rows = [tagRow("techno", 2, at), tagRow("ambient", 2, at), tagRow("lounge", 5, at), tagRow("tech", 2, at), tagRow("a-1", 2, at), tagRow("a0", 2, at)];
+  assert.deepEqual(listRows(rows, "tags").map((r) => [r.title, r.ratings]), [["lounge", 5], ["a-1", 2], ["a0", 2], ["ambient", 2], ["tech", 2], ["techno", 2]]);
+  assert.equal(tagRow("techno", 2, at).targetId, "tag:techno", "never an item's id, so an item's rows never include it");
+});
+
+test("a hidden row says which item and nothing about it; an item's tags come from its all-time tag lists", () => {
+  const h = hiddenRow({ targetType: "clip", targetId: "clp_1" }, now.toISOString());
+  assert.deepEqual([h.id, h.list, h.targetId, h.title, h.owner, h.path], ["hidden|clip#clp_1", "hidden", "clp_1", "", null, null]);
+  const rows = rowsFor(item("scr_1", "beat", 1, ["techno", "lounge"]), [], now);
+  assert.deepEqual([...tagsIn(rows.map((r) => r.list))].sort(), ["lounge", "techno"]);
+  assert.deepEqual([...tagsIn(rows.map((r) => r.id))].sort(), ["lounge", "techno"]);
 });

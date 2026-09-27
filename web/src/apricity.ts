@@ -201,6 +201,8 @@ export async function connectCatalog() {
     handle: async (who) => (await (await import("./data/handles.js")).handles()).mine(who.owners),
     // Undocumented samples are for curators to fix; everyone else never sees them. Locally everyone curates.
     seesUndocumented: async () => ((await import("./data/client.js")).mode() === "local" ? true : !!(await me())?.curator),
+    // In the cloud the ranking Lambda keeps the list; a local library works it out.
+    hidden: async () => ((await import("./data/client.js")).mode() === "local" ? null : (await import("./data/ranked-read.js")).hiddenIds()),
   });
   // Sign-in or sign-out changes what may be read: forget what was loaded.
   document.addEventListener("apricity:auth-changed", () => (catalogInstance?.reset(), manifestCache.clear()));
