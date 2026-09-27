@@ -763,3 +763,11 @@ body.nav-open { overflow: hidden; }
 .filter-more { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .filter-more[hidden] { display: none; }
 .filter-note { margin-top: 6px; }
+
+/* A section's front page: how many, and (Samples, curators) what's still being analyzed. */
+.section-count { margin: 0 0 10px; }
+.section-strip { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13px; color: var(--muted); margin: 0 0 12px; padding: 8px 12px; border: 1px dashed var(--line); border-radius: 10px; }
+.section-strip[hidden] { display: none; }
+.section-strip-label { font-weight: 600; color: var(--fg); }
+.filter-more select { font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--fg); }
+.filter-more select.set { border-color: var(--accent); background: var(--accent-soft); }

@@ -267,6 +267,12 @@ export class ScoreView {
     this.list.setWindow("week");
   }
 
+  /** Start a new score of the kind on show (a section's "+ New beat"): its name is asked for, then it opens. */
+  async createNew() {
+    await this.loadList();
+    await this.create();
+  }
+
   /** Show another kind of score (the Scores, Beats, Chords and Melodies tabs share this view). */
   setKind(kind: ScoreKind) {
     if (kind === this.kind && this.items.length) return;

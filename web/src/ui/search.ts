@@ -17,19 +17,29 @@ import { feedGrid } from "./feed-grid";
 const PER_SECTION = 6;
 
 /**
- * The top bar's search box. Enter searches; on a section's page the section can take the words instead (it narrows its
- * own list as you type) by listening for `apricity:search`.
+ * The top bar's search box. Enter searches everything (/search?q=); on a section's page, `local` hands back how that
+ * section narrows its own list, and the box does that as you type instead.
  */
-export function mountSearch(host: HTMLElement): HTMLInputElement {
-  const input = el("input", { type: "search", className: "top-search-input", placeholder: "Search", ariaLabel: "Search everything", autocomplete: "off", spellcheck: false });
+export function mountSearch(host: HTMLElement, local: () => ((q: string) => void) | null): HTMLInputElement {
+  const input = el("input", { type: "search", className: "top-search-input", placeholder: "Search", ariaLabel: "Search", autocomplete: "off", spellcheck: false });
   const form = el("form", { className: "top-search", role: "search" }, el("span", { className: "top-search-icon", ariaHidden: "true" }), input);
+  let timer = 0;
+  input.addEventListener("input", () => {
+    const narrow = local();
+    if (!narrow) return;
+    clearTimeout(timer);
+    timer = window.setTimeout(() => narrow(input.value), 150);
+  });
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const q = input.value.trim();
-    if (!q) return;
+    const narrow = local();
     input.blur();
-    go({ page: "search", q });
+    if (narrow) return (clearTimeout(timer), narrow(q));
+    if (q) go({ page: "search", q });
   });
+  // The section's chip cleared the words.
+  document.addEventListener("apricity:search-cleared", () => (input.value = ""));
   // "/" puts you in the box from anywhere that isn't already taking text.
   document.addEventListener("keydown", (e) => {
     if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
