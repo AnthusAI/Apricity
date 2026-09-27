@@ -3,7 +3,7 @@
   "title": "Listen page in the web app: rate listening-cycle candidates (players, stars, best pick, notes)",
   "description": "For the web/docs session (AGENTS.md: web UI is theirs). Design in epic apricitus-2101dd. Data: ListeningCycle (open cycles; options with blind letters A-D, each a fork Score id + audio at files/cycles/<id>/<letter>.m4a), stars as ordinary Ratings on each option's Score, CycleVerdict (cycleId+judge, owner-only: best letter or 'same', per-letter notes, overall note, savedAt). Page: open cycles newest first; one cycle per view; per option a player + stars + note; an explicit best-pick control; Save (upsert; editable until closed). Hide score titles until saved, then reveal which letter was which with links to the scores. Signed-in only; cloud and local modes. Prototype: the Listening Room artifact https://claude.ai/artifact/HV1fa8pRcT9d8hRRcBohuu (its best radio came back null in cycle 1). Blocked by apricitus-80ccff (schema).",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,10 +12,23 @@
     "web"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "75416812-490d-481d-a631-1d0a4251ddc7",
+      "author": "home",
+      "text": "Merged in PR #19 and promoted to main in PR #20. /listen and /listen/<id>, verified end to end in local mode.",
+      "created_at": "2026-09-27T15:59:40.012185Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T11:26:17.974806Z",
-  "updated_at": "2026-09-27T11:26:54.114452Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T15:59:40.063039Z",
+  "closed_at": "2026-09-27T15:59:40.062986Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
