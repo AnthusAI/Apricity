@@ -32,9 +32,10 @@ export interface Change {
   card?: CardInfo;
 }
 
-export type Image = Record<string, { S?: string; N?: string; BOOL?: boolean; NULL?: boolean }> | null | undefined;
+export type Image = Record<string, { S?: string; N?: string; BOOL?: boolean; NULL?: boolean; L?: { S?: string }[] }> | null | undefined;
 const str = (img: Image, k: string) => img?.[k]?.S;
 const bool = (img: Image, k: string) => img?.[k]?.BOOL === true;
+const tags = (img: Image): string[] => (img?.tags?.L ?? []).map((v) => v.S).filter((s): s is string => !!s);
 
 export const cardKey = (targetType: string, targetId: string) => `${targetType}#${targetId}`;
 const hour = (iso: string) => iso.slice(0, 13); // 2026-09-26T14
@@ -53,6 +54,10 @@ export function changesOf(model: string, event: "INSERT" | "MODIFY" | "REMOVE", 
   const at = (k: string) => str(after, k) ?? now;
   switch (model) {
     case "Score": {
+      // A listening-cycle candidate (scripts/cycle.py, tag "candidate"): a fork made to be blind-rated, not news.
+      // Keeping it off the Activity card also keeps it out of the Ranked lists (the ranking Lambda skips items with
+      // no card; ranked.ts listsOf() does the same for local mode, which reads scores directly).
+      if (tags(after).includes("candidate") || tags(before).includes("candidate")) return [];
       const key = cardKey("score", id);
       const card: CardInfo = { title: str(after, "title"), kind: str(after, "kind") ?? "song", owner: str(after, "owner") };
       if (event === "INSERT") {

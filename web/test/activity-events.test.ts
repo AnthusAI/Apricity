@@ -57,6 +57,17 @@ test("comments count and bump; deleting one removes its line and uncounts", () =
   assert.equal(changesOf("Comment", "REMOVE", c(), null, NOW)[0].counts!.comments, -1);
 });
 
+// img() only builds scalar DynamoDB attributes (S/N/BOOL); a tags list needs its own helper.
+const withTags = (o: Image, tags: string[]): Image => ({ ...o, tags: { L: tags.map((s) => ({ S: s })) } });
+
+test("a listening-cycle candidate (tagged candidate) is never news: not made, not changed, not a fork line", () => {
+  const fresh = withTags(img({ id: "scr_9", title: "funk-b", owner: "u1", text: "tempo 90", forkOf: "scr_1", createdAt: "2026-09-26T10:00:00Z" }), ["candidate"]);
+  assert.equal(changesOf("Score", "INSERT", null, fresh, NOW).length, 0, "a fresh candidate makes no card, and doesn't bump its incumbent either");
+  const before = withTags(img({ id: "scr_9", title: "funk-b", owner: "u1", text: "tempo 90" }), ["candidate"]);
+  const after = withTags(img({ id: "scr_9", title: "funk-b", owner: "u1", text: "tempo 96", updatedAt: "2026-09-26T14:25:00Z" }), ["candidate"]);
+  assert.equal(changesOf("Score", "MODIFY", before, after, NOW).length, 0, "a re-rendered candidate isn't news either");
+});
+
 test("a fork is news twice: on its own card and on the original's, which it moves up and counts", () => {
   const fork = img({ id: "scr_2", title: "funk-2", kind: "beat", owner: "u2", text: "tempo 96", forkOf: "scr_1", forkRoot: "scr_1", createdAt: "2026-09-26T16:00:00Z" });
   const [own, parent] = changesOf("Score", "INSERT", null, fork, NOW);

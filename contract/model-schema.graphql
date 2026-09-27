@@ -33,6 +33,11 @@ enum RatingTarget {
   score
 }
 
+enum CycleStatus {
+  open
+  closed
+}
+
 type Recording @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
   {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
@@ -341,6 +346,31 @@ type Job @model @auth(rules: [{allow: public, provider: identityPool, operations
   error: String
 }
 
+type ListeningCycle @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  question: String
+  incumbentScoreId: ID!
+  options: [CycleOption]!
+  status: CycleStatus!
+  closedAt: AWSDateTime
+  owner: String
+}
+
+type CycleVerdict @model @auth(rules: [{allow: owner, ownerField: "judge", identityClaim: "sub"},
+  {allow: groups, operations: [read], groups: ["admins"]}])
+{
+  cycleId: ID! @primaryKey(sortKeyFields: ["judge"]) @index(queryField: "verdictsByCycle")
+  judge: String!
+  best: String!
+  notes: [CycleNote]
+  note: String
+  savedAt: AWSDateTime!
+}
+
 type FileRef 
 {
   key: String!
@@ -365,6 +395,19 @@ type CandidateContext
   beats: Float
   key: String
   stem: String
+}
+
+type CycleOption 
+{
+  letter: String!
+  scoreId: ID!
+  audio: FileRef!
+}
+
+type CycleNote 
+{
+  letter: String!
+  note: String!
 }
 
 enum SampleRole {

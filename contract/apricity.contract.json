@@ -1,5 +1,5 @@
 {
-  "version": "e557382108f76aa1",
+  "version": "284b18ca4b38f1ef",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -2785,6 +2785,226 @@
         }
       ],
       "ownerFields": []
+    },
+    "ListeningCycle": {
+      "name": "ListeningCycle",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "question": {
+          "name": "question",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "incumbentScoreId": {
+          "name": "incumbentScoreId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "options": {
+          "name": "options",
+          "type": "CycleOption",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "customType"
+        },
+        "status": {
+          "name": "status",
+          "type": "CycleStatus",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "closedAt": {
+          "name": "closedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "identityClaim": "cognito:username",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "groups": [
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
+    "CycleVerdict": {
+      "name": "CycleVerdict",
+      "fields": {
+        "cycleId": {
+          "name": "cycleId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "judge": {
+          "name": "judge",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "best": {
+          "name": "best",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "notes": {
+          "name": "notes",
+          "type": "CycleNote",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "customType"
+        },
+        "note": {
+          "name": "note",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "savedAt": {
+          "name": "savedAt",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "cycleId",
+        "judge"
+      ],
+      "indexes": [
+        {
+          "name": "cycleVerdictsByCycleId",
+          "queryField": "verdictsByCycle",
+          "partitionField": "cycleId",
+          "sortFields": []
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "judge",
+          "allow": "owner",
+          "identityClaim": "sub",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "operations": [
+            "read"
+          ],
+          "groups": [
+            "admins"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "judge"
+      ]
     }
   },
   "enums": {
@@ -2817,6 +3037,10 @@
       "sample",
       "clip",
       "score"
+    ],
+    "CycleStatus": [
+      "open",
+      "closed"
     ],
     "SampleRole": [
       "source",
@@ -2943,6 +3167,45 @@
         "name": "stem",
         "type": "String",
         "isRequired": false,
+        "isArray": false,
+        "kind": "scalar"
+      }
+    },
+    "CycleOption": {
+      "letter": {
+        "name": "letter",
+        "type": "String",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "scalar"
+      },
+      "scoreId": {
+        "name": "scoreId",
+        "type": "ID",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "scalar"
+      },
+      "audio": {
+        "name": "audio",
+        "type": "FileRef",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "customType"
+      }
+    },
+    "CycleNote": {
+      "letter": {
+        "name": "letter",
+        "type": "String",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "scalar"
+      },
+      "note": {
+        "name": "note",
+        "type": "String",
+        "isRequired": true,
         "isArray": false,
         "kind": "scalar"
       }
@@ -3472,6 +3735,66 @@
           "read"
         ]
       }
+    ],
+    "ListeningCycle": [
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "identityClaim": "cognito:username",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "groups": [
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
+    "CycleVerdict": [
+      {
+        "provider": "userPools",
+        "ownerField": "judge",
+        "allow": "owner",
+        "identityClaim": "sub",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "operations": [
+          "read"
+        ],
+        "groups": [
+          "admins"
+        ]
+      }
     ]
   },
   "storage": {
@@ -3719,6 +4042,30 @@
         "path": "Job/*",
         "readable": [
           "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "ListeningCycle/*",
+        "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "CycleVerdict/*",
+        "readable": [
           "authenticated",
           "members",
           "curators",
