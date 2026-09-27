@@ -1,7 +1,7 @@
 {
   "id": "apricitus-ee4b3222-7b9e-4c6a-91c9-43283fcc0eca",
   "title": "rw_export_daw_set in apricity-web: compile a score and write the set with embedded templates",
-  "description": "Add `rw_export_daw_set(score_ptr, len, options)` to crates/apricity-web/src/lib.rs, wrapping the apricity-daw writer over the compiled Timeline (as `rw_compile` does). Embed the gzipped templates with `include_bytes!`. Returns the set bytes plus a manifest of sample ids and their paths inside the project folder, or located errors in the existing result encoding.\n\nVerification: `cargo build -p apricity-web --release --target wasm32-wasip1` and the Node WASI test that exports examples/march-blues.apr and compares with the CLI's set file. Commit: `feat(apricitus-0656bd-task)`. Depends on apricity-daw from M1.",
+  "description": "Add `rw_export_daw_set(score_ptr, len, options)` to crates/apricity-web/src/lib.rs, wrapping the apricity-daw writer over the compiled Timeline (as `rw_compile` does). Embed the gzipped templates with `include_bytes!`. Returns the set bytes plus a manifest of sample ids and their paths inside the project folder, or located errors in the existing result encoding.\n\nVerification: `cargo build -p apricity-web --release --target wasm32-wasip1` and the Node WASI test that exports examples/march-blues.apr and compares with the CLI's set file. Commit: `feat(apricitus-ee4b32)`. Depends on apricity-daw from M1.\nDependencies:\n  blocked-by: apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
   "type": "task",
   "status": "open",
   "priority": 2,
@@ -23,7 +23,7 @@
   ],
   "comments": [],
   "created_at": "2026-09-27T00:14:57.140258Z",
-  "updated_at": "2026-09-27T00:14:58.572005Z",
+  "updated_at": "2026-09-27T00:15:19.810959Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
