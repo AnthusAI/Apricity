@@ -67,7 +67,9 @@ def main(argv: list[str] | None = None) -> int:
         jobs = [(f, r) for f, r in jobs if f not in skip]
         failed += len(long)
     for f, rec in jobs:
-        mp = manifest_path(f.resolve())
+        # Do NOT resolve() f: its manifest belongs next to it (which may be a symlink), not next
+        # to whatever the symlink points at (see analyze()/write()'s docstrings).
+        mp = manifest_path(f)
         if not args.force and mp.exists():
             old = json.loads(mp.read_text())
             if old.get("source", {}).get("sha256") == hashlib.sha256(f.read_bytes()).hexdigest():

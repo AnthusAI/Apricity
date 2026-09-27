@@ -2561,8 +2561,8 @@
     "profile": "temperley"
    }
   ],
-  "tuning_hz": 445.37,
-  "tuning_cents": 21.0,
+  "tuning_hz": 440.0,
+  "tuning_cents": 0.0,
   "pitch_class_profile": [
    0.4098,
    1.0,
@@ -8349,7 +8349,8 @@
     0.1812,
     0.5872
    ]
-  ]
+  ],
+  "tuning_uncertain": true
  },
  "derived_from": {
   "source": "samples/marine-band/Thunderer.mp3",
