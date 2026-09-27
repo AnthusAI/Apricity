@@ -125,6 +125,7 @@ dependencies = [
  "apricity-data",
  "apricity-dsp",
  "apricity-engine",
+ "apricity-harmony",
  "apricity-score",
  "apricity-sources",
  "axum 0.7.9",

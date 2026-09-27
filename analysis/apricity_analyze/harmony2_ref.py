@@ -240,15 +240,13 @@ def recognise_chord(activation: np.ndarray, known_bass_pc: int | None = None):
         pcp[(MIDI_C1 + i) % 12] += x
     pcp = pcp / pcp.sum()
     if known_bass_pc is None:
-        # sec 2.4's floor: "at or above G1 (49 Hz)". This is the bar-35 fix (Kanbus apricitus-a164db):
-        # the reference's 84-row NNLS simplification (sec 2.1's documented deviation) can, on a
-        # real low-register stem, put spurious post-NNLS activation an octave below the true
-        # fundamental (F2 -> F1/E1/D1 "ghosts", see `emerge_fixture.py`'s bass-stem-sanity
-        # finding). None of those ghosts are real bass notes in this genre or this instrument
-        # register, so the audio-only fallback never considers anything below G1 in the first
-        # place -- it doesn't need to tell a real F1 from a false one, because Phase 1's own
-        # design (sec 2.3, "ground truth first") never uses this fallback for a track whose bass
-        # is already known from the score; this floor only guards the *unknown* case.
+        # sec 2.4's floor: "at or above G1 (49 Hz)". The reference's 84-row NNLS simplification
+        # (sec 2.1's documented deviation) can, on a real low-register stem, put spurious
+        # post-NNLS activation an octave below the true fundamental; below-G1 activation is never
+        # a real bass note at this register, so the audio-only fallback never considers it in the
+        # first place -- it doesn't need to tell a real low note from a false one, because Phase
+        # 1's own design (sec 2.3, "ground truth first") never uses this fallback for a track
+        # whose bass is already known from the score; this floor only guards the *unknown* case.
         floor_idx = max(0, (31 - MIDI_C1))  # G1 = MIDI 31
         thr = 0.25 * activation.max()
         idx = np.where(activation >= thr)[0]
@@ -457,14 +455,19 @@ def q_spacing(notes_by_stem: dict[str, list[int]], allow_maj7_under_bass: bool =
     low_notes = [(stem, n) for stem, n in all_notes if n < SPACING_REGISTER_MIDI]
     if not low_notes:
         return 1.0
+    # Every unordered pair is visited exactly once (`i < j`), independent of the notes' order
+    # within `all_notes` (which itself depends only on `notes_by_stem`'s iteration order, not on
+    # anything musical): a pair counts when AT LEAST ONE of its two notes is below C3, matching
+    # this function's own contract ("pairs of sounding notes ... below C3"), not only when the
+    # lower-indexed one happens to be.
     pairs = 0
     for i in range(len(all_notes)):
         si, ni = all_notes[i]
-        if ni >= SPACING_REGISTER_MIDI:
-            continue
         for j in range(i + 1, len(all_notes)):
             sj, nj = all_notes[j]
             if si == sj:
+                continue
+            if ni >= SPACING_REGISTER_MIDI and nj >= SPACING_REGISTER_MIDI:
                 continue
             d = abs(ni - nj)
             if d == 0 or d > SPACING_MAX_SEMITONES:

@@ -94,6 +94,44 @@ pub fn median_activation(a: &[Vec<f64>]) -> Vec<f64> {
     a.iter().map(|row| median(row.clone())).collect()
 }
 
+/// Each CQT frame's centre time in seconds: frame `i` is centred on sample `i*hop` of the
+/// (unpadded) input, since `cqt()` pads by `n_fft/2` on both sides before framing.
+pub fn frame_times(n_frames: usize, hop: usize, sr: f64) -> Vec<f64> {
+    (0..n_frames).map(|i| (i * hop) as f64 / sr).collect()
+}
+
+/// `(n_beats, N_SEMITONES)`: the per-beat median activation, then a semitone-axis local-max pick
+/// (a note's own-bin neighbours are leakage/harmonics, not a second note). `a` is
+/// `(N_SEMITONES, n_frames)`, row-major per semitone (matching [`nnls_activations`]'s output).
+pub fn beat_aggregate(a: &[Vec<f64>], frame_times: &[f64], tempo: f64, offset_beats: f64, n_beats: usize) -> Vec<Vec<f64>> {
+    let spb = 60.0 / tempo;
+    let mut b = vec![vec![0.0f64; N_SEMITONES]; n_beats];
+    for beat in 0..n_beats {
+        let t0 = (offset_beats + beat as f64) * spb;
+        let t1 = (offset_beats + beat as f64 + 1.0) * spb;
+        let sel: Vec<usize> = frame_times.iter().enumerate().filter(|&(_, &t)| t >= t0 && t < t1).map(|(i, _)| i).collect();
+        if sel.is_empty() {
+            continue;
+        }
+        for (semitone, row) in a.iter().enumerate() {
+            let vals: Vec<f64> = sel.iter().map(|&f| row[f]).collect();
+            b[beat][semitone] = median(vals);
+        }
+    }
+    let mut p = vec![vec![0.0f64; N_SEMITONES]; n_beats];
+    for beat in 0..n_beats {
+        let v = &b[beat];
+        for i in 0..N_SEMITONES {
+            let left = if i > 0 { v[i - 1] } else { 0.0 };
+            let right = if i + 1 < N_SEMITONES { v[i + 1] } else { 0.0 };
+            if v[i] > 0.0 && v[i] >= left && v[i] >= right {
+                p[beat][i] = v[i];
+            }
+        }
+    }
+    p
+}
+
 /// `(root_pc, quality, bass_pc, score)` for one combined `(N_SEMITONES,)` activation vector (sec
 /// 2.4). `known_bass_pc` is the score's own bass pitch class when known; otherwise the lowest
 /// note with >= 25% of the loudest activation is used.
@@ -113,11 +151,29 @@ pub fn recognise_chord(activation: &[f64], known_bass_pc: Option<usize>) -> Opti
     let bass_pc = match known_bass_pc {
         Some(b) => b,
         None => {
+            // sec 2.4's floor: "at or above G1 (49 Hz)". The reference's 84-row NNLS
+            // simplification can, on a real low-register stem, put spurious post-NNLS activation
+            // an octave below the true fundamental; below-G1 activation is never a real bass note
+            // at this register, so the audio-only fallback never considers it. This fallback is
+            // only reached when the caller has no known bass from the score (sec 2.3).
+            let floor_idx = (31i32 - MIDI_C1).max(0) as usize; // G1 = MIDI 31
             let max_v = activation.iter().cloned().fold(0.0f64, f64::max);
             let thr = 0.25 * max_v;
-            let low = activation.iter().position(|&v| v >= thr).unwrap_or_else(|| {
-                activation.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(i, _)| i).unwrap()
-            });
+            let low = activation
+                .iter()
+                .enumerate()
+                .skip(floor_idx)
+                .find(|&(_, &v)| v >= thr)
+                .map(|(i, _)| i)
+                .unwrap_or_else(|| {
+                    activation
+                        .iter()
+                        .enumerate()
+                        .skip(floor_idx)
+                        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                        .map(|(i, _)| i)
+                        .unwrap_or_else(|| activation.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(i, _)| i).unwrap())
+                });
             (MIDI_C1 as usize + low) % 12
         }
     };
