@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-6c5788bd-3fda-4c00-a17c-c22f60218c0a",
+  "title": "Layer-by-layer optimizer: check-layer.py validator and next-layer search",
+  "description": "# Layer-by-layer optimizer (Fable design, 2026-09-27; the product owner's strategy)\nPrimary explorer move: fix the stack (layers the user approved) and search for the best NEXT layer, one role at a time (bass -> drums -> pad -> lead -> texture; full-mix only if the stack has none).\n\nValidator: scripts/check-layer.py STACK_STEMS CANDIDATE_STEMS [--stack-cache F] [--json] -> {score 0-100, gates, terms, weights, findings, pairs, candidate_features}. Reuse check.py's kernel and guards.\nHard gates:\n- not silent (within 18 dB of the loudest stack stem, above -40 LUFS, >=40% of beats);\n- not a double (onset r<0.9 and chroma cosine<0.97 against every stack stem);\n- role gate;\n- tuning within 8 cents;\n- stretch in [0.8,1.25] for complex/texture, [0.67,1.5] for beats.\nSoft terms, as penalties in [0,1] with weights:\n- clash 0.35 (the existing kernel plus chord clash);\n- masking 0.15 (cosine of Bark/ERB band energy per beat, weighted by tonalness, plus register separation);\n- rhythm 0.15 (onset-envelope doubling r>0.6 penalized; rewards filling the stack's quiet 1/4-beat slots up to 0.5; scaled down for pads);\n- density/energy 0.10;\n- artefacts 0.10 (|log2 stretch|, |shift|/7, flatness increase);\n- beat alignment 0.05;\n- taste 0.10 (the rating; 0.5 when unrated).\nscore = 100*(1 - sum w p / sum w). Diversity at finalist selection by MMR (cosine < 0.8).\nSanity checks: silent -> gate; a copy of track 1 -> gate; a semitone shift scores below a fifth shift; white noise loses.\nCache: the stack's features in renders/<stack>.features.npz, computed once per run; per-clip sidecar features keyed by manifest sha.\nPipeline: roles from cheap features -> manifest screen (loudness-weighted beat_chroma through the kernel after the solver shift; bpm best of x0.5/x1/x2 within the gate), top ~60 per role -> sidecar screen, top 12-20 -> render 8-16 bars with --stems -> check-layer -> MMR to 3 finalists -> an inner loop (gain, octave, notch, hp, warp) -> the user A/Bs.\nLog the proxy-vs-render Spearman rho and recall@12 in the notebook.\nStop when the best candidate < the stack objective - 2, the density budget is exceeded, or all roles are filled with a gain < 2.\nRevisit: a one-slot re-audition of earlier layers after each accepted layer (accept if > +1); a beam of 3; drop a branch more than 5 points behind.\nTonight's slice: track 1 = the Funky Nurykabe loop (8 bars, Ave House's tempo, key and chords); one role (bass if the loop lacks low energy, else pad from holds with warp texture); pool = loops + holds, screen to 60, render 12. Composite = check-stems clash 0.6 + masking 0.2 + onset r 0.2, with the silent and doubling gates. Output a ranked table and 12 mixes; the user A/Bs the top 3.\nValidation: log every A/B (stack, A, B, composites, pick); target >70% agreement over 20+ pairs; fit the weights by logistic regression / Bradley-Terry at ~30 pairs.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6fc75c46-36d8-4d00-a3cf-18877a0e5d70",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T03:02:53.564819Z",
+  "updated_at": "2026-09-27T03:02:53.564864Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
