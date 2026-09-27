@@ -22,10 +22,22 @@
         "model": "Opus 5.5",
         "name": "auritus-voice-integration"
       }
+    },
+    {
+      "id": "a0d6b9a6-a5d2-4eac-a1f3-4b3aa3262299",
+      "author": "home",
+      "text": "Production DynamoDB, with the user's OK: deleted the old announcer's Sample, its 8 phrase Clips and 8 Candidates (17 rows), each delete conditional on still belonging to smp_30a881a48deb9081db1d. The new sample smp_b05c3db7d0f08ccc8dd4 was already imported. The 4 voice-layer ScoreRefs still point at the old id in DynamoDB; the next admin 'Import library from bucket' updates them from S3, which already has the new id. After that, close this card.",
+      "created_at": "2026-09-27T00:08:49.861604Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
     }
   ],
   "created_at": "2026-09-26T17:26:28.938504Z",
-  "updated_at": "2026-09-26T17:56:29.688635Z",
+  "updated_at": "2026-09-27T00:08:49.861646Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
