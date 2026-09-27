@@ -3,17 +3,30 @@
   "title": "Analysis: fit-feature sidecars per sample (per-beat tonalness, log bands, onsets, bass share) plus CLAP embeddings per clip and region",
   "description": "Spec section 2b (see the epic's comment) plus CLAP now (user decision). A sidecar npz per sample keyed by manifest sha: per-beat tonalness, 24 log bands on a quarter-beat grid, onsets, bass share; CLAP (LAION, the smallest music-capable checkpoint) audio embeddings per saved clip and per bar-grid region window. Script scripts/fit-features.py; incremental, skips up-to-date samples. Acceptance: all 148 manifests in <= 10 min (CLAP extra budget stated), sidecars <= 10 MB excluding CLAP; CLAP stored separately; a text-prompt probe ('smooth deep house pad', 'brass band') ranks known clips sensibly; tests on a synthetic sample. Disk is tight (~13 GB free): state the model download size before fetching and keep caches out of git.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-7e51f2b5-e837-4442-aa9d-5d11e5295340",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8d6d6e74-ec53-4c89-8449-02338b65358e",
+      "author": "home",
+      "text": "Merged in PR #17 (squash into develop). Sidecars next to manifests (git-ignored): fitfeat 4.8 MB for 124 samples (24 without a beat grid, mostly one-shots), CLAP (laion/clap-htsat-unfused; larger_clap_music's text tower is degenerate with transformers 5.17) 9.7 MB. Chunked subprocesses plus forward batches of 8 keep peak RSS ~2 GB. tests/test_features.py 13/13.",
+      "created_at": "2026-09-27T13:27:53.635293Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T12:07:54.142303Z",
-  "updated_at": "2026-09-27T12:07:54.142329Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T13:27:53.687281Z",
+  "closed_at": "2026-09-27T13:27:53.687243Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
