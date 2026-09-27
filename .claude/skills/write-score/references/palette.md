@@ -37,6 +37,8 @@ Anything above about −35 dB RMS is usable. Use the region from just before the
 
 ## Traps
 
+- **The marine-band drum stems aren't pitch-neutral.** The stem separation left horn bleed in them, so the harmony checker hears pitches there. Keep them low in the mix, high-pass them, or use the Salamander kit when the harmony matters.
+
 - **No manifest, no sample.** The compiler refuses unanalyzed audio: "has no analysis yet".
 - **Audio lives outside git.** In a worktree, `audition.sh` links the main checkout's audio in. Plain `apricity explain` and `compile` need it, and only `render` takes `--library`.
 - **`half` / `speed` don't stretch pitched tracks.** A pitched note plays at the clip's own length. Use `release` to let it ring on past the clip into the recording.

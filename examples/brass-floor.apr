@@ -1,0 +1,88 @@
+# Brass Floor — deep house from The Liberty Bell (1893). One-bar loops of the band, each already on
+# its own chord, are sequenced like a sampler, untouched: B♭maj7, Dm7, Gm7 and C, two bars each. A
+# tuba loop follows the roots, a band phrase and a horn hit answer, and a soft kit comes in underneath.
+# The build, four bars at a time: the band alone and raw (1–4); EQ takes the old record's edge off
+# and the tuba comes in (5–8); the band phrase and a reversed swell (9–12); the beat and compression
+# (13–20); a breath (21–22); the full groove with hats (23–32).
+tempo 120
+key D minor
+samples ../samples
+
+clip band   = marine-band/stems/LibertyBell/other.wav
+clip tuba   = marine-band/stems/LibertyBell/bass.wav  loop-3             # a one-bar tuba figure on C
+clip phrase = marine-band/stems/LibertyBell/other.wav  phrase-1          # the opening phrase
+clip hit    = marine-band/stems/LibertyBell/other.wav  shot-12           # a horn hit on E♭4
+clip swell  = marine-band/stems/LibertyBell/other.wav  hold-8            # a held A2
+clip kick   = salamander-drumkit/OH/kick_OH_F_1.wav         warp repitch  speed 0.85
+clip rim    = salamander-drumkit/OH/snareStick_OH_F_1.wav   warp repitch
+clip hat    = salamander-drumkit/OH/hihatClosed_OH_F_1.wav  warp repitch
+clip open   = salamander-drumkit/OH/hihatOpen_OH_F_1.wav    warp repitch
+
+# The band's own one-bar loops, one per chord: b and d sit on B♭ with a D-minor colour, g on G minor,
+# c on C.
+kit loops
+  b = band  loop-1
+  d = band  loop-2
+  g = band  loop-4
+  c = band  loop-3
+
+kit drums
+  kick = kick
+  rim  = rim
+  hat  = hat
+  open = open
+
+chords (VImaj7*2 i7*2 iv7*2 VII*2)*4
+
+# The band, one loop a bar, played as recorded (grid 1: a step is a bar). The processing arrives
+# with the build: raw at first, the old record's edge taken off from bar 5, compression at the drop.
+track loops  as band  steps "b d b d g g c c"  grid 1  transpose 0
+  eq    lowcut 20  highcut 20k  high 0@2500
+  comp  2:1  -22dB  attack 30ms  release 250ms  makeup 2dB  mix 0%
+  send  plate 20%
+  automate eq.lowcut   1=20  5=120
+  automate eq.highcut  1=20k  5=6k  13=5k
+  automate eq.high     1=0dB  5=-4dB
+  automate comp.mix    step  1=0%  13=100%
+
+# The tuba figure, moved to each chord's root.
+track tuba  voicing root  octave 2  steps "x"  grid 1  bars 5-32  volume 6
+  eq    highcut 900
+  comp  3:1  -14dB  attack 20ms  release 200ms
+
+# The band's opening phrase over the second time round, and its echo later on.
+track phrase  at 9 25  volume -3
+  eq    lowcut 150  highcut 5k  peak -3@2500
+  send  plate 30%  echo 20%
+
+# A horn hit answers every other bar, late, into the echo.
+track hit  voicing root  steps ". . . . . . . . . . x . . . . . | . . . . . . . . . . . . . . . ."  bars 13-32  volume -10
+  eq    highcut 6k
+  send  echo 40%  plate 30%
+
+# Reversed held chords swell into each drop.
+track swell  voicing seventh  reverse  at 12:1 22:1  volume -10
+  eq    highcut 6k
+  send  plate 40%
+
+# The beat drops at 13, breathes at 21–22, and returns with the hats at 23.
+track drums.kick  steps "x . . . x . . . x . . . x . . ."  velocity 90  bars 13-32
+  eq    highcut 4k
+  automate volume  step  13=0dB  21=-60dB  23=0dB
+track drums.rim   steps ". . . . x . . . . . . . x . . ."  velocity 70  bars 13-32
+  send  plate 20%
+  automate volume  step  13=0dB  21=-60dB  23=0dB
+track drums.hat   steps "x x x x x x x x x x x x x x x x"  velocity 55  swing 56  humanize 6ms 20%  bars 23-32  volume -6
+track drums.open  steps ". . x . . . x . . . x . . . x ."  velocity 60  swing 56  bars 23-32  volume -10
+  eq    highcut 8k
+
+return plate
+  eq      lowcut 250
+  reverb  hall  3.2s  predelay 30ms  damp 55%
+return echo  volume -8
+  delay   1/4.  feedback 40%  hp 500  lp 3k  pingpong
+
+master
+  eq       lowcut 30  highcut 14k
+  comp     2:1  -14dB  attack 30ms  release 250ms
+  loudness -14LUFS
