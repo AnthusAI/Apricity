@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-0c1a6be6-d23c-4bbe-a28d-a8f88c75aff6",
+  "title": "Phase 1: render --stems, a rendered clash check, and the audition loop",
+  "description": "1a apricity render --stems DIR (each track soloed through its groups and sends, pre-master, as 32-bit float, plus stems.json; bit-identical without the flag). 1b analysis/apricity_analyze/check.py and scripts/check-stems.py: per-stem, per-beat chroma weighted by loudness and tonalness; the clash kernel K=[0,1,.35,0,0,.05,.7,0,.05,0,.3,1], with bass m2/M2/M7 doubled; chord clash; a 0-100 objective with energy, density, coverage and tuning guards against a baseline; prose findings, leave-one-out, smear, wrap; --json; renders/log.jsonl. 1c audition.sh --check wired to both. Tests on synthetic stems.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6fc75c46-36d8-4d00-a3cf-18877a0e5d70",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:42:07.293246Z",
+  "updated_at": "2026-09-27T01:42:07.293281Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
