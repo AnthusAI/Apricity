@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-5309e434-9a8d-4211-a66c-90f6e6834873",
+  "title": "Cloud-created score is missing from the hosted Mine results",
+  "description": "A score created through the authenticated production CLI is retrievable through AppSync, but does not appear on https://apricity.anth.us/scores with mine=1.\n\nExpected: a signed-in owner sees a newly created cloud score in the hosted Scores list.\n\nObserved: scr_scores_mushroom-jazz-drift_apr exists in production and is owned by google_101686548942916378620, which the web client recognizes as one of the signed-in user’s owner identities, but the hosted view omits it.\n\nInvestigate the web list query, filters, and display conversion; add a regression test and fix the incompatible CLI payload or web filtering behavior.",
+  "type": "bug",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T22:54:33.127385Z",
+  "updated_at": "2026-09-27T22:54:33.127413Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
