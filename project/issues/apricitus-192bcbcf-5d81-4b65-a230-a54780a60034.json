@@ -58,10 +58,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "0c012f9b-9dce-4d11-b609-a715aa2fbab9",
+      "author": "home",
+      "text": "Rendered and measured three otherwise identical Amber Window versions. A (Ave bass) scored 89.3 with a 0.145 worst-span clash. B (same-source Emerge bass) scored 96.8 with a 0.062 worst-span clash and no guard violation. C (no bass) scored 98.0 but tripped the coverage guard because removing the bass artificially improves consonance while leaving Fmaj7 underrepresented. Measurement-led recommendation: B; listener will choose by ear.",
+      "created_at": "2026-09-27T20:40:01.733891Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-27T19:52:57.494222Z",
-  "updated_at": "2026-09-27T20:30:34.605467Z",
+  "updated_at": "2026-09-27T20:40:01.733925Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
