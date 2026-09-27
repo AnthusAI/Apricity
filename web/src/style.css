@@ -699,3 +699,21 @@ body.nav-open { overflow: hidden; }
 .nav-label { font-size: 20px; font-weight: 620; letter-spacing: -.01em; }
 .nav-sub { font-size: 13.5px; line-height: 1.4; color: var(--muted); }
 @media (max-width: 600px) { .nav-grid { grid-auto-rows: auto; } .nav-item { padding: 14px 16px; } .nav-label { font-size: 18px; } }
+
+/* ---- loading: a skeleton of the page while its analysis loads, then a progress bar while its recording does */
+.skeleton { display: grid; gap: 12px; }
+.bone { border-radius: 8px; background: linear-gradient(90deg, color-mix(in srgb, var(--fg) 6%, transparent) 0%, color-mix(in srgb, var(--fg) 11%, transparent) 50%, color-mix(in srgb, var(--fg) 6%, transparent) 100%); background-size: 200% 100%; animation: bone 1.4s ease-in-out infinite; }
+@keyframes bone { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .bone { animation: none; } }
+.bone-title { height: 26px; width: 40%; }
+.bone-line { height: 14px; width: 70%; }
+.bone-line.short { width: 45%; }
+.bone-stats { display: flex; flex-wrap: wrap; gap: 14px; }
+.bone-stat { height: 34px; width: 90px; }
+.bone-wave { height: 195px; border-radius: 12px; }
+.wave-card { position: relative; }
+.wave-card.rough .wave { opacity: .45; }
+.wave-loading { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 88%, transparent); font-size: 12.5px; color: var(--muted); pointer-events: none; }
+.wave-bar { width: 180px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.wave-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.wave-loading .bad { color: var(--bad); }
