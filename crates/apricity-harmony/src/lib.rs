@@ -10,11 +10,15 @@
 //!
 //! All arithmetic is `f64`, matching the reference (numpy defaults to `float64`).
 
+pub mod chord;
 pub mod cqt;
 pub mod nnls;
 pub mod notes;
 pub mod pitch;
+pub mod quality;
 
+pub use chord::{chord_inversion, detect_extensions, notes_from_activation, recognise_chord_full, Heard};
 pub use cqt::{cqt, N_BINS, SR};
-pub use notes::{chord_match_score, fold_to_semitones, recognise_chord, transposition_map, N_SEMITONES};
+pub use notes::{beat_aggregate, chord_match_score, fold_to_semitones, frame_times, recognise_chord, transposition_map, N_SEMITONES};
 pub use pitch::{cents_offset, cents_offset_from_cqt};
+pub use quality::{check_span_guards, compute_q, consonance_v1_ported_per_beat, fold_activation_to_chroma, objective_v2_for_span, window_objective, written_quality_from_tones, SpanResult, WindowResult, PITCH_NAMES, Q};

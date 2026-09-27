@@ -214,11 +214,9 @@ def test_q_is_1_for_an_exactly_written_chord_with_known_bass():
 
 
 def test_spacing_does_not_penalise_a_maj7_a_semitone_under_the_bass():
-    """The user's 2026-09-27 decision (epic `apricitus-445cae` comment `e41349`): a maj7's 7th
-    sitting a semitone under the bass in its own octave is at most neutral, never a clash -- the
-    user heard the Fmaj7 bars with and without that E2-under-F2 component and said "Those are
-    both awesome!". A genuine close dissonant pair below C3 that ISN'T the maj7-under-bass shape
-    (e.g. a major 2nd) must still be penalised."""
+    """A maj7's 7th sitting a semitone under the bass, in its own octave, is treated as colour,
+    not mud: at most neutral, never a clash. A genuine close dissonant pair below C3 that ISN'T
+    the maj7-under-bass shape (e.g. a major 2nd) must still be penalised."""
     maj7_under_bass = {"bass": [41], "loop": [40]}  # F2, E2 (a semitone apart)
     assert h.q_spacing(maj7_under_bass) == 1.0
 
@@ -270,12 +268,10 @@ def test_coverage_guard_fires_when_a_chord_tone_is_nearly_silent():
 
 
 def test_recognise_chord_bass_fallback_never_picks_below_g1():
-    """The bar-35 fix (Kanbus `apricitus-a164db`): sec 2.4's own floor, "the lowest extracted
-    note ... at or above G1 (49 Hz)", applied to the audio-only bass fallback. Reproduces the
-    documented failure mode (`emerge_fixture.py`'s bass-stem-sanity finding: the reference's
-    84-row NNLS simplification can put spurious activation an octave low, F1/E1/D1 "ghosts" under
-    a real F2) directly at the `recognise_chord` level: with F1 given MORE mass than the real F2,
-    the audio-only fallback must still land on F2 (index >= G1's), never the F1 ghost."""
+    """Sec 2.4's own floor, "the lowest extracted note ... at or above G1 (49 Hz)", applied to the
+    audio-only bass fallback: the reference's 84-row NNLS simplification can put spurious
+    activation an octave below a real low-register fundamental, so the fallback must never pick a
+    below-G1 candidate, even when it has more mass than the real note an octave above."""
     v = np.zeros(h.N_SEMITONES)
     f1 = h.NAMES.index("F") + 12 * (1 + 1) - h.MIDI_C1
     f2 = h.NAMES.index("F") + 12 * (2 + 1) - h.MIDI_C1
@@ -286,13 +282,12 @@ def test_recognise_chord_bass_fallback_never_picks_below_g1():
 
 
 def test_combined_pipeline_hears_emerge_bar35_bass_as_f_not_an_octave_low(tmp_path):
-    """End-to-end acceptance test for the bar-35 fix (Kanbus `apricitus-a164db`, the "known gap"
-    the task brief calls out): running the FULL combined pipeline (`analyze_stems_dir`) on a
-    fresh real render of `examples/ave-emerge.apr` bar 35 (`VImaj7`, Fmaj7/F) must hear the span's
-    bass as F, not the F1/E1/D1 octave-low ghost the reference's 84-row NNLS simplification can
-    produce (recorded in `emerge_fixture.py`'s bass-stem-sanity docstring). Uses the DEBUG binary
-    (`emerge_fixture.DEBUG_BINARY`) because the combined pipeline needs `stems.json`'s `bass`/
-    `events` fields, which the release binary in this checkout predates."""
+    """End-to-end acceptance test: running the FULL combined pipeline (`analyze_stems_dir`) on a
+    fresh real render of a bar whose bass track is known from the score must hear that bass at
+    its real pitch, not an octave-low artifact the reference's 84-row NNLS simplification can
+    produce. Uses the DEBUG binary (`emerge_fixture.DEBUG_BINARY`) because the combined pipeline
+    needs `stems.json`'s `bass`/`events` fields, which the release binary in this checkout
+    predates."""
     if not emerge_fixture.library_available(emerge_fixture.DEFAULT_SAMPLES_ROOT):
         pytest.skip(f"sample library audio not present under {emerge_fixture.DEFAULT_SAMPLES_ROOT}")
     if not emerge_fixture.DEBUG_BINARY.exists():
@@ -332,12 +327,12 @@ def _replay_window(fixture_song: dict) -> dict:
 
 
 def test_lounge_fixture_ranks_emerge_first_with_q_weight_10():
-    """Acceptance test for Kanbus `apricitus-a164db` (sec 5.1 of spec-harmony-v2.md): of the four
-    lounge bright-loop swaps rendered over bars 33-40, the user's pick (Emerge, "much better...
-    good enough that I sent it to my business partner") must rank FIRST by `objective_v2`, even
-    though v1 alone ranked it only 2nd-3rd (`renders/log.jsonl`'s `listen-note` at 12:38: "checker
-    objective ranked Emerge 3rd of 4"). Replays the committed `lounge_summaries.json` fixture (no
-    audio, no render) built by rendering the real four `.apr` windows once."""
+    """Acceptance test (sec 5.1 of spec-harmony-v2.md): of a set of bright-loop swaps rendered
+    over the same window, the candidate the listener preferred must rank FIRST by `objective_v2`,
+    even though v1 alone did not rank it first (evidence for the preference and the v1 gap lives
+    in the Kanbus task and `renders/log.jsonl`, not here). Replays the committed
+    `lounge_summaries.json` fixture (no audio, no render) built by rendering the real windows
+    once."""
     fixture = json.loads((FIXTURES / "lounge_summaries.json").read_text())
     scores = {name: _replay_window(song)["objective_v2"] for name, song in fixture.items()}
     ranked = sorted(scores, key=scores.get, reverse=True)
@@ -345,10 +340,10 @@ def test_lounge_fixture_ranks_emerge_first_with_q_weight_10():
 
 
 def test_cycle2_fixture_ranks_the_incumbent_keep_first_with_q_weight_10():
-    """Acceptance test (sec 5.2): of the four `c2-ave-bright` candidates, the user's preferred
-    incumbent ("keep", Funky Nurykabe, 3 stars) must rank first by `objective_v2` at weight 10 --
-    matching both v1 and the user's verdict (`renders/log.jsonl`'s `ab-pair` at 07:34:28).
-    Replays the committed `cycle2_summaries.json` fixture (no audio, no render)."""
+    """Acceptance test (sec 5.2): of a set of bright-loop candidates, the listener's preferred
+    incumbent must rank first by `objective_v2` at weight 10, matching both v1 and the recorded
+    verdict (see the Kanbus task and `renders/log.jsonl` for the verdict itself). Replays the
+    committed `cycle2_summaries.json` fixture (no audio, no render)."""
     fixture = json.loads((FIXTURES / "cycle2_summaries.json").read_text())
     scores = {name: _replay_window(song)["objective_v2"] for name, song in fixture.items()}
     ranked = sorted(scores, key=scores.get, reverse=True)

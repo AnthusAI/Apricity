@@ -1,5 +1,6 @@
 //! `apricity`: compile, explain and render Apricity scores.
 
+mod check;
 mod migrate;
 mod play;
 mod render;
@@ -96,6 +97,23 @@ enum Cmd {
         #[command(subcommand)]
         action: sync::Action,
     },
+    /// Harmony v2 objective (v1 and v2) for a `--stems` render: chord recognition, Q, guards.
+    Check {
+        /// A `--stems` render directory (holds stems.json and <track>.wav files).
+        stems_dir: PathBuf,
+        /// Print the full report as JSON instead of prose.
+        #[arg(long)]
+        json: bool,
+        /// Baseline file to compare against (written on first use).
+        #[arg(long)]
+        baseline: Option<PathBuf>,
+        /// Don't flag this track as suspiciously quiet vs the baseline (repeatable).
+        #[arg(long = "allow-mute")]
+        allow_mute: Vec<String>,
+        /// Append a summary line here.
+        #[arg(long)]
+        log: Option<PathBuf>,
+    },
     /// Import a repository's samples, manifests, candidates and scores into a library.
     Migrate {
         /// Repository root (holds samples/, library/, examples/).
@@ -151,6 +169,16 @@ fn main() -> ExitCode {
             }
         };
     }
+    if let Cmd::Check { stems_dir, json, baseline, allow_mute, log } = &cli.cmd {
+        let opts = check::Options { stems_dir: stems_dir.clone(), json: *json, baseline: baseline.clone(), allow_mute: allow_mute.clone(), log: log.clone() };
+        return match check::run(&opts) {
+            Ok(_) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
     if let Cmd::Migrate { from, to, link } = &cli.cmd {
         return match migrate::run(migrate::Options { from: from.clone(), to: to.clone(), link: *link }) {
             Ok(code) => code,
@@ -191,7 +219,7 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } | Cmd::Check { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let compiled = match &cli.cmd {
@@ -209,7 +237,7 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } => unreachable!(),
+        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } | Cmd::Check { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {

@@ -13,6 +13,7 @@ path = "src/main.rs"
 apricity-data = { workspace = true, features = ["storage"] }
 apricity-dsp.workspace = true
 apricity-engine = { workspace = true, features = ["decode"] }
+apricity-harmony.workspace = true
 apricity-score.workspace = true
 apricity-sources.workspace = true
 serde_json.workspace = true
