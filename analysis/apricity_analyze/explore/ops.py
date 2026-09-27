@@ -73,13 +73,34 @@ def _clip_decl_index(lines: list[str], clip: str) -> int:
     raise OpError(f"no `clip {clip} = ...` line in the score")
 
 
+def _split_comment(line: str) -> tuple[str, str]:
+    """`(code, comment)`: the parser's rule (crates/apricity-score/src/dsl.rs `words`), a comment
+    starts at the first `#` outside double quotes. `comment` keeps its `#` ("" when there is none)."""
+    in_quote = False
+    for i, c in enumerate(line):
+        if c == '"':
+            in_quote = not in_quote
+        elif c == "#" and not in_quote:
+            return line[:i].rstrip(), line[i:]
+    return line.rstrip(), ""
+
+
+def _edit_code(line: str, edit) -> str:
+    """Apply `edit` to the code part of `line` only, then put its trailing comment back, so an op
+    never writes an option into a comment or matches words inside one."""
+    code, comment = _split_comment(line)
+    code = edit(code).rstrip()
+    return f"{code}  {comment}" if comment else code
+
+
 def _set_inline_option(line: str, option: str, value: str | None) -> str:
     """Remove any existing `<option> <token>` from a track/clip declaration line, then append
-    `<option> <value>` when `value` isn't None (removal only, when it is)."""
-    line = re.sub(rf"\s+{re.escape(option)}\s+\S+", "", line)
-    if value is not None:
-        line = f"{line.rstrip()}  {option} {value}"
-    return line
+    `<option> <value>` when `value` isn't None (removal only, when it is). A trailing comment stays
+    at the end of the line, untouched."""
+    def edit(code: str) -> str:
+        code = re.sub(rf"\s+{re.escape(option)}\s+\S+", "", code)
+        return f"{code.rstrip()}  {option} {value}" if value is not None else code
+    return _edit_code(line, edit)
 
 
 def _hz(hz: float) -> str:
@@ -96,8 +117,10 @@ def cast_swap(text: str, *, role: str, sample: str, clip: str) -> str:
     new_text, n = re.subn(rf"^(clip\s+{re.escape(role)}\s*=\s*)\S+\s+\S+.*$", rf"\g<1>{sample}  {clip}", text, flags=re.M)
     if n == 0:
         raise OpError(f"no `clip {role} = ...` line in the score")
-    new_text = re.sub(rf"^(track\s+{re.escape(role)}\b[^\n]*?)\s+transpose\s+\S+", r"\1", new_text, flags=re.M)
-    new_text = "\n".join(l for l in new_text.splitlines() if f"# only:{role}" not in l)
+    track = re.compile(rf"^track\s+{re.escape(role)}(\s|$)")
+    drop_transpose = lambda code: re.sub(r"\s+transpose\s+\S+", "", code)
+    new_text = "\n".join(_edit_code(l, drop_transpose) if track.match(l) else l
+                          for l in new_text.splitlines() if f"# only:{role}" not in l)
     return new_text if new_text.endswith("\n") else new_text + "\n"
 
 
@@ -116,13 +139,13 @@ def track_eq_notch(text: str, *, track: str, hz: float, gain: int, q: int) -> st
     start = _track_decl_index(lines, track)
     end = _track_block_end(lines, start)
     eq_idx = [i for i in range(start + 1, end) if lines[i].strip().split(" ", 1)[0] == "eq"]
-    total_peaks = sum(lines[i].count("peak") for i in eq_idx)
+    total_peaks = sum(_split_comment(lines[i])[0].count("peak") for i in eq_idx)
     if total_peaks >= MAX_NOTCHES_PER_TRACK:
         raise OpError(f"{track}: already at the {MAX_NOTCHES_PER_TRACK}-notch cap")
     token = f"peak {gain}@{_hz(hz)} q{q}"
     for i in eq_idx:
-        if lines[i].count("peak") < MAX_PEAKS_PER_EQ_LINE:
-            lines[i] = f"{lines[i].rstrip()}  {token}"
+        if _split_comment(lines[i])[0].count("peak") < MAX_PEAKS_PER_EQ_LINE:
+            lines[i] = _edit_code(lines[i], lambda code: f"{code}  {token}")
             return _join(lines)
     lines.insert(start + 1, f"  eq  {token}")
     return _join(lines)
@@ -138,10 +161,10 @@ def track_hp(text: str, *, track: str, hz: float, slope: str = "24dB", on: bool 
         raise OpError(f"track.hp slope must be 12dB or 24dB, not {slope}")
     lines = _lines(text)
     start = _track_decl_index(lines, track)
-    line = re.sub(r"\s+filter\s+(lp|hp)\s+\S+(\s+res\s+\S+)?(\s+(12|24)dB)?", "", lines[start])
-    if on:
-        line = f"{line.rstrip()}  filter hp {_hz(hz)} {slope}"
-    lines[start] = line
+    def edit(code: str) -> str:
+        code = re.sub(r"\s+filter\s+(lp|hp)\s+\S+(\s+res\s+\S+)?(\s+(12|24)dB)?", "", code)
+        return f"{code.rstrip()}  filter hp {_hz(hz)} {slope}" if on else code
+    lines[start] = _edit_code(lines[start], edit)
     return _join(lines)
 
 
@@ -200,7 +223,7 @@ def track_volume(text: str, *, track: str, delta: int) -> str:
         raise OpError(f"track.volume delta must be one of -4, -2, 2, 4, not {delta}")
     lines = _lines(text)
     start = _track_decl_index(lines, track)
-    m = re.search(r"\bvolume\s+([+-]?\d+(?:\.\d+)?)", lines[start])
+    m = re.search(r"\bvolume\s+([+-]?\d+(?:\.\d+)?)", _split_comment(lines[start])[0])
     current = float(m.group(1)) if m else 0.0
     lines[start] = _set_inline_option(lines[start], "volume", f"{current + delta:g}")
     return _join(lines)
