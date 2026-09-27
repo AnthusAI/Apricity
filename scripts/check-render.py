@@ -5,6 +5,13 @@
 
 Reports how far detected beats sit from the score's grid, the tuning of the mix, and for each
 chord span the share of pitch-class energy on the target chord's tones (3 random notes ≈ 25%).
+
+Two known gaps, not fixed here: chord-tone share isn't consonance (it can't see a maj7 held a
+semitone above its own root -- the harshest interval there is), and a WAV rendered with `--bars`
+misaligns this script's chord-span timing (it assumes the render starts at beat 0). Both are
+superseded by `apricity render --stems` + `scripts/check-stems.py`, which measure interval
+clashes per stem on the score's own beat grid and correct for `--bars`' offset via `stems.json`'s
+`offset_beats`. Use that for anything `--bars`-restricted, or for a real harmony/clash read.
 """
 
 import json
@@ -21,10 +28,11 @@ NAMES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
 
 def main(score: str, wav: str) -> None:
     tl = json.loads(subprocess.run([str(ROOT / "target/release/apricity"), "compile", score], check=True, capture_output=True, text=True).stdout)
-    from apricity_analyze.analyze import SR, analyze, write  # noqa: F401  (heavy imports after arg parsing)
+    from apricity_analyze.analyze import SR, analyze  # noqa: F401  (heavy imports after arg parsing)
 
+    # Analyze in memory only: this is a one-off round-trip check on a render, not a sample to
+    # catalog, so it no longer writes a `<wav>.apricity.json` manifest as a side effect.
     m = analyze(pathlib.Path(wav), with_notes=False)
-    write(m, pathlib.Path(wav))
     spb = 60 / tl["tempo"]
     beats = np.array(m["rhythm"]["beats"])
     err = np.abs(beats / spb - np.round(beats / spb)) * spb * 1000
