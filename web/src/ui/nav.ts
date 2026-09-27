@@ -29,7 +29,9 @@ export const NAV: NavItem[] = [
   { page: "listen", tab: "listen", label: "Listen", sub: "Rate blind candidates from a listening cycle", href: "/listen" },
 ];
 
-const MENU_W = 44; // the menu button, with its gap: the tabs need this much more room to come back
+/** How much more room than they need the tabs must have to come back out of the menu (a scrollbar coming and going,
+ * a status line changing, mustn't flip them back and forth). */
+const SLACK = 24;
 
 /**
  * Watch the bar: collapse its tabs into the menu button when they don't fit. `go` follows a chosen page (a plain
@@ -81,18 +83,39 @@ export function mountNav(bar: HTMLElement, tabs: HTMLElement, go: (page: Page) =
   document.addEventListener("keydown", (e) => e.key === "Escape" && shut());
   window.addEventListener("popstate", shut);
 
-  // Collapse when the tabs overflow their room; come back only when they'd fit with the button gone (no flicker).
+  // The tabs' room is the bar less everything else in it (the brand, the transport, search, the account badge). That
+  // doesn't change when the tabs fold into the menu, so folding can't undo its own reason (measuring the tabs' own box
+  // did: they flickered in and out many times a second). Collapse when they don't fit; come back with SLACK to spare.
+  const roomForTabs = () => {
+    const cs = getComputedStyle(bar);
+    const gap = parseFloat(cs.columnGap) || 0;
+    let room = bar.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    let shown = 0;
+    for (const c of bar.children) {
+      if (c === tabs || c === button || !(c instanceof HTMLElement) || c.hidden || getComputedStyle(c).display === "none") continue;
+      room -= c.getBoundingClientRect().width;
+      shown++;
+    }
+    return room - gap * shown; // a gap between the tabs and each other thing
+  };
+  // What the tabs themselves take (the strip stretches to fill the bar, so its own width says nothing).
+  const tabsNeed = () => {
+    const gap = parseFloat(getComputedStyle(tabs).columnGap) || 0;
+    const links = [...tabs.children].filter((c): c is HTMLElement => c instanceof HTMLElement && !c.hidden);
+    return links.reduce((w, a) => w + a.getBoundingClientRect().width, 0) + gap * Math.max(0, links.length - 1);
+  };
   const fit = () => {
     const collapsed = bar.classList.contains("nav-collapsed");
-    const need = tabs.scrollWidth;
-    const room = tabs.clientWidth + (collapsed ? MENU_W : 0);
-    const collapse = need > room + 1;
+    const need = tabsNeed();
+    const room = roomForTabs();
+    const collapse = collapsed ? need + SLACK > room : need > room;
     if (collapse !== collapsed) bar.classList.toggle("nav-collapsed", collapse);
     if (!collapse) shut();
   };
   const watch = new ResizeObserver(fit);
   watch.observe(bar);
-  watch.observe(tabs); // its room changes with what's beside it (the transport's status line)
+  // What's beside the tabs changes size too (the transport's status line, the search box growing while you type).
+  for (const c of bar.children) if (c !== tabs && c !== button) watch.observe(c);
   void document.fonts?.ready.then(fit);
   fit();
 }
