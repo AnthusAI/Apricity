@@ -166,6 +166,7 @@ name = "apricity-dsp"
 version = "0.1.0"
 dependencies = [
  "cc",
+ "serde_json",
 ]
 
 [[package]]

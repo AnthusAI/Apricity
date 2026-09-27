@@ -389,6 +389,7 @@ difference.
 | `eq`, `comp`, `limit` | ✓ | ✓ | ✓ |
 | `reverb`, `delay` | ✓ (25% wet) | ✓ (group 25% wet; return all wet) | ✗ put them on a return track |
 | `filter` (chain effect) | ✓ | ✓ | ✗ not yet |
+| `harmonic` | ✓ | ✓ | ✗ put it on a track, group or return |
 | `pan` | ✓ | | |
 | `send` | ✓ | | |
 | `automate` | ✓ | ✓ | ✗ automate a group track instead |
@@ -406,12 +407,24 @@ A track's `volume` is its **fader**; its effects run before it, and `pan` and th
 | `reverb` | `reverb plate 1.8s predelay 20ms damp 35% mix 30%` | `room`, `hall` (default) or `plate`; a decay in seconds (0.1–20; default room 0.8 s, hall 2.4 s, plate 1.6 s); `predelay` 0–500 ms; `damp` and `mix` 0–100% |
 | `delay` | `delay 1/8. feedback 35% hp 400 lp 4k pingpong mix 30%` | the time first: a [note value](#units) or `350ms`; `feedback` 0–95%; `hp` / `lp` Hz on the echoes; `pingpong` bounces them left and right; `mix` 0–100% |
 | `filter` | `filter lp 800 res 40% 24dB` | `lp`, `hp` or `bp` (band-pass) first, then Hz (20–20000); optional `res` 0–100% (default 0%, today's gentle Q; 100% a strong, stable resonant peak); optional `12dB` (default) or `24dB` slope. On a track, group or return (not the master yet) |
+| `harmonic` | `harmonic cut 9dB tolerance 30c harmonics 6 range 80..4k glide 40ms mix 100%` | The chord-following EQ: follows the score's own chord progression, re-targeting on every chord change. `cut` (default), `boost` or `both` first; then a bare `NdB` sets the cut depth (0–24 dB, default 9) — in `boost` mode (without an explicit `boost NdB`) that same bare number is the boost amount instead, since there's nothing to cut; `boost NdB` explicitly sets the boost amount (0–18 dB, default 6; needed alongside the bare depth in `both` mode, where both apply at once); `tolerance Nc` sets each band's half-width in cents (5–100, default 30 — the notch's tolerance: tight is surgical, wide is a broader, more colored effect); `harmonics N` protects that many of a chord tone's own overtones from being cut (0–8, default 6; `harmonics 0` is closer to "autotune"); `range lo..hi` limits which notes it touches (Hz, default 80..4k); `glide` ramps each band's gain at a chord change (0–500 ms, default 40); `mix` is the wet share (default 100%); `tune` sets the A4 reference (400–480 Hz, default 440). A score with no `chords` line makes it a no-op. On a track, group or return (not the master) |
 | `pan` | `pan -20` | −100 (left) to 100 (right); tracks only |
 | `send` | `send plate 30% echo -12dB` | one or more return track + level pairs; tracks only |
 | `loudness` | `loudness -14LUFS` | the master's target, −40 to −5 LUFS; master only |
 
 `mix` is the wet share. Under a return track it defaults to 100%, since a return is all effect;
-under a track or a group track, which carry the music itself, it defaults to 25%. Delays in note values follow the tempo.
+under a track or a group track, which carry the music itself, it defaults to 25% (`harmonic` is
+the exception: it defaults to 100% wet, since a partial mix just reintroduces the wrong notes it cut).
+Delays in note values follow the tempo.
+
+#### `harmonic` presets
+
+These aren't built into the language — they're starting points to write out and adjust by ear:
+
+- **cleanup** (invisible): `harmonic cut 6dB tolerance 20c harmonics 6 range 100..3k glide 60ms`
+- **autotune-ish**: `harmonic cut 14dB tolerance 40c harmonics 0 range 60..6k glide 15ms`
+- **tuned resonance**: `harmonic boost 10dB tolerance 12c range 80..2k glide 120ms mix 60%`
+- **chord-comb pad** (on a noise or texture track): `harmonic both 18dB boost 14dB tolerance 8c harmonics 2 range 60..8k glide 250ms`
 
 ### Automation
 
@@ -444,8 +457,12 @@ Two points at the same position jump instantly (`13=10% 13=40%`).
 - `reverb.mix`, `delay.mix` — the reverb's or delay's wet share, %
 - `filter.cutoff` — a `filter` chain effect's cutoff, Hz (log ramp)
 - `width` — stereo width, % (0 = mono, 100 = unchanged, 200 = double)
+- `harmonic.depth`, `harmonic.boost` — the chord-following EQ's cut/boost amount, dB
+- `harmonic.tolerance` — its band half-width, cents (5–100)
+- `harmonic.mix` — its dry/wet, %
+- `harmonic.glide` — its chord-change ramp, ms
 
-`eq2.highcut` means the second eq in the chain, `comp2.mix` the second comp, `filter2.cutoff` a second filter effect, etc.
+`eq2.highcut` means the second eq in the chain, `comp2.mix` the second comp, `filter2.cutoff` a second filter effect, `harmonic2.depth` a second `harmonic`, etc.
 
 A classic filter breakdown, on a group everything plays through:
 
@@ -495,6 +512,7 @@ So a quiet score and a busy one come out about equally loud.
 | Gain at a frequency | `-3@250`, `+2dB@6k` | For EQ shelves and peaks; the gain is in dB either way. |
 | Frequency | `120`, `120Hz`, `6k`, `6kHz` | The one place a bare number is fine: it means Hz. |
 | Time | `10ms`, `0.2s`, `1.8s` | |
+| Cents | `30c` | `harmonic`'s `tolerance` only; 100 cents = one semitone. |
 | Share | `25%` | Sends also take dB. |
 | Ratio | `4:1` | |
 | Loudness | `-14LUFS` | |
@@ -586,7 +604,8 @@ track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER 
 track-line  = effect | "pan" NUMBER | "send" NAME LEVEL { NAME LEVEL } | automate ;
 automate    = "automate" TARGET [ "step" ] POINT { POINT } ;   (* also under group and return *)
 TARGET      = "volume" | "pan" | "filter" | "filter.res" | "send" NAME | EFFECT "." PARAM ;
-              (* eq.highcut, eq2.highcut, comp.mix, filter.cutoff, filter2.cutoff *)
+              (* eq.highcut, eq2.highcut, comp.mix, filter.cutoff, filter2.cutoff,
+                 harmonic.depth, harmonic.boost, harmonic.tolerance, harmonic.mix, harmonic.glide *)
 POINT       = POSITION "=" VALUE ;           (* 3=6k, 5:3=-4dB, 1=30% *)
 FILTER-RES-SLOPE = { "res" PERCENT | "12dB" | "24dB" } ;
 effect      = "eq" { "lowcut" HZ | "highcut" HZ | "low" GAIN-AT | "high" GAIN-AT
@@ -597,7 +616,11 @@ effect      = "eq" { "lowcut" HZ | "highcut" HZ | "low" GAIN-AT | "high" GAIN-AT
                        | ( "damp" | "mix" ) SHARE }
             | "delay" ( NOTE-VALUE | TIME ) { "feedback" SHARE | ( "hp" | "lp" ) HZ
                                           | "pingpong" | "mix" SHARE }
-            | "filter" ( "lp" | "hp" | "bp" ) HZ [ FILTER-RES-SLOPE ] ;   (* not under master *)
+            | "filter" ( "lp" | "hp" | "bp" ) HZ [ FILTER-RES-SLOPE ]     (* not under master *)
+            | "harmonic" [ "cut" | "boost" | "both" ] { DB | "boost" DB | "tolerance" CENTS
+                   | "harmonics" INTEGER | "range" HZ ".." HZ | "glide" TIME | "mix" SHARE
+                   | "tune" HZ } ;                                       (* not under master *)
+CENTS       = NUMBER "c" ;                  (* 30c *)
 
 chord-seq   = { item | "|" } ;
 item        = atom [ "*" NUMBER ] ;

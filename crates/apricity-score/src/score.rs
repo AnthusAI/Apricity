@@ -152,6 +152,8 @@ pub enum Effect {
     Width(f64),
     /// A resonant filter as a chain effect (track, group or return; not the master yet).
     Filter(FilterFxSpec),
+    /// The chord-following EQ (track, group or return; not the master). See `HarmonicSpec`.
+    Harmonic(HarmonicSpec),
 }
 
 impl Effect {
@@ -167,6 +169,7 @@ impl Effect {
             Effect::NoiseGate(_) => "noisegate",
             Effect::Width(_) => "width",
             Effect::Filter(_) => "filter",
+            Effect::Harmonic(_) => "harmonic",
         }
     }
 }
@@ -201,6 +204,68 @@ fn twelve() -> u16 {
 
 fn is_twelve(v: &u16) -> bool {
     *v == 12
+}
+
+/// Which side of the chord `harmonic` shapes: `cut` non-chord tones, `boost` chord tones, or
+/// `both` (spec-harmony-v2.md sec 4.4).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum HarmonicFxMode {
+    #[default]
+    Cut,
+    Boost,
+    Both,
+}
+
+/// One chord span the compiler embeds in a `harmonic` effect at compile time (sec 4.3): the
+/// resolved harmony, not anything the score text writes directly. `tones_pc`/`bass_pc` are
+/// pitch classes 0 (C) .. 11 (B).
+#[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
+pub struct HarmonicSpanSpec {
+    pub start_beat: f64,
+    pub end_beat: f64,
+    pub tones_pc: Vec<u8>,
+    pub bass_pc: u8,
+}
+
+/// The chord-following EQ: `harmonic cut 9dB tolerance 30c harmonics 6 range 80..4k glide 40ms
+/// mix 100%` (docs/language.md). Every field but `mode` is optional in the score text; unset
+/// values take the defaults in sec 4.4 (applied where the engine builds `apricity_dsp::fx::
+/// HarmonicParams`, mirroring how `LofiSpec`/`GateSpec` are resolved). `spans` is filled by the
+/// compiler from the resolved harmony (`ChordSpan`), never written directly: a score with no
+/// `chords` line compiles `spans` empty, which is a compile-time no-op warning, not an error.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct HarmonicSpec {
+    #[serde(default)]
+    pub mode: HarmonicFxMode,
+    /// Cut depth in dB, 0–24 (default 9).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub depth_db: Option<f64>,
+    /// Boost amount in dB, 0–18 (default 6), used by `boost`/`both`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub boost_db: Option<f64>,
+    /// Half-width of every band in cents, 5–100 (default 30).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_cents: Option<f64>,
+    /// Chord-tone partials protected from cutting, 0–8 (default 6).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub harmonics: Option<u8>,
+    /// `[lo_hz, hi_hz]` (default 80..4000).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub range: Option<[f64; 2]>,
+    /// Chord-change ramp, ms, 0–500 (default 40).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub glide_ms: Option<f64>,
+    /// Wet share, 0–1 (default 1).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mix: Option<f64>,
+    /// A4 reference, Hz (default 440).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tune_hz: Option<f64>,
+    /// Filled by the compiler from the resolved harmony; never written in score text.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub spans: Vec<HarmonicSpanSpec>,
 }
 
 /// Saturation: `db` of gain into a soft clipper (level is matched afterwards).
@@ -362,6 +427,7 @@ impl serde::Serialize for Effect {
             Effect::NoiseGate(g) => m.serialize_entry("noisegate", g)?,
             Effect::Width(w) => m.serialize_entry("width", w)?,
             Effect::Filter(f) => m.serialize_entry("filter", f)?,
+            Effect::Harmonic(h) => m.serialize_entry("harmonic", h)?,
         }
         m.end()
     }
@@ -392,8 +458,10 @@ impl<'de> Deserialize<'de> for Effect {
             width: Option<f64>,
             #[serde(default)]
             filter: Option<FilterFxSpec>,
+            #[serde(default)]
+            harmonic: Option<HarmonicSpec>,
         }
-        const KINDS: &str = "{eq: …}, {comp: …}, {limit: …}, {reverb: …}, {delay: …}, {drive: …}, {lofi: …}, {noisegate: …}, {width: 1.5} or {filter: …}";
+        const KINDS: &str = "{eq: …}, {comp: …}, {limit: …}, {reverb: …}, {delay: …}, {drive: …}, {lofi: …}, {noisegate: …}, {width: 1.5}, {filter: …} or {harmonic: …}";
         let raw = Raw::deserialize(d).map_err(|e| serde::de::Error::custom(format!("an effect is {KINDS} ({e})")))?;
         let mut found: Vec<Effect> = Vec::new();
         found.extend(raw.eq.map(Effect::Eq));
@@ -406,6 +474,7 @@ impl<'de> Deserialize<'de> for Effect {
         found.extend(raw.noisegate.map(Effect::NoiseGate));
         found.extend(raw.width.map(Effect::Width));
         found.extend(raw.filter.map(Effect::Filter));
+        found.extend(raw.harmonic.map(Effect::Harmonic));
         match found.len() {
             1 => Ok(found.pop().unwrap()),
             _ => Err(serde::de::Error::custom(format!("each effect is one of {KINDS}; put several in the list, one per item"))),
