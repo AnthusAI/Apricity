@@ -7,6 +7,7 @@ mod play;
 mod render;
 mod serve;
 mod sources;
+mod steer;
 mod sync;
 
 use clap::{Parser, Subcommand};
@@ -118,6 +119,25 @@ enum Cmd {
         /// Append a summary line here.
         #[arg(long)]
         log: Option<PathBuf>,
+    },
+    /// Harmony v2 steering report for a `--stems` render: wrong notes, transposition maps, fit
+    /// regions and suggestions mapped to optimizer ops (`schema/steer.schema.json`).
+    Steer {
+        /// A `--stems` render directory (holds stems.json and <track>.wav files).
+        stems_dir: PathBuf,
+        /// Score wrong notes and the transposition map against the written chord (default) or
+        /// each span's heard chord.
+        #[arg(long, default_value = "written", value_parser = ["written", "heard"])]
+        against: String,
+        /// The score that produced `stems_dir` (optional): compiled to read each loop track's
+        /// solver-chosen shift per span (`Event.semitones`), so `track.transpose_span`
+        /// suggestions compare the transposition map against what the solver actually chose,
+        /// not a 0-semitone default.
+        #[arg(long)]
+        score: Option<PathBuf>,
+        /// Write here instead of stdout.
+        #[arg(short, long)]
+        out: Option<PathBuf>,
     },
     /// Import a repository's samples, manifests, candidates and scores into a library.
     Migrate {
@@ -334,6 +354,16 @@ fn main() -> ExitCode {
             }
         };
     }
+    if let Cmd::Steer { stems_dir, against, score, out } = &cli.cmd {
+        let opts = steer::Options { stems_dir: stems_dir.clone(), against: against.clone(), score: score.clone(), out: out.clone() };
+        return match steer::run(&opts) {
+            Ok(_) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
     if let Cmd::Migrate { from, to, link } = &cli.cmd {
         return match migrate::run(migrate::Options {
             from: from.clone(),
@@ -389,6 +419,7 @@ fn main() -> ExitCode {
         | Cmd::Sources { .. }
         | Cmd::Sync { .. }
         | Cmd::Check { .. }
+        | Cmd::Steer { .. }
         | Cmd::Login
         | Cmd::Logout
         | Cmd::Whoami
@@ -426,6 +457,7 @@ fn main() -> ExitCode {
         | Cmd::Sources { .. }
         | Cmd::Sync { .. }
         | Cmd::Check { .. }
+        | Cmd::Steer { .. }
         | Cmd::Login
         | Cmd::Logout
         | Cmd::Whoami

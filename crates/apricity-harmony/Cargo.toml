@@ -12,7 +12,10 @@ description = "Harmony v2: octave-aware note salience (CQT + NNLS) and chord rec
 # tables (a direct port of the Python reference) rather than `apricity_theory::Chord`, since the
 # design's extended qualities (9ths, add-chords) aren't in that crate's `Quality` yet (sec 2.7).
 rustfft = "6.4.1"
+# Already a workspace dependency (apricity-score, apricity-cli, apricity-web); wired into this
+# crate too so `steer` (Kanbus apricitus-c46688) can assemble `steer.json` without a second JSON
+# library. Not a new dependency to the workspace.
+serde_json = { workspace = true }
 
 [dev-dependencies]
 hound = "3.5"
-serde_json = { workspace = true }

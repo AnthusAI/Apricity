@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apricity.local/schema/steer.schema.json",
+  "title": "Apricity steering report",
+  "description": "Written by `apricity steer <stems dir> [--against written|heard] -o steer.json` (Kanbus apricitus-c46688, Harmony v2 Phase 1 Task 6; spec-harmony-v2.md sec 3). Per-span heard chord, chord quality (Q), wrong notes and a 12-transposition map for loop stems, fit/unfit regions, and suggestions mapped to optimizer ops. Read by the optimizer, agents, the audition tool, and (via apricity-web's wasm export) the web UI.",
+  "type": "object",
+  "required": ["schema", "render", "objective", "stems", "spans", "regions", "suggestions"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "apricity.steer/1"
+    },
+    "render": {
+      "type": "object",
+      "required": ["stems_dir", "bars", "tempo", "meter"],
+      "additionalProperties": false,
+      "properties": {
+        "stems_dir": { "type": "string" },
+        "bars": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[first bar, bar after the last] of the rendered window, 1-based."
+        },
+        "tempo": { "type": "number", "exclusiveMinimum": 0 },
+        "meter": { "type": "integer", "minimum": 1 },
+        "key": { "type": ["string", "null"] }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "required": ["v1", "v2", "consonance", "guards", "Q_mean"],
+      "additionalProperties": false,
+      "properties": {
+        "v1": { "type": "number" },
+        "v2": { "type": "number" },
+        "consonance": { "type": "number" },
+        "guards": { "type": "array", "items": { "type": "string" } },
+        "Q_mean": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "stems": {
+      "type": "object",
+      "description": "Keyed by stem (track) name.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["kind", "cents"],
+        "properties": {
+          "kind": { "enum": ["loop", "pitched"] },
+          "pitch": { "type": "string", "description": "Only for kind: pitched (e.g. \"Ab1 (pinned)\")." },
+          "cents": { "type": "number" },
+          "cents_spread": { "type": "number" },
+          "solver_shift_by_span": {
+            "type": ["array", "object"],
+            "description": "The harmony solver's own chosen shift per span, when known (only for kind: loop; populated when apricity steer was given --score)."
+          }
+        }
+      }
+    },
+    "spans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "bars", "Q", "clash", "wrong_notes", "transposition_map", "fits"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "bars": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "written": {
+            "type": "object",
+            "properties": {
+              "chord": {},
+              "tones": { "type": "array", "items": { "type": "string" } },
+              "bass": {}
+            }
+          },
+          "heard": {
+            "type": ["object", "null"],
+            "properties": {
+              "root": { "type": "string" },
+              "quality": { "type": "string" },
+              "extensions": { "type": "array", "items": { "type": "string" } },
+              "bass": { "type": "string" },
+              "inversion": { "enum": ["root", "1st", "2nd", "3rd"] },
+              "confidence": { "type": "number", "minimum": 0 }
+            }
+          },
+          "Q": {
+            "type": "object",
+            "required": ["target", "extension", "spacing", "voice_leading", "Q"],
+            "additionalProperties": false,
+            "properties": {
+              "target": { "type": "number", "minimum": 0, "maximum": 1 },
+              "extension": { "type": "number", "minimum": 0, "maximum": 1 },
+              "spacing": { "type": "number", "minimum": 0, "maximum": 1 },
+              "voice_leading": { "type": "number", "minimum": 0, "maximum": 1 },
+              "Q": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
+          "clash": { "type": "number", "minimum": 0 },
+          "wrong_notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["stem", "note", "midi", "hz", "cents", "share", "beats"],
+              "properties": {
+                "stem": { "type": "string" },
+                "note": { "type": "string" },
+                "midi": { "type": "integer" },
+                "hz": { "type": "number", "exclusiveMinimum": 0 },
+                "cents": { "type": "number" },
+                "share": { "type": "number", "minimum": 0, "maximum": 1 },
+                "beats": { "type": "array", "items": { "type": "number" } },
+                "against": { "type": "string" },
+                "reason": { "type": "string" }
+              }
+            }
+          },
+          "transposition_map": {
+            "type": "object",
+            "description": "Keyed by loop stem name; each value maps semitone shift (-6..5, as a string key in JSON) to its analytic score against the written (or heard) chord.",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": { "type": "number" }
+            }
+          },
+          "fits": { "type": "boolean" }
+        }
+      }
+    },
+    "regions": {
+      "type": "object",
+      "required": ["fit", "unfit"],
+      "additionalProperties": false,
+      "properties": {
+        "fit": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+        },
+        "unfit": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+        }
+      }
+    },
+    "suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["op", "why"],
+        "properties": {
+          "op": {
+            "enum": ["track.transpose_span", "track.eq_notch", "clip.retune", "track.harmonic", "track.octave", "track.hp", "track.bars"]
+          },
+          "why": { "type": "string" }
+        }
+      }
+    }
+  }
+}
