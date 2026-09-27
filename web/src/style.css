@@ -722,8 +722,9 @@ body.nav-open { overflow: hidden; }
 /* The About card, first in the Top feed: the landing page's sun, a line on what this is, and the way to /about. */
 .about-card { --sun: #f59e5b; --sun-2: #ffcf8a; }
 @media (prefers-color-scheme: dark) { .about-card { --sun: #ffa866; --sun-2: #ffd59a; } }
-.about-card-stage { position: relative; height: 132px; display: flex; align-items: center; justify-content: center; gap: 14px; overflow: hidden; border-bottom: 1px solid var(--line); background: radial-gradient(90% 160% at 22% 50%, color-mix(in srgb, var(--sun) 30%, transparent), transparent 60%), color-mix(in srgb, var(--sun) 8%, var(--panel)); }
-.about-card-sun { flex: none; width: 88px; height: 88px; margin: 0 -14px 0 -26px; border-radius: 50%; background: radial-gradient(circle, var(--sun-2) 0 28%, color-mix(in srgb, var(--sun) 60%, transparent) 44%, transparent 68%); }
+/* The word is centered; the sun is anchored at the card's left edge, rising behind it on its own. */
+.about-card-stage { position: relative; height: 132px; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid var(--line); background: radial-gradient(70% 150% at 0% 50%, color-mix(in srgb, var(--sun) 32%, transparent), transparent 62%), color-mix(in srgb, var(--sun) 8%, var(--panel)); }
+.about-card-sun { position: absolute; left: -24px; top: 50%; width: 120px; height: 120px; transform: translateY(-50%); border-radius: 50%; background: radial-gradient(circle, var(--sun-2) 0 28%, color-mix(in srgb, var(--sun) 60%, transparent) 44%, transparent 68%); }
 .about-card-word { position: relative; font: 600 34px/1 Georgia, "Times New Roman", serif; letter-spacing: -.01em; color: color-mix(in srgb, var(--sun) 70%, var(--fg)); }
 .about-card-x { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
 .about-card-x:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); }
