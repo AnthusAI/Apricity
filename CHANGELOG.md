@@ -2,6 +2,26 @@
 
 <!-- version list -->
 
+## v0.21.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`36e8400`](https://github.com/AnthusAI/Apricity/commit/36e84003d030298f2aeb8790249f872ade2e8c2c))
+
+- **kanbus**: Commit board state (issues)
+  ([`e31b888`](https://github.com/AnthusAI/Apricity/commit/e31b8889dc806ec05b6205ba7ef928d243ff49b8))
+
+- **kanbus**: Commit board state (issues)
+  ([`3356021`](https://github.com/AnthusAI/Apricity/commit/335602158646682795e01b69b6d2f8474c99a963))
+
+### Features
+
+- **apricitus-dbed5c**: The optimizer judges and plays candidates as 16-bar auditions
+  ([#23](https://github.com/AnthusAI/Apricity/pull/23),
+  [`c0fd431`](https://github.com/AnthusAI/Apricity/commit/c0fd431d1450f1526d36006b4ea25d6d85d982cc))
+
+
 ## v0.20.0 (2026-09-27)
 
 ### Chores
