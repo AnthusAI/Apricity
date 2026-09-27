@@ -96,6 +96,14 @@ for (const [env, model] of [
   backend.ranking.addEnvironment(env, tables[model].tableName);
 for (const m of ["Activity", "Score", "Sample", "Clip", "Tally"]) tables[m].grantReadData(rk);
 tables["Ranked"].grantReadWriteData(rk);
+// The table grants above don't reach the indexes: an item's tallies and its existing rows are index queries.
+rk.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["dynamodb:Query"],
+    resources: ["Tally", "Ranked"].map((m) => `${tables[m].tableArn}/index/*`),
+  }),
+);
 const rankingFed = ["Activity", "Tally", "Score"];
 const rankingStreams = new Policy(Stack.of(rk), "RankingReadsStreams", {
   statements: [
