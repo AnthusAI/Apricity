@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-ebb20eb0-3517-4d9e-895c-d104d9b95a2a",
+  "title": "Verdicts kept for good: the listener's judgments on explorer runs, and the runs' notebooks, in the library",
+  "description": "Steering report P1. explore/verdicts.py: an append-only verdicts.jsonl in ~/Apricity-Library/notebooks (stars / pick / none, with what each experiment cast, what it beat, the listener's note); taste(sample, clip) from them for the layer validator. The notebook mirrors each run's text to the library (renders/ is git-ignored and worktree-local). scripts/verdict.py records and lists. First verdict recorded from apricitus-6c5788 (the stack alone over the top three pads).",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T05:04:45.421796Z",
+  "updated_at": "2026-09-27T05:04:45.506903Z",
+  "closed_at": "2026-09-27T05:04:45.506871Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
