@@ -720,15 +720,13 @@ body.nav-open { overflow: hidden; }
 .act-order { flex: none; }
 .act-order button { padding: 5px 12px; }
 
-/* The About card, first in the Top feed: the landing page's sun, a line on what this is, and the way to /about. */
+/* The About card, always first on the home page: the landing page's sun, a line on what this is, and the way to /about. */
 .about-card { --sun: #f59e5b; --sun-2: #ffcf8a; }
 @media (prefers-color-scheme: dark) { .about-card { --sun: #ffa866; --sun-2: #ffd59a; } }
 /* The word is centered; the sun is anchored at the card's left edge, rising behind it on its own. */
 .about-card-stage { position: relative; height: 132px; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid var(--line); background: radial-gradient(70% 150% at 0% 50%, color-mix(in srgb, var(--sun) 32%, transparent), transparent 62%), color-mix(in srgb, var(--sun) 8%, var(--panel)); }
 .about-card-sun { position: absolute; left: -110px; top: 50%; width: 280px; height: 280px; transform: translateY(-50%); border-radius: 50%; background: radial-gradient(circle, var(--sun-2) 0 28%, color-mix(in srgb, var(--sun) 60%, transparent) 44%, transparent 68%); }
 .about-card-word { position: relative; font: 600 34px/1 Georgia, "Times New Roman", serif; letter-spacing: -.01em; color: color-mix(in srgb, var(--sun) 70%, var(--fg)); }
-.about-card-x { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
-.about-card-x:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); }
 .about-card-kicker { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; color: color-mix(in srgb, var(--sun) 70%, var(--muted)); }
 .about-card p { margin: 0; font-size: 14px; line-height: 1.5; }
 .about-card-go { justify-self: start; text-decoration: none; }

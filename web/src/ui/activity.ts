@@ -33,22 +33,12 @@ function link(route: Route, text: string, className = ""): HTMLAnchorElement {
   return a;
 }
 
-const ABOUT_KEY = "apricity.about-card";
-const aboutDismissed = () => {
-  try {
-    return localStorage.getItem(ABOUT_KEY) === "dismissed";
-  } catch {
-    return false; // storage blocked: show it
-  }
-};
-
 /** The About card: what this is, and the way to the About page (its tour of how a groove is made). */
 function aboutCard(): HTMLElement {
-  const close = el("button", { type: "button", className: "about-card-x", ariaLabel: "Hide this card", title: "Hide this card", textContent: "×" });
   const card = el(
     "article",
     { className: "feed-card about-card" },
-    el("div", { className: "about-card-stage" }, el("span", { className: "about-card-sun", ariaHidden: "true" }), el("span", { className: "about-card-word" }, "Apricity"), close),
+    el("div", { className: "about-card-stage" }, el("span", { className: "about-card-sun", ariaHidden: "true" }), el("span", { className: "about-card-word" }, "Apricity")),
     el(
       "div",
       { className: "feed-body" },
@@ -57,12 +47,6 @@ function aboutCard(): HTMLElement {
       link({ page: "about" }, "See how it works →", "btn primary about-card-go"),
     ),
   );
-  close.addEventListener("click", () => {
-    try {
-      localStorage.setItem(ABOUT_KEY, "dismissed");
-    } catch {} // storage blocked: it's gone until the next visit
-    card.remove();
-  });
   return card;
 }
 
@@ -190,14 +174,14 @@ export class ActivityView {
       };
       let els = cardsOf(first.rows);
       if (!els.length) els = await more();
-      // What Apricity is, as the first card of the Top feed (until someone dismisses it).
-      if (this.order === "top" && !this.kind && !aboutDismissed()) els.unshift(aboutCard());
       if (seq !== this.seq) return;
       performance.mark("activity:shown");
       const local = mode() === "local" ? [el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`)] : [];
       this.body.replaceChildren(
         ...local,
-        els.length ? feedGrid(els, more) : el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it."),
+        // What Apricity is, always the first card on the home page; then the feed, or a word that it's empty.
+        feedGrid([aboutCard(), ...els], more),
+        ...(els.length ? [] : [el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it.")]),
       );
     } catch (e) {
       if (seq === this.seq) this.body.replaceChildren(el("div", { className: "empty" }, `Couldn't load the activity: ${(e as Error).message}`));
