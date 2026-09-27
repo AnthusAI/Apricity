@@ -22,10 +22,22 @@
         "model": "GPT-5",
         "name": "Codex"
       }
+    },
+    {
+      "id": "62b2fb70-e53f-43b3-9a6d-f3c3a726025d",
+      "author": "home",
+      "text": "Implemented authenticated CLI commands: Cognito hosted-login PKCE/state loopback flow, OS-keychain refresh-token storage, automatic ID-token refresh, logout revocation, Score CRUD with reference reconciliation, and curator/admin Cognito-Identity-backed S3 library-record import. Verification:  passed 32 tests; workspace-wide rustfmt check was not used because it reports unrelated existing formatting drift.",
+      "created_at": "2026-09-27T22:24:58.141774Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
     }
   ],
   "created_at": "2026-09-27T22:15:38.513928Z",
-  "updated_at": "2026-09-27T22:16:04.708300Z",
+  "updated_at": "2026-09-27T22:24:58.141809Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
