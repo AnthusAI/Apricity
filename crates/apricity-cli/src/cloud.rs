@@ -551,7 +551,7 @@ fn reconcile_refs(
                 }
             }
         }
-        let input = json!({"id": format!("sref_{}_{}", score_id, r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "source": r.source, "sampleId": sample_id, "samplePath": r.catalog_path, "clipName": r.clip_name, "clipId": clip_id, "start": start, "end": end, "kitPad": r.kit_pad});
+        let input = json!({"id": format!("sref_{}_{}", score_id, r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "sampleId": sample_id, "samplePath": r.catalog_path, "clipName": r.clip_name, "clipId": clip_id, "start": start, "end": end});
         api.gql("mutation Create($input: CreateScoreRefInput!) { createScoreRef(input: $input) { id } }", json!({"input": input}))?;
     }
     Ok(())
