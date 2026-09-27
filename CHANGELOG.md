@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v0.22.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-445cae**: The engine test's Event literal sets the new midi field
+  ([#25](https://github.com/AnthusAI/Apricity/pull/25),
+  [`f60596e`](https://github.com/AnthusAI/Apricity/commit/f60596e175001d34d5547bee6e1fca9ac48c39a3))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`e206fb1`](https://github.com/AnthusAI/Apricity/commit/e206fb13ff1a97ed1b8810005e661a1a9f90c376))
+
+- **kanbus**: Commit board state (issues)
+  ([`dff4e42`](https://github.com/AnthusAI/Apricity/commit/dff4e42b4eb441851a6f75d3f478ee994fc452fa))
+
+- **kanbus**: Commit board state (issues)
+  ([`7bb3670`](https://github.com/AnthusAI/Apricity/commit/7bb3670095230f46bbf2ec0d87dc762c90e01fd3))
+
+### Features
+
+- **apricitus-445cae**: Harmony v2 phase 1: stems.json bass and events, the harmony2 reference, and
+  the apricity-harmony crate ([#25](https://github.com/AnthusAI/Apricity/pull/25),
+  [`f60596e`](https://github.com/AnthusAI/Apricity/commit/f60596e175001d34d5547bee6e1fca9ac48c39a3))
+
+
 ## v0.21.0 (2026-09-27)
 
 ### Chores
