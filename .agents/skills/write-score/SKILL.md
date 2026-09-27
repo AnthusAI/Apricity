@@ -1,6 +1,6 @@
 ---
 name: write-score
-description: Write, fork, remix or improve Apricity scores (.apr files): songs, beats, grooves, demos, and example scores built from the sample library, iterating by rendering and listening with the user. Use this whenever someone wants to make music in Apricity, make a new example or demo score, fork or rework an existing score, make something "sound better/smoother/fuller", build up an arrangement (intro, build, drop, breakdown), or asks what sounds are available, even if they never say "score" or ".apr".
+description: "Write, fork, remix or improve Apricity scores (.apr files): songs, beats, grooves, demos, and example scores built from the sample library, iterating by rendering and listening with the user. Use this whenever someone wants to make music in Apricity, make a new example or demo score, fork or rework an existing score, make something 'sound better/smoother/fuller', build up an arrangement (intro, build, drop, breakdown), or asks what sounds are available, even if they never say 'score' or '.apr'."
 ---
 
 # Writing Apricity scores
@@ -43,29 +43,13 @@ An Apricity score is a text file (`.apr`) that arranges clips of real recordings
 - **Level-matching is automatic.** Every clip and pad is matched before the fader, so `volume` is relative balance. Master `loudness` sets the final level; about −14 LUFS is a good default.
 - `references/recipes.md` has patterns that worked: grooves, basslines, pads, builds, mix chains, **the 40-bar house form** (intro, groove, lift, breakdown, drop) for finished tracks, and **the 16-bar audition form** for judging a candidate layer: the scene alone (4 bars), then the new part solo (4), then both with a quick build (8). When you're trying layers, render auditions, not full tracks: they're faster to review and lighter on disk.
 
-## Genre defaults
-
-Start here unless the brief says otherwise, and check anything you're unsure of against the brief:
-
-| Style | Tempo | Feel | Notes |
-|---|---|---|---|
-| Deep house | 118–124 | straight 16ths, light swing 52–56 | four on the floor, sevenths, a chord every 2 bars, long reverb |
-| House | 122–128 | straight | offbeat open hat, clap on 2 and 4 |
-| Blues shuffle | 80–100 | **`swing 62–66 1/8`** (a shuffle is swung; a march's own drums are straight) | 12-bar I7–IV7–V7, quick change optional |
-| Hip-hop / boom bap | 85–95 | `swing 56–60` | chopped breaks, sparse |
-| Ragtime / march | 100–120 (2/4 feel) | straight | the source material's own home |
-
-If a source's native tempo is far off (for example 100 BPM material in a house track), stretch it, and check the artefacts by ear. Don't bend the genre to fit the clip.
-
 ## Taste
 
-**Match the sources to the genre before anything else.** No amount of processing made a brass band into deep house. In the first session the user called the result "not good music", while praising its smoothness and its build-up. If the library has nothing that fits the requested style, say so early and suggest what to curate (below), instead of forcing it.
+**Match the sources to the genre before anything else.** A sound can be highly rated and still be a poor fit for the requested style. If the library has nothing suitable, say so early and suggest what to curate rather than forcing it.
 
-For deep house or older-Moby styles, the useful material is: sustained chords (organ, piano, strings, choir), soulful vocal phrases (the Lomax field recordings are the classic Moby source), a round bass, and soft percussion. March brass suits ragtime, swing, marching-band hip-hop or chopped-breakbeat styles better.
+**Start sparser than feels right.** Loops cut from finished tracks often already carry their own rhythm and fills. Establish the musical role of each part before adding density; add layers only when they make the groove, harmony, or section change clearer.
 
-**Start sparser than feels right.** Twice in the first session the user's first reaction was "too busy", even when the texture was praised. Loops cut from finished tracks already carry their own rhythm and fills. Over them, start with only a kick and one light percussion part plus a simple bass (long notes on the chord roots), and add layers only when the user asks for more. 16th hats, answering phrases and busy basslines come later, if at all.
-
-Unless the user says otherwise, aim for smooth and musical over loud and busy. In the first session, the user rejected a harsh, busy "main-room EDM" draft in favour of deep house or older-Moby smoothness: long sounds, slow harmony (a chord every two bars), sparse drums, generous reverb. For an introductory demo, less is more.
+Choose the character the brief calls for—smooth, raw, sparse, loud, or busy—rather than treating one previous preference as universal. For house and deep-house requests, use the dedicated `write-house-score` skill with this one.
 
 ## Where scores go
 
