@@ -241,7 +241,7 @@ def render_l1_batch(items: list[tuple[str, Genome, str]], base_text: str, ev: ev
             stack_feat_cache[bars] = (m, feats)
             stack_objective_cache[bars] = result.objective
 
-    null_composite_cache: dict[tuple[int, int], object] = {}
+    null_composite_cache: dict[tuple, object] = {}
     out: dict[str, dict] = {}
 
     for chunk_start in range(0, len(items), L1_CHUNK_SIZE):
@@ -274,6 +274,17 @@ def render_l1_batch(items: list[tuple[str, Genome, str]], base_text: str, ev: ev
                     out[key] = None
                     continue
                 stack_feats_excl = [f for f in stack_feats if f.name != track]
+                # Judge the part over the bars it plays in, against the stack in those same bars: over
+                # the whole song an intro-only part sounds on ~20% of the beats and sits >18 dB under
+                # the drop, so the not-silent gate failed every such candidate (round 3). Beats are
+                # counted from the render's first bar (stems.json offset_beats).
+                meter = int(cand_manifest.get("meter", 4))
+                offset = float(cand_manifest.get("offset_beats", 0.0))
+                w0 = int(round((genome.entry[0] - 1) * meter - offset))
+                w1 = int(round(genome.entry[1] * meter - offset))
+                tempo = float(cand_manifest["tempo"])
+                cand_feat = layer.window_features(cand_feat, tempo, w0, w1)
+                stack_feats_excl = [layer.window_features(f, tempo, w0, w1) for f in stack_feats_excl]
                 report = layer.check_layer(cand_manifest, cand_feat, stack_feats_excl)
 
                 # `layer.check_layer`'s clash/masking/rhythm terms and `render_terms`'s composite
@@ -282,10 +293,12 @@ def render_l1_batch(items: list[tuple[str, Genome, str]], base_text: str, ev: ev
                 # `contribution` (band fill + harmonic addition + motion) still ranks survivors.
                 render_terms_vec = render_terms_mod.compute_render_terms(cand_manifest, cand_feat, stack_feats_excl)
                 render_comp = render_terms_mod.render_composite(render_terms_vec)
-                if bars not in null_composite_cache:
-                    null_composite_cache[bars] = render_terms_mod.render_composite(
-                        render_terms_mod.null_render_terms(stack_manifest, stack_feats_excl or stack_feats))
-                null_comp = null_composite_cache[bars]
+                null_key = (bars, w0, w1, track)  # the null is the stack over the same window
+                if null_key not in null_composite_cache:
+                    null_stack = stack_feats_excl or [layer.window_features(f, tempo, w0, w1) for f in stack_feats]
+                    null_composite_cache[null_key] = render_terms_mod.render_composite(
+                        render_terms_mod.null_render_terms(stack_manifest, null_stack))
+                null_comp = null_composite_cache[null_key]
 
                 # The gate/ranking metric (round 3): the whole-mix check.py objective, stack+
                 # candidate vs the incumbent alone, both already computed by ev.evaluate (shared
