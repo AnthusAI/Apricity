@@ -35,6 +35,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--run", default=None, help="run name (default: the score's stem + a timestamp)")
     ap.add_argument("--library", type=pathlib.Path, default=pathlib.Path.home() / "Apricity-Library",
                     help="where the run's text is kept for good, beside the verdicts (notebooks/explore/<run>/)")
+    ap.add_argument("--audition", action="store_true",
+                    help="also write a 16-bar audition-form .m4a per finalist (audition/<label>.m4a), Kanbus apricitus-dbed5c")
     args = ap.parse_args(argv)
 
     from apricity_analyze.explore import candidates as candidates_mod
@@ -72,10 +74,41 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {i}. {row['objective']:6.1f}  {row['label']:<60} {row['attribution']}")
     print(f"\nwrote {run_dir}")
     print(f"  best.apr / best.m4a, leaderboard.md, notebook.jsonl")
+
+    if args.audition:
+        _write_auditions(result["rows"], role=args.role, run_dir=run_dir)
+
     if archive:
         print(f"kept {archive} (the run's text, beside your verdicts)")
         print(f"  judge it: scripts/verdict.py stars {run_name} <experiment> <1-5> --note \"…\"")
     return 0
+
+
+def _write_auditions(rows: list[dict], *, role: str, run_dir: pathlib.Path) -> None:
+    """16-bar audition-form `.m4a` (Kanbus apricitus-dbed5c) for each non-incumbent finalist, so
+    the human reviews `renders/explore/<run>/audition/*.m4a` (32s each) instead of full-song
+    `best.m4a`-sized takes for every row. `role` is also the candidate track's name (a
+    `cast.swap` re-casts it in place, it doesn't rename it)."""
+    import tempfile
+
+    from apricity_analyze import audition_form
+
+    audition_dir = run_dir / "audition"
+    for i, row in enumerate(rows, 1):
+        if row["label"] == "(incumbent)" or not row.get("result") or not row["result"].ok:
+            continue
+        safe_label = "".join(ch if ch.isalnum() else "-" for ch in row["label"])[:40]
+        out_path = audition_dir / f"{i:02d}-{safe_label}.m4a"
+        with tempfile.NamedTemporaryFile("w", suffix=".apr", delete=False) as f:
+            f.write(row["text"])
+            tmp_path = pathlib.Path(f.name)
+        try:
+            result = audition_form.build_audition(tmp_path, track=role, out_path=out_path, check=True)
+            print(f"  audition: {out_path.name}  (Δwindow {result.delta_window:+.2f}, window {result.window[0]}-{result.window[1]})")
+        except audition_form.AuditionError as e:
+            print(f"  audition: {row['label']}: failed ({e})")
+        finally:
+            tmp_path.unlink(missing_ok=True)
 
 
 def _score_source_samples(text: str, role: str) -> set[str]:
