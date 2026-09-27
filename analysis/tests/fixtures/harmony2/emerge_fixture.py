@@ -105,3 +105,36 @@ def render_bar35(out_dir: pathlib.Path, samples_root: pathlib.Path = DEFAULT_SAM
         "chord_tones": span["chord_tones"],
         "bass": span["chord_tones"][0],
     }
+
+
+# The release binary (`BINARY`, used by `render_bar35` above) predates `stems.json`'s `bass` and
+# `events` fields (Kanbus `apricitus-a164db`'s Phase 1 task 1, merged since); the COMBINED
+# chord-recognition pipeline (`harmony2_ref.analyze_stems_dir`) needs both -- it reads the score's
+# own bass instead of re-deriving one from audio (sec 2.3, "ground truth first"). Only the debug
+# profile has them until the workspace's release binary is rebuilt.
+DEBUG_BINARY = pathlib.Path("/Users/home/Projects/Apricity/target/debug/apricity")
+
+
+def render_bar35_dir(out_dir: pathlib.Path, samples_root: pathlib.Path = DEFAULT_SAMPLES_ROOT, binary: pathlib.Path = DEBUG_BINARY) -> pathlib.Path:
+    """Renders `examples/ave-emerge.apr --bars 35-35 --stems` into `out_dir` and returns `out_dir`
+    itself (not parsed arrays, unlike `render_bar35`) so a caller can run the full combined
+    pipeline (`stems.json` + every stem WAV) on it -- `analyze_stems_dir` needs the `bass`/`events`
+    fields, so this defaults to `DEBUG_BINARY`, not `BINARY`. Raises `LibraryUnavailable` on the
+    same conditions as `render_bar35`."""
+    if not library_available(samples_root):
+        raise LibraryUnavailable(f"sample audio not found under {samples_root} (need: {REQUIRED_FILES}) -- this excerpt only renders when the real library is checked out")
+    if not SCORE.exists():
+        raise LibraryUnavailable(f"score not found: {SCORE}")
+    if not binary.exists():
+        raise LibraryUnavailable(f"apricity binary not found: {binary} (build it once with `cargo build -p apricity-cli`, debug profile)")
+    out_dir = pathlib.Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    proc = subprocess.run(
+        [str(binary), "render", str(SCORE), "--bars", "35-35", "--stems", str(out_dir), "-o", str(out_dir / "mix.wav")],
+        cwd=str(SCORE.parent),
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise LibraryUnavailable(f"render failed (rc={proc.returncode}): {proc.stderr[-2000:]}")
+    return out_dir
