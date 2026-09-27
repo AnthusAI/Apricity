@@ -103,6 +103,24 @@ class Evaluator:
                            stems_dir=str(stems_dir), seconds=time.time() - t0)
 
 
+def delete_cache(ev: "Evaluator", text: str, bars: tuple[int, int] | None = None) -> None:
+    """Delete one candidate's cached render (`.apr`, `.wav`, `.stems/` and the small `.json`
+    result) once its metrics have been extracted, so a run with many losing candidates doesn't
+    keep every one of their renders on disk (Kanbus apricitus-ae80d4: an 8-candidate explorer run
+    reached 3.8 GB and tripped the disk watchdog). Deleting the `.json` too -- not just the audio
+    -- matters: it forces a fresh render if this exact (text, bars) is ever evaluated again,
+    rather than returning a cache hit that points at a stems dir which no longer exists."""
+    import shutil
+
+    key = score_sha(text, bars)
+    (ev.cache_dir / f"{key}.json").unlink(missing_ok=True)
+    (ev.cache_dir / f"{key}.apr").unlink(missing_ok=True)
+    (ev.cache_dir / f"{key}.wav").unlink(missing_ok=True)
+    stems = ev.cache_dir / f"{key}.stems"
+    if stems.exists():
+        shutil.rmtree(stems, ignore_errors=True)
+
+
 def _pool_worker(run_dir: str, text: str, bars: tuple[int, int] | None, allow_mute: list | None) -> dict:
     """Top-level (picklable) entry point for a `ProcessPoolExecutor` worker: evaluate one score
     and return its result as a plain dict (so it doesn't need `EvalResult` importable identically
