@@ -16,7 +16,6 @@ import { opened, type Opened } from "./at";
 import { sampleKey } from "../route";
 import { applyClipFilter, CHOICES, CLIP_KINDS, DEFAULT_FILTER, filterQuery, kindOf, KIND_LABEL, parseFilter, type ClipFilter } from "../data/clip-filter";
 import { totals, type Standing } from "../data/rank-window";
-import { columnSplitter } from "./splitter";
 import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
@@ -40,7 +39,6 @@ export class Library {
   /** In the Clips tab: the clip that is open (selected on its sample's waveform). */
   private currentClip: ClipItem | null = null;
   private detailEl = el("div", { className: "detail" });
-  private jobsEl = el("div", { className: "jobs" });
   private decoded = new Map<string, Promise<AudioBuffer>>();
   private audition: AudioBufferSourceNode | null = null;
   /** What the top bar's play button plays here: the shown sample (a selection or a clip of it, else all of it). */
@@ -72,7 +70,6 @@ export class Library {
       this.names = names;
       this.samples = r.samples;
       this.jobs = r.jobs;
-      this.renderJobs();
       return r.samples;
     };
     if (mode === "samples") {
@@ -115,9 +112,8 @@ export class Library {
       } catch {} // storage can be blocked (private browsing): nothing to report
       this.renderFilters();
     }
-    this.list.el.append(this.jobsEl);
-    root.append(this.list.el, this.detailEl);
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w - 420) });
+    // An item's page is only that sample or clip: its list is the section's front page (ui/section.ts), not a sidebar.
+    root.append(this.detailEl);
     // Your stars on clips, wherever you rated them (the other tab, a list row), for rows and "Not rated by me".
     document.addEventListener("apricity:rated", (e) => {
       if ((e as CustomEvent<{ type: string }>).detail.type === "clip") void this.loadMyStars().then((m) => (this.myStars = m));
@@ -316,15 +312,6 @@ export class Library {
     if (target && target !== this.current) this.show(target, "auto");
   }
   private jobs: { path: string; state: string; error?: string }[] = [];
-
-  /** Samples being analyzed (local uploads). */
-  private renderJobs() {
-    this.jobsEl.replaceChildren(
-      ...this.jobs
-        .filter((j) => j.state !== "done")
-        .map((job) => el("div", { className: "row" }, el("span", { className: "t" }, job.path.split("/").pop()!), el("span", { className: `pill ${job.state === "failed" ? "bad" : ""}` }, job.state === "failed" ? "failed" : "analyzing…"), el("span", { className: "sub" }, job.error ?? "beats, key, notes — about a minute"))),
-    );
-  }
 
   /** What the stars in the detail header rate: the open clip in the Clips tab, the sample otherwise. */
   private target(): { type: "sample" | "clip"; id: string } | null {
