@@ -41,35 +41,36 @@ pub fn envelope_gain(i: usize, len: usize, attack_frames: usize, release_start: 
     g as f32
 }
 
-/// Apply filter automation to a stereo track buffer in-place.
-/// Creates two biquad instances (L/R channels) and updates coefficients every 32 frames.
-/// `lowpass`: true for lowpass, false for highpass.
-/// `lane`: automation lane with filter frequency in Hz.
-/// `sr`: sample rate in Hz.
-/// `secs_per_beat`: seconds per beat (60.0 / tempo).
-/// `offset_beats`: offset from piece start in beats.
-pub fn filter_sweep(buf: &mut [Vec<f32>; 2], lowpass: bool, lane: &Lane, sr: f64, secs_per_beat: f64, offset_beats: f64) {
-    let curve = Curve::from_lane(lane.points.iter().map(|p| (p[0], p[1])).collect(), lane.step, scale_for(&lane.target), sr, secs_per_beat, offset_beats);
-    let mut filt_l = Biquad::default();
-    let mut filt_r = Biquad::default();
+/// Apply the header filter's automation (cutoff and/or resonance) to a stereo track buffer in
+/// place. `base` is the track's static filter (its kind and slope, and the value(s) not
+/// automated); either lane may be absent. Coefficients are recomputed every 32 frames; a 24 dB
+/// slope cascades two independently-updated biquads.
+pub fn filter_sweep(buf: &mut [Vec<f32>; 2], base: FilterSpec, cutoff_lane: Option<&Lane>, res_lane: Option<&Lane>, sr: f64, secs_per_beat: f64, offset_beats: f64) {
+    let lowpass = matches!(base, FilterSpec::Lowpass { .. });
+    let to_curve = |lane: &Lane| Curve::from_lane(lane.points.iter().map(|p| (p[0], p[1])).collect(), lane.step, scale_for(&lane.target), sr, secs_per_beat, offset_beats);
+    let cutoff_curve = cutoff_lane.map(to_curve);
+    let res_curve = res_lane.map(to_curve);
+    let passes = (base.slope() / 12).max(1) as usize;
+    let mut filt = [[Biquad::default(); 2]; 2]; // [pass][channel]
     let length = buf[0].len();
 
     for frame_idx in 0..length {
         // Recompute coefficients every 32 frames
         if frame_idx % FILTER_UPDATE_FRAMES == 0 {
-            let hz = curve.value_at(frame_idx as u64);
-            let kind = if lowpass {
-                BiquadKind::LowPass { hz, q: std::f64::consts::FRAC_1_SQRT_2 }
-            } else {
-                BiquadKind::HighPass { hz, q: std::f64::consts::FRAC_1_SQRT_2 }
-            };
-            filt_l.set(kind, sr);
-            filt_r.set(kind, sr);
+            let hz = cutoff_curve.as_ref().map_or(base.hz(), |c| c.value_at(frame_idx as u64));
+            let res = res_curve.as_ref().map_or(base.res(), |c| c.value_at(frame_idx as u64));
+            let q = std::f64::consts::FRAC_1_SQRT_2 * 20f64.powf(res);
+            let kind = if lowpass { BiquadKind::LowPass { hz, q } } else { BiquadKind::HighPass { hz, q } };
+            for pass in filt.iter_mut().take(passes) {
+                pass[0].set(kind, sr);
+                pass[1].set(kind, sr);
+            }
         }
 
-        // Process both channels
-        buf[0][frame_idx] = filt_l.tick(0, buf[0][frame_idx] as f64) as f32;
-        buf[1][frame_idx] = filt_r.tick(1, buf[1][frame_idx] as f64) as f32;
+        for pass in filt.iter_mut().take(passes) {
+            buf[0][frame_idx] = pass[0].tick(0, buf[0][frame_idx] as f64) as f32;
+            buf[1][frame_idx] = pass[1].tick(1, buf[1][frame_idx] as f64) as f32;
+        }
     }
 }
 
@@ -115,15 +116,17 @@ pub struct Audio {
     pub channels: Vec<Vec<f32>>,
 }
 
-type CacheKey = (usize, u64, u64, u64, i32, i64, u8, bool, i64, u64, u64);
+type CacheKey = (usize, u64, u64, u64, i32, i64, u8, bool, i64, u64, u64, (u64, u16));
 
 fn cache_key(source: usize, e: &Event) -> CacheKey {
     let q = |x: f64| (x * 1e5).round() as u64;
     let filter = match e.filter {
         None => 0,
-        Some(FilterSpec::Lowpass(h)) => h.round() as i64,
-        Some(FilterSpec::Highpass(h)) => -(h.round() as i64),
+        Some(FilterSpec::Lowpass { hz, .. }) => hz.round() as i64,
+        Some(FilterSpec::Highpass { hz, .. }) => -(hz.round() as i64),
     };
+    let filter_res = e.filter.map_or(0, |f| (f.res() * 1e4).round() as u64);
+    let filter_slope = e.filter.map_or(12, |f| f.slope());
     (
         source,
         q(e.src_start),
@@ -136,6 +139,7 @@ fn cache_key(source: usize, e: &Event) -> CacheKey {
         filter,
         q(e.attack_s.unwrap_or(0.0)),
         q(e.release_s.unwrap_or(0.0)),
+        (filter_res, filter_slope),
     )
 }
 
@@ -252,19 +256,32 @@ impl Renderer {
             let ready = pending.iter().position(|(n, _)| keys_of(n).iter().all(|k| done.contains_key(k) || !present.contains(k))).unwrap_or(0);
             let (name, mut buf) = pending.remove(ready);
 
-            // Apply filter automation if track has both a filter type and a filter automation lane
+            // Apply the header filter's automation (cutoff and/or resonance), if it has any; the
+            // resonance lane, if present, is consumed here and kept out of the chain effects below
+            // (see the `effect_lanes` filtering), since the header owns `filter.res` when it has one.
             if let Some(t) = info(&name) {
                 if let Some(filter_spec) = t.filter {
-                    if let Some(filter_lane) = t.automation.iter().find(|l| l.target == "filter") {
-                        let lowpass = matches!(filter_spec, FilterSpec::Lowpass(_));
-                        filter_sweep(&mut buf, lowpass, filter_lane, sr, 60.0 / tl.tempo, b0);
+                    let cutoff_lane = t.automation.iter().find(|l| l.target == "filter");
+                    let res_lane = t.automation.iter().find(|l| l.target == "filter.res");
+                    if cutoff_lane.is_some() || res_lane.is_some() {
+                        filter_sweep(&mut buf, filter_spec, cutoff_lane, res_lane, sr, 60.0 / tl.tempo, b0);
                     }
                 }
             }
 
             let (buf, red) = match info(&name) {
                 Some(t) => {
-                    master::process_chain(&buf, &t.effects, sr, fpb, master::INSERT_WET, &done, &t.automation, b0)
+                    // A track with a header filter claims `filter.res` for it; a filter *effect*'s
+                    // own resonance always uses `filter.cutoff`/`filter.res` too, but only a group or
+                    // return (which have no header filter) can be ambiguous-free here, so strip the
+                    // lane when this track has a header filter (handled above instead).
+                    let has_header_filter = t.filter.is_some();
+                    let effect_lanes: std::borrow::Cow<[apricity_score::compile::Lane]> = if has_header_filter {
+                        std::borrow::Cow::Owned(t.automation.iter().filter(|l| l.target != "filter.res").cloned().collect())
+                    } else {
+                        std::borrow::Cow::Borrowed(&t.automation)
+                    };
+                    master::process_chain(&buf, &t.effects, sr, fpb, master::INSERT_WET, &done, &effect_lanes, b0)
                 },
                 None => (buf, Vec::new()),
             };
@@ -473,15 +490,25 @@ fn finish(mut lr: Stereo, e: &Event, out_sr: u32, out_len: usize, body_len: usiz
     lr
 }
 
-/// 12 dB/octave low- or high-pass (RBJ cookbook biquad, Q = 1/√2), in place.
+/// 12 or 24 dB/octave low- or high-pass (RBJ cookbook biquad), in place. `res` 0 maps to the
+/// default Q of 1/√2 (today's gentle response, bit-identical to before this had resonance); slope
+/// 12 runs one biquad pass, 24 cascades two.
 pub fn biquad(x: &mut [f32], f: FilterSpec, sr: f64) {
-    let (hz, low) = match f {
-        FilterSpec::Lowpass(h) => (h, true),
-        FilterSpec::Highpass(h) => (h, false),
+    let (hz, low, res, slope) = match f {
+        FilterSpec::Lowpass { hz, res, slope } => (hz, true, res, slope),
+        FilterSpec::Highpass { hz, res, slope } => (hz, false, res, slope),
     };
+    let q = std::f64::consts::FRAC_1_SQRT_2 * 20f64.powf(res);
+    for _ in 0..(slope / 12).max(1) {
+        biquad_pass(x, hz, low, q, sr);
+    }
+}
+
+/// One RBJ cookbook biquad pass, in place.
+fn biquad_pass(x: &mut [f32], hz: f64, low: bool, q: f64, sr: f64) {
     let w = 2.0 * std::f64::consts::PI * (hz.clamp(10.0, sr * 0.45)) / sr;
     let (sin, cos) = w.sin_cos();
-    let alpha = sin / (2.0 * std::f64::consts::FRAC_1_SQRT_2);
+    let alpha = sin / (2.0 * q);
     let (b0, b1, b2) = if low { ((1.0 - cos) / 2.0, 1.0 - cos, (1.0 - cos) / 2.0) } else { ((1.0 + cos) / 2.0, -(1.0 + cos), (1.0 + cos) / 2.0) };
     let (a0, a1, a2) = (1.0 + alpha, -2.0 * cos, 1.0 - alpha);
     let (b0, b1, b2, a1, a2) = (b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0);
@@ -656,7 +683,9 @@ mod tests {
     #[test]
     fn filters_pass_and_cut_where_they_should() {
         let n = 48000;
-        for (hz, f, keep) in [(100.0, FilterSpec::Lowpass(1000.0), true), (8000.0, FilterSpec::Lowpass(1000.0), false), (8000.0, FilterSpec::Highpass(1000.0), true), (100.0, FilterSpec::Highpass(1000.0), false)] {
+        let lp = |hz| FilterSpec::Lowpass { hz, res: 0.0, slope: 12 };
+        let hp = |hz| FilterSpec::Highpass { hz, res: 0.0, slope: 12 };
+        for (hz, f, keep) in [(100.0, lp(1000.0), true), (8000.0, lp(1000.0), false), (8000.0, hp(1000.0), true), (100.0, hp(1000.0), false)] {
             let mut x = sine(hz, n);
             let before = rms(&x[n / 2..]);
             biquad(&mut x, f, 48000.0);
@@ -666,6 +695,36 @@ mod tests {
             } else {
                 assert!(ratio < 0.05, "{hz} Hz through {f:?}: {ratio}");
             }
+        }
+    }
+
+    /// With no `res` and the default (12 dB) slope, `biquad` must be byte-identical to the plain
+    /// RBJ biquad this crate rendered before resonance/slope existed (the pre-feature arithmetic is
+    /// reproduced here literally, hardcoding Q = 1/√2 instead of going through `res`/`20f64.powf`).
+    #[test]
+    fn header_filter_with_no_res_is_bit_identical_to_the_old_plain_biquad() {
+        fn old_biquad(x: &mut [f32], hz: f64, low: bool, sr: f64) {
+            let w = 2.0 * std::f64::consts::PI * (hz.clamp(10.0, sr * 0.45)) / sr;
+            let (sin, cos) = w.sin_cos();
+            let alpha = sin / (2.0 * std::f64::consts::FRAC_1_SQRT_2);
+            let (b0, b1, b2) = if low { ((1.0 - cos) / 2.0, 1.0 - cos, (1.0 - cos) / 2.0) } else { ((1.0 + cos) / 2.0, -(1.0 + cos), (1.0 + cos) / 2.0) };
+            let (a0, a1, a2) = (1.0 + alpha, -2.0 * cos, 1.0 - alpha);
+            let (b0, b1, b2, a1, a2) = (b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0);
+            let (mut x1, mut x2, mut y1, mut y2) = (0.0f64, 0.0f64, 0.0f64, 0.0f64);
+            for v in x.iter_mut() {
+                let x0 = *v as f64;
+                let y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+                (x2, x1, y2, y1) = (x1, x0, y1, y0);
+                *v = y0 as f32;
+            }
+        }
+        let n = 48000;
+        for (hz, low) in [(800.0, true), (250.0, false), (12000.0, true), (30.0, false)] {
+            let mut got = sine(hz * 1.3, n);
+            let mut want = got.clone();
+            biquad(&mut got, if low { FilterSpec::Lowpass { hz, res: 0.0, slope: 12 } } else { FilterSpec::Highpass { hz, res: 0.0, slope: 12 } }, 48000.0);
+            old_biquad(&mut want, hz, low, 48000.0);
+            assert_eq!(got, want, "hz {hz} low {low}: not bit-identical to the pre-resonance biquad");
         }
     }
 
@@ -782,7 +841,7 @@ mod tests {
     /// Energy in dB of the part of `x` above (`high`) or below `hz`, measured through a 12 dB/oct filter.
     fn band_db(x: &[f32], hz: f64, high: bool) -> f64 {
         let mut y = x.to_vec();
-        biquad(&mut y, if high { FilterSpec::Highpass(hz) } else { FilterSpec::Lowpass(hz) }, 48000.0);
+        biquad(&mut y, if high { FilterSpec::Highpass { hz, res: 0.0, slope: 12 } } else { FilterSpec::Lowpass { hz, res: 0.0, slope: 12 } }, 48000.0);
         rms_db(&y)
     }
 
@@ -805,7 +864,7 @@ mod tests {
             points: vec![[0.0, 200.0], [8.0, 20000.0]],
         };
 
-        filter_sweep(&mut buf, true, &lane, sr, 0.5, 0.0);
+        filter_sweep(&mut buf, FilterSpec::Lowpass { hz: 0.0, res: 0.0, slope: 12 }, Some(&lane), None, sr, 0.5, 0.0);
 
         // First half-bar (beat 0-0.5): 200 Hz lowpass, removes most energy
         let first_half = &buf[0][0..24000]; // 0.5 beat = 24000 frames
@@ -841,7 +900,7 @@ mod tests {
             points: vec![[0.0, 1000.0], [4.0, 1000.0], [4.0, 10000.0]],
         };
 
-        filter_sweep(&mut buf, true, &lane, sr, 0.5, 0.0);
+        filter_sweep(&mut buf, FilterSpec::Lowpass { hz: 0.0, res: 0.0, slope: 12 }, Some(&lane), None, sr, 0.5, 0.0);
 
         // Before beat 4 (frames 91200-96000): 1000 Hz lowpass
         let before = &buf[0][91200..96000];
@@ -877,7 +936,7 @@ mod tests {
             points: vec![[0.0, 20000.0], [8.0, 200.0]],
         };
 
-        filter_sweep(&mut buf, false, &lane, sr, 0.5, 0.0);
+        filter_sweep(&mut buf, FilterSpec::Highpass { hz: 0.0, res: 0.0, slope: 12 }, Some(&lane), None, sr, 0.5, 0.0);
 
         // First half-bar (beat 0-0.5): 20000 Hz highpass, removes most energy
         let first_half = &buf[0][0..24000];

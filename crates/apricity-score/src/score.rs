@@ -150,6 +150,8 @@ pub enum Effect {
     NoiseGate(GateSpec),
     /// Stereo width, 0 (mono) … 2 (twice as wide); 1 = unchanged.
     Width(f64),
+    /// A resonant filter as a chain effect (track, group or return; not the master yet).
+    Filter(FilterFxSpec),
 }
 
 impl Effect {
@@ -164,8 +166,41 @@ impl Effect {
             Effect::Lofi(_) => "lofi",
             Effect::NoiseGate(_) => "noisegate",
             Effect::Width(_) => "width",
+            Effect::Filter(_) => "filter",
         }
     }
+}
+
+/// `filter lp 800 res 40% 24dB`: lowpass, highpass or (cheap to add) bandpass, with resonance and slope.
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FilterKind {
+    Lp,
+    Hp,
+    Bp,
+}
+
+/// A resonant filter effect: cutoff (Hz), resonance (0–1, 0 = today's gentle response), and slope
+/// (12 or 24 dB/octave; 24 cascades two biquads).
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct FilterFxSpec {
+    pub kind: FilterKind,
+    pub hz: f64,
+    /// 0–1: maps to Q = 0.707 · 20^res (0% = today's Q of 0.707, 100% ≈ 14.1).
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub res: f64,
+    /// dB/octave: 12 (default, one biquad) or 24 (two cascaded biquads).
+    #[serde(default = "twelve", skip_serializing_if = "is_twelve")]
+    pub slope: u16,
+}
+
+fn twelve() -> u16 {
+    12
+}
+
+fn is_twelve(v: &u16) -> bool {
+    *v == 12
 }
 
 /// Saturation: `db` of gain into a soft clipper (level is matched afterwards).
@@ -326,6 +361,7 @@ impl serde::Serialize for Effect {
             Effect::Lofi(l) => m.serialize_entry("lofi", l)?,
             Effect::NoiseGate(g) => m.serialize_entry("noisegate", g)?,
             Effect::Width(w) => m.serialize_entry("width", w)?,
+            Effect::Filter(f) => m.serialize_entry("filter", f)?,
         }
         m.end()
     }
@@ -354,8 +390,10 @@ impl<'de> Deserialize<'de> for Effect {
             noisegate: Option<GateSpec>,
             #[serde(default)]
             width: Option<f64>,
+            #[serde(default)]
+            filter: Option<FilterFxSpec>,
         }
-        const KINDS: &str = "{eq: …}, {comp: …}, {limit: …}, {reverb: …}, {delay: …}, {drive: …}, {lofi: …}, {noisegate: …} or {width: 1.5}";
+        const KINDS: &str = "{eq: …}, {comp: …}, {limit: …}, {reverb: …}, {delay: …}, {drive: …}, {lofi: …}, {noisegate: …}, {width: 1.5} or {filter: …}";
         let raw = Raw::deserialize(d).map_err(|e| serde::de::Error::custom(format!("an effect is {KINDS} ({e})")))?;
         let mut found: Vec<Effect> = Vec::new();
         found.extend(raw.eq.map(Effect::Eq));
@@ -367,6 +405,7 @@ impl<'de> Deserialize<'de> for Effect {
         found.extend(raw.lofi.map(Effect::Lofi));
         found.extend(raw.noisegate.map(Effect::NoiseGate));
         found.extend(raw.width.map(Effect::Width));
+        found.extend(raw.filter.map(Effect::Filter));
         match found.len() {
             1 => Ok(found.pop().unwrap()),
             _ => Err(serde::de::Error::custom(format!("each effect is one of {KINDS}; put several in the list, one per item"))),
@@ -621,22 +660,61 @@ impl TrackSpec {
     }
 }
 
-/// A simple filter on a track: `{lowpass: 800}` or `{highpass: 200}` (Hz).
+/// A track's header filter: `{lowpass: 800}` or `{highpass: 200}` (Hz), with optional resonance
+/// (0–1, default 0 = today's gentle Q of 0.707) and slope (12 or 24 dB/octave, default 12). With
+/// `res` 0 and slope 12, this is exactly today's filter (bit-identical rendering).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FilterSpec {
-    Lowpass(f64),
-    Highpass(f64),
+    Lowpass { hz: f64, res: f64, slope: u16 },
+    Highpass { hz: f64, res: f64, slope: u16 },
+}
+
+impl FilterSpec {
+    pub fn hz(&self) -> f64 {
+        match *self {
+            FilterSpec::Lowpass { hz, .. } | FilterSpec::Highpass { hz, .. } => hz,
+        }
+    }
+    pub fn res(&self) -> f64 {
+        match *self {
+            FilterSpec::Lowpass { res, .. } | FilterSpec::Highpass { res, .. } => res,
+        }
+    }
+    pub fn slope(&self) -> u16 {
+        match *self {
+            FilterSpec::Lowpass { slope, .. } | FilterSpec::Highpass { slope, .. } => slope,
+        }
+    }
+    pub fn with_hz(&self, hz: f64) -> Self {
+        match *self {
+            FilterSpec::Lowpass { res, slope, .. } => FilterSpec::Lowpass { hz, res, slope },
+            FilterSpec::Highpass { res, slope, .. } => FilterSpec::Highpass { hz, res, slope },
+        }
+    }
+    pub fn with_res(&self, res: f64) -> Self {
+        match *self {
+            FilterSpec::Lowpass { hz, slope, .. } => FilterSpec::Lowpass { hz, res, slope },
+            FilterSpec::Highpass { hz, slope, .. } => FilterSpec::Highpass { hz, res, slope },
+        }
+    }
 }
 
 impl serde::Serialize for FilterSpec {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
-        let (k, v) = match self {
-            FilterSpec::Lowpass(h) => ("lowpass", h),
-            FilterSpec::Highpass(h) => ("highpass", h),
+        let k = match self {
+            FilterSpec::Lowpass { .. } => "lowpass",
+            FilterSpec::Highpass { .. } => "highpass",
         };
-        let mut m = s.serialize_map(Some(1))?;
-        m.serialize_entry(k, v)?;
+        let n = 1 + (self.res() != 0.0) as usize + (self.slope() != 12) as usize;
+        let mut m = s.serialize_map(Some(n))?;
+        m.serialize_entry(k, &self.hz())?;
+        if self.res() != 0.0 {
+            m.serialize_entry("res", &self.res())?;
+        }
+        if self.slope() != 12 {
+            m.serialize_entry("slope", &self.slope())?;
+        }
         m.end()
     }
 }
@@ -650,11 +728,15 @@ impl<'de> Deserialize<'de> for FilterSpec {
             lowpass: Option<f64>,
             #[serde(default)]
             highpass: Option<f64>,
+            #[serde(default)]
+            res: f64,
+            #[serde(default = "twelve")]
+            slope: u16,
         }
-        let bad = || serde::de::Error::custom("filter must be {lowpass: <Hz>} or {highpass: <Hz>}");
+        let bad = || serde::de::Error::custom("filter must be {lowpass: <Hz>} or {highpass: <Hz>} (plus optional res, slope)");
         match Raw::deserialize(d).map_err(|_| bad())? {
-            Raw { lowpass: Some(h), highpass: None } => Ok(FilterSpec::Lowpass(h)),
-            Raw { lowpass: None, highpass: Some(h) } => Ok(FilterSpec::Highpass(h)),
+            Raw { lowpass: Some(hz), highpass: None, res, slope } => Ok(FilterSpec::Lowpass { hz, res, slope }),
+            Raw { lowpass: None, highpass: Some(hz), res, slope } => Ok(FilterSpec::Highpass { hz, res, slope }),
             _ => Err(bad()),
         }
     }
@@ -1164,7 +1246,7 @@ mod tests {
         assert_eq!(s.kits["h"].slice, Some(SliceBy::Transients));
         let t = &s.tracks[0];
         assert_eq!(t.pattern, Pattern::Steps("1 . 3 .".into()));
-        assert_eq!((t.swing, t.reverse, t.filter, t.gate, t.stutter, t.speed, t.grid), (Some(58.0), true, Some(FilterSpec::Lowpass(800.0)), Some(0.5), Some(2), Some(0.5), Some(8)));
+        assert_eq!((t.swing, t.reverse, t.filter, t.gate, t.stutter, t.speed, t.grid), (Some(58.0), true, Some(FilterSpec::Lowpass { hz: 800.0, res: 0.0, slope: 12 }), Some(0.5), Some(2), Some(0.5), Some(8)));
         let back: Score = serde_yaml::from_str(&serde_yaml::to_string(&s).unwrap()).unwrap();
         assert_eq!(back, s);
         let bad = serde_yaml::from_str::<Score>(&y.replace("{beats: 1}", "{beats: 1, into: 2}")).unwrap_err().to_string();

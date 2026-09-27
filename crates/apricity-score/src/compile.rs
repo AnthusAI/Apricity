@@ -167,8 +167,17 @@ fn validate_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Vec<Strin
             }
             (target.to_string(), true)
         }
+        "filter.res" => {
+            // The header filter's own resonance, when this track has one; otherwise a filter
+            // effect's resonance (see validate_effect_target). A track with both is rare, but
+            // the header (which already owns bare `filter`) takes priority.
+            if ctx.is_track && ctx.filter.is_some() {
+                return (target.to_string(), true);
+            }
+            validate_effect_target(target, ctx, at, errors)
+        }
         "width" => (target.to_string(), true),
-        t if t.starts_with("eq") || t.starts_with("comp") || t.starts_with("reverb") || t.starts_with("delay") => {
+        t if t.starts_with("eq") || t.starts_with("comp") || t.starts_with("reverb") || t.starts_with("delay") || t.starts_with("filter") => {
             validate_effect_target(t, ctx, at, errors)
         }
         _ => {
@@ -208,6 +217,11 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
             errors.push(format!("{at}: invalid effect index in `{target}`"));
             return (target.to_string(), false);
         }}}
+    } else if let Some(num_str) = effect_name.strip_prefix("filter") {
+        if num_str.is_empty() { ("filter", 1) } else { match num_str.parse::<usize>() { Ok(n) => ("filter", n), Err(_) => {
+            errors.push(format!("{at}: invalid effect index in `{target}`"));
+            return (target.to_string(), false);
+        }}}
     } else {
         errors.push(format!("{at}: invalid effect `{effect_name}`"));
         return (target.to_string(), false);
@@ -221,6 +235,7 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
             ("comp", Effect::Comp(_)) => true,
             ("reverb", Effect::Reverb(_)) => true,
             ("delay", Effect::Delay(_)) => true,
+            ("filter", Effect::Filter(_)) => true,
             _ => false,
         };
 
@@ -242,6 +257,9 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
                         return (target.to_string(), true);
                     }
                     ("delay", "mix", Effect::Delay(_)) => {
+                        return (target.to_string(), true);
+                    }
+                    ("filter", "cutoff" | "res", Effect::Filter(_)) => {
                         return (target.to_string(), true);
                     }
                     ("eq", _, Effect::Eq(eq)) => {
@@ -301,6 +319,18 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
                         errors.push(msg);
                         return (target.to_string(), false);
                     }
+                    ("filter", _, Effect::Filter(_)) => {
+                        let valid_params = vec!["cutoff".to_string(), "res".to_string()];
+                        let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
+                        let msg = match best {
+                            Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
+                                format!("{at}: unknown automation target `{target}` (did you mean `{base}.{p}`?)")
+                            }
+                            _ => format!("{at}: unknown automation target `{target}`")
+                        };
+                        errors.push(msg);
+                        return (target.to_string(), false);
+                    }
                     _ => {
                         errors.push(format!("{at}: unknown automation target `{target}`"));
                         return (target.to_string(), false);
@@ -329,7 +359,7 @@ fn validate_value(target: &str, val: f64, at: &str, pi: usize, errors: &mut Vec<
             errors.push(format!("{at}: point {pi}: pan {:.0} is outside -100 to 100", val));
         }
         val / 100.0
-    } else if target.contains("mix") || target.contains("send") {
+    } else if target.contains("mix") || target.contains("send") || target.ends_with(".res") {
         // Shares come as 0-1 from dsl.rs
         if !(0.0..=1.0).contains(&val) {
             errors.push(format!("{at}: point {pi}: {:.0}% is outside 0% to 100%", val * 100.0));
@@ -479,6 +509,13 @@ fn check_effects(at: &str, fx: &[Effect], errors: &mut Vec<String>) {
                     if let Some(f) = f {
                         range(errors, format!("{at}.delay.{name}"), f, 20.0, 20000.0, " Hz");
                     }
+                }
+            }
+            Effect::Filter(f) => {
+                range(errors, format!("{at}.filter"), f.hz, 20.0, 20000.0, " Hz");
+                range(errors, format!("{at}.filter.res"), f.res * 100.0, 0.0, 100.0, "%");
+                if f.slope != 12 && f.slope != 24 {
+                    errors.push(format!("{at}.filter.slope: {} isn't 12 or 24 (dB/octave)", f.slope));
                 }
             }
         }
@@ -1507,11 +1544,16 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         }
         check_groove(&format!("{at}."), tr.swing, tr.swing_base, tr.velocity, tr.humanize, &mut errors);
         if let Some(f) = tr.filter {
-            let hz = match f {
-                FilterSpec::Lowpass(h) | FilterSpec::Highpass(h) => h,
-            };
+            let hz = f.hz();
             if !(20.0..=20000.0).contains(&hz) {
                 errors.push(format!("{at}.filter: {hz} Hz is outside 20–20000"));
+            }
+            let res = f.res();
+            if !(0.0..=1.0).contains(&res) {
+                errors.push(format!("{at}.filter.res: {:.0}% is outside 0% to 100%", res * 100.0));
+            }
+            if f.slope() != 12 && f.slope() != 24 {
+                errors.push(format!("{at}.filter.slope: {} isn't 12 or 24 (dB/octave)", f.slope()));
             }
         }
         check_effects(&at, &tr.effects, &mut errors);
@@ -1966,7 +2008,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
             }
             warp.push((rc.clip.seconds_at(cb1), (cb1 - cb0) / ratio));
             // If track automates filter, don't use per-note filter
-            let event_filter = if infos[h.track].automation.iter().any(|lane| lane.target == "filter") {
+            let event_filter = if infos[h.track].automation.iter().any(|lane| lane.target == "filter" || lane.target == "filter.res") {
                 None
             } else {
                 tr.filter

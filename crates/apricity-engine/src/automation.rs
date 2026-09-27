@@ -12,6 +12,8 @@ pub fn scale_for(target: &str) -> Scale {
     matches!(
         target,
         "filter"
+            | "filter.cutoff"
+            | "filter2.cutoff"
             | "eq.lowcut"
             | "eq.highcut"
             | "eq2.lowcut"
