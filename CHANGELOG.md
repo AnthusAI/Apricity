@@ -2,6 +2,62 @@
 
 <!-- version list -->
 
+## v0.29.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-55297e**: Respond to oauth callback promptly
+  ([`9c4f583`](https://github.com/AnthusAI/Apricity/commit/9c4f5833e792fc049f82d515b4b7a96bc879c530))
+
+- **apricitus-681eab**: Bound cloud requests
+  ([`bbeb6a8`](https://github.com/AnthusAI/Apricity/commit/bbeb6a842193797b64eb400a4878c07edb60cdd6))
+
+- **apricitus-cca592**: Match score ref schema
+  ([`b913c50`](https://github.com/AnthusAI/Apricity/commit/b913c505fc75c971009afc644b04716eaabc566e))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`d6da466`](https://github.com/AnthusAI/Apricity/commit/d6da466e3da1afcd3bf38cbccca4814dbb459231))
+
+- **kanbus**: Commit board state (issues)
+  ([`d2b0e0e`](https://github.com/AnthusAI/Apricity/commit/d2b0e0e6c573951cb72d2e8ac483c1da97029b75))
+
+- **kanbus**: Commit board state (issues)
+  ([`477c8cc`](https://github.com/AnthusAI/Apricity/commit/477c8ccd5d2b10393a8e098624f8d3204a3bbc24))
+
+- **kanbus**: Commit board state (issues)
+  ([`fa1a3a3`](https://github.com/AnthusAI/Apricity/commit/fa1a3a37a43be5e69183b1dba51b425b4c5c98ac))
+
+- **kanbus**: Commit board state (issues)
+  ([`0b2028b`](https://github.com/AnthusAI/Apricity/commit/0b2028be3477558ce05330fa63ed559427c9b462))
+
+- **kanbus**: Commit board state (issues)
+  ([`d4109fd`](https://github.com/AnthusAI/Apricity/commit/d4109fd0d75265b93592169b1117f1b71e59a919))
+
+- **kanbus**: Commit board state (issues)
+  ([`b28c139`](https://github.com/AnthusAI/Apricity/commit/b28c139c1caa447f93057331a2765e35c7b5ecd1))
+
+- **kanbus**: Commit board state (issues)
+  ([`0f19abb`](https://github.com/AnthusAI/Apricity/commit/0f19abb68b2cf8532bcac6a8169b3a6e538e9b5e))
+
+### Documentation
+
+- **write-score**: Teach the skill apricity check and the chord-following EQ
+  ([#36](https://github.com/AnthusAI/Apricity/pull/36),
+  [`73b9d77`](https://github.com/AnthusAI/Apricity/commit/73b9d77af649f880da3ed455f65bce94f65c07be))
+
+- **write-score**: Teach the skill apricity steer
+  ([#38](https://github.com/AnthusAI/Apricity/pull/38),
+  [`55d886a`](https://github.com/AnthusAI/Apricity/commit/55d886a0c04bb0903b1728ac1d74bb67158ad809))
+
+### Features
+
+- **apricitus-c46688**: Apricity steer: the steering report, its schema, the wasm export and span
+  ops ([#37](https://github.com/AnthusAI/Apricity/pull/37),
+  [`393096b`](https://github.com/AnthusAI/Apricity/commit/393096b52513511477192d22a60b1a49e581c9e6))
+
+
 ## v0.28.0 (2026-09-27)
 
 ### Chores
