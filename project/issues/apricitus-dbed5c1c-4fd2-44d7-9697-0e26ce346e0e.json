@@ -3,17 +3,30 @@
   "title": "Audition form: judge and play candidate layers as a 16-bar audition (scene 4, new part solo 4, both with a quick build 8), not a full track",
   "description": "User request (2026-09-27): full 40-bar candidates take too long to review and use too much disk. Standard audition, 16 bars (32 s at 120 BPM): bars 1-4 the existing scene alone; 5-8 the new part solo; 9-16 both, a quick 2-bar build then 6 bars together. Score candidates on the together window with the baseline over the same window (fixes the windowed-vs-full-song guard mismatch). Recorded in the write-score skill (references/recipes.md, 'Auditioning a layer'). Build: analysis/apricity_analyze/audition_form.py + scripts/audition-form.py (render the candidate score --bars W with --stems, scene = stems minus the candidate, solo = the candidate stem, together = mix with the candidate ramped in over 2 bars; loudness-normalize; write .m4a; delete wavs/stems). Use it in the optimizer's L1/L2 and cycle folders and in the explorer, and make the explorer delete renders after scoring (apricitus-ae80d4).",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-7e51f2b5-e837-4442-aa9d-5d11e5295340",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "f1e263a9-6b9e-472f-bd0c-c0d018bdac1f",
+      "author": "home",
+      "text": "Done: PR #21 (audition-form tool, explorer disk fix) and PR #23 (the optimizer on 8-bar windows with audition-form cycle folders), both on main via #22/#24. 12-candidate run: 250 s, 3.5 MB. Calibration caveat: Δwindow orders run 2's C > A > B vs the user's A > B > C; documented in objective.WHOLE_MIX_MARGIN; Harmony v2 (apricitus-445cae) is the planned fix.",
+      "created_at": "2026-09-27T17:39:44.076508Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T16:42:25.136916Z",
-  "updated_at": "2026-09-27T16:42:25.136960Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T17:39:44.191322Z",
+  "closed_at": "2026-09-27T17:39:44.191285Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
