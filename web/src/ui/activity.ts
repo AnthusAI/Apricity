@@ -10,12 +10,15 @@ import { el } from "./dom";
 import { api, me } from "../apricity";
 import { mode } from "../data/client";
 import { handles } from "../data/handles";
-import { cards, FILTERS } from "../data/activity";
+import { cards } from "../data/activity";
+import { owns } from "../data/catalog";
+import { DEFAULT_VIEW, parseView, viewQuery, type ListView } from "../data/list-view";
+import { FilterBar } from "./filter-bar";
 import { rankedPage, tagTotals } from "../data/ranked-read";
 import type { RankedRow } from "../data/ranked";
 import { href, sampleKey, type Route } from "../route";
 import { tagLink } from "./tag-chips";
-import { go } from "./at";
+import { go, opened } from "./at";
 import { FeedCard, feedItemOf, type FeedDeps } from "./feed-card";
 import { feedGrid } from "./feed-grid";
 
@@ -52,57 +55,33 @@ function aboutCard(): HTMLElement {
 const allTags = () => link({ page: "tags" }, "All tags", "act-all-tags");
 
 export class ActivityView {
-  private chips = el("div", { className: "act-chips", role: "group", ariaLabel: "Show" });
   private tags = el("div", { className: "act-tags" });
   /** For someone signed out: what this is, Sign in, and What is this? (the About page). */
   private intro = el("div", { className: "home-intro", hidden: true });
   private body = el("div", { className: "act-body", ariaLive: "polite" });
   private fresh = el("button", { type: "button", className: "act-fresh", hidden: true }, "New activity · show");
-  private kind: string | null = null;
-  /** Top (by stars, then newest) unless someone chose Recent (newest activity first); remembered per browser. */
-  private order: "top" | "recent" = "top";
-  private orderEl = el("div", { className: "seg act-order", role: "tablist", ariaLabel: "Order" });
+  /** Top (best rated, fresh things lifted) or Recent, and Mine: the one filter bar, kept in the URL (/?order=recent&mine=1). */
+  private bar: FilterBar;
+  private view: ListView = { ...DEFAULT_VIEW };
   private top: string | null = null; // the newest card's id and time, to notice new activity
   private timer = 0;
   private shown = false;
   private seq = 0;
 
   constructor(private root: HTMLElement) {
-    for (const f of FILTERS) {
-      const b = el("button", { type: "button" }, f.label);
-      b.setAttribute("aria-pressed", String(f.kind === this.kind));
-      b.addEventListener("click", () => {
-        this.kind = f.kind;
-        for (const x of this.chips.children) x.setAttribute("aria-pressed", String(x === b));
-        void this.load();
-      });
-      this.chips.append(b);
-    }
-    try {
-      if (localStorage.getItem("apricity.activity.order") === "recent") this.order = "recent";
-    } catch {} // storage can be blocked (private browsing): Top it is
-    for (const [o, label] of [["top", "Top"], ["recent", "Recent"]] as const) {
-      const b = el("button", { type: "button", textContent: label, title: o === "top" ? "Best rated first, then the newest" : "Newest activity first" });
-      b.setAttribute("role", "tab");
-      b.setAttribute("aria-selected", String(o === this.order));
-      b.addEventListener("click", () => {
-        if (this.order === o) return;
-        this.order = o;
-        for (const x of this.orderEl.children) x.setAttribute("aria-selected", String(x === b));
-        try {
-          localStorage.setItem("apricity.activity.order", o);
-        } catch {} // storage can be blocked (private browsing): nothing to report
-        void this.load();
-      });
-      this.orderEl.append(b);
-    }
+    this.bar = new FilterBar(this.view, { mine: true, tail: [this.fresh, this.tags] }, (v) => {
+      this.view = v;
+      const list = viewQuery(v);
+      opened({ page: "home", ...(list ? { list } : {}) }, "auto");
+      void this.load();
+    });
     this.fresh.addEventListener("click", () => void this.load());
     root.append(
       el(
         "div",
         { className: "feed-page act" },
         this.intro,
-        el("div", { className: "feed-bar act-bar" }, this.orderEl, this.chips, this.fresh, el("span", { style: "flex:1" }), this.tags),
+        this.bar.el,
         this.body,
         el("footer", { className: "home-foot" }, link({ page: "about" }, "About Apricity"), link({ page: "tags" }, "Tags"), link({ page: "help" }, "Help")),
       ),
@@ -110,11 +89,13 @@ export class ActivityView {
     document.addEventListener("apricity:auth-changed", () => this.shown && void this.load());
   }
 
-  /** The tab was shown (or hidden): load, and look for new activity every minute while it's up. */
-  show(visible: boolean) {
+  /** The tab was shown (or hidden), with its view from the URL: load, and look for new activity every minute while it's up. */
+  show(visible: boolean, list = "") {
     this.shown = visible;
     clearInterval(this.timer);
     if (!visible) return;
+    this.view = parseView(list);
+    this.bar.set(this.view);
     void this.load();
     this.timer = window.setInterval(() => void this.poll(), POLL_MS);
   }
@@ -122,7 +103,7 @@ export class ActivityView {
   private async poll() {
     if (document.hidden || mode() === "local") return;
     try {
-      const { items } = await cards(this.kind);
+      const { items } = await cards(null);
       const t = items[0] ? `${items[0].id}@${items[0].lastAt}` : null;
       // The first look after a load notes where the feed is; a later one that finds something newer offers it.
       if (this.top === null) this.top = t;
@@ -148,7 +129,7 @@ export class ActivityView {
       .catch(() => undefined);
     try {
       // One page of the ranked list (design/scale.md): each row carries its card, so a page is one query.
-      const list = `feed|${this.order}|${this.kind ?? "all"}`;
+      const list = `feed|${this.view.order}|all`;
       const [first, who, names, hidden] = await Promise.all([
         rankedPage(list).finally(() => performance.mark("activity:cards")),
         me().catch(() => null),
@@ -158,7 +139,9 @@ export class ActivityView {
       if (seq !== this.seq) return;
       const deps: FeedDeps = { who, names };
       // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
-      const cardsOf = (rows: RankedRow[]) => rows.filter((r) => !hidden.has(r.targetId)).map((r) => new FeedCard(feedItemOf(r, deps), deps).root);
+      // Mine: what you made (a local library is all yours).
+      const mine = this.view.mine && mode() !== "local";
+      const cardsOf = (rows: RankedRow[]) => rows.filter((r) => !hidden.has(r.targetId) && (!mine || owns(who, r.owner))).map((r) => new FeedCard(feedItemOf(r, deps), deps).root);
       let next = first.next;
       const more = async (): Promise<HTMLElement[]> => {
         while (next && seq === this.seq) {
@@ -173,12 +156,12 @@ export class ActivityView {
       if (!els.length) els = await more();
       if (seq !== this.seq) return;
       performance.mark("activity:shown");
-      const local = mode() === "local" ? [el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`)] : [];
+      const local = mode() === "local" ? [el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.view.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`)] : [];
       this.body.replaceChildren(
         ...local,
         // What Apricity is, always the first card on the home page; then the feed, or a word that it's empty.
         feedGrid([aboutCard(), ...els], more),
-        ...(els.length ? [] : [el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it.")]),
+        ...(els.length ? [] : [el("div", { className: "empty" }, this.view.mine && mode() !== "local" ? "Nothing of yours here yet. Make something, rate something, or say something about it." : "Nothing yet. Make something, rate something, or say something about it.")]),
       );
     } catch (e) {
       if (seq === this.seq) this.body.replaceChildren(el("div", { className: "empty" }, `Couldn't load the activity: ${(e as Error).message}`));

@@ -656,7 +656,6 @@ body.col-resizing iframe, body.col-resizing canvas { pointer-events: none; }
 @media (max-width: 600px) { .feed-page { padding: 12px 12px 48px; } }
 
 /* Activity: one slim bar (what to show, new activity, the top tags), then the cards. */
-.act-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0; margin: -16px 0 12px; border-bottom: 1px solid var(--line); }
 .act-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .act-all-tags { font-size: 12px; color: var(--muted); margin-left: 4px; }
 .act-local { margin: 0 0 14px; }
@@ -715,8 +714,6 @@ body.nav-open { overflow: hidden; }
 .wave-bar { width: 180px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .wave-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .wave-loading .bad { color: var(--bad); }
-.act-order { flex: none; }
-.act-order button { padding: 5px 12px; }
 
 /* The About card, always first on the home page: the landing page's sun, a line on what this is, and the way to /about. */
 .about-card { --sun: #f59e5b; --sun-2: #ffcf8a; }
@@ -749,3 +746,20 @@ body.nav-open { overflow: hidden; }
 .search-section[hidden] { display: none; }
 .search-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
 .search-head h2 { font-size: 17px; margin: 0; }
+
+/* The one filter bar (ui/filter-bar.ts): stays in view as the cards scroll, with no rule under it (the cards' own
+   edges are enough). */
+.filter-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0 8px; margin: -16px 0 10px; }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.filter-bar .seg { flex: none; }
+.filter-bar .seg[hidden] { display: none; }
+.filter-bar .seg button { padding: 5px 12px; font-size: 13px; }
+.filter-mine, .filter-more-btn { padding: 5px 12px; font-size: 13px; }
+.filter-mine.on, .filter-more-btn.on { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); color: var(--fg); }
+.filter-q { border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--accent-soft); color: var(--fg); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.filter-q[hidden] { display: none; }
+.filter-gap { flex: 1; }
+.filter-new { padding: 5px 12px; font-size: 13px; }
+.filter-more { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.filter-more[hidden] { display: none; }
+.filter-note { margin-top: 6px; }

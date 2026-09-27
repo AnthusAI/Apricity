@@ -64,3 +64,8 @@ test("search: its words in the query, and back", () => {
   assert.deepEqual(parse("/search", "?q=%20%20"), { page: "search" });
   assert.equal(titleOf({ page: "search", q: "x" }, "“x”"), "“x” · Search · Apricity");
 });
+
+test("home and the sections keep their view in the query; an item's page doesn't", () => {
+  for (const r of [{ page: "home", list: "order=recent&mine=1" }, { page: "beats", list: "window=month&q=house" }, { page: "samples", list: "q=march" }] as Route[]) assert.deepEqual(url(r), r);
+  assert.equal(href({ page: "beats", score: "examples/b.apr", list: "q=x" }), "/beats/examples/b");
+});

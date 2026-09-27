@@ -1,6 +1,6 @@
 // Every page and item has a URL, so anything can be linked, bookmarked, shared or gone Back to:
 //
-//   /                              the home page: what's happening, best-rated songs first (or the newest)
+//   /                              the home page: what's happening, best-rated songs first (?order=recent, ?mine=1)
 //   /about                         what Apricity is (the old landing page)
 //   /scores  /beats  /chords  /melodies     the lists; a score is under the tab of its kind:
 //   /beats/examples/salamander-beat         (its folder and name; ".apr" left off, ".yaml" kept) and ?play plays it
@@ -58,7 +58,11 @@ export const sampleKey = (path: string) => path.replace(/^samples\//, "").replac
 export function parse(pathname: string, search = "", hash = ""): Route {
   const parts = pathname.split("/").filter(Boolean);
   const page = (parts[0] ?? "home") as Page;
-  if (!PAGES.includes(page) || page === "home") return { page: "home" };
+  if (!PAGES.includes(page)) return { page: "home" };
+  if (page === "home") {
+    const list = parts.length ? "" : search.replace(/^\?/, "");
+    return list ? { page, list } : { page };
+  }
   let rest: string[];
   try {
     rest = dec(parts.slice(1));
@@ -92,7 +96,7 @@ export function parse(pathname: string, search = "", hash = ""): Route {
 
 /** The URL of a route (path, and ?play or #section when there is one). */
 export function href(r: Route): string {
-  if (r.page === "home") return "/";
+  if (r.page === "home") return r.list ? `/?${r.list}` : "/";
   if (r.score && KIND_OF_PAGE[r.page]) {
     const parts = r.score.replace(/\.apr$/, "").split("/");
     return `/${r.page}/${enc(parts)}${r.play ? "?play" : ""}`;

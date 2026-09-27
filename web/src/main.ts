@@ -71,6 +71,8 @@ let howItWorks: HowItWorks | null = null;
 let listen: ListenView | null = null;
 /** The transport's play button follows the page shown (set up below). */
 let syncTransport = () => {};
+/** Home's view from its URL (?order=recent&mine=1), for the next showTab. */
+let homeList = "";
 function showTab(name: string) {
   if (!TABS.includes(name)) name = "scores";
   // Leaving a page stops what it was playing: the score, or an audition in Clips or Samples.
@@ -93,7 +95,7 @@ function showTab(name: string) {
   // The transport plays the score; it has no business on the landing or Docs pages.
   // (Cards on Activity and the tag pages have their own play buttons.)
   document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "how-it-works", "listen", "tags", "search"].includes(name);
-  activity.show(name === "home");
+  activity.show(name === "home", homeList);
   syncTransport();
   if (kind) score.setKind(kind);
   else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
@@ -110,6 +112,7 @@ async function follow(r: Route) {
   if (r.sample) loaded.add("samples");
   if (r.clip) loaded.add("clips");
   if (r.page === "clips") clips.setFilterQuery(r.list);
+  homeList = r.page === "home" ? (r.list ?? "") : "";
   showTab(tabOf(r));
   if (r.score) await openScore(r.score, !!r.play, "route");
   else if (r.sample) await samples.openKey(r.sample, undefined, "route");
