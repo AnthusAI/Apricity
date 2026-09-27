@@ -2,6 +2,38 @@
 
 <!-- version list -->
 
+## v0.28.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`8ac0844`](https://github.com/AnthusAI/Apricity/commit/8ac0844c245a6ec3bfc03c999b6bb2b33cb8a431))
+
+- **kanbus**: Commit board state (issues)
+  ([`7f78a90`](https://github.com/AnthusAI/Apricity/commit/7f78a90c33dbc98c1a9e488605d3379285420572))
+
+- **kanbus**: Commit board state (issues)
+  ([`601a5f8`](https://github.com/AnthusAI/Apricity/commit/601a5f884311d43fd87cc9f994a8ead392d1e4e2))
+
+- **kanbus**: Commit board state (issues)
+  ([`ac3015e`](https://github.com/AnthusAI/Apricity/commit/ac3015e01da72349a14a71a0fcbe5d80e896a0fe))
+
+- **kanbus**: Commit board state (issues)
+  ([`3abaa45`](https://github.com/AnthusAI/Apricity/commit/3abaa45bba94be128917fd9ec0727fc2a503a004))
+
+- **kanbus**: Commit board state (issues)
+  ([`725dee0`](https://github.com/AnthusAI/Apricity/commit/725dee042caf1892f6e279cd1ce910abe285a350))
+
+### Features
+
+- **apricitus-445cae**: The chord-following EQ, `harmonic`, in the engine and the score language
+  ([#34](https://github.com/AnthusAI/Apricity/pull/34),
+  [`e6a49ba`](https://github.com/AnthusAI/Apricity/commit/e6a49babcd6f4f7a5ea9c9f427de688863ae3f02))
+
+- **apricitus-bf97b4**: Add authenticated cloud cli
+  ([`ef7ca6e`](https://github.com/AnthusAI/Apricity/commit/ef7ca6e66c2ae8e1cedf5df81d2d267b83b1a6c2))
+
+
 ## v0.27.0 (2026-09-27)
 
 ### Chores
