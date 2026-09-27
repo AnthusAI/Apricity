@@ -3,7 +3,7 @@
   "title": "task Implement Cognito-authenticated Apricity cloud CLI",
   "description": "Implement the approved authenticated CLI plan and its executable behavior specifications. Covers Cognito PKCE login/keychain session, Score CRUD with ScoreRef reconciliation, and curator/admin S3-library record import into AppSync.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,11 +34,23 @@
         "model": "GPT-5",
         "name": "Codex"
       }
+    },
+    {
+      "id": "8feb64ff-6c3b-4241-b916-262b4a7072d5",
+      "author": "home",
+      "text": "Landed on develop after rebasing onto concurrent upstream work. The authenticated CLI implementation and focused test suite are complete.",
+      "created_at": "2026-09-27T22:25:13.079869Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
     }
   ],
   "created_at": "2026-09-27T22:15:38.513928Z",
-  "updated_at": "2026-09-27T22:24:58.141809Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T22:25:13.079907Z",
+  "closed_at": "2026-09-27T22:25:13.014614Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
