@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.17.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`4c8e0f7`](https://github.com/AnthusAI/Apricity/commit/4c8e0f787500922b3ab60305e70bc691e0fc4b76))
+
+### Features
+
+- **apricitus-ebb20e**: Verdicts kept for good, in the library
+  ([`92cb840`](https://github.com/AnthusAI/Apricity/commit/92cb840e092266601d57a4891b54d1a056874141))
+
+
 ## v0.16.0 (2026-09-27)
 
 
