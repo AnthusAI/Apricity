@@ -24,6 +24,7 @@ OP_NAMES = frozenset({
     "track.octave",
     "track.release",
     "track.volume",
+    "track.add_part",
 })
 
 MAX_PEAKS_PER_EQ_LINE = 4
@@ -206,6 +207,99 @@ def track_volume(text: str, *, track: str, delta: int) -> str:
     return _join(lines)
 
 
+# --------------------------------------------------------------------------- track.add_part
+
+def _find_insert_after_clips(lines: list[str]) -> int:
+    """Line index right after the last `clip <name> = ...` declaration (before `kit`/`chords`)."""
+    last = -1
+    for i, line in enumerate(lines):
+        if re.match(r"^clip\s+\S+\s*=", line):
+            last = i
+    return last + 1 if last >= 0 else 0
+
+
+def _find_insert_after_kits(lines: list[str]) -> int:
+    """Line index right after the last `kit ...` block (declaration + its indented pad lines)."""
+    last_end = None
+    i = 0
+    while i < len(lines):
+        if re.match(r"^kit\s+\S+", lines[i]):
+            end = _track_block_end(lines, i)
+            last_end = end
+            i = end
+        else:
+            i += 1
+    return last_end if last_end is not None else _find_insert_after_clips(lines)
+
+
+def _find_insert_before_return(lines: list[str]) -> int:
+    """Line index of the first `return`/`master` line (new track blocks go right before it), or
+    the end of the file when neither exists."""
+    for i, line in enumerate(lines):
+        if re.match(r"^(return|master)\b", line):
+            return i
+    return len(lines)
+
+
+def _remove_clip_decl(lines: list[str], name: str) -> list[str]:
+    try:
+        idx = _clip_decl_index(lines, name)
+    except OpError:
+        return lines
+    return lines[:idx] + lines[idx + 1:]
+
+
+def _remove_kit_block(lines: list[str], name: str) -> list[str]:
+    pat = re.compile(rf"^kit\s+{re.escape(name)}(\s|$)")
+    for i, line in enumerate(lines):
+        if pat.match(line):
+            end = _track_block_end(lines, i)
+            return lines[:i] + lines[end:]
+    return lines
+
+
+def _remove_track_blocks(lines: list[str], name: str) -> list[str]:
+    """Remove every `track <name> ...` declaration + its indented lines (a role can have more than
+    one `track` line, e.g. a build variant -- a recast drops them all)."""
+    pat = re.compile(rf"^track\s+{re.escape(name)}(\.[\w-]+)?(\s|$)")
+    out = list(lines)
+    changed = True
+    while changed:
+        changed = False
+        for i, line in enumerate(out):
+            if pat.match(line):
+                end = _track_block_end(out, i)
+                out = out[:i] + out[end:]
+                changed = True
+                break
+    return out
+
+
+def track_add_part(text: str, *, track: str, clip_line: str, track_lines: list[str],
+                    kit_lines: list[str] | None = None, recast: bool = False) -> str:
+    """Append (or, when `recast`, first remove then append) one new part: a `clip <track> = ...`
+    line, an optional `kit <track> ...` block (for a sliced-kit role), and a `track <track> ...`
+    block (`track_lines[0]` is the declaration; the rest are its indented continuation lines).
+    This is the optimizer's one structural op (Kanbus apricitus-a9ad5b): it never edits another
+    part, so re-proposing the same genome twice is idempotent up to `recast`'s remove-then-add."""
+    lines = _lines(text)
+    if recast:
+        lines = _remove_track_blocks(lines, track)
+        lines = _remove_kit_block(lines, track)
+        lines = _remove_clip_decl(lines, track)
+
+    insert_clip_at = _find_insert_after_clips(lines)
+    lines = lines[:insert_clip_at] + [clip_line] + lines[insert_clip_at:]
+
+    if kit_lines:
+        insert_kit_at = _find_insert_after_kits(lines)
+        lines = lines[:insert_kit_at] + list(kit_lines) + lines[insert_kit_at:]
+
+    insert_track_at = _find_insert_before_return(lines)
+    lines = lines[:insert_track_at] + list(track_lines) + [""] + lines[insert_track_at:]
+    return _join(lines)
+
+
 APPLY = {
     "cast.swap": cast_swap,
     "track.eq_notch": track_eq_notch,
@@ -215,6 +309,7 @@ APPLY = {
     "track.octave": track_octave,
     "track.release": track_release,
     "track.volume": track_volume,
+    "track.add_part": track_add_part,
 }
 
 
@@ -255,4 +350,7 @@ def describe(op: dict) -> str:
         return f"set {a['track']}'s release to {a['ms']:g}ms"
     if name == "track.volume":
         return f"nudge {a['track']}'s volume by {a['delta']:+d}dB"
+    if name == "track.add_part":
+        verb = "recast" if a.get("recast") else "add"
+        return f"{verb} part {a['track']}: {a['clip_line'].strip()}"
     return f"{name}({a})"

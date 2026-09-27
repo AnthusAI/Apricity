@@ -110,6 +110,54 @@ def ccmixter_candidates(exclude_samples: set[str] | None = None) -> list[Candida
     return out
 
 
+def region_candidates(prefixes: tuple[str, ...], *, exclude_samples: set[str] | None = None,
+                       bpm_range: tuple[float, float] = (BPM_MIN, BPM_MAX)) -> list[Candidate]:
+    """Every saved clip whose name starts with one of `prefixes` (e.g. `("hold-",)` for a pitched
+    role, `("shot-",)` for a kit role, `("loop-", "sec-")` for a loop role), on any recording
+    catalogued in `sources.json` with an allowed license -- not ccMixter-only (round 2: widened
+    per review; the first pass scanned only `samples/ccmixter/`, which collapsed the MAP-Elites
+    archive's `source_family` axis to a single value). `sources.json` today covers ccmixter, loc,
+    citizen-dj and marine-band (confirmed by inspection); `salamander-drumkit/` and `voice/` have
+    no catalog entry and are silently excluded by the same `entries.get(sample_rel) is None`
+    check `ccmixter_candidates` already used -- this is the explorer's existing license filter,
+    reused verbatim, not a new or looser one."""
+    exclude_samples = exclude_samples or set()
+    sources_path = SAMPLES / "sources.json"
+    entries = {}
+    if sources_path.exists():
+        try:
+            for f in json.loads(sources_path.read_text()).get("files", []):
+                entries[f["path"]] = f
+        except (json.JSONDecodeError, OSError, KeyError):
+            pass
+
+    out: list[Candidate] = []
+    for manifest_path in sorted(SAMPLES.rglob("*.apricity.json")) if SAMPLES.is_dir() else []:
+        sample_rel = str(manifest_path.relative_to(SAMPLES))[: -len(".apricity.json")]
+        if sample_rel in exclude_samples:
+            continue
+        entry = entries.get(sample_rel)
+        if entry is None:
+            continue  # no catalog record (e.g. salamander-drumkit/, voice/): can't confirm license
+        ok, reason = _license_ok(entry)
+        if not ok:
+            continue
+        m = _manifest_for(sample_rel)
+        if not m:
+            continue
+        bpm = m.get("rhythm", {}).get("bpm")
+        if bpm is None or not (bpm_range[0] <= bpm <= bpm_range[1]):
+            continue
+        credit = entry.get("credit", entry.get("author", sample_rel))
+        source_page = entry.get("source_page", "")
+        attribution = f"{credit} ({reason}){', ' + source_page if source_page else ''}"
+        for c in m.get("annotations", {}).get("clips", []):
+            name = c.get("name", "")
+            if any(name.startswith(p) for p in prefixes):
+                out.append(Candidate(sample=sample_rel, clip=name, source=sample_rel, attribution=attribution))
+    return out
+
+
 def auto_candidates(n: int, *, library: pathlib.Path | None = None, exclude_samples: set[str] | None = None) -> list[Candidate]:
     """Rated clips first (best stars first), then ccMixter loop-/sec- clips (licensed, 90-130
     bpm), stopping at `n` total. No dedup beyond what each source already offers -- the outer
