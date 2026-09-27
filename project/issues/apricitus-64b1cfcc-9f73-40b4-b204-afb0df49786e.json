@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-64b1cfcc-9f73-40b4-b204-afb0df49786e",
+  "title": "Backfill Ranked rows from the current tables",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-91d34a67-5133-4b66-88a4-a4ab22b88b6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:34:30.849506Z",
+  "updated_at": "2026-09-27T01:34:30.849532Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

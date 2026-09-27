@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-4092b585-789e-4f65-9f9b-80cfc5748633",
+  "title": "Lean reads: score lists without text; handles on demand",
+  "description": "",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-91d34a67-5133-4b66-88a4-a4ab22b88b6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:34:30.951791Z",
+  "updated_at": "2026-09-27T01:34:30.951819Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

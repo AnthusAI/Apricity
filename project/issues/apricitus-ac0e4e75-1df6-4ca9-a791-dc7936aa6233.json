@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-ac0e4e75-1df6-4ca9-a791-dc7936aa6233",
+  "title": "Ranking core: lists, sort keys and rows for an item (pure, shared by the Lambda and the web)",
+  "description": "",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-91d34a67-5133-4b66-88a4-a4ab22b88b6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:34:30.697599Z",
+  "updated_at": "2026-09-27T01:34:30.998676Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
