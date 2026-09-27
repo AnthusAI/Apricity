@@ -118,6 +118,8 @@ Don't render the full house form to judge one candidate layer: it takes about 80
 
 Score and compare candidates on bars 9–16, with the baseline computed over the same window. Keep the full 40-bar form for the version a candidate graduates into.
 
+Implemented: `scripts/audition-form.py CANDIDATE.apr --layer TRACK [--window A-B] -o OUT.m4a [--check]` (Kanbus apricitus-dbed5c; module: `analysis/apricity_analyze/audition_form.py`). Renders the window once, assembles scene/solo/together from its stems, loudness-normalizes to -14 LUFS, and deletes the render before returning -- only the `.m4a` and a small numbers `.json` are kept. `--check` reports Δwindow (together vs. a scene-alone baseline over the same window, cached per score+window). `scripts/explore.py --audition` writes one per finalist.
+
 ## Mix chains
 
 ```apr
