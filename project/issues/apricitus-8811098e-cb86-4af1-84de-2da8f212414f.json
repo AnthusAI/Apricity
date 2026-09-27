@@ -1,0 +1,32 @@
+{
+  "id": "apricitus-8811098e-cb86-4af1-84de-2da8f212414f",
+  "title": "Docs and design: 'Finishing in your DAW' in docs/concepts.md, the button in docs/tools.md, a browser-export section in design/daw-set.md",
+  "description": "Document the download path for people (concepts, tools) and the browser pipeline for maintainers (design note: page → rw_export_daw_set → fetch → zip; what differs from the CLI, which is only the zip container). Verification: the docs tab renders; links checked.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-e62cd449-b44d-465b-8c5c-7c979eece9b4",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:57.549852Z",
+  "updated_at": "2026-09-27T00:14:58.401303Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

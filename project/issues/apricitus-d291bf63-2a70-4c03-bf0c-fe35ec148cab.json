@@ -1,0 +1,33 @@
+{
+  "id": "apricitus-d291bf63-2a70-4c03-bf0c-fe35ec148cab",
+  "title": "Sample fetch and zip assembly in the page (web/src/data, no server)",
+  "description": "In web/src: fetch each sample the manifest names through the existing data layer (catalog.ts, authAware client), report progress, build the `<Score> Project/` tree and zip it in the browser. Choose a small zip library (fflate is the likely pick; package.json change is the web session's call) or a hand-rolled store-only zip. Fail whole, never a partial zip; errors name the sample and the track.\n\nVerification: a vitest or node test zips a two-sample score from fixtures and lists the entries; `npm run build` green.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-ee4b3222-7b9e-4c6a-91c9-43283fcc0eca",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:57.222281Z",
+  "updated_at": "2026-09-27T00:14:57.938078Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-ee715686-33e8-4d89-89fd-4ada6a9098a5",
+  "title": "The wasm export matches the CLI export for every example",
+  "description": "As a maintainer, I want the browser export and the CLI export to agree byte for byte, so that one set checker proves both.\n\n```gherkin\nFeature: Browser and CLI exports agree\n  Scenario: Every example\n    Given every score under examples/ and the samples they use\n    When the wasm export and \"apricity export --daw-set\" run on each\n    Then every pair of set files is byte-identical\n    And every set passes the set checker\n\n  Scenario: Deterministic output\n    When the wasm export runs twice on the same score\n    Then the two set files are byte-identical\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:56.959803Z",
+  "updated_at": "2026-09-27T00:14:56.959850Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
