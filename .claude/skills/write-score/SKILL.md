@@ -12,16 +12,17 @@ An Apricity score is a text file (`.apr`) that arranges clips of real recordings
 ## The loop
 
 1. **Understand the brief.** Genre, mood, tempo range, length, and what the piece is for (a demo that introduces the product? a beat?). If the user names a reference artist or style, translate it into concrete choices: tempo, how often the chords change, density, which sounds are sustained and which are punchy, how much reverb.
-2. **Start from what the user likes.** Run `python3 .claude/skills/write-score/scripts/ratings.py`: it lists the clips and samples the user has rated, best first. Ratings are the best available signal of their taste, so build around the top-rated material rather than your own picks. In the first session, the user's 4★ loops beat the hand-picked held notes.
+2. **Start from what the user likes, within the genre.** Run `python3 .claude/skills/write-score/scripts/ratings.py`: it lists the clips and samples the user has rated, best first. Ratings are the best signal of their taste, but they rate clips they like, not clips that suit every style. **Filter by genre fit first, then prefer the highest-rated.** In a blind test, a deep-house piece built from the user's 4★ *brass-band* loops got 1★, while one built from a 4★ loop of electronic music got 4★. (The harmony checker preferred the brass one: it can't hear genre or timbre, so don't let its number override genre fit.)
 3. **Survey the palette.** Run `python3 .claude/skills/write-score/scripts/palette.py [filter] [-v]`; it lists every analyzed sample with its key, tempo and saved clips. Only samples with a manifest can be used. Read `references/palette.md` for which sources suit which roles, and for the traps.
-4. **Sketch small.** Start with 4–8 bars and two or three parts. Get the groove and the core sound right before adding layers. It's much easier to hear what's wrong in a sketch.
-5. **Audition.** Run `.claude/skills/write-score/scripts/audition.sh <score> [--bars a-b] [--check]`. It compiles (errors come with line and column), shows each pitched track's pitch from `explain`, renders the WAV and prints the **mix report**: loudness and peak per track. Read the report before anyone listens:
+4. **Cast by measurement, not only by rating.** A high rating means the user likes a sound, not that it fits this piece. Before committing to a main loop, pad or bass, put 3–10 candidates in the same short sketch and let the harmony checker rank them: `scripts/swap-audition.py <score> <clip> "<sample> <saved clip>" …` renders each one in context and ranks it by the checker's objective. Keep the winner, and mention the user's favourite if it lost. In the first session the user's top-rated loop (*Ave*) turned out to be chromatically smeared, and a swap audition found a loop that scored +10 and sounded better to them.
+5. **Sketch small.** Start with 4–8 bars and two or three parts. Get the groove and the core sound right before adding layers. It's much easier to hear what's wrong in a sketch.
+6. **Audition.** Run `.claude/skills/write-score/scripts/audition.sh <score> [--bars a-b] [--out DIR] [--check]`. Use `--out` to keep your renders in your own folder. It compiles (errors come with line and column), shows each pitched track's pitch from `explain`, renders the WAV and prints the **mix report**: loudness and peak per track. Read the report before anyone listens:
    - `silent` or far below the others (−40 LUFS and down) means something is broken. Typical causes: a region of silence, notes gated to nothing, or a pad that doesn't exist.
    - A pitched track's pitch says `(guessed)` means pin it with `root <note><octave>`.
    - Low sounds read quiet in LUFS (the meter is K-weighted), so judge bass by its peak as well.
-6. **Let the user listen, and lead with the audio.** `audition.sh` also writes a small `.m4a` next to the WAV. Send *that* with SendUserFile (the WAVs are 10–15 MB and often fail to reach a phone), with a one-line caption giving timestamps for the moments to listen for. Keep the words short: the user wants to hear music, not read about it. Describe the arrangement **by bars** in a short table, so they can hear each stage, and ask one or two specific questions ("does the kick sit with the bass?"), not "thoughts?".
-7. **Revise one idea at a time.** Change one or two things per round, so the listener can tell what the change did. Before a big rework, copy the last render to `renders/<name>-vN.wav` so they can compare.
-8. **Keep notes.** When the language got in your way (a workaround, a missing feature, a confusing error), tell the user in a line. Those notes become features.
+7. **Let the user listen, and lead with the audio.** `audition.sh` also writes a small `.m4a` next to the WAV. Send *that* with SendUserFile (the WAVs are 10–15 MB and often fail to reach a phone), with a one-line caption giving timestamps for the moments to listen for. Keep the words short: the user wants to hear music, not read about it. Describe the arrangement **by bars** in a short table, so they can hear each stage, and ask one or two specific questions ("does the kick sit with the bass?"), not "thoughts?".
+8. **Revise one idea at a time, and let the checker vote first.** Change one or two things per round, so the listener can tell what the change did. Between listens, iterate on your own with `audition.sh --check`: fix the **top finding** (harmony first, then material, transposition, EQ notches and filters, and levels last; never mute to raise the score), and keep an edit only if the objective rises by at least 2 with no new guard violation. After 2–3 kept edits, or on a question of taste, let the user listen. Before a big rework, copy the last render to `renders/<name>-vN.wav` so they can compare.
+9. **Keep notes.** When the language got in your way (a workaround, a missing feature, a confusing error), tell the user in a line. Those notes become features.
 
 ## Craft
 
@@ -41,6 +42,20 @@ An Apricity score is a text file (`.apr`) that arranges clips of real recordings
 - **Old recordings are bright and harsh.** On brass and band material, reach first for `eq highcut 5k–6k` and a dip of 3–4 dB around 2.5 kHz. Then gentle compression (2:1–3:1, slow attack), then a shared reverb return rather than reverb on each track. Kits sound better slightly low-passed too.
 - **Level-matching is automatic.** Every clip and pad is matched before the fader, so `volume` is relative balance. Master `loudness` sets the final level; about −14 LUFS is a good default.
 - `references/recipes.md` has patterns that worked: grooves, basslines, pads, builds, mix chains.
+
+## Genre defaults
+
+Start here unless the brief says otherwise, and check anything you're unsure of against the brief:
+
+| Style | Tempo | Feel | Notes |
+|---|---|---|---|
+| Deep house | 118–124 | straight 16ths, light swing 52–56 | four on the floor, sevenths, a chord every 2 bars, long reverb |
+| House | 122–128 | straight | offbeat open hat, clap on 2 and 4 |
+| Blues shuffle | 80–100 | **`swing 62–66 1/8`** (a shuffle is swung; a march's own drums are straight) | 12-bar I7–IV7–V7, quick change optional |
+| Hip-hop / boom bap | 85–95 | `swing 56–60` | chopped breaks, sparse |
+| Ragtime / march | 100–120 (2/4 feel) | straight | the source material's own home |
+
+If a source's native tempo is far off (for example 100 BPM material in a house track), stretch it, and check the artefacts by ear. Don't bend the genre to fit the clip.
 
 ## Taste
 
