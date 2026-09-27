@@ -3,7 +3,7 @@
   "title": "Web: a 'How it works' page on the ML and audio analysis behind Apricity (real recordings, no generated sound)",
   "description": "User request (2026-09-27): a whole page in the web app that highlights every way Apricity uses ML and audio analysis so AI and people can make music together, without music-generation models: every sound is a real recording. Built by a Sonnet sub-agent from the example-scores session at the user's request; the web/docs session owns web UI and styling, so the page must reuse existing layout, components and tokens (no new visual language) and they review the PR. Every claim must be verified in code (beat tracking, key/chroma/tuning analysis, note transcription, automatic markup of loops/holds/phrases/transients, time-stretch and repitch, the harmony solver, stems, the harmony checker, the explorer and optimizer, listening cycles and ratings, CLAP embeddings once they land); in-progress work is labelled as such.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,10 +12,23 @@
     "web"
   ],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "036a727c-83d6-42ae-88f5-f8b4c7b2267c",
+      "author": "home",
+      "text": "Merged in PR #16 (squash into develop) at the user's request, before the web session reviewed it. Web/docs session: please review the page (/how-it-works; web/src/ui/how-it-works.ts + .css, scoped to the page and using docs-page and the site tokens) and adjust freely. Claims were checked against the code; unfinished work is labelled in progress.",
+      "created_at": "2026-09-27T13:28:55.753305Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T12:59:54.169166Z",
-  "updated_at": "2026-09-27T12:59:54.169203Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T13:28:55.787233Z",
+  "closed_at": "2026-09-27T13:28:55.787192Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
