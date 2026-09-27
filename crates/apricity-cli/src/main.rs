@@ -72,6 +72,12 @@ enum Cmd {
         /// are resolved relative to the current directory, as with files.
         #[arg(long)]
         library: Option<PathBuf>,
+        /// Also write one 32-bit float WAV per track (soloed through its group and sends,
+        /// pre-master), plus mix.wav (all stems summed, also pre-master: it should equal their
+        /// sum) and stems.json, into this directory. The file at `--out` is unaffected: it's
+        /// written exactly as it would be without this flag.
+        #[arg(long)]
+        stems: Option<PathBuf>,
     },
     /// Serve a library over HTTP: GraphQL, files with Range, amplify_outputs.json and the web app.
     Serve {
@@ -212,7 +218,7 @@ fn main() -> ExitCode {
             }
         }
         Cmd::Explain { .. } => print!("{}", tl.explain()),
-        Cmd::Render { out, bars, .. } => {
+        Cmd::Render { out, bars, stems, .. } => {
             let range = match bars.as_deref().map(|b| apricity_score::score::parse_bars(b, tl.meter)) {
                 None => None,
                 Some(Ok(r)) => Some(r),
@@ -242,6 +248,39 @@ fn main() -> ExitCode {
                 Err(e) => {
                     eprintln!("  ✗ {e}");
                     return ExitCode::FAILURE;
+                }
+            }
+            if let Some(dir) = stems {
+                if let Err(e) = std::fs::create_dir_all(&dir) {
+                    eprintln!("  ✗ {}: {e}", dir.display());
+                    return ExitCode::FAILURE;
+                }
+                let t1 = std::time::Instant::now();
+                match render::render_stems(&tl, range) {
+                    Ok((r, tracks)) => {
+                        for t in &tracks {
+                            let path = dir.join(format!("{}.wav", t.name));
+                            if let Err(e) = render::write_wav_float(&path, &t.buf) {
+                                eprintln!("  ✗ {}: {e}", path.display());
+                                return ExitCode::FAILURE;
+                            }
+                        }
+                        let mix_path = dir.join("mix.wav");
+                        if let Err(e) = render::write_wav_float(&mix_path, &r.mix_raw) {
+                            eprintln!("  ✗ {}: {e}", mix_path.display());
+                            return ExitCode::FAILURE;
+                        }
+                        let manifest_path = dir.join("stems.json");
+                        if let Err(e) = std::fs::write(&manifest_path, render::stems_manifest(&tl, range, &tracks)) {
+                            eprintln!("  ✗ {}: {e}", manifest_path.display());
+                            return ExitCode::FAILURE;
+                        }
+                        eprintln!("wrote {} stem{} to {} in {:.1} s", tracks.len(), if tracks.len() == 1 { "" } else { "s" }, dir.display(), t1.elapsed().as_secs_f64());
+                    }
+                    Err(e) => {
+                        eprintln!("  ✗ {e}");
+                        return ExitCode::FAILURE;
+                    }
                 }
             }
         }

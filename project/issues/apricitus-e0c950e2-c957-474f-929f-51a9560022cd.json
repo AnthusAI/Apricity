@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-e0c950e2-c957-474f-929f-51a9560022cd",
+  "title": "Home links to About; the About page's play button is easy to find",
+  "description": "The Top feed opens with an About card (dismissible) linking to /about. The About hero's play button is bigger, labelled Hear it, and pulses until first used.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T03:14:33.769023Z",
+  "updated_at": "2026-09-27T03:14:36.924030Z",
+  "closed_at": "2026-09-27T03:14:36.923992Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

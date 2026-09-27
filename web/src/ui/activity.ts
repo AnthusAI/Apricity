@@ -33,6 +33,39 @@ function link(route: Route, text: string, className = ""): HTMLAnchorElement {
   return a;
 }
 
+const ABOUT_KEY = "apricity.about-card";
+const aboutDismissed = () => {
+  try {
+    return localStorage.getItem(ABOUT_KEY) === "dismissed";
+  } catch {
+    return false; // storage blocked: show it
+  }
+};
+
+/** The About card: what this is, and the way to the About page (its tour of how a groove is made). */
+function aboutCard(): HTMLElement {
+  const close = el("button", { type: "button", className: "about-card-x", ariaLabel: "Hide this card", title: "Hide this card", textContent: "×" });
+  const card = el(
+    "article",
+    { className: "feed-card about-card" },
+    el("div", { className: "about-card-stage" }, el("span", { className: "about-card-sun", ariaHidden: "true" }), el("span", { className: "about-card-word" }, "Apricity"), close),
+    el(
+      "div",
+      { className: "feed-body" },
+      el("div", { className: "about-card-kicker" }, "The social mashup machine"),
+      el("p", {}, "Music made from public-domain and openly licensed recordings: every sound is cleared. Make beats, chords and melodies, remix what others make, and rate the best."),
+      link({ page: "about" }, "See how it works →", "btn primary about-card-go"),
+    ),
+  );
+  close.addEventListener("click", () => {
+    try {
+      localStorage.setItem(ABOUT_KEY, "dismissed");
+    } catch {} // storage blocked: it's gone until the next visit
+    card.remove();
+  });
+  return card;
+}
+
 /** "All tags", to /tags. */
 const allTags = () => link({ page: "tags" }, "All tags", "act-all-tags");
 
@@ -157,6 +190,8 @@ export class ActivityView {
       };
       let els = cardsOf(first.rows);
       if (!els.length) els = await more();
+      // What Apricity is, as the first card of the Top feed (until someone dismisses it).
+      if (this.order === "top" && !this.kind && !aboutDismissed()) els.unshift(aboutCard());
       if (seq !== this.seq) return;
       performance.mark("activity:shown");
       const local = mode() === "local" ? [el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`)] : [];

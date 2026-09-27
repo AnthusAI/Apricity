@@ -46,15 +46,16 @@ button { cursor: pointer; }
   /* The landing's sun, whatever the page's accent. */
   --sun: #f59e5b; --sun-2: #ffcf8a;
   position: absolute; left: 0; top: 50%; width: 36px; height: 36px; transform: translateY(-50%); z-index: -1; pointer-events: none;
+  /* The About card's sun, small: a warm core fading slowly out to nothing, no ring. */
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--sun-2) 75%, transparent) 0 14%,
-    color-mix(in srgb, var(--sun) 32%, transparent) 30%,
-    color-mix(in srgb, var(--sun) 10%, transparent) 44%,
-    transparent 50%,
-    color-mix(in srgb, var(--sun) 55%, transparent) 53%,
-    transparent 58%);
+    color-mix(in srgb, var(--sun-2) 50%, transparent) 0 18%,
+    color-mix(in srgb, var(--sun) 32%, transparent) 36%,
+    color-mix(in srgb, var(--sun) 13%, transparent) 52%,
+    color-mix(in srgb, var(--sun) 4%, transparent) 63%,
+    transparent 70%);
 }
-@media (prefers-color-scheme: dark) { .topbar .brand .logo { --sun: #ffa866; --sun-2: #ffd59a; } }
+/* Dark mode: the letters are light, so the sun behind them glows a little lower (they stay above 4.5:1 contrast). */
+@media (prefers-color-scheme: dark) { .topbar .brand .logo { --sun: #ffa866; --sun-2: #ffd59a; opacity: 0.7; } }
 .tabs { display: flex; gap: 4px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
 .tabs a { border: 0; background: none; padding: 6px 12px; border-radius: 8px; color: var(--muted); white-space: nowrap; flex: none; text-decoration: none; font-size: 14px; }
 .tabs a[aria-selected="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 550; }
@@ -718,3 +719,16 @@ body.nav-open { overflow: hidden; }
 .wave-loading .bad { color: var(--bad); }
 .act-order { flex: none; }
 .act-order button { padding: 5px 12px; }
+
+/* The About card, first in the Top feed: the landing page's sun, a line on what this is, and the way to /about. */
+.about-card { --sun: #f59e5b; --sun-2: #ffcf8a; }
+@media (prefers-color-scheme: dark) { .about-card { --sun: #ffa866; --sun-2: #ffd59a; } }
+/* The word is centered; the sun is anchored at the card's left edge, rising behind it on its own. */
+.about-card-stage { position: relative; height: 132px; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid var(--line); background: radial-gradient(70% 150% at 0% 50%, color-mix(in srgb, var(--sun) 32%, transparent), transparent 62%), color-mix(in srgb, var(--sun) 8%, var(--panel)); }
+.about-card-sun { position: absolute; left: -110px; top: 50%; width: 280px; height: 280px; transform: translateY(-50%); border-radius: 50%; background: radial-gradient(circle, var(--sun-2) 0 28%, color-mix(in srgb, var(--sun) 60%, transparent) 44%, transparent 68%); }
+.about-card-word { position: relative; font: 600 34px/1 Georgia, "Times New Roman", serif; letter-spacing: -.01em; color: color-mix(in srgb, var(--sun) 70%, var(--fg)); }
+.about-card-x { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.about-card-x:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.about-card-kicker { font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; color: color-mix(in srgb, var(--sun) 70%, var(--muted)); }
+.about-card p { margin: 0; font-size: 14px; line-height: 1.5; }
+.about-card-go { justify-self: start; text-decoration: none; }

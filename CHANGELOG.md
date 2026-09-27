@@ -2,6 +2,36 @@
 
 <!-- version list -->
 
+## v0.15.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-9d5f92**: The top bar's sun fades softly, like the About card's
+  ([`ab7773b`](https://github.com/AnthusAI/Apricity/commit/ab7773be723332302d809b67bf5e7de67699aca7))
+
+- **apricitus-e0c950**: The About card's sun rises at its left edge; the word stays centered
+  ([`e5e18dc`](https://github.com/AnthusAI/Apricity/commit/e5e18dcda429c235b3f033848e55f8c8651a5cdb))
+
+- **apricitus-e0c950**: The About card's sun sits left of the word
+  ([`d8c9838`](https://github.com/AnthusAI/Apricity/commit/d8c9838eda0aa82fdb2f86ac170a98afff8acbd3))
+
+
+## v0.14.1 (2026-09-27)
+
+
+## v0.14.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`3120a3f`](https://github.com/AnthusAI/Apricity/commit/3120a3f5a1c6b1b1b5cd6f6a8e1a728bbf935fd2))
+
+### Features
+
+- **apricitus-a82e91**: Resonant filters, 24 dB slopes, and a filter effect for groups
+  ([`c9fc447`](https://github.com/AnthusAI/Apricity/commit/c9fc4478441da8dc1a1a0dc41f1e106a6965025b))
+
+
 ## v0.13.0 (2026-09-27)
 
 ### Bug Fixes
