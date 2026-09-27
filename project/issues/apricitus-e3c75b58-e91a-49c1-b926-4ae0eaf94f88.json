@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e3c75b58-e91a-49c1-b926-4ae0eaf94f88",
+  "title": "Synchronize production assets and preflight cloud score publishing",
+  "description": "As a curator, I want Apricity to synchronize tracked sample manifests and media to production and reject unresolved score assets before publication, so every cloud score can compile and play.\n\nDefinition of done:\n- `apricity sample import --from <repository>` performs an additive production asset sync with upload/reporting.\n- Cloud score create/update resolves every sample and clip before mutation.\n- Mushroom Jazz score references resolve and play in production.\n- Automated tests cover import planning and preflight failure/success behavior.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T23:41:39.295846Z",
+  "updated_at": "2026-09-27T23:41:39.500292Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
