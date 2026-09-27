@@ -92,6 +92,32 @@ track drums.kick  steps "x . . . x . . . x . . . x . . ."  bars 13-32
 - A swell into the drop: `track pad as swell voicing seventh reverse at 12:1 22:1`, sent to the reverb.
 - A roll into the drop: sixteenths with rising velocity, `steps "x@30 x@36 x@42 … x@120 x!"`, on one bar.
 
+## The house form (a finished track)
+
+The user called this structure "fantastic"; use it for finished house and deep-house tracks. It's 40 bars in five 8-bar phrases (`examples/ave-house.apr` is the reference):
+
+| Bars | Section | What happens |
+|---|---|---|
+| 1–8 | Intro | One loop alone, low-passed open; the kick joins at bar 5. |
+| 9–16 | Groove | The main loop, the bass on each chord's root and the clap come in together. |
+| 17–24 | Groove, lifted | The open hat and a gentle compressor pump arrive (`automate comp.mix step 17=100%`). |
+| 25–32 | Breakdown | The beat and the bass drop out. The music closes to a resonant low-pass (`filter lp 20000 24dB` on the group, `automate filter.cutoff` / `filter.res`) and swims in reverb. From 29: a clap roll and a reversed crash, with the filter singing higher. |
+| 33–40 | Drop | Everything back at once, the filter snapped fully open, a crash on the one. |
+
+Put all the music through one `group`, so the breakdown can filter it as one. New elements enter on 8-bar boundaries (4 at most), so the build is obvious.
+
+## Auditioning a layer (the 16-bar form)
+
+Don't render the full house form to judge one candidate layer: it takes about 80 s per candidate to review, and a lot of disk. The user asked for a standard audition instead (2026-09-27), 16 bars (32 s at 120 BPM):
+
+| Bars | Hear |
+|---|---|
+| 1–4 | The existing scene alone (its full groove). |
+| 5–8 | The new part solo, for the same length. |
+| 9–16 | Both together, with a quick 2-bar build (the new part fades or filters in over bars 9–10), then 6 bars of the full combination. |
+
+Score and compare candidates on bars 9–16, with the baseline computed over the same window. Keep the full 40-bar form for the version a candidate graduates into.
+
 ## Mix chains
 
 ```apr

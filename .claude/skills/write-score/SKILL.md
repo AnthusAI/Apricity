@@ -41,7 +41,7 @@ An Apricity score is a text file (`.apr`) that arranges clips of real recordings
 - **Arrangement.** A track plays over one `bars` range. For a gap, use a `volume` lane; for a changed part, a second copy with `as <name>`. Make builds obvious: new elements enter on 4- or 8-bar boundaries, and a bar or two of "breath" before a drop makes it land. A reversed held chord (`reverse`, `at <bar>:1`) is a smooth swell into a drop.
 - **Old recordings are bright and harsh.** On brass and band material, reach first for `eq highcut 5k–6k` and a dip of 3–4 dB around 2.5 kHz. Then gentle compression (2:1–3:1, slow attack), then a shared reverb return rather than reverb on each track. Kits sound better slightly low-passed too.
 - **Level-matching is automatic.** Every clip and pad is matched before the fader, so `volume` is relative balance. Master `loudness` sets the final level; about −14 LUFS is a good default.
-- `references/recipes.md` has patterns that worked: grooves, basslines, pads, builds, mix chains.
+- `references/recipes.md` has patterns that worked: grooves, basslines, pads, builds, mix chains, **the 40-bar house form** (intro, groove, lift, breakdown, drop) for finished tracks, and **the 16-bar audition form** for judging a candidate layer: the scene alone (4 bars), then the new part solo (4), then both with a quick build (8). When you're trying layers, render auditions, not full tracks: they're faster to review and lighter on disk.
 
 ## Genre defaults
 
