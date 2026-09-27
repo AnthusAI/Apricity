@@ -13,3 +13,5 @@ pub mod score;
 pub use compile::{compile, compile_file, compile_text, compile_with, parse_score, normalize, source_paths, references, ChordSpan, Event, Timeline, TrackInfo, BusInfo};
 pub use manifest::Clip;
 pub use score::{Score, Ref, AutomationSpec};
+/// Re-exported so a `ChordSpan`'s `bass` field is nameable without an extra `apricity-theory` dependency.
+pub use apricity_theory::PitchClass;
