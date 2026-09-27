@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.14.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`3120a3f`](https://github.com/AnthusAI/Apricity/commit/3120a3f5a1c6b1b1b5cd6f6a8e1a728bbf935fd2))
+
+### Features
+
+- **apricitus-a82e91**: Resonant filters, 24 dB slopes, and a filter effect for groups
+  ([`c9fc447`](https://github.com/AnthusAI/Apricity/commit/c9fc4478441da8dc1a1a0dc41f1e106a6965025b))
+
+
 ## v0.13.0 (2026-09-27)
 
 ### Bug Fixes
