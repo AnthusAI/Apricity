@@ -331,8 +331,8 @@
     "profile": "temperley"
    }
   ],
-  "tuning_hz": 435.2,
-  "tuning_cents": -19.0,
+  "tuning_hz": 440.0,
+  "tuning_cents": 0.0,
   "pitch_class_profile": [
    1.0,
    0.8087,
@@ -599,7 +599,8 @@
     ]
    }
   ],
-  "beat_chroma": []
+  "beat_chroma": [],
+  "tuning_uncertain": true
  },
  "notes": [
   {

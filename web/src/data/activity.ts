@@ -87,21 +87,3 @@ export async function cards(kind: string | null, nextToken?: string | null): Pro
   return { items: (r.data ?? []) as Card[], nextToken: r.nextToken ?? null };
 }
 
-/** A card's latest lines, newest first. */
-export async function linesOf(key: string, limit = 3): Promise<Line[]> {
-  const r = await client().models.ActivityEvent.eventsByTarget({ targetKey: key }, { sortDirection: "DESC", limit });
-  return (r.data ?? []) as Line[];
-}
-
-/** An item's all-time stars: average and count. */
-export async function starsOf(type: ItemType, id: string): Promise<{ average: number | null; count: number }> {
-  const r = await client().models.Tally.get({ id: `${type}#${id}#all` });
-  const t = r.data as { count?: number; sum?: number } | null;
-  return t?.count ? { average: (t.sum ?? 0) / t.count, count: t.count } : { average: null, count: 0 };
-}
-
-/** An item's newest comment still there (for the card's preview). */
-export async function newestComment(targetId: string): Promise<CommentRow | null> {
-  const r = await client().models.Comment.commentsByTarget({ targetId }, { sortDirection: "DESC", limit: 5 });
-  return ((r.data ?? []) as CommentRow[]).find((c) => !c.deleted) ?? null;
-}

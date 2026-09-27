@@ -15,8 +15,7 @@ export interface NavItem {
 }
 
 export const NAV: NavItem[] = [
-  { page: "home", tab: "home", label: "Home", sub: "The best-rated songs, to listen to", href: "/" },
-  { page: "activity", tab: "activity", label: "Activity", sub: "What people are making, rating and saying", href: "/activity" },
+  { page: "home", tab: "home", label: "Home", sub: "What people are making: the best rated first, or the newest", href: "/" },
   { page: "scores", tab: "scores", label: "Scores", sub: "Songs, mashed up from real recordings", href: "/scores" },
   { page: "beats", tab: "beats", label: "Beats", sub: "Drum patterns on the step grid", href: "/beats" },
   { page: "chords", tab: "chords", label: "Chords", sub: "Progressions on the chord harp", href: "/chords" },
@@ -26,6 +25,8 @@ export const NAV: NavItem[] = [
   { page: "tags", tab: "tags", label: "Tags", sub: "Leaderboards for #techno, #lounge and the rest", href: "/tags" },
   { page: "help", tab: "docs", label: "Help", sub: "The language, the tools, and how it all works", href: "/help" },
   { page: "about", tab: "about", label: "About", sub: "What Apricity is, and where its sounds come from", href: "/about" },
+  { page: "how-it-works", tab: "how-it-works", label: "How it works", sub: "The ML and audio analysis behind every sound", href: "/how-it-works" },
+  { page: "listen", tab: "listen", label: "Listen", sub: "Rate blind candidates from a listening cycle", href: "/listen" },
 ];
 
 const MENU_W = 44; // the menu button, with its gap: the tabs need this much more room to come back

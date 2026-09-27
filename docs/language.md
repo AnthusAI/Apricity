@@ -228,7 +228,7 @@ Then any options. Each time a track sounds is a **note**: each repeat of a loop,
 | `seed <n>` | `seed 3` | Which take of the humanize variation. | the score's, else `1` |
 | `half` / `double` / `speed <x>` | `half`, `speed 0.75` | Play at half, double or any speed against the beat (0.125–8), keeping pitch. | `1` |
 | `reverse` | `reverse` | Each note plays backwards. | |
-| `filter lp <Hz>` / `filter hp <Hz>` | `filter lp 800`, `filter hp 250` | 12 dB/octave low-pass or high-pass filter, 20–20000 Hz. (`lowpass`, `highpass` also work.) | |
+| `filter lp <Hz>` / `filter hp <Hz>` | `filter lp 800`, `filter hp 300 res 20% 24dB` | Low-pass or high-pass filter, 20–20000 Hz. (`lowpass`, `highpass` also work.) Optional `res` (0–100%, default 0%) adds resonance: a peak at the cutoff, from today's gentle response (0%) to a strong, singing one (100%) that stays stable. Optional `12dB` (default) or `24dB` sets the slope. With `res` 0% and `12dB`, this is exactly the plain filter from before. | |
 | `gate <fraction>` | `gate 50%`, `gate 0.5` | Cut each note to that fraction of its length (a number above 1 is read as a percentage). | |
 | `stutter <n>` | `stutter 4` | Replay the start of each note *n* times within it, 1–64. | |
 | `attack <time>` | `attack 30ms`, `attack 0.25s` | Fade each note in from silence over this time (raised-cosine), capped at the note's own length. 0–2000ms. | none (a 4ms click-free edge) |
@@ -388,6 +388,7 @@ difference.
 |---|---|---|---|
 | `eq`, `comp`, `limit` | ✓ | ✓ | ✓ |
 | `reverb`, `delay` | ✓ (25% wet) | ✓ (group 25% wet; return all wet) | ✗ put them on a return track |
+| `filter` (chain effect) | ✓ | ✓ | ✗ not yet |
 | `pan` | ✓ | | |
 | `send` | ✓ | | |
 | `automate` | ✓ | ✓ | ✗ automate a group track instead |
@@ -404,6 +405,7 @@ A track's `volume` is its **fader**; its effects run before it, and `pan` and th
 | `limit` | `limit -1dB release 50ms` | ceiling (−24–0 dB), optional `release` (1–2000 ms); the output never goes over the ceiling |
 | `reverb` | `reverb plate 1.8s predelay 20ms damp 35% mix 30%` | `room`, `hall` (default) or `plate`; a decay in seconds (0.1–20; default room 0.8 s, hall 2.4 s, plate 1.6 s); `predelay` 0–500 ms; `damp` and `mix` 0–100% |
 | `delay` | `delay 1/8. feedback 35% hp 400 lp 4k pingpong mix 30%` | the time first: a [note value](#units) or `350ms`; `feedback` 0–95%; `hp` / `lp` Hz on the echoes; `pingpong` bounces them left and right; `mix` 0–100% |
+| `filter` | `filter lp 800 res 40% 24dB` | `lp`, `hp` or `bp` (band-pass) first, then Hz (20–20000); optional `res` 0–100% (default 0%, today's gentle Q; 100% a strong, stable resonant peak); optional `12dB` (default) or `24dB` slope. On a track, group or return (not the master yet) |
 | `pan` | `pan -20` | −100 (left) to 100 (right); tracks only |
 | `send` | `send plate 30% echo -12dB` | one or more return track + level pairs; tracks only |
 | `loudness` | `loudness -14LUFS` | the master's target, −40 to −5 LUFS; master only |
@@ -434,14 +436,25 @@ Two points at the same position jump instantly (`13=10% 13=40%`).
 - `volume` — track fader offset, dB (−60…+12)
 - `pan` — track pan, −100 (left) to 100 (right)
 - `send <return>` — send level to that return, % or dB
-- `filter` — track's low-pass or high-pass cutoff, Hz (20–20000)
+- `filter` — track's header filter cutoff, Hz (20–20000, log ramp)
+- `filter.res` — track's header filter resonance, % (0–100, linear); a `filter` chain effect's own resonance instead, when the track has no header filter
 - `eq.highcut`, `eq.lowcut` — cutoff frequencies, Hz
 - `eq.low`, `eq.high` — shelf gains, dB (±24)
 - `comp.threshold`, `comp.mix` — compressor threshold (dB) or dry/wet (%)
 - `reverb.mix`, `delay.mix` — the reverb's or delay's wet share, %
+- `filter.cutoff` — a `filter` chain effect's cutoff, Hz (log ramp)
 - `width` — stereo width, % (0 = mono, 100 = unchanged, 200 = double)
 
-`eq2.highcut` means the second eq in the chain, `comp2.mix` the second comp, etc.
+`eq2.highcut` means the second eq in the chain, `comp2.mix` the second comp, `filter2.cutoff` a second filter effect, etc.
+
+A classic filter breakdown, on a group everything plays through:
+
+```apr
+group all
+  filter lp 20000 res 30% 24dB
+  automate filter.cutoff  1=20k  5=200  9=20k   # sweep down into the breakdown, back up into the drop
+  automate filter.res     1=20%  5=70%          # and the resonance sings as it closes
+```
 
 ### Group and return tracks
 
@@ -566,14 +579,16 @@ track-option = "as" NAME | "follow" | "transpose" ( "auto" | "follow" | INTEGER 
             | "voicing" ( "root" | "power" | "triad" | "seventh" ) | "strum" NUMBER "ms" | "octave" INTEGER
             | "grid" INTEGER | "swing" PERCENT [ "1/" INTEGER ] | "half" | "double" | "speed" NUMBER
             | "velocity" INTEGER | "humanize" HUMANIZE | "seed" INTEGER
-            | "reverse" | "filter" ( "lp" | "hp" ) NUMBER | "gate" PERCENT | "stutter" INTEGER
+            | "reverse" | "filter" ( "lp" | "hp" ) NUMBER [ FILTER-RES-SLOPE ] | "gate" PERCENT | "stutter" INTEGER
             | "attack" TIME | "release" TIME
             | "bars" BARS | "volume" NUMBER | "group" NAME ;
 
 track-line  = effect | "pan" NUMBER | "send" NAME LEVEL { NAME LEVEL } | automate ;
 automate    = "automate" TARGET [ "step" ] POINT { POINT } ;   (* also under group and return *)
-TARGET      = "volume" | "pan" | "filter" | "send" NAME | EFFECT "." PARAM ;   (* eq.highcut, eq2.highcut, comp.mix *)
+TARGET      = "volume" | "pan" | "filter" | "filter.res" | "send" NAME | EFFECT "." PARAM ;
+              (* eq.highcut, eq2.highcut, comp.mix, filter.cutoff, filter2.cutoff *)
 POINT       = POSITION "=" VALUE ;           (* 3=6k, 5:3=-4dB, 1=30% *)
+FILTER-RES-SLOPE = { "res" PERCENT | "12dB" | "24dB" } ;
 effect      = "eq" { "lowcut" HZ | "highcut" HZ | "low" GAIN-AT | "high" GAIN-AT
                    | "peak" GAIN-AT [ "q" NUMBER ] }
             | "comp" RATIO DB { ( "attack" | "release" ) TIME | ( "knee" | "makeup" ) DB }
@@ -581,7 +596,8 @@ effect      = "eq" { "lowcut" HZ | "highcut" HZ | "low" GAIN-AT | "high" GAIN-AT
             | "reverb" { "room" | "hall" | "plate" | SECONDS | "predelay" TIME
                        | ( "damp" | "mix" ) SHARE }
             | "delay" ( NOTE-VALUE | TIME ) { "feedback" SHARE | ( "hp" | "lp" ) HZ
-                                          | "pingpong" | "mix" SHARE } ;
+                                          | "pingpong" | "mix" SHARE }
+            | "filter" ( "lp" | "hp" | "bp" ) HZ [ FILTER-RES-SLOPE ] ;   (* not under master *)
 
 chord-seq   = { item | "|" } ;
 item        = atom [ "*" NUMBER ] ;

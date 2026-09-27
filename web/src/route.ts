@@ -1,8 +1,7 @@
 // Every page and item has a URL, so anything can be linked, bookmarked, shared or gone Back to:
 //
-//   /                              the home page: the best-rated songs to listen to
+//   /                              the home page: what's happening, best-rated songs first (or the newest)
 //   /about                         what Apricity is (the old landing page)
-//   /activity                      Activity
 //   /scores  /beats  /chords  /melodies     the lists; a score is under the tab of its kind:
 //   /beats/examples/salamander-beat         (its folder and name; ".apr" left off, ".yaml" kept) and ?play plays it
 //   /clips  /clips/<sample>/<clip name>     a clip, by its sample (path without its extension) and its name;
@@ -16,10 +15,12 @@
 
 import type { ScoreKind } from "./data/catalog";
 
-export type Page = "home" | "about" | "activity" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
+export type Page = "home" | "about" | "how-it-works" | "listen" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
 
 export interface Route {
   page: Page;
+  /** A listening cycle's id ("cyc_..."), on /listen/<id>; absent for the list of open cycles. */
+  listenCycle?: string;
   /** A score's library path ("examples/salamander-beat.apr"). */
   score?: string;
   /** Play the score once it's open. */
@@ -36,7 +37,7 @@ export interface Route {
   help?: { file: string; anchor?: string };
 }
 
-export const PAGES: Page[] = ["home", "about", "activity", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
+export const PAGES: Page[] = ["home", "about", "how-it-works", "listen", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
 export const KIND_OF_PAGE: Partial<Record<Page, ScoreKind>> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
 export const PAGE_OF_KIND: Record<ScoreKind, Page> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
 
@@ -67,6 +68,7 @@ export function parse(pathname: string, search = "", hash = ""): Route {
     const score = [...rest.slice(0, -1), file].join("/");
     return { page, score, ...(new URLSearchParams(search).has("play") ? { play: true } : {}) };
   }
+  if (page === "listen") return rest.length === 1 ? { page, listenCycle: rest[0] } : { page };
   if (page === "samples") return { page, sample: rest.join("/") };
   if (page === "clips" && rest.length >= 2) return { page, clip: { sample: rest.slice(0, -1).join("/"), name: rest[rest.length - 1] }, ...listed };
   if (page === "tags" && rest.length === 1) return { page, tag: rest[0], ...listed };
@@ -84,6 +86,7 @@ export function href(r: Route): string {
     const parts = r.score.replace(/\.apr$/, "").split("/");
     return `/${r.page}/${enc(parts)}${r.play ? "?play" : ""}`;
   }
+  if (r.page === "listen" && r.listenCycle) return `/listen/${enc([r.listenCycle])}`;
   if (r.page === "samples" && r.sample) return `/samples/${enc(r.sample.split("/"))}`;
   const list = (r.page === "clips" || r.page === "tags") && r.list ? `?${r.list}` : "";
   if (r.page === "tags" && r.tag) return `/tags/${enc([r.tag])}${list}`;
@@ -97,6 +100,6 @@ export const tabOf = (r: Route) => (r.page === "help" ? "docs" : r.page);
 
 /** The page title for a route and the name of what's open ("Salamander Beat · Beats · Apricity"). */
 export function titleOf(r: Route, name?: string): string {
-  const label: Record<Page, string> = { home: "", about: "About", activity: "Activity", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
+  const label: Record<Page, string> = { home: "", about: "About", "how-it-works": "How it works", listen: "Listen", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
   return [name, label[r.page], "Apricity"].filter(Boolean).join(" · ");
 }

@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-d2b665c4-a0c8-4434-9308-e31de7e2c2b8",
+  "title": "Sample and clip pages wait for the whole recording before showing anything",
+  "description": "A stem is a 38 MB WAV; the page showed 'Loading audio…' for ~15 s. Now: a skeleton until the analysis loads, then the whole page with a rough waveform (from the analysis's loudness per beat) and a download progress bar; the real waveform and the sound follow the recording.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T00:28:15.693472Z",
+  "updated_at": "2026-09-27T00:28:18.672840Z",
+  "closed_at": "2026-09-27T00:28:18.672798Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

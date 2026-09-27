@@ -131,10 +131,19 @@ async function generate(outDir: string) {
     const f: any = {};
     for (const [fn, fd] of Object.entries((d as any).fields || {})) {
       const fld = fd as any;
+      // Same shape as a model field's type (below): a customType field can itself ref() another customType
+      // (e.g. CycleOption.audio: FileRef), which comes through as { nonModel: "FileRef" }, not { name: ... }.
+      const fieldType = (function() {
+        if (typeof fld.type === "string") return fld.type;
+        if (fld.type?.model) return fld.type.model;
+        if (fld.type?.nonModel) return fld.type.nonModel;
+        if (fld.type?.enum) return fld.type.enum;
+        return "unknown";
+      })();
       const kind = typeof fld.type === "string" ? "scalar" : (fld.type?.enum ? "enum" : (fld.type?.nonModel ? "customType" : (fld.type?.model ? "model" : "scalar")));
       f[fn] = {
         name: fn,
-        type: typeof fld.type === "string" ? fld.type : fld.type?.name || "unknown",
+        type: fieldType,
         isRequired: fld.isRequired || false,
         isArray: fld.isArray || false,
         kind,

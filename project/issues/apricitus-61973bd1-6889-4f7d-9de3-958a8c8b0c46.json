@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-61973bd1-6889-4f7d-9de3-958a8c8b0c46",
+  "title": "Design: ranked pages without reading whole tables",
+  "description": "design/scale.md: what each page reads today and where it breaks; a Ranked model (one row per item per list, sorted by a written sort key, carrying the card's fields) kept by a ranking Lambda and a nightly job; leaner reads; search options; phases by record count; costs; verification.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:20:37.878689Z",
+  "updated_at": "2026-09-27T01:20:41.020835Z",
+  "closed_at": "2026-09-27T01:20:41.020801Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

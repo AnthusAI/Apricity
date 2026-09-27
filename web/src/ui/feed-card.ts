@@ -5,9 +5,11 @@
 
 import { el } from "./dom";
 import { api, manifest } from "../apricity";
-import { owns, SignedOut, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
+import { owns, SignedOut, type Me, type ScoreKind } from "../data/catalog";
 import type { Handles } from "../data/handles";
-import { href, PAGE_OF_KIND, type Route } from "../route";
+import { href, PAGE_OF_KIND, sampleKey, type Route } from "../route";
+import type { RankedRow } from "../data/ranked";
+import { kindName, lineText } from "../data/activity";
 import { go } from "./at";
 import { PlayButton, type PlayState } from "./play-button";
 import { StarRating } from "./stars";
@@ -41,26 +43,27 @@ export interface FeedItem {
   note?: string;
   /** Its place on a leaderboard. */
   rank?: number;
-  /** Stars and news fetched once the card is in view (Activity's cards). */
-  later?: () => Promise<{ stars?: FeedItem["stars"]; note?: string }>;
 }
 
-const SCORE_KIND_LABEL: Record<ScoreKind, string> = { song: "Score", beat: "Beat", chords: "Chords", melody: "Melody" };
+/** "@ann rated it · 5m ago", from a row's latest news (its stars aren't kept on the row, so a rating says only that). */
+function newsOf(r: RankedRow, deps: FeedDeps): string | undefined {
+  if (!r.lastWhat) return undefined;
+  const what = r.lastWhat === "rated" ? "rated it" : lineText({ what: r.lastWhat }, r.targetType);
+  return `${r.lastBy ? `${whoLabel(deps, r.lastBy)} ` : ""}${what} · ${timeAgo(r.lastAt)}`;
+}
 
-/** A score as a card (`rank`: its place on a leaderboard). */
-export function scoreFeedItem(s: ScoreItem, stars: FeedItem["stars"], rank?: number, note?: string): FeedItem {
+/** A ranked list's row as a card (`rank`: its place, on a leaderboard). */
+export function feedItemOf(r: RankedRow, deps: FeedDeps, rank?: number): FeedItem {
+  const common = { id: r.targetId, title: r.title || "(untitled)", kindLabel: kindName({ targetType: r.targetType, kind: r.kind }), kindKey: r.kind, owner: r.owner, tags: r.tags ?? [], stars: { average: r.stars, count: r.ratings ?? 0 }, ...(rank ? { rank } : {}) };
+  const note = newsOf(r, deps);
+  if (r.targetType === "score") return { ...common, type: "score", route: { page: PAGE_OF_KIND[(r.kind in PAGE_OF_KIND ? r.kind : "song") as ScoreKind], score: r.path ?? "" }, score: { path: r.path ?? "" }, ...(note ? { note } : {}) };
+  if (r.targetType === "sample") return { ...common, type: "sample", route: { page: "samples", sample: sampleKey(r.path ?? "") }, sample: { path: r.path ?? "" }, ...(note ? { note } : {}) };
+  const sample = r.samplePath ?? r.path ?? "";
   return {
-    type: "score",
-    id: s.id,
-    title: s.title,
-    kindLabel: SCORE_KIND_LABEL[s.kind],
-    kindKey: s.kind,
-    owner: s.owner,
-    route: { page: PAGE_OF_KIND[s.kind], score: s.path },
-    score: { path: s.path },
-    tags: s.tags,
-    stars,
-    ...(rank ? { rank } : {}),
+    ...common,
+    type: "clip",
+    route: { page: "clips", clip: { sample: sampleKey(sample), name: r.title } },
+    sample: { path: sample, ...(r.clipStart !== null && r.clipStart !== undefined && r.clipEnd !== null && r.clipEnd !== undefined ? { clip: [r.clipStart, r.clipEnd] as [number, number] } : { clipId: r.targetId }) },
     ...(note ? { note } : {}),
   };
 }
@@ -164,7 +167,6 @@ export class FeedCard {
         this.shown = true;
         void this.loadVisual();
         void this.loadTalk();
-        void this.loadLater();
       },
       { rootMargin: "300px" },
     );
@@ -179,13 +181,6 @@ export class FeedCard {
         this.draw();
       });
     }
-  }
-
-  private async loadLater() {
-    const got = await this.item.later?.().catch(() => null);
-    if (!got) return;
-    if (got.stars) (this.item.stars = got.stars), this.paintStars();
-    if (got.note) (this.note.textContent = got.note), (this.note.hidden = false);
   }
 
   /** A clip known by its id: its range, from its sample's clips. */

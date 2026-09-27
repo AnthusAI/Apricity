@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-ad1a9e85-6bc5-4b9e-946b-eef826523464",
+  "title": "One feed: the home page is Activity",
+  "description": "/ is the feed (Top: the home ranking with samples and clips at a low weight; Recent: newest first; kind chips; the signed-out intro; About, Tags and Help in the footer). The Activity tab becomes Home; /activity and other unknown paths land on /.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:23:58.449066Z",
+  "updated_at": "2026-09-27T01:24:30.587549Z",
+  "closed_at": "2026-09-27T01:24:30.587513Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

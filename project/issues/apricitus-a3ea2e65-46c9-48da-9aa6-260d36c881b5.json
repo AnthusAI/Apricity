@@ -1,0 +1,28 @@
+{
+  "id": "apricitus-a3ea2e65-46c9-48da-9aa6-260d36c881b5",
+  "title": "Download a DAW set on the public site with no server",
+  "description": "As a visitor to apricity.anth.us, I want the same download without a local server, so that anyone can take a score into their DAW.\n\n```gherkin\nFeature: Browser-side DAW set export on the cloud site\n  Scenario: Guest downloads a public score\n    Given I am not signed in and the score \"march-blues\" is public\n    When I choose \"Download for your DAW\"\n    Then the samples are fetched from the library bucket under the guest rules\n    And the browser receives \"March Blues Project.zip\" with the set and every sample\n    And no request is made to any export route on a server\n\n  Scenario: A sample the visitor may not read\n    Given the score uses a sample that guests cannot read\n    When I choose \"Download for your DAW\"\n    Then no zip is produced\n    And the error names the sample and the track that uses it\n\n  Scenario: Progress while samples download\n    Given the score uses 12 samples\n    When I choose \"Download for your DAW\"\n    Then progress shows samples fetched out of 12 until the zip is ready\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:56.876164Z",
+  "updated_at": "2026-09-27T00:14:56.876213Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

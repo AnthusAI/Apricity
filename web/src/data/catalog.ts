@@ -145,6 +145,9 @@ export interface MarkerRecord {
 export type ScoreKind = "song" | "beat" | "chords" | "melody";
 export const SCORE_KINDS: ScoreKind[] = ["song", "beat", "chords", "melody"];
 
+/** What the score lists read: everything but the text. */
+export const SCORE_LIST_FIELDS = ["id", "title", "folder", "format", "kind", "tags", "owner", "createdAt", "updatedAt", "forkOf", "forkRoot", "legacyPath"] as const;
+
 export interface ScoreRecord {
   id: string;
   title: string;
@@ -481,6 +484,11 @@ export interface CatalogDeps {
   me?: () => Promise<Me | null>;
   /** That person's public handle, which names their copies of other people's clips. */
   handle?: (me: Me) => Promise<string | undefined>;
+  /**
+   * What only curators see, as the ranking Lambda lists it (the `hidden` list: scores, and the samples and clips in the
+   * feed), so nobody lists every clip, reference and recording to work it out. Null (or absent): work it out here.
+   */
+  hidden?: () => Promise<Set<string> | null>;
 }
 
 interface Index {
@@ -626,6 +634,8 @@ export class Catalog {
    */
   async hiddenIds(): Promise<Set<string>> {
     if (await this.seesAll()) return new Set();
+    const listed = await this.deps.hidden?.();
+    if (listed) return listed;
     const undoc = await this.undocumented();
     if (!undoc.size) return new Set();
     const [clips, refs] = await Promise.all([
@@ -670,8 +680,9 @@ export class Catalog {
     return this.deps.url(c.audio.key);
   }
 
+  /** Every score as the lists show it: not its text (a score's text loads when it opens; see score()). */
   private listScores(): Promise<ScoreRecord[]> {
-    this.scoreList ??= listAll<ScoreRecord>((nextToken) => this.models.Score.list({ limit: 1000, nextToken }));
+    this.scoreList ??= listAll<ScoreRecord>((nextToken) => this.models.Score.list({ limit: 1000, nextToken, selectionSet: [...SCORE_LIST_FIELDS] }));
     this.scoreList.catch(() => (this.scoreList = null));
     return this.scoreList;
   }
@@ -690,6 +701,8 @@ export class Catalog {
 
   /** Scores that use an undocumented sample (to flag them for curators). */
   private async flaggedScores(): Promise<Set<string>> {
+    const listed = await this.deps.hidden?.();
+    if (listed) return listed;
     const [undoc, refs] = await Promise.all([this.undocumented(), this.scoreRefs()]);
     return new Set(refs.filter((r) => r.sampleId && undoc.has(r.sampleId)).map((r) => r.scoreId));
   }
@@ -749,8 +762,7 @@ export class Catalog {
 
   async score(path: string): Promise<string> {
     const found = (await this.listScores()).find((s) => scorePath(s) === path);
-    if (found) return found.text;
-    const r = await this.models.Score.get({ id: scoreKey(path).id });
+    const r = await this.models.Score.get({ id: found?.id ?? scoreKey(path).id }, { selectionSet: ["id", "text"] });
     if (r.errors?.length) fail(r.errors);
     if (!r.data) throw new Error(`${path}: no such score`);
     return r.data.text;

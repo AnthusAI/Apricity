@@ -606,6 +606,8 @@ fn migrate_samples(
             .unwrap_or("audio");
         let ctype = if filename.ends_with(".mp3") {
             "audio/mpeg"
+        } else if filename.ends_with(".flac") {
+            "audio/flac"
         } else {
             "audio/wav"
         };

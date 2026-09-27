@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-a50d52a1-f1d1-4d66-81b3-a375a07fbc44",
+  "title": "Steer the optimizer from the web app: fork a scene, pick clips to layer from ranked suggestions, queue jobs for local workers, rate the results",
+  "description": "User vision (2026-09-27): rate the scenes the optimizer generates, AND steer it asynchronously: choose which clip to try next from surfaced mash-up suggestions (CLAP and other analysis), which posts a job that worker nodes pick up to run new optimization runs, producing more candidates to rate and steer from. And: fork a scene, pick from a list of potential clips to layer over it, post a pending async job, a worker runs the optimizer on that scene + clip.\n\nWhy: every optimizer candidate so far layers over Ave House's fixed base (Ave dark loop + Funky Nurykabe bright loop), which the user feels don't go together well; the user should choose both the scene and the clip.\n\nLoop:\n1. Fork a scene (existing Score fork).\n2. 'Find clips to layer' posts Job{kind:'suggest', input:{scoreId}}. A worker ranks library clips against the scene: CLAP timbre/genre fit (clap sidecars), surrogate clash/masking/rhythm (optimizer surrogate + fit-feature sidecars), tempo/key compatibility, the user's ratings; writes ClipSuggestion records {scoreId, sampleId, clip, rank, terms, reasons} with a preview (the clip region's audio).\n3. The user picks one or more suggestions: Job{kind:'optimize', input:{scoreId, source, clip, roles?, seed, budget}}.\n4. Local workers (scripts/worker.py) poll jobsByState=queued, claim with a conditional update (lease + workerId), run scripts/optimize.py constrained to the chosen clip (a new --source/--clip mode), publish the cycle (scripts/cycle.py publish), mark done/failed with the cycle id or error.\n5. Listen page (PR #19) rates the scenes; verdicts feed suggestions and the next base.\n\nNew: ClipSuggestion model; Job kinds optimize/suggest and member-level create rights for them (Job is curator-only today); worker script with lease/heartbeat and the safe-run limits (disk!); optimizer single-clip mode; web: 'Find clips to layer' panel on the score page, suggestion list with previews and reasons, a Jobs view (queued/running/done with links to cycles). Local mode first (apricity serve), cloud after release.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T15:52:07.626234Z",
+  "updated_at": "2026-09-27T15:52:07.626473Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

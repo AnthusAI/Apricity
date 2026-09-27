@@ -18,9 +18,22 @@
       "type": "blocked-by"
     }
   ],
-  "comments": [],
+  "comments": [
+    {
+      "id": "92774448-09b7-4551-a69d-81d1d8061830",
+      "author": "home",
+      "text": "Superseded in approach by M6 (apricitus-0656bd): the Score view's action should call the browser-side export, not the serve route. Keep this task for the local-mode fallback only if M6's page path cannot ship first; otherwise close it when M6's web task lands.",
+      "created_at": "2026-09-27T00:14:58.686402Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    }
+  ],
   "created_at": "2026-09-26T22:06:29.711102Z",
-  "updated_at": "2026-09-26T22:06:51.722979Z",
+  "updated_at": "2026-09-27T00:14:58.686446Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

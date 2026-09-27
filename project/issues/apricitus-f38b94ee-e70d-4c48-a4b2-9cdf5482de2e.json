@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-f38b94ee-e70d-4c48-a4b2-9cdf5482de2e",
+  "title": "CI red: crates/apricity-daw has fixtures but no Cargo.toml",
+  "description": "The DAW spike committed tests/fixtures under crates/apricity-daw; the workspace takes every crates/* folder, so cargo fails to load the manifest. Excluded until it has a Cargo.toml.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T00:53:51.968927Z",
+  "updated_at": "2026-09-27T00:53:55.350221Z",
+  "closed_at": "2026-09-27T00:53:55.350184Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

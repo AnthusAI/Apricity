@@ -1,0 +1,52 @@
+/* The Listen page: plain, using the site's own tokens and classes (.btn, .stars, .badge, .empty) — no new visual
+   language. Scoped under .listen-page so nothing here leaks onto other views. */
+
+#listen { display: block; overflow: auto; }
+
+.listen-page { max-width: 760px; margin: 0 auto; padding: 40px 24px calc(100vh - 120px); }
+.listen-page h1 { font-size: 28px; margin: 0 0 12px; font-weight: 650; }
+.listen-intro,
+.listen-question { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+.listen-loading { color: var(--muted); padding: 20px 0; }
+
+.listen-signin { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; }
+
+.listen-cycles { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.listen-cycle-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); text-decoration: none; color: var(--fg); }
+.listen-cycle-row:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.listen-cycle-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.listen-cycle-title { font-weight: 600; }
+.listen-cycle-question { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.listen-cycle-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); flex: none; }
+.listen-cycle-meta .badge.saved { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+
+.listen-back { margin-bottom: 16px; }
+.listen-back a { color: var(--muted); text-decoration: none; font-size: 13px; }
+.listen-back a:hover { color: var(--fg); }
+
+.listen-options { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.listen-option { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: 16px; }
+.listen-option-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.listen-letter { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--fg); font-weight: 650; font-size: 13px; flex: none; }
+.listen-option-title { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.listen-option-title a { color: var(--accent); }
+.listen-player { width: 100%; height: 34px; display: block; margin-bottom: 10px; }
+.listen-note-missing { color: var(--muted); font-size: 13px; }
+.listen-note { width: 100%; box-sizing: border-box; margin-top: 10px; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); resize: vertical; }
+
+.listen-verdict { border-top: 1px solid var(--line); padding-top: 18px; }
+.listen-best-label,
+.listen-overall-label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+.listen-best { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.listen-best-btn { border: 1px solid var(--line); background: var(--panel); padding: 8px 14px; border-radius: 999px; font-size: 13.5px; cursor: pointer; }
+.listen-best-btn.on { background: var(--accent); border-color: var(--accent); color: white; font-weight: 620; }
+.listen-best-btn:disabled { opacity: 0.6; cursor: default; }
+.listen-overall { margin-bottom: 16px; }
+.listen-save-row { display: flex; align-items: center; gap: 12px; }
+.listen-status { font-size: 13px; color: var(--muted); }
+.listen-status.failed { color: var(--bad); }
+
+@media (max-width: 600px) {
+  .listen-page { padding: 24px 16px calc(100vh - 120px); }
+  .listen-cycle-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}

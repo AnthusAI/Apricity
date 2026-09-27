@@ -42,6 +42,20 @@ const schema = a.schema({
   ScoreKind: a.enum(["song", "beat", "chords", "melody"]),
   // What can be rated.
   RatingTarget: a.enum(["sample", "clip", "score"]),
+  // A listening cycle: open while people can still save a verdict; the local runner closes it once it has pulled them.
+  CycleStatus: a.enum(["open", "closed"]),
+  // One blind option in a cycle: its letter (A-D; the incumbent is one of them), the candidate Score it plays, and
+  // its cached render.
+  CycleOption: a.customType({
+    letter: a.string().required(),
+    scoreId: a.id().required(),
+    audio: a.ref("FileRef").required(),
+  }),
+  // A per-letter note in a CycleVerdict.
+  CycleNote: a.customType({
+    letter: a.string().required(),
+    note: a.string().required(),
+  }),
 
   Recording: a
     .model({
@@ -378,7 +392,35 @@ const schema = a.schema({
       count: a.integer().required(),
       sum: a.integer().required(),
     })
-    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay")])
+    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay"), i("targetId").sortKeys(["day"]).name("talliesByTarget").queryField("talliesByTarget")])
+    .authorization(everyone),
+
+  // A ranked list as rows (design/scale.md §2.1; web/src/data/ranked.ts): one row per item per list it appears in,
+  // read one page at a time by `rankedByList` (descending). `sort` orders as a plain string. Each row carries what its
+  // card shows, so a page is one query. Written only by the ranking Lambda (and its backfill).
+  Ranked: a
+    .model({
+      id: a.id().required(),
+      list: a.string().required(),
+      sort: a.string().required(),
+      targetType: a.ref("RatingTarget").required(),
+      targetId: a.id().required(),
+      kind: a.string().required(),
+      title: a.string(),
+      owner: a.string(),
+      path: a.string(),
+      samplePath: a.string(),
+      clipStart: a.float(),
+      clipEnd: a.float(),
+      tags: a.string().array(),
+      stars: a.float(),
+      ratings: a.integer(),
+      comments: a.integer(),
+      lastAt: a.datetime().required(),
+      lastWhat: a.string(),
+      lastBy: a.string(),
+    })
+    .secondaryIndexes((i) => [i("list").sortKeys(["sort"]).name("rankedByList").queryField("rankedByList"), i("targetId").name("rankedByTarget").queryField("rankedByTarget")])
     .authorization(everyone),
 
   Job: a
@@ -408,6 +450,41 @@ const schema = a.schema({
     .returns(a.ref("Job"))
     .authorization((allow) => [allow.group("curators")])
     .handler(a.handler.function(voiceRequest)),
+  // A blind listening round: a few fork Scores of one incumbent, lettered and shuffled (the incumbent is one
+  // option), published by the local explorer (scripts/cycle.py). Owner (the local runner's identity) writes;
+  // signed-in people read and rate; curators manage. No guest read: the options must stay blind until someone signs
+  // in to judge them.
+  ListeningCycle: a
+    .model({
+      id: a.id().required(),
+      title: a.string().required(),
+      question: a.string(),
+      incumbentScoreId: a.id().required(),
+      options: a.ref("CycleOption").array().required(),
+      status: a.ref("CycleStatus").required(),
+      closedAt: a.datetime(),
+      owner: a.string(),
+    })
+    .authorization((allow) => [allow.owner(), allow.authenticated().to(["read"]), allow.group("curators")]),
+
+  // One person's verdict on a cycle: which lettered option they'd keep ("A".."D", or "same": can't tell them apart),
+  // with notes. Owner-only, like Verdict: a Rating can't express "B beat C", and public Comments would break
+  // blindness.
+  CycleVerdict: a
+    .model({
+      cycleId: a.id().required(),
+      judge: a.string().required(),
+      best: a.string().required(),
+      notes: a.ref("CycleNote").array(),
+      note: a.string(),
+      savedAt: a.datetime().required(),
+    })
+    .identifier(["cycleId", "judge"])
+    .secondaryIndexes((i) => [i("cycleId").queryField("verdictsByCycle")])
+    .authorization((allow) => [
+      allow.ownerDefinedIn("judge").identityClaim("sub"),
+      allow.group("admins").to(["read"]),
+    ]),
 });
 
 export { schema };

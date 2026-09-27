@@ -1,6 +1,8 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
+# crates/apricity-daw holds only a spike's test fixtures so far: not a crate until it has a Cargo.toml (then drop this).
+exclude = ["crates/apricity-daw"]
 
 [workspace.package]
 version = "0.1.0"

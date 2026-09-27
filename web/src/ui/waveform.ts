@@ -31,6 +31,28 @@ export function clipRow(s: SavedClip): 0 | 1 | 2 {
 const HEIGHT = H.keys + H.wave + H.lane + H.ruler;
 const PEAK_COLUMNS = 2400;
 
+/**
+ * A rough outline to draw while the audio downloads: each column's loudness from the analysis (loudness between
+ * beats, in dB, quieter than the loudest by 30 dB drawing as nothing). Flat and low when the analysis has no beats.
+ */
+export function roughPeaks(m: Pick<Manifest, "source"> & { rhythm: Manifest["rhythm"] & { beat_loudness?: number[] } }): Float32Array {
+  const out = new Float32Array(PEAK_COLUMNS * 2);
+  const beats = m.rhythm.beats ?? [];
+  const loud = m.rhythm.beat_loudness ?? [];
+  const top = loud.length ? Math.max(...loud) : 0;
+  const dur = m.source.duration || 1;
+  let b = 0;
+  for (let col = 0; col < PEAK_COLUMNS; col++) {
+    const t = ((col + 0.5) / PEAK_COLUMNS) * dur;
+    while (b + 1 < beats.length && beats[b + 1] <= t) b++;
+    const db = beats.length > 1 && t >= beats[0] && t < beats[beats.length - 1] ? loud[b] : undefined;
+    const v = db === undefined ? 0.08 : Math.max(0.04, 1 - (top - db) / 30) * 0.85;
+    out[col * 2] = -v;
+    out[col * 2 + 1] = v;
+  }
+  return out;
+}
+
 export function computePeaks(channels: Float32Array[]): Float32Array {
   const n = channels[0].length;
   const out = new Float32Array(PEAK_COLUMNS * 2);

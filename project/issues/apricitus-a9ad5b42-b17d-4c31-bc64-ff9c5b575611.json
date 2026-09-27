@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-a9ad5b42-b17d-4c31-bc64-ff9c5b575611",
+  "title": "Optimizer v1: genome, compile-informed surrogate, MAP-Elites archive over all roles, render ladder and a rated cycle folder (Ave House)",
+  "description": "Spec section 7 Phase 1, widened by the user's decision to all roles (loop, bass, pad, stab, chop, sliced riff) and CLAP as a taste/genre term (from the sidecar task). Add-a-part by default; --role <existing> re-casts. Acceptance: (1) reproducible with --seed; (2) surrogate vs rendered composite Spearman >= 0.6 and recall@12 >= 0.75 per role on Ave House; (3) the null control is always in L1 and no finalist beats it by < 2; (4) positive controls: incumbent's own loop ranks top 3, a forced +1 semitone ranks below it, a silent candidate is gated; (5) <= 15 min per cycle with 4 workers; (6) output folder cycle.json + A-D .apr/.m4a ready for scripts/cycle.py publish. Blocked by apricitus-ab3291 and the sidecar task for stab/chop density and CLAP.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7e51f2b5-e837-4442-aa9d-5d11e5295340",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "fd66f060-4efe-41fe-8695-fc7f548aace1",
+      "author": "home",
+      "text": "Merged (experimental) in PR #18, on main via PR #20. Works end to end; after the silence-gate fix a 12-candidate run passes 9 through the whole-mix gate with 3 finalists. Open: the surrogate doesn't predict rendered Δmix for chop/riff/stab (Spearman -0.34 overall at n=30, bass 0.94, loop 0.50); entry variety is low (top candidates all in bars 1-8); ~17 evals/s (one compile subprocess per candidate). Next: the steering epic apricitus-a50d52 (single-clip mode, jobs, suggestions).",
+      "created_at": "2026-09-27T15:59:40.108963Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T12:07:58.345742Z",
+  "updated_at": "2026-09-27T15:59:40.108992Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

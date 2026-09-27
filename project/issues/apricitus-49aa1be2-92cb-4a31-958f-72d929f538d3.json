@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-49aa1be2-92cb-4a31-958f-72d929f538d3",
+  "title": "Explorer v0: automated two-level search (casts x operators) with a lab notebook and blind A/B",
+  "description": "The product owner wants an automated scientific process to explore a score's solution space. Inner loop: fix a cast with typed operators proposed from the checker's findings (bass root/octave, notches from the notch-finder, transposition, hp/filter, release, volume), a coordinate hill-climb, accepted only if it improves on a training bar-window, doesn't worsen a held-out window, and adds no new guard violation. Outer loop: casts (role -> sample+clip) as hypotheses, run by successive halving over one eval pool (4 workers), with a diversity rule. Pre-registration of explain predictions, an incumbent control, a determinism check, a JSONL notebook, a leaderboard and promoted best.apr/m4a, blind A/B pairs with Bradley-Terry calibration later, and chord substitutions only with user approval. Positive controls: rediscover root Ab1; revert an injected transpose 1; beat a random-operator control. Prerequisites: the checker's tuning guard excludes unpitched stems, and the baseline is refreshed per run from the incumbent. Design: Fable report from the session (2026-09-27); v0 is on examples/ave-house.apr, role bright, 12 candidates.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6fc75c46-36d8-4d00-a3cf-18877a0e5d70",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "52c0a5f4-112b-4a82-b6e4-10434fea22d6",
+      "author": "home",
+      "text": "Human in the loop, per the product owner (2026-09-27): overnight runs; the owner wakes to THREE diverse finalists (different casts, not three tweaks of one) plus the incumbent. Morning report: best-1..3.m4a with attribution, and a private claude.ai listening artifact (a db capability) where they rate each 1-5 stars, pick the best, and add a note. The next session reads the ratings back and appends them to notebook.jsonl as verdicts (kind ab-pair / rating), then seeds the next run from the favourite. Ratings also calibrate the checker over time (Bradley-Terry, agreement rate).",
+      "created_at": "2026-09-27T02:46:27.017799Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    },
+    {
+      "id": "e4efc959-6eec-49a5-84ce-d12d1b53739b",
+      "author": "home",
+      "text": "v0 merged in PR #12. Open: control (b) at 87% vs 90% (the accept rule compares the holdout against the damaged baseline); the full successive-halving run was not executed.",
+      "created_at": "2026-09-27T03:42:13.050371Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T02:44:59.986208Z",
+  "updated_at": "2026-09-27T03:42:13.050401Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

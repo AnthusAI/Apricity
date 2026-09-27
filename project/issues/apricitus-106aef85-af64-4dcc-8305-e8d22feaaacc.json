@@ -1,0 +1,32 @@
+{
+  "id": "apricitus-106aef85-af64-4dcc-8305-e8d22feaaacc",
+  "title": "Loudness make-up in the page with the wasm renderer",
+  "description": "Reuse rw_master_gain and the render worker (web/src/audio/render-worker.ts) to measure the master make-up gain before writing the set, when the option is on. Pass the gain into rw_export_daw_set's options. Progress reported as a render phase before the fetch phase.\n\nVerification: the parity test's loudness case matches the CLI's measured gain within 0.1 dB.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-ee4b3222-7b9e-4c6a-91c9-43283fcc0eca",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:57.386327Z",
+  "updated_at": "2026-09-27T00:14:58.211869Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

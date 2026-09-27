@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-9095147e-04ff-4e64-aac3-f074ccfec230",
+  "title": "Loudness make-up measured in the page when asked",
+  "description": "As a producer, I want the master make-up gain measured in the browser as the CLI does, so that the set opens at the loudness Apricity renders, and I want to skip it when I am in a hurry.\n\n```gherkin\nFeature: Loudness make-up in the browser export\n  Scenario: Measured by default\n    Given a score with a master loudness target of -14 LUFS\n    When I choose \"Download for your DAW\"\n    Then the page renders the score with the wasm renderer and measures the make-up gain\n    And the set's main-track Utility carries the same gain the CLI export writes\n\n  Scenario: Skipped\n    When I choose \"Download for your DAW\" with \"skip loudness\" on\n    Then no render happens and the Utility gain is 0 dB\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:57.051538Z",
+  "updated_at": "2026-09-27T00:14:57.051610Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

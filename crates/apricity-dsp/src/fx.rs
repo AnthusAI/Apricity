@@ -22,6 +22,8 @@ pub struct Biquad {
 pub enum BiquadKind {
     LowPass { hz: f64, q: f64 },
     HighPass { hz: f64, q: f64 },
+    /// Constant 0 dB peak gain band-pass.
+    BandPass { hz: f64, q: f64 },
     LowShelf { hz: f64, db: f64 },
     HighShelf { hz: f64, db: f64 },
     Peak { hz: f64, db: f64, q: f64 },
@@ -38,7 +40,7 @@ impl Biquad {
     pub fn set(&mut self, kind: BiquadKind, sr: f64) {
         let nyq = sr * 0.49;
         let (hz, db, q) = match kind {
-            BiquadKind::LowPass { hz, q } | BiquadKind::HighPass { hz, q } => (hz, 0.0, q),
+            BiquadKind::LowPass { hz, q } | BiquadKind::HighPass { hz, q } | BiquadKind::BandPass { hz, q } => (hz, 0.0, q),
             BiquadKind::LowShelf { hz, db } | BiquadKind::HighShelf { hz, db } => (hz, db, std::f64::consts::FRAC_1_SQRT_2),
             BiquadKind::Peak { hz, db, q } => (hz, db, q),
         };
@@ -49,6 +51,7 @@ impl Biquad {
         let (b0, b1, b2, a0, a1, a2) = match kind {
             BiquadKind::LowPass { .. } => ((1.0 - cos) / 2.0, 1.0 - cos, (1.0 - cos) / 2.0, 1.0 + alpha, -2.0 * cos, 1.0 - alpha),
             BiquadKind::HighPass { .. } => ((1.0 + cos) / 2.0, -(1.0 + cos), (1.0 + cos) / 2.0, 1.0 + alpha, -2.0 * cos, 1.0 - alpha),
+            BiquadKind::BandPass { .. } => (alpha, 0.0, -alpha, 1.0 + alpha, -2.0 * cos, 1.0 - alpha),
             BiquadKind::Peak { .. } => (1.0 + alpha * a, -2.0 * cos, 1.0 - alpha * a, 1.0 + alpha / a, -2.0 * cos, 1.0 - alpha / a),
             BiquadKind::LowShelf { .. } => {
                 let s = 2.0 * a.sqrt() * alpha;
@@ -357,6 +360,60 @@ mod tests {
         assert!((eq.response_db(16000.0) - 2.0).abs() < 0.5, "high shelf: {}", eq.response_db(16000.0));
         assert!(eq.response_db(30.0) < -18.0, "low cut: {}", eq.response_db(30.0));
         assert!((eq.response_db(3000.0)).abs() < 1.5, "mids near flat: {}", eq.response_db(3000.0));
+    }
+
+    /// Steady-state gain (dB) of a sine at `hz`, through `passes` cascaded lowpass biquads at
+    /// `cutoff` Hz and resonance `q` (skips the first quarter of the signal to let the filter settle).
+    fn steady_gain_db(cutoff: f64, q: f64, passes: u32, hz: f64) -> f64 {
+        let x = sine(hz, 1.0, 0.2);
+        let mut y = x.clone();
+        for _ in 0..passes {
+            let mut b = Biquad::new(BiquadKind::LowPass { hz: cutoff, q }, SR);
+            y = y.iter().map(|&v| b.tick(0, v as f64) as f32).collect();
+        }
+        let settle = y.len() / 4;
+        let rms = |v: &[f32]| (v.iter().map(|x| (*x as f64).powi(2)).sum::<f64>() / v.len() as f64).sqrt();
+        20.0 * (rms(&y[settle..]) / rms(&x[settle..])).log10()
+    }
+
+    /// `res` maps to Q = 0.707 · 20^res. At `res` 0% the filter is today's plain lowpass: about
+    /// −3 dB at the cutoff. At `res` 80% the peak at the cutoff is much stronger: at least 10 dB
+    /// above the `res` 0% gain (a strong, singing resonance, per the spec).
+    #[test]
+    fn resonance_raises_the_gain_at_the_cutoff() {
+        let cutoff = 1000.0;
+        let q = |res: f64| std::f64::consts::FRAC_1_SQRT_2 * 20f64.powf(res);
+        let gain_0 = steady_gain_db(cutoff, q(0.0), 1, cutoff);
+        let gain_80 = steady_gain_db(cutoff, q(0.8), 1, cutoff);
+        assert!((gain_0 - (-3.0)).abs() < 1.0, "res 0%: {gain_0} dB (want ~-3dB)");
+        assert!(gain_80 > gain_0 + 10.0, "res 80% ({gain_80} dB) should be at least 10dB above res 0% ({gain_0} dB)");
+    }
+
+    /// Slope sets how many biquads cascade: 12 dB/octave attenuates about 12 dB an octave above the
+    /// cutoff; 24 dB/octave (two cascaded biquads) attenuates at least 20 dB there.
+    #[test]
+    fn slope_sets_the_octave_attenuation() {
+        let cutoff = 1000.0;
+        let octave_up = cutoff * 2.0;
+        let q0 = std::f64::consts::FRAC_1_SQRT_2; // res 0%
+        let atten_12 = -steady_gain_db(cutoff, q0, 1, octave_up);
+        let atten_24 = -steady_gain_db(cutoff, q0, 2, octave_up);
+        assert!((atten_12 - 12.0).abs() < 2.0, "12dB/octave, one octave up: {atten_12} dB");
+        assert!(atten_24 >= 20.0, "24dB/octave, one octave up: {atten_24} dB");
+    }
+
+    /// A constant 0 dB peak-gain band-pass: near 0 dB at the center frequency, falling off both
+    /// above and below it.
+    #[test]
+    fn bandpass_peaks_at_its_center_and_falls_off_both_sides() {
+        let hz = 1000.0;
+        let b = Biquad::new(BiquadKind::BandPass { hz, q: 1.0 }, SR);
+        let center = b.response_db(hz, SR);
+        let below = b.response_db(hz / 4.0, SR);
+        let above = b.response_db(hz * 4.0, SR);
+        assert!(center.abs() < 0.5, "center should be ~0dB: {center}");
+        assert!(below < center - 10.0, "well below center should be attenuated: {below} vs {center}");
+        assert!(above < center - 10.0, "well above center should be attenuated: {above} vs {center}");
     }
 
     #[test]

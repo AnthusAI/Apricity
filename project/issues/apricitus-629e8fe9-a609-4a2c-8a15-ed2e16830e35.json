@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-629e8fe9-a609-4a2c-8a15-ed2e16830e35",
+  "title": "Store the library's big WAVs as lossless FLAC",
+  "description": "64 WAV samples of 2 MB or more (stems, denoised Library of Congress recordings, excerpts), 1006 MB: encode FLAC beside each, check it decodes identically, repoint Sample.audio (id and path unchanged). Push to the bucket; update production Sample.audio. New stems written as FLAC; migrate labels .flac as audio/flac.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:00:08.400177Z",
+  "updated_at": "2026-09-27T02:41:24.266162Z",
+  "closed_at": "2026-09-27T02:41:24.266120Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

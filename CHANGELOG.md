@@ -2,6 +2,150 @@
 
 <!-- version list -->
 
+## v0.19.0 (2026-09-27)
+
+
+## v0.18.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-80ccff**: Regenerate the contract after the schema comment edits
+  ([#14](https://github.com/AnthusAI/Apricity/pull/14),
+  [`d893542`](https://github.com/AnthusAI/Apricity/commit/d89354263c269be0f3470610d0c2e4a15f69b871))
+
+- **apricitus-a9ad5b**: Judge a candidate part over the bars it plays in
+  ([#18](https://github.com/AnthusAI/Apricity/pull/18),
+  [`ae94279`](https://github.com/AnthusAI/Apricity/commit/ae942794f4c9708be9fef78d476eebfdd90ea88c))
+
+- **apricitus-ab3291**: Explorer ops edit a line's code, never its trailing comment
+  ([#15](https://github.com/AnthusAI/Apricity/pull/15),
+  [`1da5a35`](https://github.com/AnthusAI/Apricity/commit/1da5a350e8edcdef8a73284cbe77463853e132cb))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`74f6fd7`](https://github.com/AnthusAI/Apricity/commit/74f6fd7b63543fcc7d8e8747da9403a2fe9237c9))
+
+- **kanbus**: Commit board state (issues)
+  ([`38b9fb7`](https://github.com/AnthusAI/Apricity/commit/38b9fb747e0e6a30d8439166c0172449c2d39228))
+
+- **kanbus**: Commit board state (issues)
+  ([`7b91956`](https://github.com/AnthusAI/Apricity/commit/7b919563407ead93d24bf120a2fdce3863611d4f))
+
+- **kanbus**: Commit board state (issues)
+  ([`53f427b`](https://github.com/AnthusAI/Apricity/commit/53f427beaf435882742a21cec413ea74efad4cb5))
+
+- **kanbus**: Commit board state (issues)
+  ([`6ccaab2`](https://github.com/AnthusAI/Apricity/commit/6ccaab216eb5d59583f7ef8fd01bae02ff054e69))
+
+- **kanbus**: Commit board state (issues)
+  ([`b6f0917`](https://github.com/AnthusAI/Apricity/commit/b6f09171d752b9d57a6902e83a6761904fb999fb))
+
+- **kanbus**: Commit board state (issues)
+  ([`907be42`](https://github.com/AnthusAI/Apricity/commit/907be42b9999e002605d7e321c20002b99103f1d))
+
+- **kanbus**: Commit board state (issues)
+  ([`3c92149`](https://github.com/AnthusAI/Apricity/commit/3c92149c18557bc02d5e71381b3c4c9052747128))
+
+### Documentation
+
+- **agents**: Drop the note that the web UI belongs to a separate session
+  ([`6d66bff`](https://github.com/AnthusAI/Apricity/commit/6d66bff70a0344feb3aa060aada0c46e8f11da77))
+
+### Features
+
+- **apricitus-4a3fc9**: Pull cloud ratings, comments and handles into the library
+  ([`93c4194`](https://github.com/AnthusAI/Apricity/commit/93c41942986a475309ded0c74f62744414d0d022))
+
+- **apricitus-798704**: Per-beat fit-feature sidecars and CLAP embeddings for every sample
+  ([#17](https://github.com/AnthusAI/Apricity/pull/17),
+  [`89e3ade`](https://github.com/AnthusAI/Apricity/commit/89e3ade5d78957c732f5a9f361806c9d2790d00b))
+
+- **apricitus-80ccff**: Listening cycles, rate local explorer candidates in the web app
+  ([#14](https://github.com/AnthusAI/Apricity/pull/14),
+  [`d893542`](https://github.com/AnthusAI/Apricity/commit/d89354263c269be0f3470610d0c2e4a15f69b871))
+
+- **apricitus-8c706d**: The Listen page, rate blind listening cycles in the web app
+  ([#19](https://github.com/AnthusAI/Apricity/pull/19),
+  [`baf9f0a`](https://github.com/AnthusAI/Apricity/commit/baf9f0aea511e5970c9894359ce4ac38650857a4))
+
+- **apricitus-8f617f**: A How it works page on the ML and audio analysis behind Apricity
+  ([#16](https://github.com/AnthusAI/Apricity/pull/16),
+  [`c3751bb`](https://github.com/AnthusAI/Apricity/commit/c3751bb1974575f35cfbef40046fdc35004a515d))
+
+- **apricitus-a9ad5b**: Optimizer v1, a stochastic mash-up search over real clips (experimental)
+  ([#18](https://github.com/AnthusAI/Apricity/pull/18),
+  [`ae94279`](https://github.com/AnthusAI/Apricity/commit/ae942794f4c9708be9fef78d476eebfdd90ea88c))
+
+- **apricitus-dd37de**: Write-score skill v2, measured on fresh agents and in a blind listen
+  ([`973bd14`](https://github.com/AnthusAI/Apricity/commit/973bd148a1ac3bba186159b3e3b2417f1f6c8454))
+
+
+## v0.17.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`4c8e0f7`](https://github.com/AnthusAI/Apricity/commit/4c8e0f787500922b3ab60305e70bc691e0fc4b76))
+
+### Features
+
+- **apricitus-ebb20e**: Verdicts kept for good, in the library
+  ([`92cb840`](https://github.com/AnthusAI/Apricity/commit/92cb840e092266601d57a4891b54d1a056874141))
+
+
+## v0.16.0 (2026-09-27)
+
+
+## v0.15.1 (2026-09-27)
+
+
+## v0.15.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-9d5f92**: The top bar's sun fades softly, like the About card's
+  ([`ab7773b`](https://github.com/AnthusAI/Apricity/commit/ab7773be723332302d809b67bf5e7de67699aca7))
+
+- **apricitus-e0c950**: The About card's sun rises at its left edge; the word stays centered
+  ([`e5e18dc`](https://github.com/AnthusAI/Apricity/commit/e5e18dcda429c235b3f033848e55f8c8651a5cdb))
+
+- **apricitus-e0c950**: The About card's sun sits left of the word
+  ([`d8c9838`](https://github.com/AnthusAI/Apricity/commit/d8c9838eda0aa82fdb2f86ac170a98afff8acbd3))
+
+
+## v0.14.1 (2026-09-27)
+
+
+## v0.14.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`3120a3f`](https://github.com/AnthusAI/Apricity/commit/3120a3f5a1c6b1b1b5cd6f6a8e1a728bbf935fd2))
+
+### Features
+
+- **apricitus-a82e91**: Resonant filters, 24 dB slopes, and a filter effect for groups
+  ([`c9fc447`](https://github.com/AnthusAI/Apricity/commit/c9fc4478441da8dc1a1a0dc41f1e106a6965025b))
+
+
+## v0.13.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-f38b94**: The workspace skips crates/apricity-daw until it's a crate
+  ([`3a9e6ef`](https://github.com/AnthusAI/Apricity/commit/3a9e6ef93c93b073cdef1270fe05a681614cf845))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`bf39182`](https://github.com/AnthusAI/Apricity/commit/bf39182005a5435c3295e632589163b3b1170b64))
+
+
+## v0.12.0 (2026-09-26)
+
+
 ## v0.11.0 (2026-09-26)
 
 ### Chores

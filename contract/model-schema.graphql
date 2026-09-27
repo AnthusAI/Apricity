@@ -33,6 +33,11 @@ enum RatingTarget {
   score
 }
 
+enum CycleStatus {
+  open
+  closed
+}
+
 type Recording @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
   {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
@@ -299,10 +304,34 @@ type Tally @model @auth(rules: [{allow: public, provider: identityPool, operatio
 {
   id: ID! @primaryKey
   targetType: RatingTarget! @index(sortKeyFields: ["day"], queryField: "talliesByTypeAndDay")
-  targetId: ID!
+  targetId: ID! @index(name: "talliesByTarget", sortKeyFields: ["day"], queryField: "talliesByTarget")
   day: String!
   count: Int!
   sum: Int!
+}
+
+type Ranked @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]}])
+{
+  id: ID! @primaryKey
+  list: String! @index(name: "rankedByList", sortKeyFields: ["sort"], queryField: "rankedByList")
+  sort: String!
+  targetType: RatingTarget!
+  targetId: ID! @index(name: "rankedByTarget", queryField: "rankedByTarget")
+  kind: String!
+  title: String
+  owner: String
+  path: String
+  samplePath: String
+  clipStart: Float
+  clipEnd: Float
+  tags: [String]
+  stars: Float
+  ratings: Int
+  comments: Int
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
 }
 
 type Job @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
@@ -315,6 +344,31 @@ type Job @model @auth(rules: [{allow: public, provider: identityPool, operations
   sampleId: ID
   state: JobState @index(queryField: "jobsByState")
   error: String
+}
+
+type ListeningCycle @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  question: String
+  incumbentScoreId: ID!
+  options: [CycleOption]!
+  status: CycleStatus!
+  closedAt: AWSDateTime
+  owner: String
+}
+
+type CycleVerdict @model @auth(rules: [{allow: owner, ownerField: "judge", identityClaim: "sub"},
+  {allow: groups, operations: [read], groups: ["admins"]}])
+{
+  cycleId: ID! @primaryKey(sortKeyFields: ["judge"]) @index(queryField: "verdictsByCycle")
+  judge: String!
+  best: String!
+  notes: [CycleNote]
+  note: String
+  savedAt: AWSDateTime!
 }
 
 type FileRef 
@@ -341,6 +395,19 @@ type CandidateContext
   beats: Float
   key: String
   stem: String
+}
+
+type CycleOption 
+{
+  letter: String!
+  scoreId: ID!
+  audio: FileRef!
+}
+
+type CycleNote 
+{
+  letter: String!
+  note: String!
 }
 
 enum SampleRole {

@@ -101,7 +101,9 @@ export class Breakdown {
     tabStory.addEventListener("click", () => this.show("story"));
     tabCode.addEventListener("click", () => this.show("code"));
     tabs.append(tabStory, tabCode);
-    const head = el("div", { className: "bd-head" }, tabs, el("span", { className: "bd-spacer" }), ...(this.sound ? [this.play.root] : []));
+    // In the hero the play button says what it's for, and is hard to miss until it's been used.
+    const hear = variant === "hero" && this.sound ? [el("span", { className: "bd-hear", ariaHidden: "true" }, "Hear it")] : [];
+    const head = el("div", { className: "bd-head" }, tabs, el("span", { className: "bd-spacer" }), ...hear, ...(this.sound ? [this.play.root] : []));
     if (variant === "card" && d.title) head.prepend(el("div", { className: "bd-title" }, el("b", {}, d.title)));
     const pre = el("pre", { className: "bd-source", innerHTML: highlightApr(d.code ?? "") });
     pre.setAttribute("aria-label", `The score: ${d.score}`);
@@ -219,6 +221,7 @@ export class Breakdown {
   }
 
   private async toggleSound() {
+    this.root.classList.add("bd-heard"); // the hero's "Hear it" has done its job
     if (this.soundState === "checking") await this.probe;
     if (!this.sound || this.soundState === "missing" || this.soundState === "checking" || this.soundState === "loading") return;
     if (this.sound.on) {

@@ -1,0 +1,37 @@
+{
+  "id": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "title": "M6: Download for your DAW: browser-side set export in the web app, cloud included",
+  "description": "## Purpose\nA **Download for your DAW** button on the Score view, on the public site as well as locally, with no server work. The compiler and renderer already run as WebAssembly in the page; the set writer (M1 to M4) patches gzipped XML templates; samples come from the library bucket. So the page compiles the score, writes the set, fetches the samples, zips a `<Score> Project/` folder and hands the browser a download that opens in the DAW and plays the same arrangement Apricity renders.\n\n## Scope\n- `rw_export_daw_set` in crates/apricity-web wrapping apricity-daw, with the templates embedded (`include_bytes!`), building for wasm32-wasip1.\n- Sample fetch through the existing data layer (guest and signed-in rules unchanged); zip assembled in the page; loudness make-up measured with the wasm renderer when asked.\n- Byte-for-byte parity with `apricity export --daw-set` for the same score and samples (the set file; the zip container may differ).\n- A conformance script running the wasm export on every example.\n- Web task for the button, progress and errors (visuals by the web session).\n\n## Out of scope\nKits and clip folders from the page (apricitus-5562e0 owns them), sidecars (apricitus-d7746d), any serve or Lambda route (M5's route stays for scripts and the CLI).\n\n## Definition of Done\n- Every story green; the wasm export of every example matches the CLI export.\n- Checklist: specs (1), Rust (2), CLI parity (4), fixtures (5), design note section in design/daw-set.md (6), docs/tools.md and docs/concepts.md (7), web task (8), verification commands per task (9), running log (10), `feat(<id>)` commits (11).\n- Owner opens a downloaded zip from apricity.anth.us in the DAW and it plays in time.\n\n## Dependencies\nBlocked by M5 (apricitus-3e535c), which makes the writer complete and checked; the page work can start as soon as M1 lands.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-3e535c11-3d31-4864-ae05-ee20ecfb622a",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-cfd8118c-176d-4be7-a261-b1ceb12b9a30",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:56.742883Z",
+  "updated_at": "2026-09-27T00:14:57.787796Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -77,4 +77,4 @@ def candidate(item_id: str) -> dict | None:
     return {"id": item_id, "title": it["title"], "who": ", ".join(people(it, item_id.startswith("lomaxbib"))) or "—",
             "year": year, "license": None, "license_url": None, "audio": url, "page": it["url"], "duration": "", "tags": "",
             "notes": " ".join(it.get("notes") or [])[:260], "rights": rights[:260],
-            "warn": "after 1925: not public domain" if year.isdigit() and int(year) > 1925 else ""}
+            "warn": "after 1925: not public domain" if year.isdigit() and int(year) > 1925 and not item_id.startswith("lomaxbib") else ""}

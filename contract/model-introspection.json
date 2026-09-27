@@ -2896,6 +2896,236 @@
           }
         },
         {
+          "type": "key",
+          "properties": {
+            "name": "talliesByTarget",
+            "queryField": "talliesByTarget",
+            "fields": [
+              "targetId",
+              "day"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "allow": "public",
+                "provider": "identityPool",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Ranked": {
+      "name": "Ranked",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "list": {
+          "name": "list",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "sort": {
+          "name": "sort",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetType": {
+          "name": "targetType",
+          "isArray": false,
+          "type": {
+            "enum": "RatingTarget"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetId": {
+          "name": "targetId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "kind": {
+          "name": "kind",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "path": {
+          "name": "path",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "samplePath": {
+          "name": "samplePath",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "clipStart": {
+          "name": "clipStart",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "clipEnd": {
+          "name": "clipEnd",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "stars": {
+          "name": "stars",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "ratings": {
+          "name": "ratings",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "comments": {
+          "name": "comments",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lastAt": {
+          "name": "lastAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        },
+        "lastWhat": {
+          "name": "lastWhat",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lastBy": {
+          "name": "lastBy",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Rankeds",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "rankedByList",
+            "queryField": "rankedByList",
+            "fields": [
+              "list",
+              "sort"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "rankedByTarget",
+            "queryField": "rankedByTarget",
+            "fields": [
+              "targetId"
+            ]
+          }
+        },
+        {
           "type": "auth",
           "properties": {
             "rules": [
@@ -3051,6 +3281,278 @@
         "primaryKeyFieldName": "id",
         "sortKeyFieldNames": []
       }
+    },
+    "ListeningCycle": {
+      "name": "ListeningCycle",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "question": {
+          "name": "question",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "incumbentScoreId": {
+          "name": "incumbentScoreId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "options": {
+          "name": "options",
+          "isArray": true,
+          "type": {
+            "nonModel": "CycleOption"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": false
+        },
+        "status": {
+          "name": "status",
+          "isArray": false,
+          "type": {
+            "enum": "CycleStatus"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "closedAt": {
+          "name": "closedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "ListeningCycles",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "CycleVerdict": {
+      "name": "CycleVerdict",
+      "fields": {
+        "cycleId": {
+          "name": "cycleId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "judge": {
+          "name": "judge",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "best": {
+          "name": "best",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "notes": {
+          "name": "notes",
+          "isArray": true,
+          "type": {
+            "nonModel": "CycleNote"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "note": {
+          "name": "note",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "savedAt": {
+          "name": "savedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "CycleVerdicts",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "cycleId",
+              "judge"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "cycleVerdictsByCycleId",
+            "queryField": "verdictsByCycle",
+            "fields": [
+              "cycleId"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "judge",
+                "allow": "owner",
+                "identityClaim": "sub",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "operations": [
+                  "read"
+                ],
+                "groups": [
+                  "admins"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": true,
+        "primaryKeyFieldName": "cycleId",
+        "sortKeyFieldNames": [
+          "judge"
+        ]
+      }
     }
   },
   "enums": {
@@ -3097,6 +3599,13 @@
         "sample",
         "clip",
         "score"
+      ]
+    },
+    "CycleStatus": {
+      "name": "CycleStatus",
+      "values": [
+        "open",
+        "closed"
       ]
     },
     "SampleRole": {
@@ -3245,6 +3754,53 @@
           "isArray": false,
           "type": "String",
           "isRequired": false,
+          "attributes": []
+        }
+      }
+    },
+    "CycleOption": {
+      "name": "CycleOption",
+      "fields": {
+        "letter": {
+          "name": "letter",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "scoreId": {
+          "name": "scoreId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "audio": {
+          "name": "audio",
+          "isArray": false,
+          "type": {
+            "nonModel": "FileRef"
+          },
+          "isRequired": true,
+          "attributes": []
+        }
+      }
+    },
+    "CycleNote": {
+      "name": "CycleNote",
+      "fields": {
+        "letter": {
+          "name": "letter",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "note": {
+          "name": "note",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
           "attributes": []
         }
       }
