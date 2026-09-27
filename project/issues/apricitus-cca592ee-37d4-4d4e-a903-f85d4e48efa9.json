@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-cca592ee-37d4-4d4e-a903-f85d4e48efa9",
+  "title": "Align CLI ScoreRef mutation with production schema",
+  "description": "Production score publish reaches AppSync but ScoreRef reconciliation sends a field absent from CreateScoreRefInput. Align the CLI payload to the deployed schema and retry the authenticated publish.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "07a33966-1c22-4a58-8a45-c3625a1cc36e",
+      "author": "home",
+      "text": "Fixed, pushed, and exercised against production. The score publish completed after removing fields absent from CreateScoreRefInput.",
+      "created_at": "2026-09-27T22:48:59.037454Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T22:47:05.985948Z",
+  "updated_at": "2026-09-27T22:48:59.037483Z",
+  "closed_at": "2026-09-27T22:48:58.974229Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
