@@ -199,10 +199,7 @@ fn login(config: &Config) -> Result<(), String> {
     stream
         .set_read_timeout(Some(Duration::from_secs(300)))
         .map_err(|e| e.to_string())?;
-    let mut request = String::new();
-    stream
-        .read_to_string(&mut request)
-        .map_err(|e| format!("could not read login callback: {e}"))?;
+    let request = read_http_head(&mut stream)?;
     let target = request
         .lines()
         .next()
@@ -249,6 +246,26 @@ fn login(config: &Config) -> Result<(), String> {
         identity(&token).unwrap_or_else(|| "authenticated user".into())
     );
     Ok(())
+}
+
+/// Read just an HTTP request's headers. Browsers keep the connection open while
+/// waiting for our response, so waiting for EOF here would deadlock the login.
+fn read_http_head(stream: &mut impl Read) -> Result<String, String> {
+    let mut bytes = Vec::with_capacity(1024);
+    let mut chunk = [0_u8; 1024];
+    while !bytes.windows(4).any(|w| w == b"\r\n\r\n") {
+        let read = stream
+            .read(&mut chunk)
+            .map_err(|e| format!("could not read login callback: {e}"))?;
+        if read == 0 {
+            return Err("login callback ended before HTTP headers".into());
+        }
+        bytes.extend_from_slice(&chunk[..read]);
+        if bytes.len() > 16 * 1024 {
+            return Err("login callback headers are too large".into());
+        }
+    }
+    String::from_utf8(bytes).map_err(|_| "login callback was not valid HTTP text".into())
 }
 
 fn refresh(config: &Config) -> Result<Tokens, String> {
@@ -744,5 +761,15 @@ mod tests {
         assert_eq!(v["folder"], "scores");
         assert_eq!(v["title"], "beat");
         assert!(refs.is_empty());
+    }
+    #[test]
+    fn callback_reader_stops_at_headers_without_waiting_for_eof() {
+        let mut input =
+            std::io::Cursor::new(b"GET /?code=x HTTP/1.1\r\nHost: localhost\r\n\r\nbody".to_vec());
+        assert!(
+            read_http_head(&mut input)
+                .unwrap()
+                .starts_with("GET /?code=x HTTP/1.1")
+        );
     }
 }
