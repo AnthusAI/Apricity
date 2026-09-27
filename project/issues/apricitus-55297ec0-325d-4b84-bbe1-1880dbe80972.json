@@ -3,7 +3,7 @@
   "title": "Fix CLI OAuth callback deadlock",
   "description": "The Apricity login command blocks because its loopback callback reads to EOF before sending the browser response. Read only through HTTP headers, validate the callback, and reply immediately.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -22,11 +22,23 @@
         "model": "GPT-5",
         "name": "Codex"
       }
+    },
+    {
+      "id": "20d66e80-d696-456c-8f08-ccef9c774d75",
+      "author": "home",
+      "text": "Fixed and verified with the focused cloud test suite: the callback reads headers and responds before the browser closes its connection.",
+      "created_at": "2026-09-27T22:36:27.588424Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
     }
   ],
   "created_at": "2026-09-27T22:35:30.616713Z",
-  "updated_at": "2026-09-27T22:35:36.325481Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T22:36:27.588453Z",
+  "closed_at": "2026-09-27T22:36:27.466814Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
