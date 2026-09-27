@@ -10,9 +10,22 @@
   "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "19379823-eb16-4b29-82de-36c05a2cc848",
+      "author": "home",
+      "text": "Started implementation. Verified Plexus's real Cognito pattern: hosted authorization-code login with PKCE/state, loopback callback, keychain refresh-token store, automatic refresh, and revocation on logout. Apricity will adapt it to its 127.0.0.1:5181 callback and ID-token AppSync authorization.",
+      "created_at": "2026-09-27T22:16:04.708270Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    }
+  ],
   "created_at": "2026-09-27T22:15:38.513928Z",
-  "updated_at": "2026-09-27T22:15:59.994830Z",
+  "updated_at": "2026-09-27T22:16:04.708300Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
