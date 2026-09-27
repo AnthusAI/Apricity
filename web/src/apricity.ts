@@ -226,6 +226,23 @@ export function ratings(): Promise<Ratings> {
   return ratingsInstance;
 }
 
+let cyclesInstance: Promise<import("./data/cycles.js").Cycles> | null = null;
+/** Listening cycles (Kanbus apricitus-2101dd): open rounds, and your verdicts on them. */
+export function cycles(): Promise<import("./data/cycles.js").Cycles> {
+  cyclesInstance ??= (async () => {
+    const [{ client }, auth, { Cycles }] = await Promise.all([import("./data/client.js"), import("./data/auth.js"), import("./data/cycles.js")]);
+    const c = new Cycles({
+      client,
+      // CycleVerdict's owner rule is on `judge`, the caller's Cognito `sub` (not `sub::username` like Rating);
+      // getCurrentUser() gives that in both modes (locally, the library identity's sub).
+      judge: async () => (await auth.getCurrentUser())?.sub ?? null,
+    });
+    document.addEventListener("apricity:auth-changed", () => c.reset());
+    return c;
+  })();
+  return cyclesInstance;
+}
+
 /** Who is signed in, as records name their owner; null for a guest. Locally, the library's one identity. */
 export async function me(): Promise<Me | null> {
   const { mode } = await import("./data/client.js");
