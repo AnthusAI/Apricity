@@ -40,6 +40,7 @@ const T = {
 type Key = `${TargetType}#${string}`;
 type Item = Record<string, AttributeValue>;
 
+// Index names as DynamoDB has them (Amplify names an index after its fields unless the model names it).
 const get = async (table: string, id: string) => (await db.send(new GetItemCommand({ TableName: table, Key: { id: { S: id } } }))).Item;
 
 async function queryAll(table: string, index: string, key: string, value: string, projection?: string) {
@@ -111,7 +112,7 @@ async function hiddenOf(type: TargetType, id: string, records: ItemRecords, look
     const s = field(records.clip, "sampleId");
     return !!s && look.sampleHidden(s);
   }
-  const refs = await queryAll(T.ScoreRef, "refsByScore", "scoreId", id, "sampleId");
+  const refs = await queryAll(T.ScoreRef, "scoreRefsByScoreId", "scoreId", id, "sampleId");
   const samples = new Set(refs.map((r) => field(r, "sampleId")).filter((s): s is string => !!s));
   for (const s of samples) if (await look.sampleHidden(s)) return true;
   return false;
@@ -179,7 +180,7 @@ function tableOf(arn: string | undefined): Table | null {
 
 /** A sample and everything whose hiding follows it: its clips and the scores that use it. */
 async function withDependents(sampleId: string): Promise<[TargetType, string][]> {
-  const [clips, refs] = await Promise.all([queryAll(T.Clip, "clipsBySample", "sampleId", sampleId, "id"), queryAll(T.ScoreRef, "refsBySample", "sampleId", sampleId, "scoreId")]);
+  const [clips, refs] = await Promise.all([queryAll(T.Clip, "clipsBySampleIdAndStart", "sampleId", sampleId, "id"), queryAll(T.ScoreRef, "scoreRefsBySampleIdAndScoreId", "sampleId", sampleId, "scoreId")]);
   return [
     ["sample", sampleId],
     ...clips.map((c) => ["clip", field(c, "id")!] as [TargetType, string]),
@@ -207,7 +208,7 @@ async function affected(table: Table, rec: DynamoDBRecord): Promise<[TargetType,
   }
   const recId = field(image, "id");
   if (!recId) return [];
-  const samples = await queryAll(T.Sample, "samplesByRecording", "recordingId", recId, "id");
+  const samples = await queryAll(T.Sample, "samplesByRecordingIdAndPath", "recordingId", recId, "id");
   return (await Promise.all(samples.map((s) => withDependents(field(s, "id")!)))).flat();
 }
 
