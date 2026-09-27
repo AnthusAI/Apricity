@@ -38,11 +38,10 @@ function aboutCard(): HTMLElement {
   const card = el(
     "article",
     { className: "feed-card about-card" },
-    el("div", { className: "about-card-stage" }, el("span", { className: "about-card-sun", ariaHidden: "true" }), el("span", { className: "about-card-word" }, "Apricity")),
+    el("div", { className: "about-card-stage" }, el("span", { className: "about-card-sun", ariaHidden: "true" }), el("span", { className: "about-card-word" }, "Apricity"), el("span", { className: "about-card-kicker" }, "The social mashup machine")),
     el(
       "div",
       { className: "feed-body" },
-      el("div", { className: "about-card-kicker" }, "The social mashup machine"),
       el("p", {}, "Music made from public-domain and openly licensed recordings: every sound is cleared. Make beats, chords and melodies, remix what others make, and rate the best."),
       link({ page: "about" }, "See how it works →", "btn primary about-card-go"),
     ),
