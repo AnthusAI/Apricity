@@ -3,17 +3,30 @@
   "title": "Scale phase 2: hidden-items list and tag counts in Ranked",
   "description": "design/scale.md phase 2, the parts that lose no features (the user chose this 2026-09-27; tab paging and handles on demand wait for phase 3 search). The ranking Lambda keeps a 'hidden' list (scores, and carded samples/clips, using a sample whose recording has no documented license; fed by Recording, Sample and ScoreRef streams too) and a 'tags' list (one row per tag with its score count). hiddenIds() and flagged scores read the hidden list instead of listing every Clip, ScoreRef, Recording and Sample; home's tag strip and /tags read the tags list instead of every Score. Local mode computes both. Update design/scale.md.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c8ca0a75-2183-498d-a668-31fbdefcdf4a",
+      "author": "home",
+      "text": "Deployed (jobs 85 and 90; the first backfill failed on GraphQL index names, fixed in 0904bae). Backfill ran: the hidden list has 9 undocumented samples and 1 carded clip, no scores, matching the old browser rule; the tags list is empty because no production score is tagged yet. Home and /tags checked in production.",
+      "created_at": "2026-09-27T17:46:21.438464Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Opus session"
+      }
+    }
+  ],
   "created_at": "2026-09-27T15:59:16.611166Z",
-  "updated_at": "2026-09-27T15:59:16.611214Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T17:46:21.471913Z",
+  "closed_at": "2026-09-27T17:46:21.471880Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
