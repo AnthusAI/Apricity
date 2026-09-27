@@ -33,6 +33,11 @@ enum RatingTarget {
   score
 }
 
+enum CycleStatus {
+  open
+  closed
+}
+
 type Recording @aws_iam @aws_cognito_user_pools {
   id: ID!
   title: String!
@@ -325,6 +330,30 @@ type Job @aws_iam @aws_cognito_user_pools {
   updatedAt: AWSDateTime!
 }
 
+type ListeningCycle {
+  id: ID!
+  title: String!
+  question: String
+  incumbentScoreId: ID!
+  options: [CycleOption]!
+  status: CycleStatus!
+  closedAt: AWSDateTime
+  owner: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type CycleVerdict {
+  cycleId: ID!
+  judge: String!
+  best: String!
+  notes: [CycleNote]
+  note: String
+  savedAt: AWSDateTime!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
 type FileRef @aws_iam @aws_cognito_user_pools {
   key: String!
   sha256: String!
@@ -346,6 +375,17 @@ type CandidateContext @aws_iam @aws_cognito_user_pools {
   beats: Float
   key: String
   stem: String
+}
+
+type CycleOption {
+  letter: String!
+  scoreId: ID!
+  audio: FileRef!
+}
+
+type CycleNote {
+  letter: String!
+  note: String!
 }
 
 enum SampleRole {
@@ -573,10 +613,15 @@ type Query {
   listCrateItems(id: ID, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCrateItemConnection
   getRating(id: ID!): Rating
   listRatings(id: ID, filter: ModelRatingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRatingConnection
+  getListeningCycle(id: ID!): ListeningCycle
+  listListeningCycles(id: ID, filter: ModelListeningCycleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelListeningCycleConnection
+  getCycleVerdict(cycleId: ID!, judge: String!): CycleVerdict
+  listCycleVerdicts(cycleId: ID, judge: ModelStringKeyConditionInput, filter: ModelCycleVerdictFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCycleVerdictConnection
   verdictsByJudge(judge: String!, judgedAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelVerdictFilterInput, limit: Int, nextToken: String): ModelVerdictConnection
   cratesByOwner(owner: String!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateFilterInput, limit: Int, nextToken: String): ModelCrateConnection
   crateItemsByCrate(crateId: ID!, position: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
   crateItemsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
+  verdictsByCycle(cycleId: ID!, sortDirection: ModelSortDirection, filter: ModelCycleVerdictFilterInput, limit: Int, nextToken: String): ModelCycleVerdictConnection
   getRecording(id: ID!): Recording @aws_iam @aws_cognito_user_pools
   listRecordings(id: ID, filter: ModelRecordingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRecordingConnection @aws_iam @aws_cognito_user_pools
   recordingsByCollection(collection: String!, title: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelRecordingFilterInput, limit: Int, nextToken: String): ModelRecordingConnection @aws_iam @aws_cognito_user_pools
@@ -751,6 +796,12 @@ type Mutation {
   createJob(input: CreateJobInput!, condition: ModelJobConditionInput): Job
   updateJob(input: UpdateJobInput!, condition: ModelJobConditionInput): Job
   deleteJob(input: DeleteJobInput!, condition: ModelJobConditionInput): Job
+  createListeningCycle(input: CreateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
+  updateListeningCycle(input: UpdateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
+  deleteListeningCycle(input: DeleteListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
+  createCycleVerdict(input: CreateCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
+  updateCycleVerdict(input: UpdateCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
+  deleteCycleVerdict(input: DeleteCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
 }
 
 input ModelSubscriptionRecordingFilterInput {
@@ -787,6 +838,12 @@ type Subscription {
   onCreateRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["createRating"])
   onUpdateRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["updateRating"])
   onDeleteRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["deleteRating"])
+  onCreateListeningCycle(filter: ModelSubscriptionListeningCycleFilterInput, owner: String): ListeningCycle @aws_subscribe(mutations: ["createListeningCycle"])
+  onUpdateListeningCycle(filter: ModelSubscriptionListeningCycleFilterInput, owner: String): ListeningCycle @aws_subscribe(mutations: ["updateListeningCycle"])
+  onDeleteListeningCycle(filter: ModelSubscriptionListeningCycleFilterInput, owner: String): ListeningCycle @aws_subscribe(mutations: ["deleteListeningCycle"])
+  onCreateCycleVerdict(filter: ModelSubscriptionCycleVerdictFilterInput, judge: String): CycleVerdict @aws_subscribe(mutations: ["createCycleVerdict"])
+  onUpdateCycleVerdict(filter: ModelSubscriptionCycleVerdictFilterInput, judge: String): CycleVerdict @aws_subscribe(mutations: ["updateCycleVerdict"])
+  onDeleteCycleVerdict(filter: ModelSubscriptionCycleVerdictFilterInput, judge: String): CycleVerdict @aws_subscribe(mutations: ["deleteCycleVerdict"])
   onCreateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["createRecording"]) @aws_iam @aws_cognito_user_pools
   onUpdateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["updateRecording"]) @aws_iam @aws_cognito_user_pools
   onDeleteRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["deleteRecording"]) @aws_iam @aws_cognito_user_pools
@@ -2377,6 +2434,163 @@ input ModelSubscriptionJobFilterInput {
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionJobFilterInput]
   or: [ModelSubscriptionJobFilterInput]
+}
+
+input CycleOptionInput {
+  letter: String!
+  scoreId: ID!
+  audio: FileRefInput!
+}
+
+type ModelListeningCycleConnection {
+  items: [ListeningCycle]!
+  nextToken: String
+}
+
+input ModelCycleStatusInput {
+  eq: CycleStatus
+  ne: CycleStatus
+}
+
+input ModelListeningCycleFilterInput {
+  id: ModelIDInput
+  title: ModelStringInput
+  question: ModelStringInput
+  incumbentScoreId: ModelIDInput
+  status: ModelCycleStatusInput
+  closedAt: ModelStringInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelListeningCycleFilterInput]
+  or: [ModelListeningCycleFilterInput]
+  not: ModelListeningCycleFilterInput
+}
+
+input ModelListeningCycleConditionInput {
+  title: ModelStringInput
+  question: ModelStringInput
+  incumbentScoreId: ModelIDInput
+  status: ModelCycleStatusInput
+  closedAt: ModelStringInput
+  owner: ModelStringInput
+  and: [ModelListeningCycleConditionInput]
+  or: [ModelListeningCycleConditionInput]
+  not: ModelListeningCycleConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateListeningCycleInput {
+  id: ID
+  title: String!
+  question: String
+  incumbentScoreId: ID!
+  options: [CycleOptionInput]!
+  status: CycleStatus!
+  closedAt: AWSDateTime
+  owner: String
+}
+
+input UpdateListeningCycleInput {
+  id: ID!
+  title: String
+  question: String
+  incumbentScoreId: ID
+  options: [CycleOptionInput]
+  status: CycleStatus
+  closedAt: AWSDateTime
+  owner: String
+}
+
+input DeleteListeningCycleInput {
+  id: ID!
+}
+
+input ModelSubscriptionListeningCycleFilterInput {
+  id: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  question: ModelSubscriptionStringInput
+  incumbentScoreId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  closedAt: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionListeningCycleFilterInput]
+  or: [ModelSubscriptionListeningCycleFilterInput]
+  owner: ModelStringInput
+}
+
+input CycleNoteInput {
+  letter: String!
+  note: String!
+}
+
+type ModelCycleVerdictConnection {
+  items: [CycleVerdict]!
+  nextToken: String
+}
+
+input ModelCycleVerdictFilterInput {
+  cycleId: ModelIDInput
+  judge: ModelStringInput
+  best: ModelStringInput
+  note: ModelStringInput
+  savedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCycleVerdictFilterInput]
+  or: [ModelCycleVerdictFilterInput]
+  not: ModelCycleVerdictFilterInput
+}
+
+input ModelCycleVerdictConditionInput {
+  best: ModelStringInput
+  note: ModelStringInput
+  savedAt: ModelStringInput
+  and: [ModelCycleVerdictConditionInput]
+  or: [ModelCycleVerdictConditionInput]
+  not: ModelCycleVerdictConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  judge: ModelStringInput
+}
+
+input CreateCycleVerdictInput {
+  cycleId: ID!
+  judge: String!
+  best: String!
+  notes: [CycleNoteInput]
+  note: String
+  savedAt: AWSDateTime!
+}
+
+input UpdateCycleVerdictInput {
+  cycleId: ID!
+  judge: String!
+  best: String
+  notes: [CycleNoteInput]
+  note: String
+  savedAt: AWSDateTime
+}
+
+input DeleteCycleVerdictInput {
+  cycleId: ID!
+  judge: String!
+}
+
+input ModelSubscriptionCycleVerdictFilterInput {
+  cycleId: ModelSubscriptionIDInput
+  best: ModelSubscriptionStringInput
+  note: ModelSubscriptionStringInput
+  savedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCycleVerdictFilterInput]
+  or: [ModelSubscriptionCycleVerdictFilterInput]
+  judge: ModelStringInput
 }
 
 input ModelStringKeyConditionInput {
