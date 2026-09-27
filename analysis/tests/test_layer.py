@@ -54,6 +54,34 @@ def test_a_loud_enough_candidate_passes_the_silent_gate():
     assert layer.gate_not_silent(loud, stack) is True
 
 
+def _intro_only_song():
+    # 40 beats: a quiet intro (beats 0-7, stack at -30 dB) then a loud drop (-10 dB); the part plays
+    # only in the intro, at -34 dB (quiet, but only 4 dB under what's around it).
+    stack_db = np.r_[np.full(8, -30.0), np.full(32, -10.0)]
+    part_db = np.r_[np.full(8, -34.0), np.full(32, -120.0)]
+    tempo = 120.0  # at 44.1 kHz and check.HOP, frames_per_beat is fractional: slicing must round, not crash
+    n_frames = int(np.ceil(40 * 44100 * 60 / tempo / layer.check.HOP))
+    kw = dict(n_beats=40, onset_env=np.zeros(n_frames), bands=np.zeros((n_frames, layer.MASKING_N_BANDS)),
+              tonalness=np.full(n_frames, 0.8), chroma=np.tile(one_hot(0, 0.4), (40, 1)))
+    return make_stem("drums", energy_db=stack_db, **kw), make_stem("riff", energy_db=part_db, **kw), tempo
+
+
+def test_an_intro_only_part_is_judged_over_its_own_bars():
+    stack, part, tempo = _intro_only_song()
+    # Over the whole song it sounds on 20% of the beats and sits 24 dB under the drop: "silent".
+    assert layer.gate_not_silent(part, [stack]) is False
+    w = lambda f: layer.window_features(f, tempo, 0, 8)
+    assert layer.gate_not_silent(w(part), [w(stack)]) is True
+    assert len(w(part).energy_db) == 8 and w(part).bands.shape[0] == w(part).tonalness.shape[0] > 0
+
+
+def test_windowing_does_not_rescue_a_part_that_is_silent_in_its_own_bars():
+    stack, _, tempo = _intro_only_song()
+    silent = make_stem("riff", n_beats=40, energy_db=np.full(40, -120.0), chroma=np.zeros((40, 12)))
+    w = lambda f: layer.window_features(f, tempo, 0, 8)
+    assert layer.gate_not_silent(w(silent), [w(stack)]) is False
+
+
 # --------------------------------------------------------------------------- gate: doubling
 
 def test_an_exact_copy_of_a_stack_stem_trips_the_doubling_gate():

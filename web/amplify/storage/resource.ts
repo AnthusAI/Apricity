@@ -31,7 +31,7 @@ const readAll = (allow: any) => [allow.guest.to(["read"]), ...readSignedIn(allow
 
 // One record folder per model in the data contract (Recording/, Sample/, Clip/, ...). Private ones need sign-in.
 const recordFolders = Object.keys((contract as { models: Record<string, unknown> }).models);
-const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating"]);
+const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating", "ListeningCycle", "CycleVerdict"]);
 
 export const storage = defineStorage({
   name: "apricityFiles",
@@ -40,6 +40,10 @@ export const storage = defineStorage({
     // Audio, analysis, documents and the breakdowns' sound. (No narrower `files/...` path: a more specific path
     // REPLACES the broader grant, with an explicit deny for every role it does not list.)
     "files/*": readAll(allow),
+    // Listening-cycle candidate renders (files/cycles/<cycleId>/<letter>.m4a): options must stay blind and out of the
+    // public catalog, so only signed-in people read; the local runner writes with its own AWS credentials (admins),
+    // not through Cognito.
+    "files/cycles/*": readSignedIn(allow),
     ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, PRIVATE.has(model) ? readSignedIn(allow) : readAll(allow)])),
     "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
   }),

@@ -36,6 +36,18 @@ test("a clip: its sample's path and its stretch; a retired clip, or an item with
   assert.equal(itemOf("score", "scr_1", { card: undefined, score: {} as never }), null);
 });
 
+test("a listening-cycle candidate score gets no Ranked rows even if a card somehow exists for it", () => {
+  // Belt and suspenders: changesOf keeps a candidate's card from ever being written, but if one existed anyway,
+  // itemOf + rowsFor (the same path rebuild() drives) must still produce zero rows, matching ranked.ts's listsOf.
+  const it = itemOf("score", "scr_9", {
+    card: card("score", "scr_9", { kind: S("song"), owner: S("u1::u1") }),
+    score: { folder: S("cycles/cyc_1"), title: S("funk-b"), format: S("apr"), tags: { L: [S("candidate")] } } as never,
+  })!;
+  assert.deepEqual(it.tags, ["candidate"]);
+  const rows = rowsFor(it, [], new Date("2026-09-27T00:00:00Z"));
+  assert.deepEqual(rows, []);
+});
+
 test("rows as Ranked items, and which item a stream record is about", () => {
   const it = itemOf("sample", "smp_1", { card: card("sample", "smp_1", { kind: S("sample") }), sample: { path: S("a/b.flac") } as never })!;
   const rows = rowsFor(it, talliesOf([{ targetId: S("smp_1"), day: S("all"), count: N(2), sum: N(8) } as never]), new Date("2026-09-27T00:00:00Z"));

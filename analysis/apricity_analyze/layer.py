@@ -170,6 +170,25 @@ def load_stack(stems_dir: pathlib.Path, cache_path: pathlib.Path | None = None) 
     return manifest, feats
 
 
+def window_features(feat: StemFeatures, tempo: float, start_beat: int, end_beat: int) -> StemFeatures:
+    """`feat` cut to beats `[start_beat, end_beat)` of its render: per-beat arrays by beat, frame
+    arrays by the same hop grid `band_energy` uses, `mono` by sample (a cached stack's placeholder
+    `mono` is left as is). Judging a part that plays in only some bars over the whole song makes
+    every gate and term see mostly silence (the optimizer's L1 gate did, 2026-09-27); callers cut the
+    candidate and the stack to the bars the part actually plays in."""
+    start_beat = max(0, int(start_beat))
+    end_beat = max(start_beat + 1, min(int(end_beat), len(feat.energy_db)))
+    frames_per_beat = feat.sr * 60.0 / tempo / check.HOP
+    f0, f1 = int(round(start_beat * frames_per_beat)), int(round(end_beat * frames_per_beat))
+    samples_per_beat = feat.sr * 60.0 / tempo
+    s0, s1 = int(round(start_beat * samples_per_beat)), int(round(end_beat * samples_per_beat))
+    mono = feat.mono[s0:s1] if len(feat.mono) > 1 else feat.mono
+    return dataclasses.replace(
+        feat, chroma=feat.chroma[start_beat:end_beat], energy_db=feat.energy_db[start_beat:end_beat],
+        onset_env=feat.onset_env[f0:f1], bands=feat.bands[f0:f1], tonalness=feat.tonalness[f0:f1], mono=mono,
+    )
+
+
 def _save_cached_stack(path: pathlib.Path, feats: list[StemFeatures]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     blob = {}

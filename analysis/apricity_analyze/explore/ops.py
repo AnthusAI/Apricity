@@ -24,6 +24,7 @@ OP_NAMES = frozenset({
     "track.octave",
     "track.release",
     "track.volume",
+    "track.add_part",
 })
 
 MAX_PEAKS_PER_EQ_LINE = 4
@@ -73,13 +74,34 @@ def _clip_decl_index(lines: list[str], clip: str) -> int:
     raise OpError(f"no `clip {clip} = ...` line in the score")
 
 
+def _split_comment(line: str) -> tuple[str, str]:
+    """`(code, comment)`: the parser's rule (crates/apricity-score/src/dsl.rs `words`), a comment
+    starts at the first `#` outside double quotes. `comment` keeps its `#` ("" when there is none)."""
+    in_quote = False
+    for i, c in enumerate(line):
+        if c == '"':
+            in_quote = not in_quote
+        elif c == "#" and not in_quote:
+            return line[:i].rstrip(), line[i:]
+    return line.rstrip(), ""
+
+
+def _edit_code(line: str, edit) -> str:
+    """Apply `edit` to the code part of `line` only, then put its trailing comment back, so an op
+    never writes an option into a comment or matches words inside one."""
+    code, comment = _split_comment(line)
+    code = edit(code).rstrip()
+    return f"{code}  {comment}" if comment else code
+
+
 def _set_inline_option(line: str, option: str, value: str | None) -> str:
     """Remove any existing `<option> <token>` from a track/clip declaration line, then append
-    `<option> <value>` when `value` isn't None (removal only, when it is)."""
-    line = re.sub(rf"\s+{re.escape(option)}\s+\S+", "", line)
-    if value is not None:
-        line = f"{line.rstrip()}  {option} {value}"
-    return line
+    `<option> <value>` when `value` isn't None (removal only, when it is). A trailing comment stays
+    at the end of the line, untouched."""
+    def edit(code: str) -> str:
+        code = re.sub(rf"\s+{re.escape(option)}\s+\S+", "", code)
+        return f"{code.rstrip()}  {option} {value}" if value is not None else code
+    return _edit_code(line, edit)
 
 
 def _hz(hz: float) -> str:
@@ -96,8 +118,10 @@ def cast_swap(text: str, *, role: str, sample: str, clip: str) -> str:
     new_text, n = re.subn(rf"^(clip\s+{re.escape(role)}\s*=\s*)\S+\s+\S+.*$", rf"\g<1>{sample}  {clip}", text, flags=re.M)
     if n == 0:
         raise OpError(f"no `clip {role} = ...` line in the score")
-    new_text = re.sub(rf"^(track\s+{re.escape(role)}\b[^\n]*?)\s+transpose\s+\S+", r"\1", new_text, flags=re.M)
-    new_text = "\n".join(l for l in new_text.splitlines() if f"# only:{role}" not in l)
+    track = re.compile(rf"^track\s+{re.escape(role)}(\s|$)")
+    drop_transpose = lambda code: re.sub(r"\s+transpose\s+\S+", "", code)
+    new_text = "\n".join(_edit_code(l, drop_transpose) if track.match(l) else l
+                          for l in new_text.splitlines() if f"# only:{role}" not in l)
     return new_text if new_text.endswith("\n") else new_text + "\n"
 
 
@@ -116,13 +140,13 @@ def track_eq_notch(text: str, *, track: str, hz: float, gain: int, q: int) -> st
     start = _track_decl_index(lines, track)
     end = _track_block_end(lines, start)
     eq_idx = [i for i in range(start + 1, end) if lines[i].strip().split(" ", 1)[0] == "eq"]
-    total_peaks = sum(lines[i].count("peak") for i in eq_idx)
+    total_peaks = sum(_split_comment(lines[i])[0].count("peak") for i in eq_idx)
     if total_peaks >= MAX_NOTCHES_PER_TRACK:
         raise OpError(f"{track}: already at the {MAX_NOTCHES_PER_TRACK}-notch cap")
     token = f"peak {gain}@{_hz(hz)} q{q}"
     for i in eq_idx:
-        if lines[i].count("peak") < MAX_PEAKS_PER_EQ_LINE:
-            lines[i] = f"{lines[i].rstrip()}  {token}"
+        if _split_comment(lines[i])[0].count("peak") < MAX_PEAKS_PER_EQ_LINE:
+            lines[i] = _edit_code(lines[i], lambda code: f"{code}  {token}")
             return _join(lines)
     lines.insert(start + 1, f"  eq  {token}")
     return _join(lines)
@@ -138,10 +162,10 @@ def track_hp(text: str, *, track: str, hz: float, slope: str = "24dB", on: bool 
         raise OpError(f"track.hp slope must be 12dB or 24dB, not {slope}")
     lines = _lines(text)
     start = _track_decl_index(lines, track)
-    line = re.sub(r"\s+filter\s+(lp|hp)\s+\S+(\s+res\s+\S+)?(\s+(12|24)dB)?", "", lines[start])
-    if on:
-        line = f"{line.rstrip()}  filter hp {_hz(hz)} {slope}"
-    lines[start] = line
+    def edit(code: str) -> str:
+        code = re.sub(r"\s+filter\s+(lp|hp)\s+\S+(\s+res\s+\S+)?(\s+(12|24)dB)?", "", code)
+        return f"{code.rstrip()}  filter hp {_hz(hz)} {slope}" if on else code
+    lines[start] = _edit_code(lines[start], edit)
     return _join(lines)
 
 
@@ -200,9 +224,102 @@ def track_volume(text: str, *, track: str, delta: int) -> str:
         raise OpError(f"track.volume delta must be one of -4, -2, 2, 4, not {delta}")
     lines = _lines(text)
     start = _track_decl_index(lines, track)
-    m = re.search(r"\bvolume\s+([+-]?\d+(?:\.\d+)?)", lines[start])
+    m = re.search(r"\bvolume\s+([+-]?\d+(?:\.\d+)?)", _split_comment(lines[start])[0])
     current = float(m.group(1)) if m else 0.0
     lines[start] = _set_inline_option(lines[start], "volume", f"{current + delta:g}")
+    return _join(lines)
+
+
+# --------------------------------------------------------------------------- track.add_part
+
+def _find_insert_after_clips(lines: list[str]) -> int:
+    """Line index right after the last `clip <name> = ...` declaration (before `kit`/`chords`)."""
+    last = -1
+    for i, line in enumerate(lines):
+        if re.match(r"^clip\s+\S+\s*=", line):
+            last = i
+    return last + 1 if last >= 0 else 0
+
+
+def _find_insert_after_kits(lines: list[str]) -> int:
+    """Line index right after the last `kit ...` block (declaration + its indented pad lines)."""
+    last_end = None
+    i = 0
+    while i < len(lines):
+        if re.match(r"^kit\s+\S+", lines[i]):
+            end = _track_block_end(lines, i)
+            last_end = end
+            i = end
+        else:
+            i += 1
+    return last_end if last_end is not None else _find_insert_after_clips(lines)
+
+
+def _find_insert_before_return(lines: list[str]) -> int:
+    """Line index of the first `return`/`master` line (new track blocks go right before it), or
+    the end of the file when neither exists."""
+    for i, line in enumerate(lines):
+        if re.match(r"^(return|master)\b", line):
+            return i
+    return len(lines)
+
+
+def _remove_clip_decl(lines: list[str], name: str) -> list[str]:
+    try:
+        idx = _clip_decl_index(lines, name)
+    except OpError:
+        return lines
+    return lines[:idx] + lines[idx + 1:]
+
+
+def _remove_kit_block(lines: list[str], name: str) -> list[str]:
+    pat = re.compile(rf"^kit\s+{re.escape(name)}(\s|$)")
+    for i, line in enumerate(lines):
+        if pat.match(line):
+            end = _track_block_end(lines, i)
+            return lines[:i] + lines[end:]
+    return lines
+
+
+def _remove_track_blocks(lines: list[str], name: str) -> list[str]:
+    """Remove every `track <name> ...` declaration + its indented lines (a role can have more than
+    one `track` line, e.g. a build variant -- a recast drops them all)."""
+    pat = re.compile(rf"^track\s+{re.escape(name)}(\.[\w-]+)?(\s|$)")
+    out = list(lines)
+    changed = True
+    while changed:
+        changed = False
+        for i, line in enumerate(out):
+            if pat.match(line):
+                end = _track_block_end(out, i)
+                out = out[:i] + out[end:]
+                changed = True
+                break
+    return out
+
+
+def track_add_part(text: str, *, track: str, clip_line: str, track_lines: list[str],
+                    kit_lines: list[str] | None = None, recast: bool = False) -> str:
+    """Append (or, when `recast`, first remove then append) one new part: a `clip <track> = ...`
+    line, an optional `kit <track> ...` block (for a sliced-kit role), and a `track <track> ...`
+    block (`track_lines[0]` is the declaration; the rest are its indented continuation lines).
+    This is the optimizer's one structural op (Kanbus apricitus-a9ad5b): it never edits another
+    part, so re-proposing the same genome twice is idempotent up to `recast`'s remove-then-add."""
+    lines = _lines(text)
+    if recast:
+        lines = _remove_track_blocks(lines, track)
+        lines = _remove_kit_block(lines, track)
+        lines = _remove_clip_decl(lines, track)
+
+    insert_clip_at = _find_insert_after_clips(lines)
+    lines = lines[:insert_clip_at] + [clip_line] + lines[insert_clip_at:]
+
+    if kit_lines:
+        insert_kit_at = _find_insert_after_kits(lines)
+        lines = lines[:insert_kit_at] + list(kit_lines) + lines[insert_kit_at:]
+
+    insert_track_at = _find_insert_before_return(lines)
+    lines = lines[:insert_track_at] + list(track_lines) + [""] + lines[insert_track_at:]
     return _join(lines)
 
 
@@ -215,6 +332,7 @@ APPLY = {
     "track.octave": track_octave,
     "track.release": track_release,
     "track.volume": track_volume,
+    "track.add_part": track_add_part,
 }
 
 
@@ -255,4 +373,7 @@ def describe(op: dict) -> str:
         return f"set {a['track']}'s release to {a['ms']:g}ms"
     if name == "track.volume":
         return f"nudge {a['track']}'s volume by {a['delta']:+d}dB"
+    if name == "track.add_part":
+        verb = "recast" if a.get("recast") else "add"
+        return f"{verb} part {a['track']}: {a['clip_line'].strip()}"
     return f"{name}({a})"

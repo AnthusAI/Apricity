@@ -11,6 +11,11 @@ __pycache__/
 /samples/**/*.pdf
 /samples/**/*.part
 
+# Fit-feature sidecars (scripts/fit-features.py, apricity_analyze/features.py + clap.py):
+# derived from the sample audio and manifests, re-derivable, not tracked.
+/samples/**/*.fitfeat.npz
+/samples/**/*.clap.npz
+
 # Python
 /analysis/.venv/
 *.egg-info/

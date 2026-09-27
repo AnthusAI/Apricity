@@ -1,0 +1,27 @@
+{
+  "id": "apricitus-8c706def-04d3-47c8-bf96-cda31eaf5e6c",
+  "title": "Listen page in the web app: rate listening-cycle candidates (players, stars, best pick, notes)",
+  "description": "For the web/docs session (AGENTS.md: web UI is theirs). Design in epic apricitus-2101dd. Data: ListeningCycle (open cycles; options with blind letters A-D, each a fork Score id + audio at files/cycles/<id>/<letter>.m4a), stars as ordinary Ratings on each option's Score, CycleVerdict (cycleId+judge, owner-only: best letter or 'same', per-letter notes, overall note, savedAt). Page: open cycles newest first; one cycle per view; per option a player + stars + note; an explicit best-pick control; Save (upsert; editable until closed). Hide score titles until saved, then reveal which letter was which with links to the scores. Signed-in only; cloud and local modes. Prototype: the Listening Room artifact https://claude.ai/artifact/HV1fa8pRcT9d8hRRcBohuu (its best radio came back null in cycle 1). Blocked by apricitus-80ccff (schema).",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [
+    "web"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T11:26:17.974806Z",
+  "updated_at": "2026-09-27T11:26:54.114452Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

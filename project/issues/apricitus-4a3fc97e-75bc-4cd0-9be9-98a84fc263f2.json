@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-4a3fc97e-75bc-4cd0-9be9-98a84fc263f2",
+  "title": "Pull cloud ratings, comments and handles into the library",
+  "description": "People rate and comment on the hosted site; those records stay in DynamoDB, so the library and local tools (apricity serve, analysis) never see them. Add scripts/pull-cloud.py: mirror prod Rating, Comment and Handle into ~/Apricity-Library/<Model>/<id>.json (only changed files rewritten; library copies of cloud records that no longer exist are removed; local records untouched). Local tallies are summed from Rating files, so local mode then shows everyone's ratings.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "cc896858-3554-480a-af2b-72edd81251ee",
+      "author": "home",
+      "text": "Landed: scripts/pull-cloud.py + apricity_analyze.cloud_pull, 3 tests. First run pulled 61 ratings and 1 handle; local server lists 169 ratings (108 local + 61 cloud).",
+      "created_at": "2026-09-27T13:55:48.726485Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T13:54:41.238763Z",
+  "updated_at": "2026-09-27T13:55:48.810228Z",
+  "closed_at": "2026-09-27T13:55:48.810194Z",
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

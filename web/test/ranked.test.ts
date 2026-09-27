@@ -34,6 +34,12 @@ test("an item's lists: the feed's Top and Recent (all and its kind), and each ta
   assert.deepEqual(song.slice(4), ["tag|techno|week", "tag|techno|month", "tag|techno|year", "tag|techno|all"]);
 });
 
+test("a listening-cycle candidate (tagged candidate) is in no list: not the feed, not a tag leaderboard", () => {
+  assert.deepEqual(listsOf({ targetType: "score", kind: "song", tags: ["candidate"] }), []);
+  assert.deepEqual(listsOf({ targetType: "score", kind: "song", tags: ["techno", "candidate"] }), [], "candidate wins even alongside a real tag");
+  assert.deepEqual(rowsFor({ ...item("cand-1", "song", 0, ["candidate"]) }, [], now), []);
+});
+
 test("Top sorts as the home page ranks (stars over all time, kind weight, freshness)", () => {
   const home = homeRank(
     items.map((i) => ({ id: i.targetId, kind: i.kind, createdAt: i.lastAt, modified: Date.parse(i.lastAt) / 1000 })),

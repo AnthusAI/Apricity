@@ -60,8 +60,10 @@ function lastRated(tallies: DayTally[]): number {
   return day ? Date.parse(day) : 0;
 }
 
-/** Every list an item appears in. */
+/** Every list an item appears in. A listening-cycle candidate (a fork tagged "candidate": scripts/cycle.py) is in
+ *  none — it must stay out of the public feed and tag leaderboards until someone promotes it. */
 export function listsOf(item: Pick<RankItem, "targetType" | "kind" | "tags">): string[] {
+  if (item.tags.includes("candidate")) return [];
   const out = ["feed|top|all", `feed|top|${item.kind}`, "feed|recent|all", `feed|recent|${item.kind}`];
   if (item.targetType === "score") for (const t of item.tags) for (const w of WINDOWS) out.push(`tag|${t}|${w}`);
   return out;
