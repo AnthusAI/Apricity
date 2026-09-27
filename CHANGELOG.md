@@ -2,6 +2,21 @@
 
 <!-- version list -->
 
+## v0.26.0 (2026-09-27)
+
+### Documentation
+
+- **write-score**: Move the skill to .agents/skills, and teach it the search tools
+  ([#27](https://github.com/AnthusAI/Apricity/pull/27),
+  [`a19e42f`](https://github.com/AnthusAI/Apricity/commit/a19e42f16dd26645f13b18097943310680c57028))
+
+### Features
+
+- **apricitus-a164db**: Harmony v2 reference: chord recognition, chord quality, objective_v2
+  ([#28](https://github.com/AnthusAI/Apricity/pull/28),
+  [`a05d545`](https://github.com/AnthusAI/Apricity/commit/a05d5450b16b709216359fb61d83cd6ebf9daadb))
+
+
 ## v0.25.1 (2026-09-27)
 
 
