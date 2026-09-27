@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v0.15.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-9d5f92**: The top bar's sun fades softly, like the About card's
+  ([`ab7773b`](https://github.com/AnthusAI/Apricity/commit/ab7773be723332302d809b67bf5e7de67699aca7))
+
+- **apricitus-e0c950**: The About card's sun rises at its left edge; the word stays centered
+  ([`e5e18dc`](https://github.com/AnthusAI/Apricity/commit/e5e18dcda429c235b3f033848e55f8c8651a5cdb))
+
+- **apricitus-e0c950**: The About card's sun sits left of the word
+  ([`d8c9838`](https://github.com/AnthusAI/Apricity/commit/d8c9838eda0aa82fdb2f86ac170a98afff8acbd3))
+
+
 ## v0.14.1 (2026-09-27)
 
 
