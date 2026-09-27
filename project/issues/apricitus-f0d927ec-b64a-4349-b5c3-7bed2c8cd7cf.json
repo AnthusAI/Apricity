@@ -10,9 +10,22 @@
   "parent": "apricitus-6fc75c46-36d8-4d00-a3cf-18877a0e5d70",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a48d1bda-2761-4ea3-b703-ffccaf5a1fd4",
+      "author": "home",
+      "text": "User request (2026-09-26): the checker should name the exact frequencies to cut, as a DJ or mix engineer would. A prototype works: per stem and chord span, off-chord notes WITH octave from a constant-Q spectrum of the harmonic part, ranked by energy, marking notes that are off under every chord (safe to notch) vs only some chords. Used on Ave House: notches at 208/233/277/370 Hz (q12) raised the objective 74.8 to 76.7; deeper cuts plus overtone notches tripped the energy guard. Build it into check-stems as suggestions ('bright: eq peak -8@233 q12, A#3 off-key under every chord, 3.6% of the stem'). Prototype: .claude/skills/write-score/scripts/notch-finder.py.",
+      "created_at": "2026-09-27T02:30:30.504836Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T01:42:07.397588Z",
-  "updated_at": "2026-09-27T01:42:07.397612Z",
+  "updated_at": "2026-09-27T02:30:30.504864Z",
   "closed_at": null,
   "agent": {
     "platform": "claude-code",
