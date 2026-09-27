@@ -3,8 +3,8 @@
 `scripts/palette.py` lists every analyzed sample. With a filter it shows only matching paths; with `-v` it lists each saved clip with its length and the pitch a pitched track would hear.
 
 ```
-python3 .claude/skills/write-score/scripts/palette.py marine-band/stems      # the march stems
-python3 .claude/skills/write-score/scripts/palette.py Thunderer/other -v     # every clip of one stem
+python3 .agents/skills/write-score/scripts/palette.py marine-band/stems      # the march stems
+python3 .agents/skills/write-score/scripts/palette.py Thunderer/other -v     # every clip of one stem
 ```
 
 ## Sources by role
