@@ -7,18 +7,17 @@
 // your scores, most recently changed first.
 
 import { el } from "./dom";
-import { api, me, ratings } from "../apricity";
+import { api, me } from "../apricity";
 import { mode } from "../data/client";
-import type { ScoreItem } from "../data/catalog";
 import { handles } from "../data/handles";
-import { allCards, cards, FILTERS, kindName, lineText, linesOf, starsOf, topCards, type Card } from "../data/activity";
-import { homeRank } from "../data/home-feed";
+import { cards, FILTERS } from "../data/activity";
+import { rankedPage } from "../data/ranked-read";
+import type { RankedRow } from "../data/ranked";
 import { tagCounts } from "../data/tags";
 import { href, sampleKey, type Route } from "../route";
 import { tagLink } from "./tag-chips";
 import { go } from "./at";
-import { timeAgo } from "./time";
-import { FeedCard, scoreFeedItem, whoLabel, type FeedDeps, type FeedItem } from "./feed-card";
+import { FeedCard, feedItemOf, type FeedDeps } from "./feed-card";
 import { feedGrid } from "./feed-grid";
 
 const POLL_MS = 60_000;
@@ -110,7 +109,9 @@ export class ActivityView {
     try {
       const { items } = await cards(this.kind);
       const t = items[0] ? `${items[0].id}@${items[0].lastAt}` : null;
-      this.fresh.hidden = !t || t === this.top;
+      // The first look after a load notes where the feed is; a later one that finds something newer offers it.
+      if (this.top === null) this.top = t;
+      else this.fresh.hidden = !t || t === this.top;
     } catch {
       /* try again next minute */
     }
@@ -119,6 +120,8 @@ export class ActivityView {
   private async load() {
     const seq = ++this.seq;
     this.fresh.hidden = true;
+    this.top = null;
+    void this.poll();
     // Timings for the browser's performance panel: activity:start … activity:shown.
     performance.mark("activity:start");
     void me()
@@ -130,79 +133,40 @@ export class ActivityView {
       .then(({ scores }) => seq === this.seq && this.tags.replaceChildren(...tagCounts(scores).slice(0, 10).map((t) => tagLink(t.tag)), ...(scores.some((s) => s.tags.length) ? [allTags()] : [])))
       .catch(() => undefined);
     try {
-      if (mode() === "local") {
-        const [who, names, { scores }] = await Promise.all([me().catch(() => null), handles(), api.scores()]);
-        if (seq === this.seq) await this.localFeed(scores, { who, names });
-        return;
-      }
-      if (this.order === "top") return await this.loadTop(seq);
-      // The first page of cards comes with who is looking; each card then looks up only its own score or sample, all at
-      // once. (Listing every score and sample first took the page seconds to start.)
-      let next: string | null = null;
-      const first = cards(this.kind);
-      const [who, names, hidden] = await Promise.all([
-        me().catch(() => null).finally(() => performance.mark("activity:me")),
-        handles().finally(() => performance.mark("activity:handles")),
-        api.hiddenIds().catch(() => new Set<string>()).finally(() => performance.mark("activity:hidden")),
+      // One page of the ranked list (design/scale.md): each row carries its card, so a page is one query.
+      const list = `feed|${this.order}|${this.kind ?? "all"}`;
+      const [first, who, names, hidden] = await Promise.all([
+        rankedPage(list).finally(() => performance.mark("activity:cards")),
+        me().catch(() => null),
+        handles(),
+        api.hiddenIds().catch(() => new Set<string>()),
       ]);
+      if (seq !== this.seq) return;
       const deps: FeedDeps = { who, names };
-      const page = async (got: Promise<{ items: Card[]; nextToken: string | null }>, isFirst: boolean) => {
-        const { items, nextToken } = await got;
-        performance.mark("activity:cards");
-        next = nextToken;
-        if (isFirst) this.top = items[0] ? `${items[0].id}@${items[0].lastAt}` : null;
-        // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
-        const made = await Promise.all(items.filter((c) => !hidden.has(c.targetId)).map((c) => this.item(c, deps).catch(() => null)));
-        performance.mark("activity:items");
-        return made.filter((x): x is FeedItem => !!x).map((x) => new FeedCard(x, deps).root);
+      // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
+      const cardsOf = (rows: RankedRow[]) => rows.filter((r) => !hidden.has(r.targetId)).map((r) => new FeedCard(feedItemOf(r, deps), deps).root);
+      let next = first.next;
+      const more = async (): Promise<HTMLElement[]> => {
+        while (next && seq === this.seq) {
+          const p = await rankedPage(list, next);
+          next = p.next;
+          const els = cardsOf(p.rows);
+          if (els.length) return els;
+        }
+        return [];
       };
-      const els = await page(first, true);
+      let els = cardsOf(first.rows);
+      if (!els.length) els = await more();
       if (seq !== this.seq) return;
       performance.mark("activity:shown");
+      const local = mode() === "local" ? [el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`)] : [];
       this.body.replaceChildren(
-        els.length
-          ? feedGrid(els, async () => (next && seq === this.seq ? page(cards(this.kind, next), false) : []))
-          : el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it."),
+        ...local,
+        els.length ? feedGrid(els, more) : el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it."),
       );
     } catch (e) {
       if (seq === this.seq) this.body.replaceChildren(el("div", { className: "empty" }, `Couldn't load the activity: ${(e as Error).message}`));
     }
-  }
-
-  /**
-   * Top: every card, ranked by its stars (then the newest), shown a screenful at a time. Each card looks up its own score
-   * or sample only as the grid reaches it, so ranking the whole feed costs its list and the tallies, not a lookup each.
-   */
-  private async loadTop(seq: number) {
-    const tallies = Promise.all((["score", "sample", "clip"] as const).map((t) => ratings().then((r) => r.tallies(t)).catch(() => []))).then((x) => x.flat());
-    const [list, all, who, names, hidden] = await Promise.all([allCards(this.kind), tallies, me().catch(() => null), handles(), api.hiddenIds().catch(() => new Set<string>())]);
-    if (seq !== this.seq) return;
-    this.top = list[0] ? `${list[0].id}@${list[0].lastAt}` : null;
-    const deps: FeedDeps = { who, names };
-    // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
-    const ordered = topCards(
-      list.filter((c) => !hidden.has(c.targetId)),
-      all,
-      new Date(),
-    );
-    let at = 0;
-    const more = async (): Promise<HTMLElement[]> => {
-      while (at < ordered.length) {
-        const slice = ordered.slice(at, (at += 24));
-        const made = await Promise.all(slice.map(({ card, standing }) => this.item(card, deps).then((x) => x && { ...x, stars: { average: standing.average, count: standing.count } }).catch(() => null)));
-        const els = made.filter((x): x is FeedItem => !!x).map((x) => new FeedCard(x, deps).root);
-        if (els.length) return els;
-      }
-      return [];
-    };
-    const first = await more();
-    if (seq !== this.seq) return;
-    performance.mark("activity:shown");
-    this.body.replaceChildren(
-      first.length
-        ? feedGrid(first, async () => (seq === this.seq ? more() : []))
-        : el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it."),
-    );
   }
 
   private showIntro(show: boolean) {
@@ -213,53 +177,6 @@ export class ActivityView {
     this.intro.append(
       el("p", {}, el("b", {}, "Apricity is the social mashup machine."), " Music made from public-domain recordings, remixed by everyone. Listen to the best of it below, rate what you like, and make your own."),
       el("div", { className: "home-intro-actions" }, signIn, link({ page: "about" }, "What is this?", "btn")),
-    );
-  }
-
-  /** A card as something to hear; null when what it's about is gone. */
-  private async item(c: Card, deps: FeedDeps): Promise<FeedItem | null> {
-    // Its stars and latest line arrive once it's in view.
-    const later = async () => {
-      const [stars, lines] = await Promise.all([starsOf(c.targetType, c.targetId), linesOf(c.id, 1)]);
-      const l = lines[0];
-      return { stars, ...(l ? { note: `${whoLabel(deps, l.by)} ${lineText(l, c.targetType)} · ${timeAgo(l.at)}` } : {}) };
-    };
-    const base = { id: c.targetId, owner: c.owner ?? null, stars: { average: null, count: 0 }, tags: [] as string[], later };
-    if (c.targetType === "score") {
-      const s = await api.scoreById(c.targetId);
-      return s ? { ...scoreFeedItem(s, base.stars), later } : null;
-    }
-    if (c.targetType === "sample") {
-      const s = await api.sampleById(c.targetId);
-      if (!s) return null;
-      return { ...base, type: "sample", title: c.title || s.title, kindLabel: kindName(c), kindKey: "sample", route: { page: "samples", sample: sampleKey(s.path) }, sample: { path: s.path } };
-    }
-    if (!c.samplePath) return null;
-    const path = `samples/${c.samplePath}`;
-    return { ...base, type: "clip", title: c.title || "clip", kindLabel: kindName(c), kindKey: "clip", route: { page: "clips", clip: { sample: sampleKey(path), name: c.title ?? "" } }, sample: { path, clipId: c.targetId } };
-  }
-
-  /** Locally (no activity kept): your scores, most recently changed first, with their stars. */
-  private async localFeed(scores: ScoreItem[], deps: FeedDeps) {
-    const shown = this.kind && this.kind !== "sample" && this.kind !== "clip" ? scores.filter((s) => s.kind === this.kind) : this.kind ? [] : scores;
-    const tallies = await ratings()
-      .then((r) => r.tallies("score"))
-      .catch(() => []);
-    const when = (s: ScoreItem) => (s.modified ? new Date(s.modified * 1000).toISOString() : s.createdAt);
-    // Top: by stars, then the most recently changed; Recent: the most recently changed.
-    const rows = homeRank(
-      shown.map((s) => ({ ...s, createdAt: when(s) })),
-      tallies,
-      "week",
-      new Date(),
-    ).rows;
-    if (this.order === "recent") rows.sort((a, b) => b.item.modified - a.item.modified);
-    const items = rows.map(({ item: s, standing }) =>
-      new FeedCard(scoreFeedItem(s, { average: standing.average, count: standing.count }, undefined, s.modified ? `changed ${timeAgo(new Date(s.modified * 1000).toISOString())}` : undefined), deps).root,
-    );
-    this.body.replaceChildren(
-      el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`),
-      items.length ? feedGrid(items) : el("div", { className: "empty" }, "Nothing of this kind here."),
     );
   }
 }

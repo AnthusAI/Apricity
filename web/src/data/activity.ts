@@ -3,8 +3,6 @@
 
 import { client } from "./client.js";
 import type { CommentRow } from "./comments.js";
-import type { DayTally, Standing } from "./rank-window.js";
-import { homeRank, KIND_WEIGHT, type HomeKind } from "./home-feed.js";
 
 export type ItemType = "sample" | "clip" | "score";
 
@@ -89,46 +87,3 @@ export async function cards(kind: string | null, nextToken?: string | null): Pro
   return { items: (r.data ?? []) as Card[], nextToken: r.nextToken ?? null };
 }
 
-/** A card's latest lines, newest first. */
-export async function linesOf(key: string, limit = 3): Promise<Line[]> {
-  const r = await client().models.ActivityEvent.eventsByTarget({ targetKey: key }, { sortDirection: "DESC", limit });
-  return (r.data ?? []) as Line[];
-}
-
-/** An item's all-time stars: average and count. */
-export async function starsOf(type: ItemType, id: string): Promise<{ average: number | null; count: number }> {
-  const r = await client().models.Tally.get({ id: `${type}#${id}#all` });
-  const t = r.data as { count?: number; sum?: number } | null;
-  return t?.count ? { average: (t.sum ?? 0) / t.count, count: t.count } : { average: null, count: 0 };
-}
-
-/** An item's newest comment still there (for the card's preview). */
-export async function newestComment(targetId: string): Promise<CommentRow | null> {
-  const r = await client().models.Comment.commentsByTarget({ targetId }, { sortDirection: "DESC", limit: 5 });
-  return ((r.data ?? []) as CommentRow[]).find((c) => !c.deleted) ?? null;
-}
-
-/** Every card, newest activity first (all the pages; `max` stops a runaway feed). */
-export async function allCards(kind: string | null, max = 1000): Promise<Card[]> {
-  const out: Card[] = [];
-  let token: string | null = null;
-  do {
-    const page = await cards(kind, token);
-    out.push(...page.items);
-    token = page.nextToken;
-  } while (token && out.length < max);
-  return out;
-}
-
-/**
- * The "Top" order: the home page's ranking (data/home-feed.ts): stars in the week (widening when quiet), songs first
- * and everything else weighted far down, fresh activity lifted a little. Unrated cards follow by their latest activity.
- */
-export function topCards(list: Card[], tallies: DayTally[], now: Date): { card: Card; standing: Standing }[] {
-  const kindOf = (c: Card): HomeKind => {
-    const k = c.kind ?? c.targetType;
-    return (k in KIND_WEIGHT ? k : c.targetType === "score" ? "song" : c.targetType) as HomeKind;
-  };
-  const items = list.map((card) => ({ id: card.targetId, createdAt: card.lastAt, modified: Date.parse(card.lastAt) / 1000 || 0, kind: kindOf(card), card }));
-  return homeRank(items, tallies, "week", now).rows.map(({ item, standing }) => ({ card: item.card, standing }));
-}
