@@ -153,6 +153,28 @@ def test_track_volume_nudges_relative_to_current():
         ops.apply(TINY, {"op": "track.volume", "track": "bright", "delta": 3})
 
 
+def test_track_harmonic_toggles_a_preset_and_is_idempotent():
+    on = ops.apply(TINY, {"op": "track.harmonic", "track": "bright", "preset": "cleanup"})
+    assert ops.HARMONIC_PRESETS["cleanup"] in on
+    ok, err = compiles(on)
+    assert ok, err
+    # Applying a different preset replaces, doesn't stack.
+    on2 = ops.apply(on, {"op": "track.harmonic", "track": "bright", "preset": "resonant"})
+    assert on2.count("harmonic") == 1
+    assert ops.HARMONIC_PRESETS["resonant"] in on2
+    ok, err = compiles(on2)
+    assert ok, err
+    off = ops.apply(on2, {"op": "track.harmonic", "track": "bright", "preset": "resonant", "on": False})
+    assert "harmonic" not in off
+    ok, err = compiles(off)
+    assert ok, err
+
+
+def test_track_harmonic_rejects_an_unlisted_preset():
+    with pytest.raises(ops.OpError):
+        ops.apply(TINY, {"op": "track.harmonic", "track": "bright", "preset": "wild"})
+
+
 def test_unknown_op_raises():
     with pytest.raises(ops.OpError):
         ops.apply(TINY, {"op": "track.mute", "track": "bright"})

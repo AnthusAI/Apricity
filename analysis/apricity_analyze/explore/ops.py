@@ -25,7 +25,17 @@ OP_NAMES = frozenset({
     "track.release",
     "track.volume",
     "track.add_part",
+    "track.harmonic",
 })
+
+# The chord-following EQ's presets (spec-harmony-v2.md sec 4.7, Kanbus apricitus-db34ad). The
+# optimizer may try any of them, the creative ones as well as the invisible cleanup.
+HARMONIC_PRESETS = {
+    "cleanup": "harmonic cut 6dB tolerance 20c harmonics 6 range 100..3k glide 60ms",
+    "autotune": "harmonic cut 14dB tolerance 40c harmonics 0 range 60..6k glide 15ms",
+    "resonant": "harmonic boost 10dB tolerance 12c range 80..2k glide 120ms mix 60%",
+    "comb": "harmonic both 18dB boost 14dB tolerance 8c harmonics 2 range 60..8k glide 250ms",
+}
 
 MAX_PEAKS_PER_EQ_LINE = 4
 MAX_NOTCHES_PER_TRACK = 8
@@ -149,6 +159,26 @@ def track_eq_notch(text: str, *, track: str, hz: float, gain: int, q: int) -> st
             lines[i] = _edit_code(lines[i], lambda code: f"{code}  {token}")
             return _join(lines)
     lines.insert(start + 1, f"  eq  {token}")
+    return _join(lines)
+
+
+# --------------------------------------------------------------------------- track.harmonic
+
+def track_harmonic(text: str, *, track: str, preset: str = "cleanup", on: bool = True) -> str:
+    """Toggle a `harmonic` chain-effect line on `track`'s block: one of `HARMONIC_PRESETS`
+    (`cleanup` invisible touch-up, `autotune` the "autotune-ish" setting, `resonant` a tuned
+    resonance, `comb` the chord-comb pad). Replaces any `harmonic` line already on the track, so
+    re-proposing this op (a different preset, or `on=False`) is idempotent."""
+    if preset not in HARMONIC_PRESETS:
+        raise OpError(f"track.harmonic preset must be one of {sorted(HARMONIC_PRESETS)}, not {preset!r}")
+    lines = _lines(text)
+    start = _track_decl_index(lines, track)
+    end = _track_block_end(lines, start)
+    harmonic_idx = [i for i in range(start + 1, end) if _split_comment(lines[i])[0].strip().split(" ", 1)[0] == "harmonic"]
+    for i in sorted(harmonic_idx, reverse=True):
+        del lines[i]
+    if on:
+        lines.insert(start + 1, f"  {HARMONIC_PRESETS[preset]}")
     return _join(lines)
 
 
@@ -332,6 +362,7 @@ APPLY = {
     "track.release": track_release,
     "track.volume": track_volume,
     "track.add_part": track_add_part,
+    "track.harmonic": track_harmonic,
 }
 
 
@@ -375,4 +406,7 @@ def describe(op: dict) -> str:
     if name == "track.add_part":
         verb = "recast" if a.get("recast") else "add"
         return f"{verb} part {a['track']}: {a['clip_line'].strip()}"
+    if name == "track.harmonic":
+        preset = a.get("preset", "cleanup")
+        return f"{'add' if a.get('on', True) else 'remove'} the harmonic EQ ({preset}) on {a['track']}"
     return f"{name}({a})"

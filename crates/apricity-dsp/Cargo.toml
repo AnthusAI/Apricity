@@ -8,3 +8,8 @@ license.workspace = true
 
 [build-dependencies]
 cc = "1"
+
+[dev-dependencies]
+# Test-only: reads the Harmony v2 Phase 2 fixture (`analysis/tests/fixtures/harmonic/expected.json`)
+# for the `harmonic_parity` test. The shipped crate still has zero dependencies.
+serde_json = { workspace = true }

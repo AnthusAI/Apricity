@@ -51,6 +51,10 @@ OCTAVES = (2, 3, 4)
 ROLE_OCTAVES: dict[str, tuple[int, ...]] = {"bass": (1, 2), "pad": (2, 3), "stab": (3, 4)}
 VOLUMES = (-12.0, -9.0, -6.0, -3.0, 0.0)
 HPS: tuple[float | None, ...] = (None, 120.0, 180.0, 300.0)
+# The chord-following EQ (spec-harmony-v2.md sec 4.7, Kanbus apricitus-db34ad): `None` most of
+# the time (it's an extra effect, not a default), else one of the three presets the user asked
+# the optimizer be free to explore -- not only the invisible `cleanup` one.
+HARMONICS: tuple[str | None, ...] = (None, None, None, "cleanup", "resonant", "comb")
 ATTACKS = (5.0, 10.0, 30.0)
 RELEASES = (100.0, 300.0, 800.0)
 
@@ -87,6 +91,7 @@ class Genome:
     entry: tuple[int, int] = (9, 24)
     volume: float = 0.0
     hp: float | None = None
+    harmonic: str | None = None  # None, or a key into explore.ops.HARMONIC_PRESETS
     recast_role: str | None = None   # None = add a new part; else re-cast this existing role
     # loop-role genes
     ratio: str = "auto"                        # auto/half/double
@@ -140,6 +145,7 @@ class Genome:
         entry = tuple(sections[int(rng.integers(len(sections)))])
         volume = float(VOLUMES[int(rng.integers(len(VOLUMES)))])
         hp = HPS[int(rng.integers(len(HPS)))]
+        harmonic = HARMONICS[int(rng.integers(len(HARMONICS)))]
         recast_role = priors.get("recast_roles", {}).get(role)
 
         if role in PITCHED_ROLES:
@@ -150,24 +156,24 @@ class Genome:
             attack = float(ATTACKS[int(rng.integers(len(ATTACKS)))])
             release = float(RELEASES[int(rng.integers(len(RELEASES)))])
             return cls(role=role, source=cand.sample, clip=cand.clip, entry=entry, volume=volume, hp=hp,
-                        recast_role=recast_role, voicing=voicing, octave=octave, pattern=pattern,
+                        harmonic=harmonic, recast_role=recast_role, voicing=voicing, octave=octave, pattern=pattern,
                         attack_ms=attack, release_ms=release)
         if role in KIT_ROLES:
             pattern = KIT_PATTERNS[int(rng.integers(len(KIT_PATTERNS)))]
             return cls(role=role, source=cand.sample, clip=cand.clip, entry=entry, volume=volume, hp=hp,
-                        recast_role=recast_role, pattern=pattern)
+                        harmonic=harmonic, recast_role=recast_role, pattern=pattern)
         # loop
         ratio = RATIOS[int(rng.integers(len(RATIOS)))]
         transpose = TRANSPOSES[int(rng.integers(len(TRANSPOSES)))]
         return cls(role=role, source=cand.sample, clip=cand.clip, entry=entry, volume=volume, hp=hp,
-                    recast_role=recast_role, ratio=ratio, transpose=transpose)
+                    harmonic=harmonic, recast_role=recast_role, ratio=ratio, transpose=transpose)
 
     def mutate(self, rng: np.random.Generator, priors: dict) -> "Genome":
         """Change exactly one gene (spec 3b's mutation operator): a neighbour region (same role,
         different candidate), +-1 volume/hp step, transpose +-1, role hint pattern, entry, or
         (loop role) ratio."""
         d = dataclasses.asdict(self)
-        choices = ["entry", "volume", "hp"]
+        choices = ["entry", "volume", "hp", "harmonic"]
         if self.role in PITCHED_ROLES:
             choices += ["voicing", "octave", "pattern", "attack_ms", "release_ms", "region"]
         elif self.role in KIT_ROLES:
@@ -182,6 +188,8 @@ class Genome:
             d["volume"] = float(VOLUMES[int(rng.integers(len(VOLUMES)))])
         elif gene == "hp":
             d["hp"] = HPS[int(rng.integers(len(HPS)))]
+        elif gene == "harmonic":
+            d["harmonic"] = HARMONICS[int(rng.integers(len(HARMONICS)))]
         elif gene == "voicing":
             d["voicing"] = VOICINGS[int(rng.integers(len(VOICINGS)))]
         elif gene == "octave":
@@ -226,6 +234,9 @@ class Genome:
         a, b = self.entry
         recast = self.recast_role is not None
         group_opt = f"  group {group}" if group else ""
+        # `track.harmonic` runs after `track.add_part`, which is what actually creates the track
+        # block it edits (apply_all applies ops in order); harmless to omit when unset.
+        harmonic_ops = [{"op": "track.harmonic", "track": track, "preset": self.harmonic}] if self.harmonic else []
         if self.role in PITCHED_ROLES:
             clip_line = f"clip {track} = {self.source}  {self.clip}"
             pattern = PITCHED_PATTERNS.get(self.pattern, PITCHED_PATTERNS["onbeats"])
@@ -233,7 +244,7 @@ class Genome:
                     f'steps "{pattern}"  attack {self.attack_ms:g}ms  release {self.release_ms:g}ms  '
                     f'bars {a}-{b}  volume {self.volume:g}{self._hp_opt()}{group_opt}')
             return [{"op": "track.add_part", "track": track, "clip_line": clip_line,
-                     "track_lines": [decl], "recast": recast}]
+                     "track_lines": [decl], "recast": recast}] + harmonic_ops
         if self.role in KIT_ROLES:
             src_clip = f"{track}_src"
             clip_line = f"clip {src_clip} = {self.source}  {self.clip}"
@@ -241,14 +252,14 @@ class Genome:
             pattern = kit_pattern(self.pattern)
             decl = f'track {track}  steps "{pattern}"  bars {a}-{b}  volume {self.volume:g}{self._hp_opt()}{group_opt}'
             return [{"op": "track.add_part", "track": track, "clip_line": clip_line,
-                     "kit_lines": kit_lines, "track_lines": [decl], "recast": recast}]
+                     "kit_lines": kit_lines, "track_lines": [decl], "recast": recast}] + harmonic_ops
         # loop
         clip_line = f"clip {track} = {self.source}  {self.clip}"
         ratio_opt = "" if self.ratio == "auto" else f"  {self.ratio}"
         decl = (f"track {track}  bars {a}-{b}  transpose {self.transpose}{ratio_opt}  "
                 f"volume {self.volume:g}{self._hp_opt()}{group_opt}")
         return [{"op": "track.add_part", "track": track, "clip_line": clip_line,
-                 "track_lines": [decl], "recast": recast}]
+                 "track_lines": [decl], "recast": recast}] + harmonic_ops
 
     def text(self, base_text: str) -> str:
         from ..explore import ops as ops_mod
@@ -262,7 +273,8 @@ class Genome:
     def prose(self) -> str:
         verb = f"recast {self.recast_role}" if self.recast_role else "add a new part"
         bits = [f"{verb} ({self.role}) from {self.source}#{self.clip}, bars {self.entry[0]}-{self.entry[1]}, "
-                f"volume {self.volume:+.0f}dB" + (f", hp {self.hp:g}Hz" if self.hp else "")]
+                f"volume {self.volume:+.0f}dB" + (f", hp {self.hp:g}Hz" if self.hp else "") +
+                (f", harmonic {self.harmonic}" if self.harmonic else "")]
         if self.role in PITCHED_ROLES:
             bits.append(f"voicing {self.voicing} octave {self.octave}, pattern {self.pattern}, "
                         f"attack {self.attack_ms:g}ms release {self.release_ms:g}ms")
