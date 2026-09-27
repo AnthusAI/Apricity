@@ -3,17 +3,25 @@
   "title": "Backfill Ranked rows from the current tables",
   "description": "",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-91d34a67-5133-4b66-88a4-a4ab22b88b6c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7b822bda-c021-4ac9-8388-11eff532695b",
+      "author": "home",
+      "text": "Backfilled production 2026-09-27: 656 Ranked rows (after granting index queries). Home reads 24 per page; scrolling loads 48, 72.",
+      "created_at": "2026-09-27T02:37:16.723891Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-27T01:34:30.849506Z",
-  "updated_at": "2026-09-27T01:34:30.849532Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T02:37:16.848166Z",
+  "closed_at": "2026-09-27T02:37:16.848126Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
