@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-1dc58b30-5fd8-4a1b-ad08-69085e2acdb9",
+  "title": "Clip fit profiles in manifests, and an audition command that ranks the library for a key and role",
+  "description": "Make choosing clips repeatable. Found on the Ave House demo: Ave's loops smear E, D# and F above the bass (34% or more off-key in every one of the 24 keys), so no arrangement fix could make them consonant, while a one-off constant-Q scan could rank better clips. (1) Analysis: for every saved clip (loop, hold, phrase, sec), add a fit profile to the manifest: the sustained pitch-class profile above C2 (harmonic part via HPSS, median constant-Q), the best key and its off-key share, the semitone smear (adjacent strong pitch classes), bass share (energy below 150 Hz), percussive share, tonalness, and the clip's tempo. Computed in analysis; a no-audio-reanalysis refresh like markup --holds; new samples get it automatically. Schema updated. (2) A command (scripts/audition-clips.py first; Rust apricity audition later): args --key, --chords or a score file, --role pad|loop|bass|melody|texture, --tempo. It ranks clips by fit to the key or chords, low smear, role fit (bass share, percussive share), tempo closeness and the user's ratings (a boost from the Library's Rating store), and prints ready-to-paste clip lines. Metadata only, so it runs in seconds. (3) write-score skill: a 'cast the sounds' step before writing. Tests: synthetic tones (a clean triad ranks above a semitone cluster; the key found matches). Prototype: scratchpad audition_clips.py from the session.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6fc75c46-36d8-4d00-a3cf-18877a0e5d70",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T02:16:44.163959Z",
+  "updated_at": "2026-09-27T02:16:44.164004Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
