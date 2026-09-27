@@ -99,6 +99,48 @@ tracks: [ { clip: horn, role: root } ]
 }
 
 #[test]
+fn harmonic_effect_gets_the_resolved_harmony_embedded_at_compile_time() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+progression: [ { chord: I, bars: 1 }, { chord: V, bars: 1 } ]
+tracks: [ { clip: horn, role: root, effects: [ { harmonic: { mode: cut } } ] } ]
+"#)
+    .unwrap();
+    let apricity_score::score::Effect::Harmonic(h) = &tl.tracks[0].effects[0] else { panic!("expected a harmonic effect") };
+    assert_eq!(h.spans.len(), 2, "one span per chord");
+    assert_eq!((h.spans[0].start_beat, h.spans[0].end_beat), (0.0, 4.0));
+    assert_eq!((h.spans[1].start_beat, h.spans[1].end_beat), (4.0, 8.0));
+    // I (C major): C, E, G -> pitch classes 0, 4, 7; bass C -> 0.
+    assert_eq!(h.spans[0].bass_pc, 0);
+    let mut tones0 = h.spans[0].tones_pc.clone();
+    tones0.sort();
+    assert_eq!(tones0, vec![0, 4, 7]);
+    // V (G major): G, B, D -> 7, 11, 2; bass G -> 7.
+    assert_eq!(h.spans[1].bass_pc, 7);
+    let mut tones1 = h.spans[1].tones_pc.clone();
+    tones1.sort();
+    assert_eq!(tones1, vec![2, 7, 11]);
+}
+
+#[test]
+fn harmonic_effect_with_no_chords_compiles_to_an_empty_no_op() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+bars: 4
+clips: { horn: { source: horn.wav, beats: [0, 8] } }
+tracks: [ { clip: horn, effects: [ { harmonic: { mode: cut } } ] } ]
+"#)
+    .unwrap();
+    let apricity_score::score::Effect::Harmonic(h) = &tl.tracks[0].effects[0] else { panic!("expected a harmonic effect") };
+    assert!(h.spans.is_empty(), "no chords line: the effect embeds no spans (a documented no-op)");
+}
+
+#[test]
 fn double_time_clips_fold_automatically() {
     let tl = run(r#"
 apricity: 0.1

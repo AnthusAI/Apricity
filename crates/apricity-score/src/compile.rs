@@ -2,7 +2,7 @@
 //! split notes at chord changes, and attach warp maps.
 
 use crate::manifest::Clip;
-use crate::score::{parse_bars, parse_duration, parse_notes, parse_position, parse_steps, AutomationSpec, Effect, FilterSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
+use crate::score::{parse_bars, parse_duration, parse_notes, parse_position, parse_steps, AutomationSpec, Effect, FilterSpec, HarmonicSpanSpec, Humanize, MasterSpec, Pattern, Score, SliceBy, Sound, Transpose, WarpModeSpec};
 use apricity_theory::{rank_keys, solve, Chord, Fit, Key, PitchClass, Voice, Weights};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -177,7 +177,7 @@ fn validate_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Vec<Strin
             validate_effect_target(target, ctx, at, errors)
         }
         "width" => (target.to_string(), true),
-        t if t.starts_with("eq") || t.starts_with("comp") || t.starts_with("reverb") || t.starts_with("delay") || t.starts_with("filter") => {
+        t if t.starts_with("eq") || t.starts_with("comp") || t.starts_with("reverb") || t.starts_with("delay") || t.starts_with("filter") || t.starts_with("harmonic") => {
             validate_effect_target(t, ctx, at, errors)
         }
         _ => {
@@ -222,6 +222,11 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
             errors.push(format!("{at}: invalid effect index in `{target}`"));
             return (target.to_string(), false);
         }}}
+    } else if let Some(num_str) = effect_name.strip_prefix("harmonic") {
+        if num_str.is_empty() { ("harmonic", 1) } else { match num_str.parse::<usize>() { Ok(n) => ("harmonic", n), Err(_) => {
+            errors.push(format!("{at}: invalid effect index in `{target}`"));
+            return (target.to_string(), false);
+        }}}
     } else {
         errors.push(format!("{at}: invalid effect `{effect_name}`"));
         return (target.to_string(), false);
@@ -236,6 +241,7 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
             ("reverb", Effect::Reverb(_)) => true,
             ("delay", Effect::Delay(_)) => true,
             ("filter", Effect::Filter(_)) => true,
+            ("harmonic", Effect::Harmonic(_)) => true,
             _ => false,
         };
 
@@ -260,6 +266,9 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
                         return (target.to_string(), true);
                     }
                     ("filter", "cutoff" | "res", Effect::Filter(_)) => {
+                        return (target.to_string(), true);
+                    }
+                    ("harmonic", "depth" | "boost" | "tolerance" | "mix" | "glide", Effect::Harmonic(_)) => {
                         return (target.to_string(), true);
                     }
                     ("eq", _, Effect::Eq(eq)) => {
@@ -321,6 +330,18 @@ fn validate_effect_target(target: &str, ctx: &LaneCtx, at: &str, errors: &mut Ve
                     }
                     ("filter", _, Effect::Filter(_)) => {
                         let valid_params = vec!["cutoff".to_string(), "res".to_string()];
+                        let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
+                        let msg = match best {
+                            Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
+                                format!("{at}: unknown automation target `{target}` (did you mean `{base}.{p}`?)")
+                            }
+                            _ => format!("{at}: unknown automation target `{target}`")
+                        };
+                        errors.push(msg);
+                        return (target.to_string(), false);
+                    }
+                    ("harmonic", _, Effect::Harmonic(_)) => {
+                        let valid_params = vec!["depth".to_string(), "boost".to_string(), "tolerance".to_string(), "mix".to_string(), "glide".to_string()];
                         let best = valid_params.iter().map(|p| (levenshtein(idx_str, p), p)).min();
                         let msg = match best {
                             Some((d, p)) if d <= 2.max(idx_str.len() / 3) => {
@@ -518,6 +539,54 @@ fn check_effects(at: &str, fx: &[Effect], errors: &mut Vec<String>) {
                     errors.push(format!("{at}.filter.slope: {} isn't 12 or 24 (dB/octave)", f.slope));
                 }
             }
+            Effect::Harmonic(h) => {
+                if let Some(v) = h.depth_db {
+                    range(errors, format!("{at}.harmonic.depth"), v, 0.0, 24.0, " dB");
+                }
+                if let Some(v) = h.boost_db {
+                    range(errors, format!("{at}.harmonic.boost"), v, 0.0, 18.0, " dB");
+                }
+                if let Some(v) = h.tolerance_cents {
+                    range(errors, format!("{at}.harmonic.tolerance"), v, 5.0, 100.0, "c");
+                }
+                if let Some(v) = h.harmonics {
+                    range(errors, format!("{at}.harmonic.harmonics"), v as f64, 0.0, 8.0, "");
+                }
+                if let Some([lo, hi]) = h.range {
+                    range(errors, format!("{at}.harmonic.range low"), lo, 20.0, 20000.0, " Hz");
+                    range(errors, format!("{at}.harmonic.range high"), hi, 20.0, 20000.0, " Hz");
+                    if lo >= hi {
+                        errors.push(format!("{at}.harmonic.range: {lo}..{hi} isn't low..high"));
+                    }
+                }
+                if let Some(v) = h.glide_ms {
+                    range(errors, format!("{at}.harmonic.glide"), v, 0.0, 500.0, " ms");
+                }
+                if let Some(v) = h.mix {
+                    range(errors, format!("{at}.harmonic.mix"), v * 100.0, 0.0, 100.0, "%");
+                }
+                if let Some(v) = h.tune_hz {
+                    range(errors, format!("{at}.harmonic.tune"), v, 400.0, 480.0, " Hz");
+                }
+            }
+        }
+    }
+}
+
+/// Embeds the resolved harmony into every `harmonic` effect in `effects` (sec 4.3): the engine
+/// never parses theory, so a score without `chords` (or a span with no resolved chord) leaves
+/// `spans` empty, which the engine treats as a documented no-op, not an error.
+fn fill_harmonic_spans(effects: &mut [Effect], harmony: &[ChordSpan]) {
+    for e in effects.iter_mut() {
+        if let Effect::Harmonic(h) = e {
+            h.spans = harmony
+                .iter()
+                .filter_map(|span| {
+                    let fit = span.fit.as_ref()?;
+                    let bass = span.bass?;
+                    Some(HarmonicSpanSpec { start_beat: span.start_beat, end_beat: span.end_beat, tones_pc: fit.chord_tones.iter().map(|pc| pc.index() as u8).collect(), bass_pc: bass.index() as u8 })
+                })
+                .collect();
         }
     }
 }
@@ -1766,7 +1835,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         srcs.push(Some(src));
     }
 
-    let buses = route(score, meter, length, &mut errors);
+    let mut buses = route(score, meter, length, &mut errors);
     let master = score.master.clone().unwrap_or_default();
     check_effects("master", &master.effects, &mut errors);
     for (i, e) in master.effects.iter().enumerate() {
@@ -1972,6 +2041,15 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
         };
         let bass = chord.as_ref().map(|c| c.bass.unwrap_or(c.root));
         harmony.push(ChordSpan { start_beat: *a, end_beat: *b, label: chord.as_ref().map_or(label.clone(), |c| format!("{label} ({})", c.name())), fit, bass });
+    }
+
+    // A `harmonic` effect anywhere (track, group or return) gets the resolved harmony embedded
+    // now that it exists (sec 4.3); the master can't have one yet (checked earlier as an error).
+    for info in &mut infos {
+        fill_harmonic_spans(&mut info.effects, &harmony);
+    }
+    for bus in &mut buses {
+        fill_harmonic_spans(&mut bus.effects, &harmony);
     }
 
     for (ti, c) in clashes.iter().enumerate().filter(|(_, c)| !c.is_empty()) {

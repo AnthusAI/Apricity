@@ -3,11 +3,11 @@
 //! without allocating or resetting filter memory.
 
 use apricity_dsp::color::{self, DriveParams, Gate, GateParams, LofiParams};
-use apricity_dsp::fx::{Biquad, BiquadKind, CompParams, Compressor, Eq, EqParams, Limiter, MAX_BANDS};
+use apricity_dsp::fx::{Biquad, BiquadKind, CompParams, Compressor, Eq, EqParams, HarmonicBank, HarmonicChord as DspHarmonicChord, HarmonicMode as DspHarmonicMode, HarmonicParams as DspHarmonicParams, Limiter, MAX_BANDS};
 use std::collections::HashMap;
 use std::sync::Arc;
 use apricity_dsp::space::{Delay, DelayParams, Reverb, ReverbKind, ReverbParams};
-use apricity_score::score::{CompSpec, DelaySpec, Effect, EqSpec, FilterFxSpec, FilterKind, ReverbSpec, ReverbType};
+use apricity_score::score::{CompSpec, DelaySpec, Effect, EqSpec, FilterFxSpec, FilterKind, HarmonicFxMode, HarmonicSpanSpec, HarmonicSpec, ReverbSpec, ReverbType};
 use crate::automation::{Curve, scale_for};
 use apricity_score::compile::Lane;
 
@@ -106,6 +106,59 @@ pub fn params(effects: &[Effect], safety_limit: bool) -> MasterParams {
     p
 }
 
+/// `HarmonicSpec`'s user-facing fields, with sec 4.4's defaults applied (mirrors how `LofiSpec`/
+/// `GateSpec` are resolved elsewhere in this module).
+pub fn harmonic_params(spec: &HarmonicSpec) -> DspHarmonicParams {
+    let [lo, hi] = spec.range.unwrap_or([80.0, 4000.0]);
+    // Sec 4.4: "depth" is the cut depth for `cut`/`both`, and doubles as the boost amount for
+    // `boost` when the DSL didn't also write an explicit `boost NdB` (`harmonic boost 6dB` reads
+    // that 6dB as depth_db in the parsed spec; here it becomes the boost the DSP layer applies).
+    let boost_db = match spec.mode {
+        HarmonicFxMode::Boost => spec.boost_db.or(spec.depth_db).unwrap_or(6.0),
+        _ => spec.boost_db.unwrap_or(6.0),
+    };
+    DspHarmonicParams {
+        mode: match spec.mode {
+            HarmonicFxMode::Cut => DspHarmonicMode::Cut,
+            HarmonicFxMode::Boost => DspHarmonicMode::Boost,
+            HarmonicFxMode::Both => DspHarmonicMode::Both,
+        },
+        depth_db: spec.depth_db.unwrap_or(9.0),
+        boost_db,
+        tolerance_cents: spec.tolerance_cents.unwrap_or(30.0),
+        harmonics: spec.harmonics.unwrap_or(6),
+        range_lo_hz: lo,
+        range_hi_hz: hi,
+        tune_hz: spec.tune_hz.unwrap_or(440.0),
+        mix: spec.mix.unwrap_or(1.0),
+    }
+}
+
+/// One compiled `HarmonicSpanSpec` as `HarmonicBank` needs it (sec 4.2/4.5): the bass placed at
+/// octave 2, its other chord tones voiced in the nearest octave at or above it (the same "voice
+/// up from the bass" idea `Chord::voiced` uses), so `harmonics` has real fundamentals to protect.
+fn harmonic_chord(span: &HarmonicSpanSpec, tune_hz: f64) -> DspHarmonicChord {
+    let midi_hz = |midi: i32| tune_hz * 2f64.powf((midi as f64 - 69.0) / 12.0);
+    let mut tones_pc = [false; 12];
+    for &t in &span.tones_pc {
+        tones_pc[(t % 12) as usize] = true;
+    }
+    let bass_midi = 12 * 3 + span.bass_pc as i32; // octave 2
+    let bass_hz = midi_hz(bass_midi);
+    let mut fundamentals_hz = vec![bass_hz];
+    for &t in &span.tones_pc {
+        if t == span.bass_pc {
+            continue;
+        }
+        let mut midi = 12 * 4 + t as i32; // start around octave 3, voice up to clear the bass
+        while midi <= bass_midi {
+            midi += 12;
+        }
+        fundamentals_hz.push(midi_hz(midi));
+    }
+    DspHarmonicChord { tones_pc, bass_hz, fundamentals_hz }
+}
+
 /// Map effect automation lanes to curves, one Vec per effect index.
 /// Returns Vec<Vec<(target_name, Curve)>> where each inner vec has the curves for that effect.
 /// "eq.X" targets the 1st Eq, "eq2.X" targets the 2nd Eq, etc.
@@ -124,6 +177,7 @@ pub fn chain_curves(
     let mut reverb_indices = Vec::new();
     let mut delay_indices = Vec::new();
     let mut filter_indices = Vec::new();
+    let mut harmonic_indices = Vec::new();
 
     for (idx, effect) in effects.iter().enumerate() {
         match effect {
@@ -132,6 +186,7 @@ pub fn chain_curves(
             Effect::Reverb(_) => reverb_indices.push(idx),
             Effect::Delay(_) => delay_indices.push(idx),
             Effect::Filter(_) => filter_indices.push(idx),
+            Effect::Harmonic(_) => harmonic_indices.push(idx),
             _ => {}
         }
     }
@@ -190,6 +245,9 @@ pub fn chain_curves(
                 (1, "filter.")
             };
             filter_indices.get(filter_num - 1).copied()
+        } else if target.starts_with("harmonic.") || target.starts_with("harmonic2.") {
+            let (harmonic_num, _) = if target.starts_with("harmonic2.") { (2, "harmonic2.") } else { (1, "harmonic.") };
+            harmonic_indices.get(harmonic_num - 1).copied()
         } else {
             None
         };
@@ -387,7 +445,7 @@ pub fn tail_s(effects: &[Effect], frames_per_beat: f64, sr: f64) -> f64 {
             Effect::Delay(d) => delay_params(d, frames_per_beat, sr).tail_s(),
             Effect::Comp(c) => c.release_ms.unwrap_or(100.0) / 1000.0,
             Effect::NoiseGate(g) => (g.hold_ms.unwrap_or(30.0) + g.release_ms.unwrap_or(100.0)) / 1000.0,
-            Effect::Eq(_) | Effect::Limit(_) | Effect::Drive(_) | Effect::Lofi(_) | Effect::Width(_) | Effect::Filter(_) => 0.0,
+            Effect::Eq(_) | Effect::Limit(_) | Effect::Drive(_) | Effect::Lofi(_) | Effect::Width(_) | Effect::Filter(_) | Effect::Harmonic(_) => 0.0,
         })
         .sum()
 }
@@ -511,6 +569,50 @@ pub fn process_chain(buf: &[Vec<f32>; 2], effects: &[Effect], sr: f64, frames_pe
                     let m = curve.map_or(m, |c| c.value_at((i % n) as u64));
                     let (wl, wr) = d.tick(*a as f64, *b as f64);
                     (*a, *b) = (mix(*a, wl, m), mix(*b, wr, m));
+                }
+            }
+            Effect::Harmonic(spec) => {
+                // Sized once per chain build (bank state doesn't need to survive across renders);
+                // re-targeted every 32 frames from the chord sounding at that block's beat, the
+                // same automation grain every other block-driven effect uses. A score with no
+                // `chords` line compiles `spans` empty, which is the effect's documented no-op.
+                if !spec.spans.is_empty() {
+                    let base = harmonic_params(spec);
+                    let tune_hz = spec.tune_hz.unwrap_or(440.0);
+                    let (depth_curve, boost_curve, tol_curve, mix_curve, glide_curve) =
+                        (curve_for(ei, "depth"), curve_for(ei, "boost"), curve_for(ei, "tolerance"), curve_for(ei, "mix"), curve_for(ei, "glide"));
+                    const BLOCK: usize = 32;
+                    let block_dur_s = BLOCK as f64 / sr;
+                    let mut bank = HarmonicBank::new(sr, &base);
+                    let mut start = 0usize;
+                    while start < l.len() {
+                        let end = (start + BLOCK).min(l.len());
+                        let frame_in_loop = start % n;
+                        let at = |c: &Curve| c.value_at(frame_in_loop as u64);
+                        let mut dp = base;
+                        if let Some(c) = depth_curve {
+                            dp.depth_db = at(c);
+                        }
+                        if let Some(c) = boost_curve {
+                            dp.boost_db = at(c);
+                        }
+                        if let Some(c) = tol_curve {
+                            dp.tolerance_cents = at(c);
+                            bank.set_tolerance(dp.tolerance_cents);
+                        }
+                        let wet = mix_curve.map_or(spec.mix.unwrap_or(1.0), at);
+                        let glide_s = glide_curve.map_or(spec.glide_ms.unwrap_or(40.0), at) / 1000.0;
+                        let beat = frame_in_loop as f64 / frames_per_beat + offset_beats;
+                        let span = spec.spans.iter().find(|s| beat >= s.start_beat && beat < s.end_beat);
+                        let chord = span.map(|s| harmonic_chord(s, tune_hz));
+                        bank.update(chord.as_ref(), &dp, glide_s, block_dur_s);
+                        for i in start..end {
+                            let (a, b2) = (l[i], r[i]);
+                            let (wl, wr) = (bank.tick(0, a as f64), bank.tick(1, b2 as f64));
+                            (l[i], r[i]) = (mix(a, wl, wet), mix(b2, wr, wet));
+                        }
+                        start = end;
+                    }
                 }
             }
             Effect::Drive(d) => color::drive(&mut b, DriveParams { db: d.db, tone_hz: d.tone }, sr),
@@ -828,5 +930,94 @@ mod automation_tests {
         let before = rms(&out[0][..FPB as usize]); // beat 0-1, before the step at beat 4
         let after = rms(&out[0][(5.0 * FPB) as usize..(6.0 * FPB) as usize]); // beat 5-6, after it
         assert!(after > before * 1.5, "gain at the cutoff should rise once res steps up at beat 4: before {before}, after {after}");
+    }
+
+    fn rms(x: &[f32]) -> f64 {
+        (x.iter().map(|v| (*v as f64).powi(2)).sum::<f64>() / x.len() as f64).sqrt()
+    }
+
+    /// A 4-chord progression over the 8-beat loop (`N`/`FPB`, 120 bpm): Am7, Fmaj7, Dm7, G, 2
+    /// beats each — the fixture spec-harmony-v2.md sec 4.3 asks for, embedded the way the
+    /// compiler would (`fill_harmonic_spans`).
+    fn four_chord_spans() -> Vec<HarmonicSpanSpec> {
+        vec![
+            HarmonicSpanSpec { start_beat: 0.0, end_beat: 2.0, tones_pc: vec![9, 0, 4, 7], bass_pc: 9 }, // Am7
+            HarmonicSpanSpec { start_beat: 2.0, end_beat: 4.0, tones_pc: vec![5, 9, 0, 4], bass_pc: 5 }, // Fmaj7
+            HarmonicSpanSpec { start_beat: 4.0, end_beat: 6.0, tones_pc: vec![2, 5, 9, 0], bass_pc: 2 }, // Dm7
+            HarmonicSpanSpec { start_beat: 6.0, end_beat: 8.0, tones_pc: vec![7, 11, 2], bass_pc: 7 },   // G
+        ]
+    }
+
+    #[test]
+    fn harmonic_cut_notch_moves_with_the_chord_span() {
+        // A steady C4 tone (pitch class 0): a chord tone of Am7 (span 0, spared) but not of G
+        // (span 3, cut) — the acceptance test of Kanbus apricitus-24f6b5 / spec sec 6 task 10.
+        let c4 = 261.6255653005986;
+        let l: Vec<f32> = (0..N).map(|i| 0.4 * (2.0 * std::f64::consts::PI * c4 * i as f64 / SR).sin() as f32).collect();
+        let input = [l.clone(), l];
+        let fx = Effect::Harmonic(HarmonicSpec {
+            mode: HarmonicFxMode::Cut,
+            depth_db: Some(18.0),
+            tolerance_cents: Some(30.0),
+            harmonics: Some(0),
+            range: Some([20.0, 20_000.0]),
+            glide_ms: Some(0.0),
+            mix: Some(1.0),
+            spans: four_chord_spans(),
+            ..Default::default()
+        });
+        let out = run(&input, &[fx], &[], 0.0);
+        let spared = rms(&out[0][..(2.0 * FPB) as usize]); // Am7: C is a chord tone
+        let cut = rms(&out[0][(6.0 * FPB) as usize..]); // G: C is not
+        // The full `Cut` band comb (every non-chord semitone at once) leaks a little onto a
+        // semitone-adjacent chord tone too (see `apricity-dsp`'s `chromatic_comb_neighbors_add_up`),
+        // so this isn't the ~8x an isolated band gives — the notch clearly follows the chord either way.
+        assert!(spared > cut * 3.0, "C4 should be cut under G but spared under Am7: spared {spared}, cut {cut}");
+    }
+
+    #[test]
+    fn harmonic_depth_lane_ramps_the_cut_over_the_loop() {
+        // One span (no chord change) so only the depth lane moves the cut. D4 is not a chord
+        // tone of the Am7 triad throughout.
+        let d4 = 293.6647679174076;
+        let l: Vec<f32> = (0..N).map(|i| 0.4 * (2.0 * std::f64::consts::PI * d4 * i as f64 / SR).sin() as f32).collect();
+        let input = [l.clone(), l];
+        let span = HarmonicSpanSpec { start_beat: 0.0, end_beat: 8.0, tones_pc: vec![9, 0, 4], bass_pc: 9 };
+        let fx = Effect::Harmonic(HarmonicSpec {
+            mode: HarmonicFxMode::Cut,
+            depth_db: Some(0.0),
+            tolerance_cents: Some(30.0),
+            harmonics: Some(0),
+            range: Some([20.0, 20_000.0]),
+            glide_ms: Some(0.0),
+            mix: Some(1.0),
+            spans: vec![span],
+            ..Default::default()
+        });
+        let out = run(&input, &[fx], &[lane("harmonic.depth", false, &[[0.0, 0.0], [8.0, 24.0]])], 0.0);
+        let before = rms(&out[0][..FPB as usize]);
+        let after = rms(&out[0][N - FPB as usize..]);
+        assert!(after < before * 0.3, "the cut should deepen as depth ramps from 0 to 24 dB: before {before}, after {after}");
+    }
+
+    #[test]
+    fn harmonic_depth_zero_is_a_bit_exact_bypass_through_process_chain() {
+        let l: Vec<f32> = (0..N).map(|i| 0.37 * (2.0 * std::f64::consts::PI * 300.0 * i as f64 / SR).sin() as f32).collect();
+        let input = [l.clone(), l];
+        let fx = Effect::Harmonic(HarmonicSpec { mode: HarmonicFxMode::Cut, depth_db: Some(0.0), spans: four_chord_spans(), ..Default::default() });
+        let out = run(&input, &[fx], &[], 0.0);
+        for i in [0, 1000, N / 2, N - 1] {
+            assert_eq!(out[0][i], input[0][i], "frame {i}: depth 0 must pass through unchanged");
+        }
+    }
+
+    #[test]
+    fn harmonic_with_no_spans_is_a_no_op() {
+        // A score with no `chords` line: `fill_harmonic_spans` leaves `spans` empty (sec 4.5).
+        let l: Vec<f32> = (0..N).map(|i| 0.37 * (2.0 * std::f64::consts::PI * 300.0 * i as f64 / SR).sin() as f32).collect();
+        let input = [l.clone(), l];
+        let fx = Effect::Harmonic(HarmonicSpec { mode: HarmonicFxMode::Cut, depth_db: Some(18.0), spans: vec![], ..Default::default() });
+        let out = run(&input, &[fx], &[], 0.0);
+        assert_eq!(out[0], input[0], "no spans: nothing to follow, so the effect does nothing");
     }
 }

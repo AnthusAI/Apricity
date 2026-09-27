@@ -20,7 +20,7 @@
 //! Several `chords` lines append.
 
 use crate::score::{
-    AutomationSpec, ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterFxSpec, FilterKind, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
+    AutomationSpec, ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterFxSpec, FilterKind, FilterSpec, HarmonicFxMode, HarmonicSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
     Transpose, WarpModeSpec, Humanize,
 };
 use apricity_theory::{Role, Voicing};
@@ -164,10 +164,10 @@ fn words(line: &str) -> Vec<Tok<'_>> {
 }
 
 const STATEMENTS: &[&str] = &["apricity", "tempo", "time", "key", "samples", "bars", "swing", "humanize", "seed", "clip", "kit", "chords", "track", "group", "return", "master"];
-const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "pan", "send", "automate"];
-const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "automate"];
+const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "harmonic", "pan", "send", "automate"];
+const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "harmonic", "automate"];
 const MASTER_LINES: &[&str] = &["eq", "comp", "limit", "width", "loudness"];
-const EFFECTS: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter"];
+const EFFECTS: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "harmonic"];
 
 /// What indented lines belong to.
 #[derive(Debug, Clone)]
@@ -249,6 +249,11 @@ fn hz(t: &str) -> Option<f64> {
 fn db(t: &str) -> Option<f64> {
     let l = t.to_ascii_lowercase();
     l.strip_suffix("db")?.trim_start_matches('+').parse().ok()
+}
+
+/// Cents (`harmonic.tolerance` only): `30c`.
+fn cents(t: &str) -> Option<f64> {
+    t.strip_suffix('c')?.parse().ok()
 }
 
 /// Times must say `ms` or `s`: `10ms`, `0.2s`.
@@ -513,6 +518,63 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
             let (res, slope) = filter_res_slope(l, true)?;
             Ok(Effect::Filter(FilterFxSpec { kind, hz, res, slope }))
         }
+        "harmonic" => {
+            let mut spec = HarmonicSpec::default();
+            if let Some(t) = l.peek() {
+                if matches!(t.text, "cut" | "boost" | "both") {
+                    l.pos += 1;
+                    spec.mode = match t.text {
+                        "cut" => HarmonicFxMode::Cut,
+                        "boost" => HarmonicFxMode::Boost,
+                        _ => HarmonicFxMode::Both,
+                    };
+                }
+            }
+            while let Some(t) = l.peek() {
+                l.pos += 1;
+                match t.text {
+                    "tolerance" => {
+                        let v = l.next("a tolerance in cents, like 30c")?;
+                        let c = v.text.strip_suffix('c').ok_or_else(|| l.err(v.col, format!("`{}`: write tolerance in cents, e.g. 30c", v.text)))?;
+                        spec.tolerance_cents = Some(c.parse().map_err(|_| l.err(v.col, format!("`{}` isn't a number of cents", v.text)))?);
+                    }
+                    "harmonics" => {
+                        spec.harmonics = Some(l.num("an integer like 6")? as u8);
+                    }
+                    "range" => {
+                        let v = l.next("a range like 80..4k")?;
+                        let (lo, hi) = v.text.split_once("..").ok_or_else(|| l.err(v.col, format!("`{}`: write a range as low..high, e.g. 80..4k", v.text)))?;
+                        let lo = hz(lo).ok_or_else(|| l.err(v.col, format!("`{lo}` isn't a frequency (e.g. 80, 6k)")))?;
+                        let hi = hz(hi).ok_or_else(|| l.err(v.col, format!("`{hi}` isn't a frequency (e.g. 80, 6k)")))?;
+                        spec.range = Some([lo, hi]);
+                    }
+                    "glide" => {
+                        let v = l.next("a time like 40ms")?;
+                        spec.glide_ms = Some(ms(v.text).ok_or_else(|| l.err(v.col, format!("`{}` isn't a time (e.g. 40ms, 0.2s)", v.text)))?);
+                    }
+                    "mix" => {
+                        let v = l.next("a percent like 100%")?;
+                        spec.mix = Some(share(v.text, false).ok_or_else(|| l.err(v.col, format!("`{}`: write mix as a percentage, e.g. 100%", v.text)))?);
+                    }
+                    "tune" => {
+                        let v = l.next("a frequency like 440")?;
+                        spec.tune_hz = Some(hz(v.text).ok_or_else(|| l.err(v.col, format!("`{}` isn't a frequency (e.g. 440)", v.text)))?);
+                    }
+                    "boost" => {
+                        let v = l.next("a boost amount like 6dB")?;
+                        spec.boost_db = Some(db(v.text).ok_or_else(|| l.err(v.col, format!("`{}`: write boost in dB, e.g. 6dB", v.text)))?);
+                    }
+                    other => {
+                        if let Some(d) = db(other) {
+                            spec.depth_db = Some(d);
+                        } else {
+                            return Err(l.err(t.col, format!("unknown harmonic part `{other}`{}", suggest(other, &["cut", "boost", "both", "tolerance", "harmonics", "range", "glide", "mix", "tune"]))));
+                        }
+                    }
+                }
+            }
+            Ok(Effect::Harmonic(spec))
+        }
         _ => unreachable!("caller checks the keyword"),
     }
 }
@@ -661,8 +723,8 @@ fn automation(l: &mut Line) -> Result<AutomationSpec, ParseError> {
             l.err(p.col, format!("expected a point like 1=20k or 3:2=-12dB, got `{}`", p.text))
         })?;
 
-        let value: f64 = val_str.parse().ok().or_else(|| hz(val_str)).or_else(|| db(val_str)).or_else(|| share(val_str, false))
-            .ok_or_else(|| l.err(p.col, format!("`{}` isn't a valid value (try a number, Hz like 6k, dB like -4dB, or % like 30%)", val_str)))?;
+        let value: f64 = val_str.parse().ok().or_else(|| hz(val_str)).or_else(|| db(val_str)).or_else(|| share(val_str, false)).or_else(|| cents(val_str))
+            .ok_or_else(|| l.err(p.col, format!("`{}` isn't a valid value (try a number, Hz like 6k, dB like -4dB, % like 30%, or cents like 30c)", val_str)))?;
 
         points.push((pos_str.to_string(), value));
     }
@@ -737,6 +799,9 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                     }
                     ("filter", Block::Master) => {
                         return Err(l.err(kw.col, "`filter` doesn't go on the master yet; put it on a group track (or a return)"));
+                    }
+                    ("harmonic", Block::Master) => {
+                        return Err(l.err(kw.col, "`harmonic` doesn't go on the master; put it on a track, group or return"));
                     }
                     (k, _) if EFFECTS.contains(&k) => {
                         let fx = effect_line(&mut l, kw)?;
@@ -1534,6 +1599,39 @@ pub fn effect_text(fx: &Effect) -> String {
             }
             s
         }
+        Effect::Harmonic(h) => {
+            let mode = match h.mode {
+                HarmonicFxMode::Cut => "cut",
+                HarmonicFxMode::Boost => "boost",
+                HarmonicFxMode::Both => "both",
+            };
+            let mut s = format!("harmonic  {mode}");
+            if let Some(v) = h.depth_db {
+                s += &format!("  {}dB", num(v));
+            }
+            if let Some(v) = h.boost_db {
+                s += &format!("  boost {}dB", num(v));
+            }
+            if let Some(v) = h.tolerance_cents {
+                s += &format!("  tolerance {}c", num(v));
+            }
+            if let Some(v) = h.harmonics {
+                s += &format!("  harmonics {v}");
+            }
+            if let Some([lo, hi]) = h.range {
+                s += &format!("  range {}..{}", hzs(lo), hzs(hi));
+            }
+            if let Some(v) = h.glide_ms {
+                s += &format!("  glide {}ms", num(v));
+            }
+            if let Some(v) = h.mix {
+                s += &format!("  mix {}", pct(v));
+            }
+            if let Some(v) = h.tune_hz {
+                s += &format!("  tune {}", num(v));
+            }
+            s
+        }
     }
 }
 
@@ -2025,6 +2123,47 @@ group g\n  filter bp 500\nreturn r\n  filter hp 300 res 20%\n";
 
         // a filter chain effect line under master is rejected.
         let e = parse("tempo 90\nkey C\nchords I\nmaster\n  filter lp 800\n").unwrap_err();
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 5 ") && x.message.contains("doesn't go on the master")), "{e:?}");
+    }
+
+    #[test]
+    fn harmonic_effect_parses_every_part_formats_and_round_trips() {
+        let src = "tempo 90\nkey C\nclip a = x.wav\nchords I\n\
+track a\n  harmonic cut 9dB tolerance 30c harmonics 6 range 80..4k glide 40ms mix 100%\n\
+group g\n  harmonic boost 6dB\nreturn r\n  harmonic both 18dB boost 14dB tolerance 8c tune 442\n";
+        let (s, _) = parse(src).unwrap();
+        assert_eq!(
+            s.tracks[0].effects[0],
+            Effect::Harmonic(HarmonicSpec {
+                mode: HarmonicFxMode::Cut,
+                depth_db: Some(9.0),
+                boost_db: None,
+                tolerance_cents: Some(30.0),
+                harmonics: Some(6),
+                range: Some([80.0, 4000.0]),
+                glide_ms: Some(40.0),
+                mix: Some(1.0),
+                tune_hz: None,
+                spans: vec![],
+            })
+        );
+        // A bare `NdB` right after the mode sets `depth_db`; in `boost` mode the engine (not the
+        // parser) treats an unset `boost_db` as coming from `depth_db` (see `harmonic_params`).
+        assert_eq!(s.groups["g"].effects[0], Effect::Harmonic(HarmonicSpec { mode: HarmonicFxMode::Boost, depth_db: Some(6.0), ..Default::default() }));
+        assert_eq!(
+            s.returns["r"].effects[0],
+            Effect::Harmonic(HarmonicSpec { mode: HarmonicFxMode::Both, depth_db: Some(18.0), boost_db: Some(14.0), tolerance_cents: Some(8.0), tune_hz: Some(442.0), ..Default::default() })
+        );
+        let text = format(&s);
+        assert_eq!(parse(&text).unwrap().0, s, "\n{text}");
+        assert!(text.contains("harmonic  cut  9dB  tolerance 30c  harmonics 6  range 80..4k  glide 40ms  mix 100%"), "{text}");
+
+        // unknown part.
+        let e = parse("tempo 90\nkey C\nchords I\ntrack a\n  harmonic cut squelchy\n").unwrap_err();
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 5 ") && x.message.contains("unknown harmonic part `squelchy`")), "{e:?}");
+
+        // harmonic doesn't go on the master.
+        let e = parse("tempo 90\nkey C\nchords I\nmaster\n  harmonic cut 9dB\n").unwrap_err();
         assert!(e.iter().any(|x| x.to_string().starts_with("line 5 ") && x.message.contains("doesn't go on the master")), "{e:?}");
     }
 
