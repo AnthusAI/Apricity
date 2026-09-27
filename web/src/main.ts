@@ -168,6 +168,9 @@ document.addEventListener("apricity:at", (e) => {
   const shown = document.body.dataset.tab ?? "";
   const same = tabOf(route) === shown || (!!KIND_OF_PAGE[route.page] && !!KIND_OF_TAB[shown]);
   if (!same) return;
+  // A section's cards are on show: an item view working behind them (the score view reloading its list after sign-in
+  // and opening the first score) doesn't take the address bar, or the page.
+  if (front && (route.score || route.sample || route.clip)) return;
   document.title = titleOf(route, title);
   const url = href(route);
   const now = location.pathname + location.search + location.hash;
