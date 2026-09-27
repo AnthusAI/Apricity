@@ -13,7 +13,6 @@ test("every page and item round-trips through its URL", () => {
   const routes: Route[] = [
     { page: "home" },
     { page: "about" },
-    { page: "activity" },
     { page: "scores" },
     { page: "beats", score: "examples/salamander-beat.apr" },
     { page: "melodies", score: "scores/google_123/my tune.apr", play: true },

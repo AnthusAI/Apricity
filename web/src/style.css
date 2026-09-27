@@ -544,12 +544,11 @@ body[data-tab="about"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: a
 .cmt-slot:not(:empty) { margin-top: 6px; }
 .cmt-flat { display: grid; gap: 10px; }
 
-/* The Activity page (ui/activity.ts): one card per item, newest activity first. */
+/* The home page's feed (ui/activity.ts): one card per item. */
 .act-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .act-chips button { border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
 .act-chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: white; }
 .act-fresh { border: 0; border-radius: 999px; padding: 6px 14px; background: var(--accent); color: white; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px -6px var(--accent); }
-#activity { display: block; overflow: auto; }
 
 /* License and credits (ui/credits.ts): a sample's provenance, and a score's credits. */
 .license, .credits { margin-top: 16px; }

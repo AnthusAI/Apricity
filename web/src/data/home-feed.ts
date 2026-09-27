@@ -1,5 +1,6 @@
-// The home page's order: the best-rated songs first, fresh ones lifted a little, and everything that isn't a song
-// (beats, chords, melodies) weighted far down so it only shows below the songs people liked. Pure (test/home-feed.test.ts).
+// The home page's "Top" order: the best-rated songs first, fresh ones lifted a little, and everything that isn't a song
+// (beats, chords, melodies, samples, clips) weighted far down so it only shows below the songs people liked. Pure
+// (test/home-feed.test.ts).
 //
 //   worth = quality × kind weight × freshness
 //   quality    its Bayesian stars in the window shown (rank-window.ts; the window widens when it's quiet), or a bit
@@ -9,13 +10,14 @@
 import type { ScoreKind } from "./catalog";
 import { rank, type DayTally, type Rankable, type Ranked, type Standing, type Window } from "./rank-window";
 
-export const KIND_WEIGHT: Record<ScoreKind, number> = { song: 1, beat: 0.3, chords: 0.2, melody: 0.2 };
+export type HomeKind = ScoreKind | "sample" | "clip";
+export const KIND_WEIGHT: Record<HomeKind, number> = { song: 1, beat: 0.3, chords: 0.2, melody: 0.2, sample: 0.2, clip: 0.2 };
 export const UNRATED_STARS = 2;
 export const FRESH_BOOST = 0.6;
 export const FRESH_HALF_LIFE = 5;
 
 export interface HomeItem extends Rankable {
-  kind: ScoreKind;
+  kind: HomeKind;
   /** Last changed, in seconds (0 when unknown). */
   modified: number;
 }

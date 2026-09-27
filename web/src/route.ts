@@ -1,8 +1,7 @@
 // Every page and item has a URL, so anything can be linked, bookmarked, shared or gone Back to:
 //
-//   /                              the home page: the best-rated songs to listen to
+//   /                              the home page: what's happening, best-rated songs first (or the newest)
 //   /about                         what Apricity is (the old landing page)
-//   /activity                      Activity
 //   /scores  /beats  /chords  /melodies     the lists; a score is under the tab of its kind:
 //   /beats/examples/salamander-beat         (its folder and name; ".apr" left off, ".yaml" kept) and ?play plays it
 //   /clips  /clips/<sample>/<clip name>     a clip, by its sample (path without its extension) and its name;
@@ -16,7 +15,7 @@
 
 import type { ScoreKind } from "./data/catalog";
 
-export type Page = "home" | "about" | "activity" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
+export type Page = "home" | "about" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
 
 export interface Route {
   page: Page;
@@ -36,7 +35,7 @@ export interface Route {
   help?: { file: string; anchor?: string };
 }
 
-export const PAGES: Page[] = ["home", "about", "activity", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
+export const PAGES: Page[] = ["home", "about", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
 export const KIND_OF_PAGE: Partial<Record<Page, ScoreKind>> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
 export const PAGE_OF_KIND: Record<ScoreKind, Page> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
 
@@ -97,6 +96,6 @@ export const tabOf = (r: Route) => (r.page === "help" ? "docs" : r.page);
 
 /** The page title for a route and the name of what's open ("Salamander Beat · Beats · Apricity"). */
 export function titleOf(r: Route, name?: string): string {
-  const label: Record<Page, string> = { home: "", about: "About", activity: "Activity", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
+  const label: Record<Page, string> = { home: "", about: "About", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
   return [name, label[r.page], "Apricity"].filter(Boolean).join(" · ");
 }

@@ -8,7 +8,6 @@ import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
 import { ActivityView } from "./ui/activity";
 import { TagsView } from "./ui/tags";
-import { HomeView } from "./ui/home";
 import { mountNav } from "./ui/nav";
 import { stopFeed } from "./audio/feed-audio";
 import { bootstrap, bootstrapError, mode } from "./data/client";
@@ -49,16 +48,16 @@ const score = new ScoreView(document.querySelector("#score")!);
 const clips = new Library(document.querySelector("#clips")!, "clips");
 const samples = new Library(document.querySelector("#samples")!, "samples");
 const docs = new DocsView(document.querySelector("#docs")!);
-const activity = new ActivityView(document.querySelector("#activity")!);
+// Home is the feed (ui/activity.ts): the best-rated first, or the newest.
+const activity = new ActivityView(document.querySelector("#home")!);
 const tagsView = new TagsView(document.querySelector("#tags")!);
-const home = new HomeView(document.querySelector("#home")!);
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
 // ---- tabs
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB = KIND_OF_PAGE as Record<string, ScoreKind>;
 const TAB_OF_KIND = PAGE_OF_KIND as Record<ScoreKind, string>;
-const TABS = ["home", "about", "activity", "tags", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "about", "tags", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
@@ -79,15 +78,14 @@ function showTab(name: string) {
   document.body.dataset.tab = name;
   // The About page (the landing page: its player, its sounds) is made the first time it's shown, not on every start.
   if (name === "about") landing ??= new Landing(document.querySelector("#about")!, { open: (path) => navigate({ page: "scores", score: path, play: true }) });
-  if (name === "home") void home.show();
   const kind = KIND_OF_TAB[name];
   const view = kind ? "score" : name;
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
   // (Cards on Activity and the tag pages have their own play buttons.)
-  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "activity", "tags"].includes(name);
-  activity.show(name === "activity");
+  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "tags"].includes(name);
+  activity.show(name === "home");
   syncTransport();
   if (kind) score.setKind(kind);
   else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
@@ -183,8 +181,11 @@ document.addEventListener("apricity:open-item", async (e) => {
   await (type === "clip" ? clips : samples).openId(id, "auto");
 });
 
-// Where to start: the URL (at "/", the home page's best-rated songs).
-void follow(parse(location.pathname, location.search, location.hash));
+// Where to start: the URL (at "/", the home page). An address that names no page (an old /activity link) shows the home
+// page, and the address bar says so.
+const start = parse(location.pathname, location.search, location.hash);
+if (start.page === "home" && location.pathname !== "/") history.replaceState(null, "", "/");
+void follow(start);
 
 // ---- transport: one play button for every page. On a score's tab it plays the score (waiting for the score to open and
 // compile, then the engine, the sounds and the mix, and saying so on the button); on Clips and Samples it plays the

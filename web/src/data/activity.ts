@@ -3,7 +3,8 @@
 
 import { client } from "./client.js";
 import type { CommentRow } from "./comments.js";
-import { rank, type DayTally, type Standing } from "./rank-window.js";
+import type { DayTally, Standing } from "./rank-window.js";
+import { homeRank, KIND_WEIGHT, type HomeKind } from "./home-feed.js";
 
 export type ItemType = "sample" | "clip" | "score";
 
@@ -120,10 +121,14 @@ export async function allCards(kind: string | null, max = 1000): Promise<Card[]>
 }
 
 /**
- * The "Top" order: rated cards first, by their stars (the lists' Bayesian ranking, over all time), then the rest by
- * their latest activity. Ties between rated cards go to the more rated, then the more recent.
+ * The "Top" order: the home page's ranking (data/home-feed.ts): stars in the week (widening when quiet), songs first
+ * and everything else weighted far down, fresh activity lifted a little. Unrated cards follow by their latest activity.
  */
 export function topCards(list: Card[], tallies: DayTally[], now: Date): { card: Card; standing: Standing }[] {
-  const items = list.map((card) => ({ id: card.targetId, createdAt: card.lastAt, card }));
-  return rank(items, tallies, "all", now).rows.map(({ item, standing }) => ({ card: item.card, standing }));
+  const kindOf = (c: Card): HomeKind => {
+    const k = c.kind ?? c.targetType;
+    return (k in KIND_WEIGHT ? k : c.targetType === "score" ? "song" : c.targetType) as HomeKind;
+  };
+  const items = list.map((card) => ({ id: card.targetId, createdAt: card.lastAt, modified: Date.parse(card.lastAt) / 1000 || 0, kind: kindOf(card), card }));
+  return homeRank(items, tallies, "week", now).rows.map(({ item, standing }) => ({ card: item.card, standing }));
 }

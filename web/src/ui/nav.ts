@@ -15,8 +15,7 @@ export interface NavItem {
 }
 
 export const NAV: NavItem[] = [
-  { page: "home", tab: "home", label: "Home", sub: "The best-rated songs, to listen to", href: "/" },
-  { page: "activity", tab: "activity", label: "Activity", sub: "What people are making, rating and saying", href: "/activity" },
+  { page: "home", tab: "home", label: "Home", sub: "What people are making: the best rated first, or the newest", href: "/" },
   { page: "scores", tab: "scores", label: "Scores", sub: "Songs, mashed up from real recordings", href: "/scores" },
   { page: "beats", tab: "beats", label: "Beats", sub: "Drum patterns on the step grid", href: "/beats" },
   { page: "chords", tab: "chords", label: "Chords", sub: "Progressions on the chord harp", href: "/chords" },

@@ -1,6 +1,8 @@
-// The Activity page: what's happening, as things to hear. One card per item (a score, a beat, a sample, a clip…),
-// newest activity first, in a grid that fills the width: each card plays (a score's strip, a sample's envelope), shows
-// its latest news in a line, and puts what people say up front. Anything new about an item moves its card to the top.
+// The home page: what's happening, as things to hear. One card per item (a score, a beat, a sample, a clip…) in a grid
+// that fills the width: each card plays (a score's strip, a sample's envelope), shows its latest news in a line, and puts
+// what people say up front. "Top" (the default) puts the best-rated songs first, fresh ones lifted, everything else
+// far below (data/home-feed.ts); "Recent" is the newest activity first. Someone signed out gets a line on what Apricity
+// is, with the way to sign in and to the About page.
 // The cards are kept by a Lambda from the tables' streams; a local library has no streams, so locally the page shows
 // your scores, most recently changed first.
 
@@ -10,9 +12,9 @@ import { mode } from "../data/client";
 import type { ScoreItem } from "../data/catalog";
 import { handles } from "../data/handles";
 import { allCards, cards, FILTERS, kindName, lineText, linesOf, starsOf, topCards, type Card } from "../data/activity";
-import { rank } from "../data/rank-window";
+import { homeRank } from "../data/home-feed";
 import { tagCounts } from "../data/tags";
-import { sampleKey } from "../route";
+import { href, sampleKey, type Route } from "../route";
 import { tagLink } from "./tag-chips";
 import { go } from "./at";
 import { timeAgo } from "./time";
@@ -21,20 +23,25 @@ import { feedGrid } from "./feed-grid";
 
 const POLL_MS = 60_000;
 
-/** "All tags", to /tags (a plain click stays in the app). */
-function allTags() {
-  const a = el("a", { className: "act-all-tags", href: "/tags", textContent: "All tags" });
+/** An in-app link (a plain click stays in the app; a middle click opens a tab). */
+function link(route: Route, text: string, className = ""): HTMLAnchorElement {
+  const a = el("a", { href: href(route), textContent: text, className });
   a.addEventListener("click", (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     e.preventDefault();
-    go({ page: "tags" });
+    go(route);
   });
   return a;
 }
 
+/** "All tags", to /tags. */
+const allTags = () => link({ page: "tags" }, "All tags", "act-all-tags");
+
 export class ActivityView {
   private chips = el("div", { className: "act-chips", role: "group", ariaLabel: "Show" });
   private tags = el("div", { className: "act-tags" });
+  /** For someone signed out: what this is, Sign in, and What is this? (the About page). */
+  private intro = el("div", { className: "home-intro", hidden: true });
   private body = el("div", { className: "act-body", ariaLive: "polite" });
   private fresh = el("button", { type: "button", className: "act-fresh", hidden: true }, "New activity · show");
   private kind: string | null = null;
@@ -76,7 +83,16 @@ export class ActivityView {
       this.orderEl.append(b);
     }
     this.fresh.addEventListener("click", () => void this.load());
-    root.append(el("div", { className: "feed-page act" }, el("div", { className: "feed-bar act-bar" }, this.orderEl, this.chips, this.fresh, el("span", { style: "flex:1" }), this.tags), this.body));
+    root.append(
+      el(
+        "div",
+        { className: "feed-page act" },
+        this.intro,
+        el("div", { className: "feed-bar act-bar" }, this.orderEl, this.chips, this.fresh, el("span", { style: "flex:1" }), this.tags),
+        this.body,
+        el("footer", { className: "home-foot" }, link({ page: "about" }, "About Apricity"), link({ page: "tags" }, "Tags"), link({ page: "help" }, "Help")),
+      ),
+    );
     document.addEventListener("apricity:auth-changed", () => this.shown && void this.load());
   }
 
@@ -105,6 +121,9 @@ export class ActivityView {
     this.fresh.hidden = true;
     // Timings for the browser's performance panel: activity:start … activity:shown.
     performance.mark("activity:start");
+    void me()
+      .catch(() => null)
+      .then((who) => seq === this.seq && this.showIntro(!who && mode() !== "local"));
     // The top tags fill in when the scores have listed; nothing waits for them.
     void api
       .scores()
@@ -186,6 +205,17 @@ export class ActivityView {
     );
   }
 
+  private showIntro(show: boolean) {
+    this.intro.hidden = !show;
+    if (!show || this.intro.childElementCount) return;
+    const signIn = el("button", { type: "button", className: "btn primary" }, "Sign in");
+    signIn.addEventListener("click", () => document.dispatchEvent(new CustomEvent("apricity:sign-in")));
+    this.intro.append(
+      el("p", {}, el("b", {}, "Apricity is the social mashup machine."), " Music made from public-domain recordings, remixed by everyone. Listen to the best of it below, rate what you like, and make your own."),
+      el("div", { className: "home-intro-actions" }, signIn, link({ page: "about" }, "What is this?", "btn")),
+    );
+  }
+
   /** A card as something to hear; null when what it's about is gone. */
   private async item(c: Card, deps: FeedDeps): Promise<FeedItem | null> {
     // Its stars and latest line arrive once it's in view.
@@ -217,10 +247,10 @@ export class ActivityView {
       .catch(() => []);
     const when = (s: ScoreItem) => (s.modified ? new Date(s.modified * 1000).toISOString() : s.createdAt);
     // Top: by stars, then the most recently changed; Recent: the most recently changed.
-    const rows = rank(
+    const rows = homeRank(
       shown.map((s) => ({ ...s, createdAt: when(s) })),
       tallies,
-      "all",
+      "week",
       new Date(),
     ).rows;
     if (this.order === "recent") rows.sort((a, b) => b.item.modified - a.item.modified);
@@ -228,7 +258,7 @@ export class ActivityView {
       new FeedCard(scoreFeedItem(s, { average: standing.average, count: standing.count }, undefined, s.modified ? `changed ${timeAgo(new Date(s.modified * 1000).toISOString())}` : undefined), deps).root,
     );
     this.body.replaceChildren(
-      el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. The website's Activity shows what everyone is making, rating and saying.`),
+      el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. On the website, this page shows what everyone is making, rating and saying.`),
       items.length ? feedGrid(items) : el("div", { className: "empty" }, "Nothing of this kind here."),
     );
   }
