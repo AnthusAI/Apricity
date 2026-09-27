@@ -48,10 +48,10 @@ button { cursor: pointer; }
   position: absolute; left: 0; top: 50%; width: 36px; height: 36px; transform: translateY(-50%); z-index: -1; pointer-events: none;
   /* The About card's sun, small: a warm core fading slowly out to nothing, no ring. */
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--sun-2) 85%, transparent) 0 20%,
-    color-mix(in srgb, var(--sun) 55%, transparent) 38%,
-    color-mix(in srgb, var(--sun) 22%, transparent) 54%,
-    color-mix(in srgb, var(--sun) 6%, transparent) 64%,
+    color-mix(in srgb, var(--sun-2) 50%, transparent) 0 18%,
+    color-mix(in srgb, var(--sun) 32%, transparent) 36%,
+    color-mix(in srgb, var(--sun) 13%, transparent) 52%,
+    color-mix(in srgb, var(--sun) 4%, transparent) 63%,
     transparent 70%);
 }
 @media (prefers-color-scheme: dark) { .topbar .brand .logo { --sun: #ffa866; --sun-2: #ffd59a; } }
