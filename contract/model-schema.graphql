@@ -299,10 +299,34 @@ type Tally @model @auth(rules: [{allow: public, provider: identityPool, operatio
 {
   id: ID! @primaryKey
   targetType: RatingTarget! @index(sortKeyFields: ["day"], queryField: "talliesByTypeAndDay")
-  targetId: ID!
+  targetId: ID! @index(sortKeyFields: ["day"], queryField: "talliesByTarget")
   day: String!
   count: Int!
   sum: Int!
+}
+
+type Ranked @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]}])
+{
+  id: ID! @primaryKey
+  list: String! @index(sortKeyFields: ["sort"], queryField: "rankedByList")
+  sort: String!
+  targetType: RatingTarget!
+  targetId: ID! @index(queryField: "rankedByTarget")
+  kind: String!
+  title: String
+  owner: String
+  path: String
+  samplePath: String
+  clipStart: Float
+  clipEnd: Float
+  tags: [String]
+  stars: Float
+  ratings: Int
+  comments: Int
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
 }
 
 type Job @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},

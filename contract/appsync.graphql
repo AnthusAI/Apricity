@@ -290,6 +290,30 @@ type Tally @aws_iam @aws_cognito_user_pools {
   updatedAt: AWSDateTime!
 }
 
+type Ranked @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  list: String!
+  sort: String!
+  targetType: RatingTarget!
+  targetId: ID!
+  kind: String!
+  title: String
+  owner: String
+  path: String
+  samplePath: String
+  clipStart: Float
+  clipEnd: Float
+  tags: [String]
+  stars: Float
+  ratings: Int
+  comments: Int
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
 type Job @aws_iam @aws_cognito_user_pools {
   id: ID!
   kind: String!
@@ -601,6 +625,11 @@ type Query {
   getTally(id: ID!): Tally @aws_iam @aws_cognito_user_pools
   listTallies(id: ID, filter: ModelTallyFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelTallyConnection @aws_iam @aws_cognito_user_pools
   talliesByTypeAndDay(targetType: RatingTarget!, day: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelTallyFilterInput, limit: Int, nextToken: String): ModelTallyConnection @aws_iam @aws_cognito_user_pools
+  talliesByTarget(targetId: ID!, day: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelTallyFilterInput, limit: Int, nextToken: String): ModelTallyConnection @aws_iam @aws_cognito_user_pools
+  getRanked(id: ID!): Ranked @aws_iam @aws_cognito_user_pools
+  listRankeds(id: ID, filter: ModelRankedFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRankedConnection @aws_iam @aws_cognito_user_pools
+  rankedByList(list: String!, sort: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelRankedFilterInput, limit: Int, nextToken: String): ModelRankedConnection @aws_iam @aws_cognito_user_pools
+  rankedByTarget(targetId: ID!, sortDirection: ModelSortDirection, filter: ModelRankedFilterInput, limit: Int, nextToken: String): ModelRankedConnection @aws_iam @aws_cognito_user_pools
   getJob(id: ID!): Job @aws_iam @aws_cognito_user_pools
   listJobs(id: ID, filter: ModelJobFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelJobConnection @aws_iam @aws_cognito_user_pools
   jobsByState(state: JobState!, sortDirection: ModelSortDirection, filter: ModelJobFilterInput, limit: Int, nextToken: String): ModelJobConnection @aws_iam @aws_cognito_user_pools
@@ -716,6 +745,9 @@ type Mutation {
   createTally(input: CreateTallyInput!, condition: ModelTallyConditionInput): Tally
   updateTally(input: UpdateTallyInput!, condition: ModelTallyConditionInput): Tally
   deleteTally(input: DeleteTallyInput!, condition: ModelTallyConditionInput): Tally
+  createRanked(input: CreateRankedInput!, condition: ModelRankedConditionInput): Ranked
+  updateRanked(input: UpdateRankedInput!, condition: ModelRankedConditionInput): Ranked
+  deleteRanked(input: DeleteRankedInput!, condition: ModelRankedConditionInput): Ranked
   createJob(input: CreateJobInput!, condition: ModelJobConditionInput): Job
   updateJob(input: UpdateJobInput!, condition: ModelJobConditionInput): Job
   deleteJob(input: DeleteJobInput!, condition: ModelJobConditionInput): Job
@@ -791,6 +823,9 @@ type Subscription {
   onCreateTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["createTally"]) @aws_iam @aws_cognito_user_pools
   onUpdateTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["updateTally"]) @aws_iam @aws_cognito_user_pools
   onDeleteTally(filter: ModelSubscriptionTallyFilterInput): Tally @aws_subscribe(mutations: ["deleteTally"]) @aws_iam @aws_cognito_user_pools
+  onCreateRanked(filter: ModelSubscriptionRankedFilterInput): Ranked @aws_subscribe(mutations: ["createRanked"]) @aws_iam @aws_cognito_user_pools
+  onUpdateRanked(filter: ModelSubscriptionRankedFilterInput): Ranked @aws_subscribe(mutations: ["updateRanked"]) @aws_iam @aws_cognito_user_pools
+  onDeleteRanked(filter: ModelSubscriptionRankedFilterInput): Ranked @aws_subscribe(mutations: ["deleteRanked"]) @aws_iam @aws_cognito_user_pools
   onCreateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["createJob"]) @aws_iam @aws_cognito_user_pools
   onUpdateJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["updateJob"]) @aws_iam @aws_cognito_user_pools
   onDeleteJob(filter: ModelSubscriptionJobFilterInput): Job @aws_subscribe(mutations: ["deleteJob"]) @aws_iam @aws_cognito_user_pools
@@ -2138,6 +2173,138 @@ input ModelSubscriptionTallyFilterInput {
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionTallyFilterInput]
   or: [ModelSubscriptionTallyFilterInput]
+}
+
+type ModelRankedConnection @aws_iam @aws_cognito_user_pools {
+  items: [Ranked]!
+  nextToken: String
+}
+
+input ModelRankedFilterInput {
+  id: ModelIDInput
+  list: ModelStringInput
+  sort: ModelStringInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  kind: ModelStringInput
+  title: ModelStringInput
+  owner: ModelStringInput
+  path: ModelStringInput
+  samplePath: ModelStringInput
+  clipStart: ModelFloatInput
+  clipEnd: ModelFloatInput
+  tags: ModelStringInput
+  stars: ModelFloatInput
+  ratings: ModelIntInput
+  comments: ModelIntInput
+  lastAt: ModelStringInput
+  lastWhat: ModelStringInput
+  lastBy: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelRankedFilterInput]
+  or: [ModelRankedFilterInput]
+  not: ModelRankedFilterInput
+}
+
+input ModelRankedConditionInput {
+  list: ModelStringInput
+  sort: ModelStringInput
+  targetType: ModelRatingTargetInput
+  targetId: ModelIDInput
+  kind: ModelStringInput
+  title: ModelStringInput
+  owner: ModelStringInput
+  path: ModelStringInput
+  samplePath: ModelStringInput
+  clipStart: ModelFloatInput
+  clipEnd: ModelFloatInput
+  tags: ModelStringInput
+  stars: ModelFloatInput
+  ratings: ModelIntInput
+  comments: ModelIntInput
+  lastAt: ModelStringInput
+  lastWhat: ModelStringInput
+  lastBy: ModelStringInput
+  and: [ModelRankedConditionInput]
+  or: [ModelRankedConditionInput]
+  not: ModelRankedConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateRankedInput {
+  id: ID
+  list: String!
+  sort: String!
+  targetType: RatingTarget!
+  targetId: ID!
+  kind: String!
+  title: String
+  owner: String
+  path: String
+  samplePath: String
+  clipStart: Float
+  clipEnd: Float
+  tags: [String]
+  stars: Float
+  ratings: Int
+  comments: Int
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
+}
+
+input UpdateRankedInput {
+  id: ID!
+  list: String
+  sort: String
+  targetType: RatingTarget
+  targetId: ID
+  kind: String
+  title: String
+  owner: String
+  path: String
+  samplePath: String
+  clipStart: Float
+  clipEnd: Float
+  tags: [String]
+  stars: Float
+  ratings: Int
+  comments: Int
+  lastAt: AWSDateTime
+  lastWhat: String
+  lastBy: String
+}
+
+input DeleteRankedInput {
+  id: ID!
+}
+
+input ModelSubscriptionRankedFilterInput {
+  id: ModelSubscriptionIDInput
+  list: ModelSubscriptionStringInput
+  sort: ModelSubscriptionStringInput
+  targetType: ModelSubscriptionStringInput
+  targetId: ModelSubscriptionIDInput
+  kind: ModelSubscriptionStringInput
+  title: ModelSubscriptionStringInput
+  owner: ModelSubscriptionStringInput
+  path: ModelSubscriptionStringInput
+  samplePath: ModelSubscriptionStringInput
+  clipStart: ModelSubscriptionFloatInput
+  clipEnd: ModelSubscriptionFloatInput
+  tags: ModelSubscriptionStringInput
+  stars: ModelSubscriptionFloatInput
+  ratings: ModelSubscriptionIntInput
+  comments: ModelSubscriptionIntInput
+  lastAt: ModelSubscriptionStringInput
+  lastWhat: ModelSubscriptionStringInput
+  lastBy: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionRankedFilterInput]
+  or: [ModelSubscriptionRankedFilterInput]
 }
 
 type ModelJobConnection @aws_iam @aws_cognito_user_pools {

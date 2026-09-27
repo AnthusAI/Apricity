@@ -377,7 +377,35 @@ const schema = a.schema({
       count: a.integer().required(),
       sum: a.integer().required(),
     })
-    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay")])
+    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay"), i("targetId").sortKeys(["day"]).queryField("talliesByTarget")])
+    .authorization(everyone),
+
+  // A ranked list as rows (design/scale.md §2.1; web/src/data/ranked.ts): one row per item per list it appears in,
+  // read one page at a time by `rankedByList` (descending). `sort` orders as a plain string. Each row carries what its
+  // card shows, so a page is one query. Written only by the ranking Lambda (and its backfill).
+  Ranked: a
+    .model({
+      id: a.id().required(),
+      list: a.string().required(),
+      sort: a.string().required(),
+      targetType: a.ref("RatingTarget").required(),
+      targetId: a.id().required(),
+      kind: a.string().required(),
+      title: a.string(),
+      owner: a.string(),
+      path: a.string(),
+      samplePath: a.string(),
+      clipStart: a.float(),
+      clipEnd: a.float(),
+      tags: a.string().array(),
+      stars: a.float(),
+      ratings: a.integer(),
+      comments: a.integer(),
+      lastAt: a.datetime().required(),
+      lastWhat: a.string(),
+      lastBy: a.string(),
+    })
+    .secondaryIndexes((i) => [i("list").sortKeys(["sort"]).queryField("rankedByList"), i("targetId").queryField("rankedByTarget")])
     .authorization(everyone),
 
   Job: a

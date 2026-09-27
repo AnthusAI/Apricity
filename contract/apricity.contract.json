@@ -1,5 +1,5 @@
 {
-  "version": "65654a52bb9d27e1",
+  "version": "b448901dc9223991",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -2462,6 +2462,205 @@
             "day"
           ],
           "sortArgument": "day"
+        },
+        {
+          "name": "talliesByTargetIdAndDay",
+          "queryField": "talliesByTarget",
+          "partitionField": "targetId",
+          "sortFields": [
+            "day"
+          ],
+          "sortArgument": "day"
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": []
+    },
+    "Ranked": {
+      "name": "Ranked",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "list": {
+          "name": "list",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sort": {
+          "name": "sort",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "RatingTarget",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "kind": {
+          "name": "kind",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "path": {
+          "name": "path",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "samplePath": {
+          "name": "samplePath",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "clipStart": {
+          "name": "clipStart",
+          "type": "Float",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "clipEnd": {
+          "name": "clipEnd",
+          "type": "Float",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "String",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "scalar"
+        },
+        "stars": {
+          "name": "stars",
+          "type": "Float",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "ratings": {
+          "name": "ratings",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "comments": {
+          "name": "comments",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastAt": {
+          "name": "lastAt",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastWhat": {
+          "name": "lastWhat",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastBy": {
+          "name": "lastBy",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "rankedsByListAndSort",
+          "queryField": "rankedByList",
+          "partitionField": "list",
+          "sortFields": [
+            "sort"
+          ],
+          "sortArgument": "sort"
+        },
+        {
+          "name": "rankedsByTargetId",
+          "queryField": "rankedByTarget",
+          "partitionField": "targetId",
+          "sortFields": []
         }
       ],
       "relationships": [],
@@ -3228,6 +3427,22 @@
         ]
       }
     ],
+    "Ranked": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      }
+    ],
     "Job": [
       {
         "provider": "iam",
@@ -3476,6 +3691,19 @@
       },
       {
         "path": "Tally/*",
+        "readable": [
+          "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Ranked/*",
         "readable": [
           "guest",
           "authenticated",

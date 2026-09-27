@@ -2896,6 +2896,236 @@
           }
         },
         {
+          "type": "key",
+          "properties": {
+            "name": "talliesByTargetIdAndDay",
+            "queryField": "talliesByTarget",
+            "fields": [
+              "targetId",
+              "day"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "allow": "public",
+                "provider": "identityPool",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
+    "Ranked": {
+      "name": "Ranked",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "list": {
+          "name": "list",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "sort": {
+          "name": "sort",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetType": {
+          "name": "targetType",
+          "isArray": false,
+          "type": {
+            "enum": "RatingTarget"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "targetId": {
+          "name": "targetId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "kind": {
+          "name": "kind",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "path": {
+          "name": "path",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "samplePath": {
+          "name": "samplePath",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "clipStart": {
+          "name": "clipStart",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "clipEnd": {
+          "name": "clipEnd",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "tags": {
+          "name": "tags",
+          "isArray": true,
+          "type": "String",
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true
+        },
+        "stars": {
+          "name": "stars",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false,
+          "attributes": []
+        },
+        "ratings": {
+          "name": "ratings",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "comments": {
+          "name": "comments",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lastAt": {
+          "name": "lastAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "attributes": []
+        },
+        "lastWhat": {
+          "name": "lastWhat",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lastBy": {
+          "name": "lastBy",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": [],
+          "isReadOnly": true
+        }
+      },
+      "syncable": true,
+      "pluralName": "Rankeds",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "rankedsByListAndSort",
+            "queryField": "rankedByList",
+            "fields": [
+              "list",
+              "sort"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "rankedsByTargetId",
+            "queryField": "rankedByTarget",
+            "fields": [
+              "targetId"
+            ]
+          }
+        },
+        {
           "type": "auth",
           "properties": {
             "rules": [
