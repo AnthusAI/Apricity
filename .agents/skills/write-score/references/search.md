@@ -47,6 +47,25 @@ picked the user's preferred version both times; the v1 measure did once (`script
 re-runs that comparison as verdicts accumulate). Use `objective_v2` to rank harmony, and keep checking
 by ear: two sets is thin evidence, and it still can't hear genre, timbre or groove.
 
+## Steering: `apricity steer`
+
+`apricity steer DIR [--score SCORE] -o steer.json` (schema: `schema/steer.schema.json`) says what to
+change, not just how good it is:
+- per chord span: the chord it hears, the quality breakdown, and the wrong notes with octave and Hz;
+- per stem: a cents correction;
+- per loop: all 12 transpositions scored;
+- the bars that fit and don't;
+- ranked suggestions, each an optimizer op (`track.transpose_span`, `track.eq_notch`, `track.hp`,
+  `clip.retune`, ...).
+
+Pass `--score` so it knows the solver's actual shift per span.
+
+Use it as a hill-climb: apply the top suggestion (via `analysis/apricity_analyze/explore/ops.py`),
+re-render the window, re-run `apricity check`, and keep the change only if `objective_v2` rises by 2 or
+more; otherwise try the next suggestion. Expect rejections: suggestions are predictions, and the
+re-render is the test. When three or more different wrong notes recur across chords, reach for the
+chord-following EQ (`harmonic`) instead of stacking fixed notches.
+
 ## What the numbers can't hear
 
 - **The v1 harmony checker (`scripts/check-stems.py`, `audition.sh --check`) measures clash, not
