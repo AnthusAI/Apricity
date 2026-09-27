@@ -79,26 +79,40 @@ def null_composite() -> Composite:
 
 DELTA_MARGIN_DEFAULT = 2.0
 
-# --------------------------------------------------------------------------- whole-mix gate (round 3)
+# --------------------------------------------------------------------------- whole-mix gate (round 3; now measured on the window, round 4)
 #
 # Kanbus apricitus-a9ad5b round 3 (reviewer decision, 2026-09-27): L1 gating and ranking moved from
 # `render_terms.render_composite` (a pairwise penalty score against `layer.check_layer`, whose null
 # is 100 by construction -- no addition could ever clear a positive margin against it, and it
 # charges a candidate's onset correlation with the stack as a rhythm *penalty* even when that
 # correlation is exactly the "locks into the groove" a listener wants) to the whole-mix objective:
-# `check.py`'s own objective (the same function `scripts/check-stems.py` calls, guards included),
-# computed once for the incumbent alone and once for stack+candidate together, over the same L1
-# bars window. `Δmix = obj(candidate) - obj(incumbent)`.
+# `check.py`'s own objective (the same function `scripts/check-stems.py` calls), computed once for
+# the incumbent alone and once for stack+candidate together, over the same bars window. Round 3
+# rendered the *full* song for both sides to make that "same window" true cheaply (see
+# `scripts/optimize.py`'s old `L1_BARS_DEFAULT` comment, now superseded).
 #
-# The margin below is fit to one real listening data point, not guessed: the user's blind-unblind
+# Round 4 (Kanbus apricitus-dbed5c, 2026-09-27): `Δmix` is now measured on an 8-bar audition
+# window W (`audition_form.choose_window` / the candidate's own entry bars when they're already 8
+# bars), not the full song -- `obj(candidate)` and `obj(incumbent)` are both rendered over that
+# same W (`audition_form.together_objective` / `scene_baseline_objective`), which is the literal
+# fix for the mismatch round 3 worked around by paying for a full-song render every time. The name
+# `WHOLE_MIX_MARGIN` and this margin's value are kept unchanged -- re-validated, not re-fit (see
+# apricitus-dbed5c's report): re-scoring `ave-house-seed7-run2`'s A/B/C with Δwindow over each
+# candidate's own entry window reproduced the ordering below on the numbers that mattered.
+#
+# The margin is fit to one real listening data point, not guessed: the user's blind-unblind
 # verdict on `renders/optimize/ave-house-seed7-run2` (kind `listen-note`, logged in
-# `renders/log.jsonl` in the `example-scores-editing-deaa37` worktree, 2026-09-27T10:12:05):
+# `renders/log.jsonl` in the `example-scores-editing-deaa37` worktree, 2026-09-27T10:12:05), on the
+# *full-song* Δmix that existed at the time:
 #   incumbent objective 84.38; A 84.1 (Δ=-0.28, "welcome"); B 82.21 (Δ=-2.17, "welcome");
 #   C 69.98 (Δ=-14.40, lowest-rated of the three, still "sound pretty good" but clearly the worst).
 # The user's own words: "They all sound pretty good. I generally agree with the quantifications
 # from the checker." -- i.e. a small negative Δ (a near-tie) is a welcome addition, and -14 is
-# where quality visibly drops. WHOLE_MIX_MARGIN=-2.0 sits at B's Δ (a tie-tolerance, not a
-# requirement that an addition strictly improve the mix), so B lands right at the boundary
+# where quality visibly drops. WHOLE_MIX_MARGIN=-2.0 sits at B's full-song Δ (a tie-tolerance, not
+# a requirement that an addition strictly improve the mix), so B lands right at the boundary
 # ("borderline") rather than comfortably inside or outside it -- consistent with one data point,
-# not fit to make B pass or fail either way.
+# not fit to make B pass or fail either way. The window-based numbers move (a window is a smaller,
+# noisier sample than the whole song) but the margin is left at the value calibrated against the
+# user's actual verdict rather than re-tuned to force any particular window-Δ to land exactly on
+# it -- see the report for the specific re-validation numbers.
 WHOLE_MIX_MARGIN = -2.0
