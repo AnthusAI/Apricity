@@ -9,8 +9,8 @@ import { api, me, ratings } from "../apricity";
 import { mode } from "../data/client";
 import type { ScoreItem } from "../data/catalog";
 import { handles } from "../data/handles";
-import { cards, FILTERS, kindName, lineText, linesOf, starsOf, type Card } from "../data/activity";
-import { totals } from "../data/rank-window";
+import { allCards, cards, FILTERS, kindName, lineText, linesOf, starsOf, topCards, type Card } from "../data/activity";
+import { rank } from "../data/rank-window";
 import { tagCounts } from "../data/tags";
 import { sampleKey } from "../route";
 import { tagLink } from "./tag-chips";
@@ -38,6 +38,9 @@ export class ActivityView {
   private body = el("div", { className: "act-body", ariaLive: "polite" });
   private fresh = el("button", { type: "button", className: "act-fresh", hidden: true }, "New activity · show");
   private kind: string | null = null;
+  /** Top (by stars, then newest) unless someone chose Recent (newest activity first); remembered per browser. */
+  private order: "top" | "recent" = "top";
+  private orderEl = el("div", { className: "seg act-order", role: "tablist", ariaLabel: "Order" });
   private top: string | null = null; // the newest card's id and time, to notice new activity
   private timer = 0;
   private shown = false;
@@ -54,8 +57,26 @@ export class ActivityView {
       });
       this.chips.append(b);
     }
+    try {
+      if (localStorage.getItem("apricity.activity.order") === "recent") this.order = "recent";
+    } catch {} // storage can be blocked (private browsing): Top it is
+    for (const [o, label] of [["top", "Top"], ["recent", "Recent"]] as const) {
+      const b = el("button", { type: "button", textContent: label, title: o === "top" ? "Best rated first, then the newest" : "Newest activity first" });
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(o === this.order));
+      b.addEventListener("click", () => {
+        if (this.order === o) return;
+        this.order = o;
+        for (const x of this.orderEl.children) x.setAttribute("aria-selected", String(x === b));
+        try {
+          localStorage.setItem("apricity.activity.order", o);
+        } catch {} // storage can be blocked (private browsing): nothing to report
+        void this.load();
+      });
+      this.orderEl.append(b);
+    }
     this.fresh.addEventListener("click", () => void this.load());
-    root.append(el("div", { className: "feed-page act" }, el("div", { className: "feed-bar act-bar" }, this.chips, this.fresh, el("span", { style: "flex:1" }), this.tags), this.body));
+    root.append(el("div", { className: "feed-page act" }, el("div", { className: "feed-bar act-bar" }, this.orderEl, this.chips, this.fresh, el("span", { style: "flex:1" }), this.tags), this.body));
     document.addEventListener("apricity:auth-changed", () => this.shown && void this.load());
   }
 
@@ -95,6 +116,7 @@ export class ActivityView {
         if (seq === this.seq) await this.localFeed(scores, { who, names });
         return;
       }
+      if (this.order === "top") return await this.loadTop(seq);
       // The first page of cards comes with who is looking; each card then looks up only its own score or sample, all at
       // once. (Listing every score and sample first took the page seconds to start.)
       let next: string | null = null;
@@ -128,6 +150,42 @@ export class ActivityView {
     }
   }
 
+  /**
+   * Top: every card, ranked by its stars (then the newest), shown a screenful at a time. Each card looks up its own score
+   * or sample only as the grid reaches it, so ranking the whole feed costs its list and the tallies, not a lookup each.
+   */
+  private async loadTop(seq: number) {
+    const tallies = Promise.all((["score", "sample", "clip"] as const).map((t) => ratings().then((r) => r.tallies(t)).catch(() => []))).then((x) => x.flat());
+    const [list, all, who, names, hidden] = await Promise.all([allCards(this.kind), tallies, me().catch(() => null), handles(), api.hiddenIds().catch(() => new Set<string>())]);
+    if (seq !== this.seq) return;
+    this.top = list[0] ? `${list[0].id}@${list[0].lastAt}` : null;
+    const deps: FeedDeps = { who, names };
+    // Samples without a documented license (and what uses them) stay off the page for anyone but curators.
+    const ordered = topCards(
+      list.filter((c) => !hidden.has(c.targetId)),
+      all,
+      new Date(),
+    );
+    let at = 0;
+    const more = async (): Promise<HTMLElement[]> => {
+      while (at < ordered.length) {
+        const slice = ordered.slice(at, (at += 24));
+        const made = await Promise.all(slice.map(({ card, standing }) => this.item(card, deps).then((x) => x && { ...x, stars: { average: standing.average, count: standing.count } }).catch(() => null)));
+        const els = made.filter((x): x is FeedItem => !!x).map((x) => new FeedCard(x, deps).root);
+        if (els.length) return els;
+      }
+      return [];
+    };
+    const first = await more();
+    if (seq !== this.seq) return;
+    performance.mark("activity:shown");
+    this.body.replaceChildren(
+      first.length
+        ? feedGrid(first, async () => (seq === this.seq ? more() : []))
+        : el("div", { className: "empty" }, this.kind ? "Nothing of this kind yet." : "Nothing yet. Make something, rate something, or say something about it."),
+    );
+  }
+
   /** A card as something to hear; null when what it's about is gone. */
   private async item(c: Card, deps: FeedDeps): Promise<FeedItem | null> {
     // Its stars and latest line arrive once it's in view.
@@ -154,15 +212,23 @@ export class ActivityView {
   /** Locally (no activity kept): your scores, most recently changed first, with their stars. */
   private async localFeed(scores: ScoreItem[], deps: FeedDeps) {
     const shown = this.kind && this.kind !== "sample" && this.kind !== "clip" ? scores.filter((s) => s.kind === this.kind) : this.kind ? [] : scores;
-    const t = totals(await ratings().then((r) => r.tallies("score")).catch(() => []), "all", new Date());
-    const items = [...shown]
-      .sort((a, b) => b.modified - a.modified)
-      .map((s) => {
-        const x = t.get(s.id);
-        return new FeedCard(scoreFeedItem(s, { average: x?.count ? x.sum / x.count : null, count: x?.count ?? 0 }, undefined, s.modified ? `changed ${timeAgo(new Date(s.modified * 1000).toISOString())}` : undefined), deps).root;
-      });
+    const tallies = await ratings()
+      .then((r) => r.tallies("score"))
+      .catch(() => []);
+    const when = (s: ScoreItem) => (s.modified ? new Date(s.modified * 1000).toISOString() : s.createdAt);
+    // Top: by stars, then the most recently changed; Recent: the most recently changed.
+    const rows = rank(
+      shown.map((s) => ({ ...s, createdAt: when(s) })),
+      tallies,
+      "all",
+      new Date(),
+    ).rows;
+    if (this.order === "recent") rows.sort((a, b) => b.item.modified - a.item.modified);
+    const items = rows.map(({ item: s, standing }) =>
+      new FeedCard(scoreFeedItem(s, { average: standing.average, count: standing.count }, undefined, s.modified ? `changed ${timeAgo(new Date(s.modified * 1000).toISOString())}` : undefined), deps).root,
+    );
     this.body.replaceChildren(
-      el("p", { className: "hint act-local" }, "This is your local library: your scores, most recently changed first. The website's Activity shows what everyone is making, rating and saying."),
+      el("p", { className: "hint act-local" }, `This is your local library: your scores, ${this.order === "top" ? "best rated first" : "most recently changed first"}. The website's Activity shows what everyone is making, rating and saying.`),
       items.length ? feedGrid(items) : el("div", { className: "empty" }, "Nothing of this kind here."),
     );
   }

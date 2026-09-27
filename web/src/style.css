@@ -717,3 +717,5 @@ body.nav-open { overflow: hidden; }
 .wave-bar { width: 180px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .wave-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .wave-loading .bad { color: var(--bad); }
+.act-order { flex: none; }
+.act-order button { padding: 5px 12px; }

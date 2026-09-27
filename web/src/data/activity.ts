@@ -3,6 +3,7 @@
 
 import { client } from "./client.js";
 import type { CommentRow } from "./comments.js";
+import { rank, type DayTally, type Standing } from "./rank-window.js";
 
 export type ItemType = "sample" | "clip" | "score";
 
@@ -104,4 +105,25 @@ export async function starsOf(type: ItemType, id: string): Promise<{ average: nu
 export async function newestComment(targetId: string): Promise<CommentRow | null> {
   const r = await client().models.Comment.commentsByTarget({ targetId }, { sortDirection: "DESC", limit: 5 });
   return ((r.data ?? []) as CommentRow[]).find((c) => !c.deleted) ?? null;
+}
+
+/** Every card, newest activity first (all the pages; `max` stops a runaway feed). */
+export async function allCards(kind: string | null, max = 1000): Promise<Card[]> {
+  const out: Card[] = [];
+  let token: string | null = null;
+  do {
+    const page = await cards(kind, token);
+    out.push(...page.items);
+    token = page.nextToken;
+  } while (token && out.length < max);
+  return out;
+}
+
+/**
+ * The "Top" order: rated cards first, by their stars (the lists' Bayesian ranking, over all time), then the rest by
+ * their latest activity. Ties between rated cards go to the more rated, then the more recent.
+ */
+export function topCards(list: Card[], tallies: DayTally[], now: Date): { card: Card; standing: Standing }[] {
+  const items = list.map((card) => ({ id: card.targetId, createdAt: card.lastAt, card }));
+  return rank(items, tallies, "all", now).rows.map(({ item, standing }) => ({ card: item.card, standing }));
 }
