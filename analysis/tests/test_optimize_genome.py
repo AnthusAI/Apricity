@@ -138,3 +138,44 @@ def test_genome_key_is_deterministic():
     import dataclasses
     other = dataclasses.replace(GENOMES["loop"], volume=-9.0)
     assert other.key() != GENOMES["loop"].key()
+
+
+# --------------------------------------------------------------------- group routing (no fixed group name)
+
+NO_GROUP_BASE = f"""tempo 100
+key C major
+samples {SAMPLES}
+
+clip bright = ccmixter/AlexBeroza/Ave_34409.mp3  loop-2
+clip low    = ccmixter/AlexBeroza/Ave_34409.mp3  hold-4  root Ab1
+
+chords (I*2 IV*2 V*2 I*2)*3
+
+track bright  transpose 2  bars 1-24
+track low  voicing root  octave 2  bars 1-24
+"""
+
+OTHER_GROUP_BASE = NO_GROUP_BASE + "\ngroup beat\n  filter lp 20000\n"
+
+
+def test_added_part_has_no_group_clause_when_the_score_declares_none():
+    """A new part must not be routed through a group track the incumbent score never declared --
+    `to_ops`/`text` shouldn't assume every score has one, let alone a particular name."""
+    g = GENOMES["loop"]
+    text = g.text(NO_GROUP_BASE)
+    ok, err = compiles(text, "no-group")
+    assert ok, err
+    added_line = next(line for line in text.splitlines() if line.startswith(f"track mx_{g.role}"))
+    assert "group" not in added_line
+
+
+def test_added_part_joins_whatever_group_the_score_actually_has():
+    """The score here groups its tracks as `beat`, not `music` -- the new part must follow suit,
+    not a hard-coded group name."""
+    g = GENOMES["loop"]
+    text = g.text(OTHER_GROUP_BASE)
+    ok, err = compiles(text, "other-group")
+    assert ok, err
+    added_line = next(line for line in text.splitlines() if line.startswith(f"track mx_{g.role}"))
+    assert "group beat" in added_line
+    assert "group music" not in added_line

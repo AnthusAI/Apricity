@@ -3,8 +3,8 @@ one `track` block (Phase 1's `track.add_part` op, `explore/ops.py`), or a rewrit
 role's part when `recast_role` is set (`--role <existing>` in `scripts/optimize.py`).
 
 Deviations from the full spec (documented, not silent): Phase 1 here implements a reduced gene
-set that still covers all six roles (loop, bass, pad, stab, chop, riff) per the user's widened
-scope, but skips: bar-grid regions (saved clips only), `warp repitch`, `reverse`, EQ notches and
+set that still covers all six roles (loop, bass, pad, stab, chop, riff), but skips: bar-grid
+regions (saved clips only), `warp repitch`, `reverse`, EQ notches and
 sends as searched genes, and the L1 analytic gain step over continuous genes (volume/hp are
 quantized to a small discrete grid and searched at L0 instead, per the spec's own allowance that
 "the continuous genes are few... handled by the analytic gain step and a small ES... not by the
@@ -17,6 +17,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import re
 from typing import Any
 
 import numpy as np
@@ -26,9 +27,9 @@ PITCHED_ROLES = frozenset({"bass", "pad", "stab"})
 KIT_ROLES = frozenset({"chop", "riff"})
 
 # Which saved-clip name prefixes are valid source regions for each role (spec section 1's
-# "region" gene, restricted to saved clips -- bar-grid regions are Phase 2). "phrase-" added round
-# 2: the first pass omitted it, which (combined with region_candidates being ccmixter-only)
-# silently zeroed out marine-band -- its manifests only carry phrase-N clips, no loop-/sec-.
+# "region" gene, restricted to saved clips -- bar-grid regions are Phase 2). "phrase-" is included
+# for the loop role because some source families only carry phrase-N clips, no loop-/sec- ones;
+# omitting it would silently zero out those families as loop candidates.
 REGION_PREFIXES: dict[str, tuple[str, ...]] = {
     "loop": ("loop-", "sec-", "phrase-"),
     "bass": ("hold-",),
@@ -62,7 +63,11 @@ PITCHED_PATTERNS = {
 }
 KIT_PATTERNS = ("sparse", "busy")  # sparse: one slice hit/beat, cycling; busy: every 16th
 
-SECTION_FALLBACK = [(1, 8), (9, 24), (25, 32), (33, 40)]
+# A safety default for `entry`/mutation-region sampling when a caller doesn't supply its own
+# `priors["sections"]` -- generic (one phrase, from bar 1), not derived from any particular score.
+# Callers with an actual score should derive real sections from it instead (see
+# `scripts/optimize.py`'s `detect_sections`) and pass those in `priors["sections"]`.
+SECTION_FALLBACK = [(1, 8)]
 
 
 def kit_pattern(name: str, n_slices: int = 8) -> str:
@@ -213,16 +218,20 @@ class Genome:
     def _hp_opt(self) -> str:
         return f"  filter hp {self.hp:g}" if self.hp is not None else ""
 
-    def to_ops(self) -> list[dict]:
+    def to_ops(self, *, group: str | None = None) -> list[dict]:
+        """`group`: an existing group track's name to route the new part through (e.g. `"music"`),
+        when the incumbent score already declares one -- omitted (no `group` clause) otherwise, so
+        this doesn't assume every score has a particular group track, or any group track at all."""
         track = self.track_name()
         a, b = self.entry
         recast = self.recast_role is not None
+        group_opt = f"  group {group}" if group else ""
         if self.role in PITCHED_ROLES:
             clip_line = f"clip {track} = {self.source}  {self.clip}"
             pattern = PITCHED_PATTERNS.get(self.pattern, PITCHED_PATTERNS["onbeats"])
             decl = (f'track {track}  voicing {self.voicing}  octave {self.octave}  '
                     f'steps "{pattern}"  attack {self.attack_ms:g}ms  release {self.release_ms:g}ms  '
-                    f'bars {a}-{b}  volume {self.volume:g}{self._hp_opt()}  group music')
+                    f'bars {a}-{b}  volume {self.volume:g}{self._hp_opt()}{group_opt}')
             return [{"op": "track.add_part", "track": track, "clip_line": clip_line,
                      "track_lines": [decl], "recast": recast}]
         if self.role in KIT_ROLES:
@@ -230,20 +239,25 @@ class Genome:
             clip_line = f"clip {src_clip} = {self.source}  {self.clip}"
             kit_lines = [f"kit {track} = slice {src_clip} into 8"]
             pattern = kit_pattern(self.pattern)
-            decl = f'track {track}  steps "{pattern}"  bars {a}-{b}  volume {self.volume:g}{self._hp_opt()}  group music'
+            decl = f'track {track}  steps "{pattern}"  bars {a}-{b}  volume {self.volume:g}{self._hp_opt()}{group_opt}'
             return [{"op": "track.add_part", "track": track, "clip_line": clip_line,
                      "kit_lines": kit_lines, "track_lines": [decl], "recast": recast}]
         # loop
         clip_line = f"clip {track} = {self.source}  {self.clip}"
         ratio_opt = "" if self.ratio == "auto" else f"  {self.ratio}"
         decl = (f"track {track}  bars {a}-{b}  transpose {self.transpose}{ratio_opt}  "
-                f"volume {self.volume:g}{self._hp_opt()}  group music")
+                f"volume {self.volume:g}{self._hp_opt()}{group_opt}")
         return [{"op": "track.add_part", "track": track, "clip_line": clip_line,
                  "track_lines": [decl], "recast": recast}]
 
     def text(self, base_text: str) -> str:
         from ..explore import ops as ops_mod
-        return ops_mod.apply_all(base_text, self.to_ops())
+        # Route the new part through the incumbent's own group track when it has one (the first
+        # `group <name>` block the score declares) -- there's no fixed group name to assume, and
+        # a score with no group track at all just gets a plain, ungrouped part.
+        m = re.search(r"^group\s+(\S+)", base_text, re.M)
+        group = m.group(1) if m else None
+        return ops_mod.apply_all(base_text, self.to_ops(group=group))
 
     def prose(self) -> str:
         verb = f"recast {self.recast_role}" if self.recast_role else "add a new part"

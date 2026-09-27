@@ -2,15 +2,15 @@
 incumbent's stack *without rendering*, from `apricity compile`'s own timeline (per-event source
 region, warp map, semitones, gain) plus the source manifests' `tonal.beat_chroma` /
 `rhythm.beat_loudness` -- the same read-only proxy validated by `scratchpad/opt/proxy_probe.py`
-(median chroma cosine 0.92-0.96 vs rendered stems on Ave House).
+(chroma cosine against rendered stems, checked across representative scores).
 
-Round 2 update (per review): masking and rhythm/density now read the `fitfeat` sidecar
-(`<sample>.fitfeat.npz`, `apricity_analyze.features`) -- per-quarter-beat log-band energy and
-onset strength/count -- and share their formulas with `layer.py`'s L1 terms (`term_masking`,
-`term_rhythm_onset`), computed the same way the chroma term already is: walk the compiled event's
-`warp` map and index the source's own sidecar arrays. A sample with no sidecar (24 of 148 in the
-library, per `apricitus-798704`'s report) falls back to `masking=0.0`/`rhythm=0.0` for that track
-only (documented, not silently dropped -- see `_track_quarter_vectors`'s `has_sidecar` flag). The
+Masking and rhythm/density read the `fitfeat` sidecar (`<sample>.fitfeat.npz`,
+`apricity_analyze.features`) -- per-quarter-beat log-band energy and onset strength/count -- and
+share their formulas with `layer.py`'s L1 terms (`term_masking`, `term_rhythm_onset`), computed
+the same way the chroma term already is: walk the compiled event's `warp` map and index the
+source's own sidecar arrays. A sample with no sidecar falls back to `masking=0.0`/`rhythm=0.0` for
+that track only (documented, not silently dropped -- see `_track_quarter_vectors`'s `has_sidecar`
+flag; see Kanbus apricitus-798704 for how the sidecar-coverage gap was found and tracked). The
 analytic gain step (L-BFGS-B over volume/hp) is still not implemented; volume/hp are small
 discrete genes searched at L0 (see `genome.py`).
 """
@@ -86,12 +86,12 @@ def _track_beat_vectors(compiled: dict, track: str) -> tuple[np.ndarray, np.ndar
             continue
         warp = np.array(ev["warp"])
         # A pitched (voicing/notes) track fires sub-beat note events -- e.g. a 16th note is
-        # `dur_beats=0.25` -- which `int(round(...))` rounds down to 0, skipping the event
-        # entirely: found via the null-margin investigation (round 2), this silently zeroed out
-        # every bass/pad/stab candidate's chroma (cand_mass always 0.0), which score_genome then
-        # rejected as "nothing landed on this track." `dur` is floored to at least 1 beat (the one
-        # the event starts in); the sampled offset stays inside the event's own true duration
-        # rather than always mid-beat, so a short note still reads the right source instant.
+        # `dur_beats=0.25` -- which `int(round(...))` would round down to 0, skipping the event
+        # entirely and silently zeroing out a candidate's chroma (cand_mass always 0.0), which
+        # score_genome then rejects as "nothing landed on this track." `dur` is floored to at
+        # least 1 beat (the one the event starts in); the sampled offset stays inside the event's
+        # own true duration rather than always mid-beat, so a short note still reads the right
+        # source instant.
         raw_dur = float(ev["dur_beats"])
         dur = max(1, int(round(raw_dur)))
         for k in range(dur):
@@ -295,11 +295,11 @@ def compute_terms(*, candidate_chroma: np.ndarray, stack: dict[str, np.ndarray],
     """The surrogate's term vector, sharing definitions with `objective.py`'s composite. `taste_penalty`
     is 0..1 (0 = loved), already blending star rating and the CLAP genre-fit term (see
     `scripts/optimize.py`'s `--style` prompt). `candidate_bands`/`stack_bands`/`candidate_onset`/
-    `stack_onset` are optional (round 2): when given, `masking`/`rhythm` are computed from the
-    `fitfeat` sidecar with the same formulas `layer.py` uses at render (see `_masking_term`/
-    `_rhythm_term`); when omitted (no sidecar for this track), they stay 0.0. `onset_density_value`,
-    when given, replaces the step-pattern-occupancy density proxy with the sidecar's real onset
-    count (`onset_density`) -- also documented as a fallback, not a silent swap."""
+    `stack_onset` are optional: when given, `masking`/`rhythm` are computed from the `fitfeat`
+    sidecar with the same formulas `layer.py` uses at render (see `_masking_term`/`_rhythm_term`);
+    when omitted (no sidecar for this track), they stay 0.0. `onset_density_value`, when given,
+    replaces the step-pattern-occupancy density proxy with the sidecar's real onset count
+    (`onset_density`) -- also documented as a fallback, not a silent swap."""
     from .. import check as checker
 
     n_beats = candidate_chroma.shape[0]
