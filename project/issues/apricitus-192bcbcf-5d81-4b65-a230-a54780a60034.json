@@ -70,10 +70,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "d6beeb15-e8bc-4230-8d93-f5340b6db296",
+      "author": "home",
+      "text": "The production app requires the score owner's Google/Cognito sign-in to create a Score. The production tab is open at the Google account prompt; publication is prepared but not submitted because no account credentials were provided.",
+      "created_at": "2026-09-27T20:45:06.212997Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-27T19:52:57.494222Z",
-  "updated_at": "2026-09-27T20:40:01.733925Z",
+  "updated_at": "2026-09-27T20:45:06.213045Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
