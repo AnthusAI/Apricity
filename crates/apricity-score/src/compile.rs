@@ -750,6 +750,10 @@ pub struct Event {
     pub semitones: i32,
     /// Fine correction that brings the source to A440 (negated `tuning_cents` from analysis).
     pub tuning_cents: f64,
+    /// The absolute MIDI note this event sounds, for a pitched single-note track (`voicing` or `notes`).
+    /// `None` for a loop/kit event, whose pitch is only known relative to its clip's own root.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub midi: Option<i32>,
     pub gain_db: f64,
     pub mode: WarpModeSpec,
     /// Play backwards (applied after warping).
@@ -794,6 +798,10 @@ pub struct ChordSpan {
     pub end_beat: f64,
     pub label: String,
     pub fit: Option<Fit>,
+    /// The chord's sounding bass pitch class (the slash bass, or the root when there is none).
+    /// `None` when the span has no resolved chord.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bass: Option<PitchClass>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1962,7 +1970,8 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 None
             }
         };
-        harmony.push(ChordSpan { start_beat: *a, end_beat: *b, label: chord.as_ref().map_or(label.clone(), |c| format!("{label} ({})", c.name())), fit });
+        let bass = chord.as_ref().map(|c| c.bass.unwrap_or(c.root));
+        harmony.push(ChordSpan { start_beat: *a, end_beat: *b, label: chord.as_ref().map_or(label.clone(), |c| format!("{label} ({})", c.name())), fit, bass });
     }
 
     for (ti, c) in clashes.iter().enumerate().filter(|(_, c)| !c.is_empty()) {
@@ -2023,6 +2032,7 @@ pub fn compile_with(score: &Score, base_dir: &Path, load: &mut dyn FnMut(&Path) 
                 warp,
                 semitones: if unwarped { 0 } else { shifts[si][h.track] },
                 tuning_cents: if unwarped { 0.0 } else { -rc.clip.manifest.tonal.tuning_cents },
+                midi: None,
                 gain_db: tr.volume + piece_levels[h.track][h.piece] + velocity_db(h.vel),
                 velocity: ((h.vel - 100.0).abs() > 0.05).then(|| (h.vel * 10.0).round() / 10.0),
                 mode: rc.mode,
@@ -2122,6 +2132,7 @@ fn pitched_events(h: PitchedHit, root: i32, spans: &[(f64, f64, Option<Chord>, S
             warp: vec![(from, 0.0), (src_end, dur_beats)],
             semitones: st,
             tuning_cents: if unwarped { 0.0 } else { -c.manifest.tonal.tuning_cents },
+            midi: Some(midi),
             gain_db: h.tr.volume + h.level + velocity_db(h.vel),
             velocity: ((h.vel - 100.0).abs() > 0.05).then(|| (h.vel * 10.0).round() / 10.0),
             mode: h.rc.mode,
