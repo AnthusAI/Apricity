@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-7563701f-3a9a-4230-86f7-8e679a8c037d",
+  "title": "Pitched notes keep the track's static filter even when the filter is automated",
+  "description": "Spotted by the resonant-filter agent (apricitus-a82e91). In crates/apricity-score/src/compile.rs, the pitched note-generation path (around line 2087, pitched_events) copies the track's static FilterSpec onto every Event without checking for a filter automation lane. The sibling path (around line 2011) clears the per-note filter when the track automates filter. So a pitched track (voicing or notes) with 'filter lp 20000' and 'automate filter ...' gets the per-note static filter and the stem-level sweep, filtering twice. Fix: apply the same rule in pitched_events. Test: a pitched track with a filter lane has filter: None on its events.",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T02:01:40.514660Z",
+  "updated_at": "2026-09-27T02:01:40.514698Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
