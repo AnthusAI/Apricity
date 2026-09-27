@@ -15,7 +15,7 @@
 
 import type { ScoreKind } from "./data/catalog";
 
-export type Page = "home" | "about" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
+export type Page = "home" | "about" | "how-it-works" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags";
 
 export interface Route {
   page: Page;
@@ -35,7 +35,7 @@ export interface Route {
   help?: { file: string; anchor?: string };
 }
 
-export const PAGES: Page[] = ["home", "about", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
+export const PAGES: Page[] = ["home", "about", "how-it-works", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags"];
 export const KIND_OF_PAGE: Partial<Record<Page, ScoreKind>> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
 export const PAGE_OF_KIND: Record<ScoreKind, Page> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
 
@@ -96,6 +96,6 @@ export const tabOf = (r: Route) => (r.page === "help" ? "docs" : r.page);
 
 /** The page title for a route and the name of what's open ("Salamander Beat · Beats · Apricity"). */
 export function titleOf(r: Route, name?: string): string {
-  const label: Record<Page, string> = { home: "", about: "About", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
+  const label: Record<Page, string> = { home: "", about: "About", "how-it-works": "How it works", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags" };
   return [name, label[r.page], "Apricity"].filter(Boolean).join(" · ");
 }

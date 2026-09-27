@@ -13,6 +13,7 @@ test("every page and item round-trips through its URL", () => {
   const routes: Route[] = [
     { page: "home" },
     { page: "about" },
+    { page: "how-it-works" },
     { page: "scores" },
     { page: "beats", score: "examples/salamander-beat.apr" },
     { page: "melodies", score: "scores/google_123/my tune.apr", play: true },
@@ -48,4 +49,5 @@ test("odd names survive; bad paths go to the page; unknown ones go home", () => 
   assert.deepEqual(parse("/clips/only-one"), { page: "clips" });
   assert.equal(titleOf({ page: "beats" }, "Salamander Beat"), "Salamander Beat · Beats · Apricity");
   assert.equal(titleOf({ page: "home" }), "Apricity");
+  assert.equal(titleOf({ page: "how-it-works" }), "How it works · Apricity");
 });
