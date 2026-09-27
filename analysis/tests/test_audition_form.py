@@ -255,6 +255,46 @@ def test_split_scene_and_track_missing_track_raises():
         af.split_scene_and_track(stems, "pad")
 
 
+# --------------------------------------------------------------------------- assemble_scene_only() / sum_all_stems()
+
+def test_sum_all_stems_sums_everything():
+    stems = {"a": np.full((10, 2), 0.1), "b": np.full((10, 2), 0.2), "c.kick": np.full((10, 2), 0.05)}
+    total = af.sum_all_stems(stems)
+    assert np.allclose(total, 0.35)
+
+
+def test_assemble_scene_only_length_matches_assemble():
+    scene = make_window(amp=0.2)
+    out_incumbent = af.assemble_scene_only(scene, tempo=TEMPO, meter=METER, sr=SR, scene_bars=4)
+    out_candidate = af.assemble(scene, make_window(amp=0.3), tempo=TEMPO, meter=METER, sr=SR, scene_bars=4)
+    assert out_incumbent.shape[0] == out_candidate.shape[0]
+
+
+def test_assemble_scene_only_is_the_scene_throughout_not_doubled():
+    scene = _tone(af.WINDOW_BARS, 0.2, 220.0)
+    out = af.assemble_scene_only(scene, tempo=TEMPO, meter=METER, sr=SR, scene_bars=4)
+    bar = bar_samples()
+    fade_n = int(round(SR * af.CROSSFADE_MS / 1000.0))
+    # Deep in the "together" section (away from both crossfades), the output must equal the plain
+    # scene's own sample there -- not doubled, the way naively reusing `assemble(scene, solo=scene,
+    # ...)` would (its ramp adds a second copy of "solo" on top of "scene").
+    scene_n = 4 * bar
+    idx_in_out = 8 * bar + 4 * bar - fade_n * 3
+    idx_in_scene = idx_in_out - 2 * scene_n + 2 * fade_n  # `out`'s layout: scene_n-fade_n, fade_n, scene_n-2fade_n, fade_n, together...
+    deep_together = out[idx_in_out, 0]
+    assert abs(deep_together - scene[idx_in_scene, 0]) < 1e-6
+
+
+def test_assemble_scene_only_has_no_large_discontinuity():
+    scene = _tone(af.WINDOW_BARS, 0.2, 220.0)
+    out = af.assemble_scene_only(scene, tempo=TEMPO, meter=METER, sr=SR, scene_bars=4)
+    step = np.abs(np.diff(out, axis=0))
+    fade_n = int(round(SR * af.CROSSFADE_MS / 1000.0))
+    bar = bar_samples()
+    join_free = np.concatenate([step[fade_n: 4 * bar - fade_n], step[4 * bar + fade_n: 8 * bar - fade_n], step[8 * bar + fade_n:]])
+    assert step.max() < join_free.max() * 5 + 1e-4
+
+
 # --------------------------------------------------------------------------- build_audition() cleanup
 
 def test_build_audition_leaves_no_wav_or_stems_behind(tmp_path, monkeypatch):

@@ -7,12 +7,17 @@
 
 Writes `renders/optimize/<run>/`: `cycle.json`, `leaderboard.md`, `weights.json`,
 `notebook.jsonl`, and the cycle folder's `A.apr/.m4a` .. `D.apr/.m4a` (D = keep, the incumbent).
+The `.m4a`s are the 16-bar audition form (Kanbus apricitus-dbed5c), not full-song renders -- see
+`apricity_analyze.audition_form`'s module docstring.
 
 Pipeline (spec section 3b, Phase 1 slice -- see `genome.py`/`surrogate.py`/`objective.py` module
 docstrings for the documented deviations from the full design): L0 surrogate sampling + a few
-mutation rounds into a MAP-Elites archive (`archive.py`), an L1 8-bar render ladder scored by
-`apricity_analyze.layer.check_layer` against the null control, an L2 full-render ladder scored by
-`apricity_analyze.check`, then the cycle folder.
+mutation rounds into a MAP-Elites archive (`archive.py`), an L1 8-bar *audition-window* render
+ladder (`render_l1_window_batch`) scored by Δwindow (`audition_form`'s scoring, gated by
+`objective.WHOLE_MIX_MARGIN`) with `layer.check_layer`'s not-silent/not-double gates, then straight
+to the cycle folder -- finalists are picked from L1's own ranking (no separate full-song L2
+re-render; see `render_l1_window_batch`'s docstring for why L1's number is now the trustworthy one
+L2 used to provide).
 """
 
 from __future__ import annotations
@@ -30,6 +35,7 @@ sys.path.insert(0, str(ROOT / "analysis"))
 import numpy as np
 from scipy.stats import spearmanr
 
+from apricity_analyze import audition_form
 from apricity_analyze import check as checker
 from apricity_analyze import layer
 from apricity_analyze.explore import candidates as candidates_mod
@@ -41,21 +47,23 @@ from apricity_analyze.optimize import render_terms as render_terms_mod
 from apricity_analyze.optimize import surrogate as surrogate_mod
 from apricity_analyze.optimize.genome import KIT_ROLES, PITCHED_ROLES, REGION_PREFIXES, ROLES, Genome, SECTION_FALLBACK
 
-# Round 3 (per review): L1 renders the *full* score, not an 8-bar window of the genome's entry
-# section. Found empirically, not assumed: scoring the same A/B/C candidates from
-# `ave-house-seed7-run2` with an 8-bar-windowed Δmix flipped C's sign (+0.29, "passes") relative
-# to the full-render Δmix (-14.40, "fails clearly", which matches the user's actual listening
-# verdict exactly -- renders/log.jsonl's listen-note, cited in objective.WHOLE_MIX_MARGIN). An
-# 8-bar slice of a 40-bar song is missing most of the harmonic/energy context the whole-mix
-# `check.py` objective (and guards, which compare against the *full-song* baseline regardless of
-# how much of it a given render covers) needs to be meaningful. Full renders cost ~23s each (spec
-# section 0's own measurement) vs ~5.6s for 8 bars, but at 4 workers even the spec's full L1
-# budget of 48 stays under 5 minutes, well inside the 15-minute cycle budget -- so there was no
-# real reason to keep the cheap-but-wrong window once the whole-mix metric replaced
-# render_terms as the gate. `layer.check_layer` (masking/rhythm diagnostics) and the contribution
-# channels (band fill / harmonic addition / motion) now also see the full render, which only
-# helps `motion_term`'s bar-to-bar variance estimate (more bars, not fewer).
-L1_BARS_DEFAULT = None
+# Round 3 (per review) rendered the *full* score at L1, because an 8-bar *slice* of the full song
+# (candidate rendered in place, scored against the full-song baseline) flipped a real candidate's
+# pass/fail sign relative to the full-render truth -- see objective.WHOLE_MIX_MARGIN's docstring
+# for the calibration data point. That was correct about the *mismatch* (windowed candidate vs
+# full-song baseline is apples-to-oranges) but paid for the fix with a full ~23s render per
+# candidate.
+#
+# Round 4 (Kanbus apricitus-dbed5c): fixes the actual mismatch instead of avoiding it, using the
+# 16-bar audition form's own window machinery (`audition_form.py`, built for the explorer and the
+# CLI first). L1 now renders each candidate over one 8-bar window W only (`--bars W --stems`,
+# ~5.6s), with the candidate's own track's `bars` rewritten to sound across all of W
+# (`audition_form.rewrite_track_bars`) -- and compares it against the *scene alone, rendered over
+# that same W* (`audition_form.scene_baseline_objective`, cached per (scene, W) so many candidates
+# sharing a scene/window only pay for one baseline render). Both sides of Δwindow now see the same
+# harmonic/energy context, which is what round 3's full-song render was really buying -- just
+# without paying for the other 32 unrelated bars every time. See `L1_WINDOW_FOR` docstring for how
+# W is chosen per candidate.
 
 
 def build_candidate_pools(roles: list[str], *, exclude_samples: set[str]) -> dict[str, list]:
@@ -187,19 +195,27 @@ def mutation_rounds(priors: dict, rng: np.random.Generator, arch: archive_mod.Ar
     return n
 
 
-def l1_bars_for(genome: Genome) -> tuple[int, int] | None:
-    if L1_BARS_DEFAULT is None:
-        return None  # full-song render; see L1_BARS_DEFAULT's comment
+def l1_window_for(genome: Genome, base_text: str, cache: dict) -> tuple[int, int]:
+    """The 8-bar window W this candidate is auditioned over (Kanbus apricitus-dbed5c): its own
+    entry bars, when they're exactly `audition_form.WINDOW_BARS` (8) long (three of Ave House's
+    four `SECTION_FALLBACK` sections are); otherwise the score's own default window
+    (`audition_form.choose_window`, computed once per run and cached in `cache` -- it's the same
+    answer for every non-8-bar entry since it only depends on the score's own length, not the
+    genome)."""
     a, b = genome.entry
-    return (a, min(b, a + L1_BARS_DEFAULT - 1))
+    if b - a + 1 == audition_form.WINDOW_BARS:
+        return (a, b)
+    if "fallback" not in cache:
+        cache["fallback"] = audition_form.choose_window(base_text)
+    return cache["fallback"]
 
 
 def _delete_render_cache(ev: evaluate_mod.Evaluator, text: str, bars) -> None:
-    """Delete one candidate's cached render (stems dir, wav, and the small result json) so its
-    ~300 MB (a full-song 9-stem render, round 3's L1_BARS_DEFAULT=None) doesn't sit on disk once
-    its metrics are extracted. Deleting the json too, not just the audio, matters: it forces a
-    fresh render if this exact text is ever evaluated again (e.g. a genuine L2 finalist), rather
-    than returning a cached EvalResult that points at a stems_dir which no longer exists."""
+    """Delete one candidate's cached render (stems dir, wav, and the small result json) so it
+    doesn't sit on disk once its metrics are extracted. Deleting the json too, not just the audio,
+    matters: it forces a fresh render if this exact text is ever evaluated again (e.g. a genuine
+    L2 finalist), rather than returning a cached EvalResult that points at a stems_dir which no
+    longer exists."""
     import shutil
 
     sha = evaluate_mod.score_sha(text, bars)
@@ -213,104 +229,112 @@ def _delete_render_cache(ev: evaluate_mod.Evaluator, text: str, bars) -> None:
         shutil.rmtree(stems, ignore_errors=True)
 
 
-L1_CHUNK_SIZE = 4  # per review: "clean up renders to keep disk above 8 GB" -- a full-song render
-                   # is ~300 MB (measured, round 3), so rendering the whole L1 pool at once before
-                   # any cleanup (the round-2 code's shape) filled a 10 GB disk mid-run on this
-                   # shared machine. Render/score/delete in small chunks instead so peak disk use
-                   # from this batch stays bounded to roughly chunk_size * ~300 MB.
+L1_CHUNK_SIZE = 4  # per review: "clean up renders to keep disk above 8 GB" -- keep rendering in
+                   # small parallel chunks with cleanup after each (see `_delete_render_cache`);
+                   # window renders are only ~15-25 MB each (8 bars, stems), so this now bounds
+                   # peak disk to a much smaller number than round 3's full-song ~300 MB/candidate,
+                   # but the chunking itself is still worth keeping for very large L1 budgets.
+
+WINDOW_BASELINE_DIRNAME = ".window-baseline-cache"  # scene-over-W objectives, cached per (scene sha, W); tiny JSON, not audio
 
 
-def render_l1_batch(items: list[tuple[str, Genome, str]], base_text: str, ev: evaluate_mod.Evaluator,
-                     workers: int, *, cleanup: bool = True) -> dict[str, dict]:
-    """`items`: `[(key, genome, text), ...]`. Renders every candidate's window *and* every distinct
-    stack-only window it needs, in small parallel chunks (`L1_CHUNK_SIZE`), deleting each
-    candidate's render right after its metrics are extracted when `cleanup` is True (round 3's
-    full-song L1 renders are too large to keep all of them on disk at once -- see
-    `_delete_render_cache`). Returns `{key: {"report", "delta_mix", ...} | None}` -- callers must
-    not rely on `stems_dir`/`wav` still existing after this returns when `cleanup` is True (L2
-    re-renders its small finalist set explicitly, which is a fresh render, not a stale path)."""
-    bars_needed = sorted({l1_bars_for(g) for _, g, _ in items})
-    # rendered sequentially (a handful of distinct windows at most): baseline.json must exist
-    # before any candidate is scored (Evaluator's contract), so this always runs first anyway.
-    stack_results = [ev.evaluate(base_text, bars=b) for b in bars_needed]
-    stack_feat_cache: dict[tuple[int, int], tuple] = {}
-    stack_objective_cache: dict[tuple[int, int], float] = {}
-    for bars, result in zip(bars_needed, stack_results):
-        if result.ok:
-            m, feats = layer.load_stack(pathlib.Path(result.stems_dir))
-            stack_feat_cache[bars] = (m, feats)
-            stack_objective_cache[bars] = result.objective
+def render_l1_window_batch(items: list[tuple[str, Genome, str]], base_text: str, ev: evaluate_mod.Evaluator,
+                            workers: int, *, cleanup: bool = True, window_cache: dict | None = None) -> dict[str, dict]:
+    """`items`: `[(key, genome, text), ...]`, `text` = `genome.text(base_text)` (the candidate's
+    part still declared over its own `genome.entry` bars). For each item: pick its window W
+    (`l1_window_for`), rewrite its track's `bars` to cover all of W (`audition_form.
+    rewrite_track_bars` -- comment-safe, touches only that one track), render `--bars W --stems`
+    (~5.6s, not round 3's ~23s full-song render), and score Δwindow = objective(together over W)
+    − objective(scene alone over W) using `audition_form`'s own (unguarded) scoring -- both sides
+    now see the *same* W, which is the actual fix for the windowed-vs-full-song mismatch round 3
+    worked around by paying for a full-song render every time (see this module's docstring, just
+    below the imports). Scene-over-W baselines are rendered once per
+    distinct (scene text, W) and cached to disk (`WINDOW_BASELINE_DIRNAME`), not just in memory,
+    so a later run over the same scene/window reuses them too.
 
-    null_composite_cache: dict[tuple, object] = {}
+    Renders/scores in small parallel chunks (`L1_CHUNK_SIZE`), deleting each candidate's render
+    right after its metrics are extracted when `cleanup` is True. Returns
+    `{key: {"report", "delta_mix" (= Δwindow), "window", ...} | None}` -- callers must not rely on
+    `stems_dir`/`wav` still existing after this returns when `cleanup` is True."""
+    window_cache = window_cache if window_cache is not None else {}
+    baseline_cache_dir = ev.run_dir / WINDOW_BASELINE_DIRNAME
+
+    prepared = []  # (key, genome, rewritten_text, scene_text, window, track)
+    for key, genome, text in items:
+        w = l1_window_for(genome, base_text, window_cache)
+        track = genome.track_name()
+        rewritten = audition_form.rewrite_track_bars(text, track, w)
+        scene_txt = audition_form.scene_text(rewritten, track)
+        prepared.append((key, genome, rewritten, scene_txt, w, track))
+
+    # Scene-over-W baselines: one render per distinct (scene, W), regardless of how many
+    # candidates share it (every "add a part" candidate over the same W shares the same scene --
+    # `base_text` itself -- so in practice this is usually one render per distinct W).
+    baseline_by_key: dict[tuple[str, tuple[int, int]], float] = {}
+    for _, _, _, scene_txt, w, _ in prepared:
+        bkey = (evaluate_mod.score_sha(scene_txt), w)
+        if bkey not in baseline_by_key:
+            baseline_by_key[bkey] = audition_form.scene_baseline_objective(scene_txt, w, baseline_cache_dir)["objective"]
+
     out: dict[str, dict] = {}
-
-    for chunk_start in range(0, len(items), L1_CHUNK_SIZE):
-        chunk = items[chunk_start:chunk_start + L1_CHUNK_SIZE]
-        cand_texts = [t for _, _, t in chunk]
-        cand_bars = [l1_bars_for(g) for _, g, _ in chunk]
-        by_bars: dict[tuple[int, int], list[int]] = {}
-        for idx, b in enumerate(cand_bars):
-            by_bars.setdefault(b, []).append(idx)
+    for chunk_start in range(0, len(prepared), L1_CHUNK_SIZE):
+        chunk = prepared[chunk_start:chunk_start + L1_CHUNK_SIZE]
+        by_window: dict[tuple[int, int], list[int]] = {}
+        for idx, (_, _, _, _, w, _) in enumerate(chunk):
+            by_window.setdefault(w, []).append(idx)
 
         results_by_idx: dict[int, evaluate_mod.EvalResult] = {}
-        for bars, idxs in by_bars.items():
-            texts = [cand_texts[i] for i in idxs]
-            rs = evaluate_mod.evaluate_many(ev.run_dir, texts, bars=bars, workers=min(workers, max(1, len(texts))))
+        for w, idxs in by_window.items():
+            texts = [chunk[i][2] for i in idxs]
+            rs = evaluate_mod.evaluate_many(ev.run_dir, texts, bars=w, workers=min(workers, max(1, len(texts))))
             for i, r in zip(idxs, rs):
                 results_by_idx[i] = r
 
-        for i, (key, genome, text) in enumerate(chunk):
+        for i, (key, genome, rewritten, scene_txt, w, track) in enumerate(chunk):
             result = results_by_idx[i]
-            bars = cand_bars[i]
             try:
-                if not result.ok or bars not in stack_feat_cache:
+                if not result.ok:
                     out[key] = None
                     continue
-                stack_manifest, stack_feats = stack_feat_cache[bars]
-                cand_manifest, cand_feats = layer.load_stack(pathlib.Path(result.stems_dir))
-                track = genome.track_name()
+                stems_dir = pathlib.Path(result.stems_dir)
+                cand_manifest, cand_feats = layer.load_stack(stems_dir)
                 cand_feat = next((f for f in cand_feats if f.name == track), None)
                 if cand_feat is None:
                     out[key] = None
                     continue
-                stack_feats_excl = [f for f in stack_feats if f.name != track]
-                # Judge the part over the bars it plays in, against the stack in those same bars: over
-                # the whole song an intro-only part sounds on ~20% of the beats and sits >18 dB under
-                # the drop, so the not-silent gate failed every such candidate (round 3). Beats are
-                # counted from the render's first bar (stems.json offset_beats).
+                stack_feats_excl = [f for f in cand_feats if f.name != track]
+
+                # The silence gate keeps judging the part over its bars within W: the render *is*
+                # W now (the track's `bars` were rewritten to span all of it), so "its bars within
+                # W" is the whole render -- window_features(0, meter*WINDOW_BARS) is an identity
+                # crop, kept so this still goes through the exact code path spec section 4's
+                # not-silent/not-double gates (layer.check_layer) expect.
                 meter = int(cand_manifest.get("meter", 4))
-                offset = float(cand_manifest.get("offset_beats", 0.0))
-                w0 = int(round((genome.entry[0] - 1) * meter - offset))
-                w1 = int(round(genome.entry[1] * meter - offset))
                 tempo = float(cand_manifest["tempo"])
-                cand_feat = layer.window_features(cand_feat, tempo, w0, w1)
-                stack_feats_excl = [layer.window_features(f, tempo, w0, w1) for f in stack_feats_excl]
-                report = layer.check_layer(cand_manifest, cand_feat, stack_feats_excl)
+                n_beats_w = meter * audition_form.WINDOW_BARS
+                cand_feat_w = layer.window_features(cand_feat, tempo, 0, n_beats_w)
+                stack_feats_w = [layer.window_features(f, tempo, 0, n_beats_w) for f in stack_feats_excl]
+                report = layer.check_layer(cand_manifest, cand_feat_w, stack_feats_w)
 
-                # `layer.check_layer`'s clash/masking/rhythm terms and `render_terms`'s composite
-                # are kept as *diagnostics* (round 3: no longer the gate -- see
-                # objective.WHOLE_MIX_MARGIN's docstring for why). render_terms.render_composite's
-                # `contribution` (band fill + harmonic addition + motion) still ranks survivors.
-                render_terms_vec = render_terms_mod.compute_render_terms(cand_manifest, cand_feat, stack_feats_excl)
+                # layer.check_layer's clash/masking/rhythm terms and render_terms' composite stay
+                # diagnostics (unchanged from round 3); contribution still ranks survivors.
+                render_terms_vec = render_terms_mod.compute_render_terms(cand_manifest, cand_feat_w, stack_feats_w)
                 render_comp = render_terms_mod.render_composite(render_terms_vec)
-                null_key = (bars, w0, w1, track)  # the null is the stack over the same window
-                if null_key not in null_composite_cache:
-                    null_stack = stack_feats_excl or [layer.window_features(f, tempo, w0, w1) for f in stack_feats]
-                    null_composite_cache[null_key] = render_terms_mod.render_composite(
-                        render_terms_mod.null_render_terms(stack_manifest, null_stack))
-                null_comp = null_composite_cache[null_key]
+                null_comp = render_terms_mod.render_composite(render_terms_mod.null_render_terms(cand_manifest, stack_feats_w))
 
-                # The gate/ranking metric (round 3): the whole-mix check.py objective, stack+
-                # candidate vs the incumbent alone, both already computed by ev.evaluate (shared
-                # baseline.json) -- no extra render or scoring call needed.
-                delta_mix = result.objective - stack_objective_cache[bars]
+                # The gate/ranking metric (Kanbus apricitus-dbed5c): Δwindow, via audition_form's
+                # own scoring -- together (this render, as-is) vs. the scene alone, both over W.
+                together_obj = audition_form.together_objective(stems_dir)["objective"]
+                bkey = (evaluate_mod.score_sha(scene_txt), w)
+                scene_obj = baseline_by_key[bkey]
+                delta_window = together_obj - scene_obj
 
                 out[key] = {"report": report, "stems_dir": result.stems_dir, "render_terms": render_terms_vec,
-                            "render_composite": render_comp, "null_composite": null_comp, "delta_mix": delta_mix,
-                            "candidate_objective": result.objective, "incumbent_objective": stack_objective_cache[bars]}
+                            "render_composite": render_comp, "null_composite": null_comp, "delta_mix": delta_window,
+                            "candidate_objective": together_obj, "incumbent_objective": scene_obj, "window": w}
             finally:
                 if cleanup and result.ok:
-                    _delete_render_cache(ev, text, bars)
+                    _delete_render_cache(ev, rewritten, w)
     return out
 
 
@@ -328,19 +352,11 @@ def main(argv=None) -> int:
     ap.add_argument("--style", type=str, default="smooth deep house")
     ap.add_argument("--no-clap", action="store_true", help="skip the CLAP taste term (faster; taste stays 0.5)")
     ap.add_argument("--run", type=str, required=True)
-    ap.add_argument("--l1-bars", type=int, default=None,
-                     help="render L1 over an N-bar window starting at each candidate's entry bar "
-                          "instead of the full song (round 3 default is full-song, None). Cheaper "
-                          "per render but only valid if it reproduces the full-song Delta_mix "
-                          "ordering -- see optimize.py's L1_BARS_DEFAULT docstring.")
     args = ap.parse_args(argv)
 
     if args.workers > 4:
         print("refusing: at most 4 worker processes", file=sys.stderr)
         return 2
-
-    global L1_BARS_DEFAULT
-    L1_BARS_DEFAULT = args.l1_bars
 
     t0 = time.time()
     run_dir = ROOT / "renders/optimize" / args.run
@@ -412,10 +428,21 @@ def main(argv=None) -> int:
     if "pad" in roles and not args.role:
         silent = Genome(role="pad", source="ccmixter/AlexBeroza/Ave_34409.mp3", clip="hold-1", entry=(9, 24), volume=-40.0)
 
-    # ---- L1: 8-bar render ladder ---------------------------------------------------------------
+    # ---- L1: 8-bar audition-window render ladder (Kanbus apricitus-dbed5c) ---------------------
     l1_start = time.time()
     ev = evaluate_mod.Evaluator(run_dir)
-    ev.evaluate(base_text)  # writes baseline.json first, per Evaluator's contract
+    # `priming_window` is the run's one default (non-8-bar-entry) audition window -- computed once
+    # here so every candidate that needs it (l1_window_for's fallback) shares the identical value
+    # without each re-compiling base_text to find it. The very first `ev.evaluate` call in a run
+    # must write baseline.json (Evaluator's contract); doing that over `priming_window` instead of
+    # the full song is what keeps this priming render cheap (~5.6s, not round 3's ~23s) -- nothing
+    # downstream actually reads this baseline.json's *content* any more (Δwindow is scored via
+    # audition_form's own unguarded evaluate(), not check.check()'s guarded one), so its only real
+    # job left is satisfying the contract and giving `reproducible_incumbent_check` something cheap
+    # to re-render.
+    window_cache = {"fallback": audition_form.choose_window(base_text)}
+    priming_window = window_cache["fallback"]
+    incumbent_result_1 = ev.evaluate(base_text, bars=priming_window)
 
     # Round 3 (per review): dedup by (source, entry window, role), not source alone -- source-only
     # capping (even raised to 3, round 2) still collapsed the pool because the top of the ranking
@@ -431,7 +458,7 @@ def main(argv=None) -> int:
     if silent is not None:
         batch_items.append(("silent", silent, silent.text(base_text)))
 
-    rendered = render_l1_batch(batch_items, base_text, ev, args.workers)
+    rendered = render_l1_window_batch(batch_items, base_text, ev, args.workers, window_cache=window_cache)
 
     l1_rows = []
     rendered_by_role: dict[str, list[tuple[float, float]]] = {}
@@ -451,7 +478,7 @@ def main(argv=None) -> int:
                "passes_gate": passes_whole_mix_gate,
                "source": entry.genome.source, "clip": entry.genome.clip, "prose": entry.genome.prose(),
                "rendered_score": out["report"].score,  # diagnostic only, see objective.WHOLE_MIX_MARGIN
-               "genome": entry.genome, "stems_dir": out["stems_dir"]}
+               "genome": entry.genome, "stems_dir": out["stems_dir"], "window": out["window"]}
         l1_rows.append(row)
         # round 3: calibration is against Δmix -- the gate's actual metric -- not the old
         # render_terms composite (kept in the row above as a diagnostic).
@@ -503,64 +530,77 @@ def main(argv=None) -> int:
         top12 = set(np.argsort(js)[::-1][:min(12, len(js))])
         recall_by_role[role] = len(top4 & top12) / len(top4) if top4 else float("nan")
 
-    # ---- L2: full render ladder -----------------------------------------------------------------
-    # Round 3: gate on the whole-mix Δmix (objective.WHOLE_MIX_MARGIN), not the render_terms
-    # composite -- spec section 5's "every finalist beats the null by delta; if fewer than 3 do,
-    # the cycle offers fewer... rather than padding" still applies, just against this metric now.
-    # Survivors are ranked by rank_score = Δmix + 100*w_c*contribution (row construction above).
+    # ---- finalists: picked straight from L1's own Δwindow ranking (Kanbus apricitus-dbed5c) -----
+    # No separate full-song L2 re-render any more: L1 already scored each candidate over its own
+    # audition window, which is the number that matters now (round 3's L2 existed to get a
+    # trustworthy whole-song number after L1's then-unreliable windowed one -- L1's Δwindow *is*
+    # now that trustworthy number, computed the same way L2 used to be, just over W instead of the
+    # whole song). Survivors are still ranked by rank_score = Δmix + 100*w_c*contribution.
     l2_start = time.time()
     l1_rows_sorted = sorted(l1_rows, key=lambda r: -r["rank_score"])
     beats_null = [r for r in l1_rows_sorted if r["passes_gate"]]
     print(f"L1: {len(beats_null)}/{len(l1_rows_sorted)} candidates clear the whole-mix gate "
           f"(Δmix >= {objective_mod.WHOLE_MIX_MARGIN} and not-silent/not-double)")
-    l2_pool = []
+    # spec section 5: "every finalist beats the null by delta; if fewer than 3 do, the cycle offers
+    # fewer... rather than padding" -- distinct-source top 3.
+    finalists_data = []
     seen_sources = set()
     for r in beats_null:
         if r["genome"].source in seen_sources:
             continue
-        l2_pool.append(r)
+        finalists_data.append(r)
         seen_sources.add(r["genome"].source)
-        if len(l2_pool) == 4:
+        if len(finalists_data) == 3:
             break
 
-    l2_texts = [r["genome"].text(base_text) for r in l2_pool]
-    l2_eval_results = evaluate_mod.evaluate_many(run_dir, l2_texts, workers=args.workers) if l2_texts else []
-    l2_results = []
-    for r, result in zip(l2_pool, l2_eval_results):
-        if result.ok:
-            l2_results.append({"genome": r["genome"], "objective": result.objective, "consonance": result.consonance, "result": result})
-
-    incumbent_result_1 = ev.evaluate(base_text)
-    incumbent_result_2 = ev.evaluate(base_text)
+    incumbent_result_2 = ev.evaluate(base_text, bars=priming_window)
     reproducible_incumbent = incumbent_result_1.objective == incumbent_result_2.objective
+    _delete_render_cache(ev, base_text, priming_window)
     l2_elapsed = time.time() - l2_start
 
-    # ---- finalists (MMR simplified to distinct-source top-3 by L2 objective; see report) -------
-    l2_results.sort(key=lambda r: -r["objective"])
-    finalists_data = l2_results[:3]
-
+    # ---- cycle folder: audition-form .m4a for every option, not a full-song render --------------
+    # Each finalist gets a fresh render over its *own* L1 window (the L1 render itself was already
+    # deleted by render_l1_window_batch's cleanup) to build the assembled scene/solo/together audio
+    # (audition_form.build_audition). The incumbent/"keep" option has no candidate part to
+    # audition, so it gets the scene alone laid out to the same 16-bar runtime
+    # (audition_form.build_scene_audition: scene_bars(4) + scene_bars(4) + WINDOW_BARS(8) = 16 bars
+    # of *the scene, repeated/extended* -- not a real "solo" or "together" section, since there's
+    # nothing to add -- over the winning finalist's own window, so "keep" is heard against the same
+    # 8 bars of music the candidates were auditioned in. If there are no finalists, it falls back
+    # to `priming_window`.
     letters = cycle_out.LETTERS
     finalists = []
     for letter, r in zip(letters, finalists_data):
         text = r["genome"].text(base_text)
         score_path = run_dir / f"{letter}.apr"
         score_path.write_text(text)
-        wav = pathlib.Path(r["result"].stems_dir).parent / f"{evaluate_mod.score_sha(text)}.wav"
         audio_path = run_dir / f"{letter}.m4a"
-        err = cycle_out.to_m4a(wav, audio_path) if wav.exists() else "no wav"
+        try:
+            audition_form.build_audition(score_path, track=r["genome"].track_name(), out_path=audio_path,
+                                          window=r["window"], check=False)
+            err = None
+        except audition_form.AuditionError as e:
+            err = str(e)
         finalists.append({"letter": letter, "genome": dataclasses.asdict(r["genome"]), "prose": r["genome"].prose(),
                            "score": str(score_path), "audio": str(audio_path) if not err else None,
-                           "objective": r["objective"], "consonance": r["consonance"],
+                           "objective": r["candidate_objective"], "consonance": None,
+                           "delta_window": r["delta_mix"], "window": list(r["window"]),
                            "audio_error": err})
+
     incumbent_letter = letters[len(finalists)]
     incumbent_score_path = run_dir / f"{incumbent_letter}.apr"
     incumbent_score_path.write_text(base_text)
     incumbent_audio_path = run_dir / f"{incumbent_letter}.m4a"
-    inc_wav = pathlib.Path(incumbent_result_1.stems_dir).parent / f"{evaluate_mod.score_sha(base_text)}.wav"
-    inc_err = cycle_out.to_m4a(inc_wav, incumbent_audio_path) if inc_wav.exists() else "no wav"
+    incumbent_window = finalists_data[0]["window"] if finalists_data else priming_window
+    try:
+        audition_form.build_scene_audition(base_text, out_path=incumbent_audio_path, window=incumbent_window)
+        inc_err = None
+    except audition_form.AuditionError as e:
+        inc_err = str(e)
     incumbent = {"letter": incumbent_letter, "genome": None, "prose": "keep (the incumbent, unchanged)",
                  "score": str(incumbent_score_path), "audio": str(incumbent_audio_path) if not inc_err else None,
-                 "objective": incumbent_result_1.objective, "consonance": incumbent_result_1.consonance}
+                 "objective": incumbent_result_1.objective, "consonance": incumbent_result_1.consonance,
+                 "window": list(incumbent_window)}
 
     question = f"Which of these {len(finalists)} additions to {args.score.name} do you like, or keep it as it was?"
     cycle_out.write_cycle(run_dir, finalists=finalists, incumbent=incumbent, seed=args.seed, question=question,

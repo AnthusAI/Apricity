@@ -196,6 +196,19 @@ def split_scene_and_track(stems: dict[str, np.ndarray], track: str) -> tuple[np.
     return scene, solo
 
 
+def sum_all_stems(stems: dict[str, np.ndarray]) -> np.ndarray:
+    """Every stem summed (the same construction as `mix.wav`, pre-master) -- the scene, when there
+    is no candidate track to exclude (e.g. the incumbent/keep option's own audition)."""
+    if not stems:
+        raise AuditionError("no stems in the render")
+    length = next(iter(stems.values())).shape[0]
+    channels = next(iter(stems.values())).shape[1]
+    out = np.zeros((length, channels), dtype=np.float64)
+    for data in stems.values():
+        out[: data.shape[0]] += data
+    return out
+
+
 # --------------------------------------------------------------------------- assembly
 
 def _bar_samples(tempo: float, meter: int, sr: int) -> float:
@@ -259,6 +272,37 @@ def assemble(scene: np.ndarray, solo: np.ndarray, *, tempo: float, meter: int, s
 
     out = np.concatenate([
         scene_seg[:-fade_n], join1, solo_seg[fade_n:-fade_n], join2, together[fade_n:],
+    ], axis=0)
+    return out
+
+
+def assemble_scene_only(scene: np.ndarray, *, tempo: float, meter: int, sr: int,
+                         scene_bars: int = SCENE_BARS_DEFAULT) -> np.ndarray:
+    """The "keep" option's 16-bar layout, for a cycle folder entry that has no candidate part to
+    audition: the scene alone, laid out to the same length and shape as `assemble`'s output --
+    `scene_bars` (the scene alone) + `scene_bars` (the scene again, standing in for where a
+    candidate's solo would play) + `WINDOW_BARS` (the scene again, standing in for "together") --
+    so a listener can A/B "keep" against the candidates at the same 32s runtime without a second,
+    differently-shaped file. There is no ramp (there's nothing to ramp in): every section is
+    exactly the scene, with the same short equal-power crossfades at the two joins."""
+    bar = _bar_samples(tempo, meter, sr)
+    scene_n = int(round(bar * scene_bars))
+    window_n = scene.shape[0]
+    expected = int(round(bar * WINDOW_BARS))
+    if window_n < expected - int(round(bar)):
+        raise AuditionError(f"rendered window is only {window_n} samples, expected ~{expected}")
+
+    scene_seg = scene[:scene_n]
+    together_seg = scene[:window_n]
+
+    fade_n = max(1, int(round(sr * CROSSFADE_MS / 1000.0)))
+    fade_n = min(fade_n, scene_seg.shape[0], together_seg.shape[0])
+
+    join1 = _equal_power_crossfade(scene_seg[-fade_n:], scene_seg[:fade_n])
+    join2 = _equal_power_crossfade(scene_seg[-fade_n:], together_seg[:fade_n])
+
+    out = np.concatenate([
+        scene_seg[:-fade_n], join1, scene_seg[fade_n:-fade_n], join2, together_seg[fade_n:],
     ], axis=0)
     return out
 
@@ -410,5 +454,37 @@ def build_audition(candidate_path: pathlib.Path, *, track: str, out_path: pathli
         "check": ({"delta_window": delta_window, "together_objective": together_obj, "scene_objective": scene_obj}
                    if check else None),
     }
+    result.json_path.write_text(json.dumps(payload, indent=1) + "\n")
+    return result
+
+
+def build_scene_audition(scene_path_or_text: pathlib.Path | str, *, out_path: pathlib.Path,
+                          window: tuple[int, int] | None = None,
+                          scene_bars: int = SCENE_BARS_DEFAULT) -> AuditionResult:
+    """The "keep" cycle-folder option's audition: the scene alone (no candidate track), laid out
+    to the same 16-bar/32s runtime as a candidate's audition via `assemble_scene_only`. `window`
+    picked the same way as `build_audition` (an explicit window wins; pass the winning finalist's
+    own window so "keep" plays over the same music a listener just heard the candidates against).
+    Renders exactly once; deletes its WAV and stems directory before returning."""
+    text = scene_path_or_text.read_text() if isinstance(scene_path_or_text, pathlib.Path) else scene_path_or_text
+    w = choose_window(text, window)
+
+    with tempfile.TemporaryDirectory(prefix="audition-form-scene-") as td:
+        work_dir = pathlib.Path(td)
+        wav, stems_dir = _render_stems(text, w, work_dir)
+        manifest, stems, sr = _load_track_stems(stems_dir)
+        scene = sum_all_stems(stems)
+        tempo, meter = float(manifest["tempo"]), int(manifest["meter"])
+
+        audio = assemble_scene_only(scene, tempo=tempo, meter=meter, sr=sr, scene_bars=scene_bars)
+        audio, loud_info = loudness_normalize(audio, sr)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    write_m4a(audio, sr, out_path)
+
+    result = AuditionResult(m4a_path=out_path, json_path=out_path.with_suffix(".json"), window=w,
+                             tempo=tempo, meter=meter, loudness_info=loud_info)
+    payload = {"m4a": str(out_path), "track": None, "window": list(w), "tempo": tempo, "meter": meter,
+               "loudness": loud_info, "note": "scene alone (keep), laid out scene_bars+scene_bars+WINDOW_BARS"}
     result.json_path.write_text(json.dumps(payload, indent=1) + "\n")
     return result
