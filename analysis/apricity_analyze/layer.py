@@ -343,7 +343,10 @@ def term_rhythm_onset(candidate: StemFeatures, stack: list[StemFeatures]) -> flo
 
 # --------------------------------------------------------------------------- top-level
 
-def check_layer(manifest: dict, candidate: StemFeatures, stack: list[StemFeatures], *, weights: dict | None = None) -> LayerReport:
+def check_layer(manifest: dict, candidate: StemFeatures, stack: list[StemFeatures], *, weights: dict | None = None,
+                taste: float | None = None) -> LayerReport:
+    """`taste`: the listener's verdicts on this candidate's clip, as the taste penalty (0 loved, 1 disliked;
+    `explore.verdicts.taste`); unrated (0.5) when not given. It counts only as far as `weights["taste"]` says."""
     weights = weights or WEIGHTS_TONIGHT
     not_silent = gate_not_silent(candidate, stack)
     not_double, pairs = gate_not_double(candidate, stack)
@@ -352,7 +355,7 @@ def check_layer(manifest: dict, candidate: StemFeatures, stack: list[StemFeature
     clash = term_clash(candidate, stack, manifest)
     masking = term_masking(candidate, stack)
     rhythm = term_rhythm_onset(candidate, stack)
-    terms = Terms(clash=clash, masking=masking, rhythm=rhythm)
+    terms = Terms(clash=clash, masking=masking, rhythm=rhythm, **({"taste": taste} if taste is not None else {}))
 
     findings = []
     if not not_silent:

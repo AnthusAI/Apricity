@@ -275,12 +275,13 @@ def inner_loop(base_text: str, *, role: str, evaluator: evaluate_mod.Evaluator, 
 
 
 def outer_loop(base_text: str, *, role: str, cast_list: list[candidates_mod.Candidate], run_dir: pathlib.Path,
-                workers: int = 4, train_bars=TRAIN_BARS, holdout_bars=HOLDOUT_BARS, inner_budget=INNER_BUDGET) -> dict:
+                workers: int = 4, train_bars=TRAIN_BARS, holdout_bars=HOLDOUT_BARS, inner_budget=INNER_BUDGET,
+                archive: pathlib.Path | None = None) -> dict:
     """Successive halving: 12 casts x 1 eval -> top 4 (one per source) x `inner_budget` inner
     evals -> full renders of the top 3 plus the incumbent."""
     notebook = Notebook(run_dir, meta={"role": role, "workers": workers, "train_bars": train_bars,
                                         "holdout_bars": holdout_bars, "inner_budget": inner_budget,
-                                        "candidates": [dataclasses.asdict(c) for c in cast_list]})
+                                        "candidates": [dataclasses.asdict(c) for c in cast_list]}, archive=archive)
     evaluator = evaluate_mod.Evaluator(run_dir)
 
     # The incumbent goes first and alone: it writes the run's one shared baseline.json before any

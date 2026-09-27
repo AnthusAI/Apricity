@@ -148,3 +148,17 @@ def test_stack_cache_round_trips(tmp_path):
     assert [s.name for s in loaded] == ["a", "b"]
     assert loaded[1].bass is True
     assert np.allclose(loaded[0].chroma, stack[0].chroma)
+
+
+# --------------------------------------------------------------------------- the listener's taste
+
+def test_taste_comes_from_the_verdicts_and_counts_only_as_far_as_its_weight():
+    """`taste` (explore.verdicts) replaces the unrated 0.5; with its weight at 0.0 the score doesn't move."""
+    stack = [make_stem("drums", chroma=np.tile(one_hot(7, 0.4), (8, 1)))]
+    cand = make_stem("pad")
+    plain = layer.check_layer(manifest(), cand, stack)
+    liked = layer.check_layer(manifest(), cand, stack, taste=0.1)
+    assert plain.terms.taste == 0.5 and liked.terms.taste == 0.1
+    assert liked.score == plain.score
+    weights = {**layer.WEIGHTS_TONIGHT, "taste": 0.2}
+    assert layer.check_layer(manifest(), cand, stack, taste=0.1, weights=weights).score > layer.check_layer(manifest(), cand, stack, taste=0.9, weights=weights).score

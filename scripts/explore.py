@@ -33,10 +33,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--n", type=int, default=12, help="how many casts to try in stage 1")
     ap.add_argument("--inner-budget", type=int, default=8)
     ap.add_argument("--run", default=None, help="run name (default: the score's stem + a timestamp)")
+    ap.add_argument("--library", type=pathlib.Path, default=pathlib.Path.home() / "Apricity-Library",
+                    help="where the run's text is kept for good, beside the verdicts (notebooks/explore/<run>/)")
     args = ap.parse_args(argv)
 
     from apricity_analyze.explore import candidates as candidates_mod
     from apricity_analyze.explore import search
+    from apricity_analyze.explore import verdicts as verdicts_mod
 
     base_text = args.score.read_text()
 
@@ -54,9 +57,14 @@ def main(argv: list[str] | None = None) -> int:
     run_name = args.run or f"{args.score.stem}-{args.role}-{int(time.time())}"
     run_dir = ROOT / "renders" / "explore" / run_name
 
+    # renders/ is ignored by git and local to this checkout: the run's text is also kept in the library.
+    archive = verdicts_mod.notebooks_dir(args.library) / "explore" / run_name if args.library.expanduser().is_dir() else None
+    if archive is None:
+        print(f"note: no library at {args.library}; this run's notebook lives only in {run_dir}")
+
     t0 = time.time()
     result = search.outer_loop(base_text, role=args.role, cast_list=cast_list, run_dir=run_dir,
-                                workers=args.workers, inner_budget=args.inner_budget)
+                                workers=args.workers, inner_budget=args.inner_budget, archive=archive)
     elapsed = time.time() - t0
 
     print(f"\nleaderboard ({elapsed:.0f}s total):")
@@ -64,6 +72,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {i}. {row['objective']:6.1f}  {row['label']:<60} {row['attribution']}")
     print(f"\nwrote {run_dir}")
     print(f"  best.apr / best.m4a, leaderboard.md, notebook.jsonl")
+    if archive:
+        print(f"kept {archive} (the run's text, beside your verdicts)")
+        print(f"  judge it: scripts/verdict.py stars {run_name} <experiment> <1-5> --note \"…\"")
     return 0
 
 
