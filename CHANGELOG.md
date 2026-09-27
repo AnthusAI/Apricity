@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v0.20.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`6b929e7`](https://github.com/AnthusAI/Apricity/commit/6b929e7d4fb81def8ad7f0e78034a9a04c4036b7))
+
+### Features
+
+- **apricitus-dbed5c**: The 16-bar audition form, and the explorer stops filling the disk
+  ([#21](https://github.com/AnthusAI/Apricity/pull/21),
+  [`1ca57cb`](https://github.com/AnthusAI/Apricity/commit/1ca57cbcb62c51c10c6b588001fb1d15cefd9a51))
+
+
 ## v0.19.1 (2026-09-27)
 
 
