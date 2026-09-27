@@ -145,6 +145,9 @@ export interface MarkerRecord {
 export type ScoreKind = "song" | "beat" | "chords" | "melody";
 export const SCORE_KINDS: ScoreKind[] = ["song", "beat", "chords", "melody"];
 
+/** What the score lists read: everything but the text. */
+export const SCORE_LIST_FIELDS = ["id", "title", "folder", "format", "kind", "tags", "owner", "createdAt", "updatedAt", "forkOf", "forkRoot", "legacyPath"] as const;
+
 export interface ScoreRecord {
   id: string;
   title: string;
@@ -670,8 +673,9 @@ export class Catalog {
     return this.deps.url(c.audio.key);
   }
 
+  /** Every score as the lists show it: not its text (a score's text loads when it opens; see score()). */
   private listScores(): Promise<ScoreRecord[]> {
-    this.scoreList ??= listAll<ScoreRecord>((nextToken) => this.models.Score.list({ limit: 1000, nextToken }));
+    this.scoreList ??= listAll<ScoreRecord>((nextToken) => this.models.Score.list({ limit: 1000, nextToken, selectionSet: [...SCORE_LIST_FIELDS] }));
     this.scoreList.catch(() => (this.scoreList = null));
     return this.scoreList;
   }
@@ -749,8 +753,7 @@ export class Catalog {
 
   async score(path: string): Promise<string> {
     const found = (await this.listScores()).find((s) => scorePath(s) === path);
-    if (found) return found.text;
-    const r = await this.models.Score.get({ id: scoreKey(path).id });
+    const r = await this.models.Score.get({ id: found?.id ?? scoreKey(path).id }, { selectionSet: ["id", "text"] });
     if (r.errors?.length) fail(r.errors);
     if (!r.data) throw new Error(`${path}: no such score`);
     return r.data.text;
