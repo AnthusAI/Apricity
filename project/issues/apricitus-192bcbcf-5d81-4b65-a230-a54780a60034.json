@@ -34,10 +34,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "03ff2164-d77d-42ad-9276-d34513050247",
+      "author": "home",
+      "text": "Listener rejected the first render as truly terrible, describing the dominant sound as a cash-register drawer or pinball machine. Diagnosis: the harmony layer was ccmixter/speck/household-hits_36991.mp3 loop-2, selected by the harmony checker despite being an obvious timbral mismatch. This confirms that the mushroom-jazz skill must treat source identity and ear-led auditioning as a hard gate; the next draft will not use household-hit material.",
+      "created_at": "2026-09-27T20:04:58.054597Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-27T19:52:57.494222Z",
-  "updated_at": "2026-09-27T19:56:33.906486Z",
+  "updated_at": "2026-09-27T20:04:58.054638Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
