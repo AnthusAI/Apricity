@@ -3,17 +3,30 @@
   "title": "Harmony v2 1/7: stems.json carries each span's bass and each pitched track's events",
   "description": "See the design in the epic's comment (spec-harmony-v2.md, Phase 1).",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-445cae83-c49a-472f-a6fc-4fec0685d03f",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "343b1b03-a810-405f-b1fa-e25146a74a3a",
+      "author": "home",
+      "text": "Merged in PR #25 (squash into develop). See the PR for test counts and parity numbers.",
+      "created_at": "2026-09-27T18:27:46.046468Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-27T17:27:08.592294Z",
-  "updated_at": "2026-09-27T17:27:08.592334Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T18:27:46.165052Z",
+  "closed_at": "2026-09-27T18:27:46.165013Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
