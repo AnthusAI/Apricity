@@ -3,7 +3,7 @@
   "title": "Add mushroom-jazz score-writing skill",
   "description": "Create a discoverable companion skill for writing Apricity mushroom-jazz scores. Keep its genre-specific tempo, palette, groove, arrangement, and mix guidance separate from the general score-writing skill, and validate the new skill.",
   "type": "chore",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 3,
   "assignee": null,
   "creator": null,
@@ -37,8 +37,8 @@
     }
   ],
   "created_at": "2026-09-27T19:51:33.321604Z",
-  "updated_at": "2026-09-27T19:52:37.391813Z",
-  "closed_at": null,
+  "updated_at": "2026-09-27T19:52:44.861533Z",
+  "closed_at": "2026-09-27T19:52:44.861499Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
