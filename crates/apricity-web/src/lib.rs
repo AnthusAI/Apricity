@@ -561,3 +561,76 @@ pub unsafe extern "C" fn rw_references(json: *const u8, json_len: usize) {
     };
     set_result(result);
 }
+
+// ------------------------------------------------------------------ steer (Harmony v2 steering report, Kanbus apricitus-c46688)
+//
+// The web UI scores a `--stems` render it already has decoded in memory (from `rw_arrange` or its
+// own file loading), without a round trip through the CLI's file-reading `steer` subcommand
+// (`crates/apricity-cli/src/steer.rs`, whose IO/JSON-assembly shape this mirrors): the page hands
+// each stem's mono samples over with `rw_steer_add_stem`, then `rw_steer_json` runs the same
+// `apricity-harmony` pipeline (CQT, NNLS, `objective_v2_for_span`, `steer::{wrong_notes_for_span,
+// steer_regions, steer_suggestions}`) and returns `apricity.steer/1` JSON through `rw_result_*`.
+// No `--score` support here (unlike the CLI): a `track.transpose_span` suggestion's baseline is
+// always shift 0 rather than the solver's actual choice, which the CLI documents as the fallback
+// for the same case (`opts.score` omitted) -- the web build doesn't have a second compile pass
+// wired up yet for this call.
+
+thread_local! {
+    static STEER_STEMS: RefCell<std::collections::BTreeMap<String, Vec<f64>>> = RefCell::new(std::collections::BTreeMap::new());
+}
+
+/// Hand `rw_steer_json` one stem's decoded mono audio at `sample_rate` (resampled to
+/// `apricity_harmony::SR` here, same as the CLI). Call once per stem before `rw_steer_json`;
+/// `rw_steer_clear` (or a fresh page) empties the store.
+///
+/// # Safety
+/// UTF-8 (ptr, len) for `name`; `data` holds `frames` floats.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_steer_add_stem(name: *const u8, name_len: usize, data: *const f32, frames: usize, sample_rate: u32) {
+    let name = unsafe { str_arg(name, name_len) };
+    let data = unsafe { std::slice::from_raw_parts(data, frames) };
+    let mono: Vec<f64> = data.iter().map(|&v| v as f64).collect();
+    let resampled = if sample_rate as f64 == apricity_harmony::SR {
+        mono
+    } else {
+        let step = sample_rate as f64 / apricity_harmony::SR;
+        let out_len = ((mono.len() as f64) / step).ceil() as usize;
+        let mono32: Vec<f32> = mono.iter().map(|&v| v as f32).collect();
+        apricity_dsp::resample::varispeed(&mono32, 0.0, step, out_len).into_iter().map(|v| v as f64).collect()
+    };
+    STEER_STEMS.with(|s| {
+        s.borrow_mut().insert(name.to_string(), resampled);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn rw_steer_clear() {
+    STEER_STEMS.with(|s| s.borrow_mut().clear());
+}
+
+/// The steering report (`apricity.steer/1` JSON, sec 3.1 of `spec-harmony-v2.md`) for every stem
+/// added with `rw_steer_add_stem` since the last `rw_steer_clear`, scored against `manifest`
+/// (the same shape as `stems.json`: `tempo`, `meter`, `key`, `offset_beats`, `length`, `harmony[]`,
+/// `tracks[]`, `events[]`). Result via `rw_result_ptr`/`rw_result_len`: the report, or `{"error"}`.
+///
+/// # Safety
+/// UTF-8 (ptr, len) for `manifest` and `against` (`"written"` or `"heard"`; empty defaults to
+/// `"written"`).
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rw_steer_json(manifest: *const u8, manifest_len: usize, against: *const u8, against_len: usize) {
+    let (manifest_str, against) = unsafe { (str_arg(manifest, manifest_len), str_arg(against, against_len)) };
+    let against = if against.is_empty() { "written" } else { against };
+    let manifest: Value = match serde_json::from_str(manifest_str) {
+        Ok(v) => v,
+        Err(e) => {
+            set_result(json!({ "error": format!("bad manifest: {e}") }));
+            return;
+        }
+    };
+    let stems: std::collections::BTreeMap<String, Vec<f64>> = STEER_STEMS.with(|s| s.borrow().clone());
+    let no_solver_shift = std::collections::BTreeMap::new();
+    match apricity_harmony::steer::report_json(&manifest, &stems, against, &no_solver_shift) {
+        Ok(report) => set_result(report),
+        Err(e) => set_result(json!({ "error": e })),
+    }
+}

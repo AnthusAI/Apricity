@@ -67,3 +67,21 @@ def test_eq_notch_appends_before_an_eq_comment():
     out = ops.track_eq_notch(SCORE, track="bright", hz=233, gain=-8, q=12)
     code, comment = code_and_comment(line(out, "  eq"))
     assert "peak -8@233 q12" in code and comment == " tame the boxiness"
+
+
+def test_transpose_span_keeps_every_split_blocks_comment_and_the_indented_eq_line():
+    out = ops.track_transpose_span(SCORE, track="bright", bars=[39, 40], value=0, total_bars=40)
+    blocks = [l for l in out.splitlines() if l.startswith("track bright")]
+    assert len(blocks) == 2
+    for b in blocks:
+        _code, comment = code_and_comment(b)
+        assert comment == " the groove; volume matters, transpose it with care"
+    assert out.count("eq  peak -4@800 q8") == 2  # cloned into both split blocks
+    assert out.count("tame the boxiness") == 2  # its comment goes along with it, in both blocks
+
+
+def test_bars_op_keeps_the_comment():
+    out = ops.track_bars(SCORE, track="low", bars=[1, 8])
+    code, comment = code_and_comment(line(out, "track low"))
+    assert "bars 1-8" in code and "bars 9-40" not in code
+    assert comment == " bass: octave 2 sits under the loop"

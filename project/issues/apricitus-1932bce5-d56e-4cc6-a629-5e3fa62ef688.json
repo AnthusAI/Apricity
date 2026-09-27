@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-1932bce5-d56e-4cc6-a629-5e3fa62ef688",
+  "title": "Verify CLI login and production score publish",
+  "description": "Authenticate with the Apricity CLI against production and create a valid Score record from a .apr file, confirming the end-to-end owner-authorized publish path.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6de42bb7-b02f-4c1d-9254-286d6e93b7d4",
+      "author": "home",
+      "text": "Using the existing validated mushroom-jazz score as the production publish smoke-test input; this tests the new CLI owner-authorized path without introducing a new composition.",
+      "created_at": "2026-09-27T22:25:59.323612Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    },
+    {
+      "id": "1604007b-b7a0-4877-b238-eea1d82ad907",
+      "author": "home",
+      "text": "Production smoke test passed: authenticated as ryan@anth.us, published and read back `scr_scores_mushroom-jazz-drift_apr`; byte-for-byte text comparison with renders/mushroom-jazz-drift.apr succeeded.",
+      "created_at": "2026-09-27T22:48:58.913277Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T22:25:51.504249Z",
+  "updated_at": "2026-09-27T22:48:58.913314Z",
+  "closed_at": "2026-09-27T22:48:58.764006Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

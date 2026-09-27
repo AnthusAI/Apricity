@@ -38,12 +38,41 @@ Send the audition `.m4a` files (SendUserFile, one-line caption with timestamps),
 `renders/log.jsonl`. Keep working while they listen: their verdict calibrates the next round, it doesn't
 gate it.
 
+## Scoring harmony: `apricity check`
+
+`apricity render SCORE --bars A-B -o w.wav --stems DIR` then `apricity check DIR --json` scores a window.
+Besides the clash measure (v1), it recognises the chord the parts actually make (root, quality,
+inversion, extensions) and adds a chord-quality term: `objective_v2`. On the two logged verdict sets it
+picked the user's preferred version both times; the v1 measure did once (`scripts/harmony-backtest.py`
+re-runs that comparison as verdicts accumulate). Use `objective_v2` to rank harmony, and keep checking
+by ear: two sets is thin evidence, and it still can't hear genre, timbre or groove.
+
+## Steering: `apricity steer`
+
+`apricity steer DIR [--score SCORE] -o steer.json` (schema: `schema/steer.schema.json`) says what to
+change, not just how good it is:
+- per chord span: the chord it hears, the quality breakdown, and the wrong notes with octave and Hz;
+- per stem: a cents correction;
+- per loop: all 12 transpositions scored;
+- the bars that fit and don't;
+- ranked suggestions, each an optimizer op (`track.transpose_span`, `track.eq_notch`, `track.hp`,
+  `clip.retune`, ...).
+
+Pass `--score` so it knows the solver's actual shift per span.
+
+Use it as a hill-climb: apply the top suggestion (via `analysis/apricity_analyze/explore/ops.py`),
+re-render the window, re-run `apricity check`, and keep the change only if `objective_v2` rises by 2 or
+more; otherwise try the next suggestion. Expect rejections: suggestions are predictions, and the
+re-render is the test. When three or more different wrong notes recur across chords, reach for the
+chord-following EQ (`harmonic`) instead of stacking fixed notches.
+
 ## What the numbers can't hear
 
-- **The harmony checker measures clash, not style or quality.** It folds every stem into 12 pitch classes
-  per beat and penalises clashing intervals and off-chord notes. It can't hear genre, timbre, groove or
-  whether two parts sound like one record, and it never rewards a good chord. It ranked the four lounge
-  swaps within 4 points and put Emerge third; the user's ear put Emerge far ahead.
+- **The v1 harmony checker (`scripts/check-stems.py`, `audition.sh --check`) measures clash, not
+  style or quality.** It folds every stem into 12 pitch classes per beat and penalises clashing
+  intervals and off-chord notes. It can't hear genre, timbre, groove or whether two parts sound like
+  one record, and it never rewards a good chord. It ranked the four lounge swaps within 4 points and
+  put Emerge third; the user's ear put Emerge far ahead (objective_v2 puts it first).
 - **What set Emerge apart, measurably:** similarity to the scene (CLAP 0.82 vs 0.57-0.73), a real loop
   playing long unbroken phrases (16 events over 32 bars vs 33-38 re-triggered phrase fragments), and no
   stretching (1.00 vs up to 1.34). Prefer loops in the scene's key and tempo, by related artists or

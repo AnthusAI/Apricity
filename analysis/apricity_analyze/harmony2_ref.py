@@ -811,3 +811,292 @@ def analyze_stems_dir(stems_dir, target_sr: int = SR) -> dict:
         span_mass.append(result["mass"])
 
     return {"spans": spans_out, "window": window_objective(spans_out, span_mass), "stems": list(stem_beat_activation)}
+
+
+# --------------------------------------------------------------------------- the steering report (sec 3, Kanbus apricitus-c46688)
+#
+# `build_steer_report` is the reference `apricity steer <stems dir> [--against written|heard]`
+# writes (sec 3.1's schema draft): `analyze_stems_dir`'s per-span chord/Q/objective plus per-stem
+# tuning, per-span transposition maps for loop stems (sec 3.2), a wrong-note list (sec 3.3), fit
+# regions (sec 3.3), and suggestions mapped to optimizer ops (sec 3.4). `apricity-harmony::steer`
+# is a direct port; its own docstring notes the same simplifications as this module's.
+
+REGION_FIT_Q = 0.6
+REGION_FIT_CLASH = 0.10
+TUNING_CORRECTION_THRESHOLD_CENTS = 8.0  # matches check.py's tuning guard threshold
+STEER_TRANSPOSE_MARGIN_DQ = 0.2  # sec 3.2's proposed margin: only suggest a shift that clearly beats the solver's
+
+DEGREE_NAMES = {0: "root", 1: "b2", 2: "2nd", 3: "b3", 4: "3rd", 5: "4th", 6: "b5", 7: "5th", 8: "#5", 9: "6th", 10: "b7", 11: "7th"}
+
+
+def _hz_for_midi(midi: int, tune: float = 440.0) -> float:
+    """Equal-tempered Hz for a MIDI note number at the given reference (sec 3.3)."""
+    return tune * 2.0 ** ((midi - 69) / 12.0)
+
+
+def wrong_notes_for_span(stem_span_activation: dict[str, np.ndarray], target_root_pc: int | None,
+                          target_tones_pc: set[int], target_label: str, stem_cents: dict[str, float],
+                          bars: list[float]) -> list[dict]:
+    """Sec 3.3's `wrong_notes`: per stem, the extracted notes (`notes_from_activation`) whose
+    pitch class isn't in `target_tones_pc` (the written chord's tones, or the heard chord's when
+    the caller passed `--against heard`), with octave, equal-tempered Hz, a cents figure, share
+    of the stem's span mass, and the span's own bar range.
+
+    `cents` is the STEM's own tuning offset (sec 2.2), not a per-note fit: Phase 1 only fits
+    tuning once per stem (`cents_offset`, over the whole rendered stem), not per extracted note,
+    since that needs the note's own frame range re-isolated from the beat-aggregated activation
+    this function receives -- a real simplification against sec 3.3's "the note's measured
+    cents", correct for a uniformly-tuned stem (a pinned single-pitch clip, or a loop with one
+    consistent room/player tuning) and left as future work for a stem whose individual notes
+    drift independently.
+
+    Sorted by share x the pitch class's distance-from-root weight (`target_root_pc`, when given)
+    so a root/bass-adjacent wrong note -- the one likeliest to read as a different chord entirely
+    -- sorts first, matching sec 3.3's "root/bass semitone first"."""
+    out = []
+    for stem, activation in stem_span_activation.items():
+        total = float(activation.sum())
+        if total <= 0:
+            continue
+        for midi in notes_from_activation(activation):
+            pc = midi % 12
+            if pc in target_tones_pc:
+                continue
+            idx = midi - MIDI_C1
+            share = float(activation[idx]) / total if 0 <= idx < len(activation) else 0.0
+            degree = DEGREE_NAMES[(pc - target_root_pc) % 12] if target_root_pc is not None else "?"
+            weight = 1.0 if target_root_pc is None else (2.0 if (pc - target_root_pc) % 12 in (1, 11) else 1.0)
+            out.append({
+                "stem": stem, "note": semitone_name(midi), "midi": int(midi),
+                "hz": round(_hz_for_midi(midi), 1), "cents": round(stem_cents.get(stem, 0.0), 1),
+                "share": round(share, 3), "beats": list(bars),
+                "against": target_label, "reason": f"{degree} of {target_label}",
+                "_sort": share * weight,
+            })
+    out.sort(key=lambda w: -w["_sort"])
+    for w in out:
+        del w["_sort"]
+    return out
+
+
+def steer_regions(spans: list[dict]) -> dict:
+    """Sec 3.3's `regions`: spans with `Q >= REGION_FIT_Q` and `clash <= REGION_FIT_CLASH` are
+    `fit`; contiguous fit (or unfit) spans -- adjacent bar ranges, in score order -- are merged
+    into bar ranges. `spans` are steer-report span dicts, each carrying `bars` and its own
+    `Q`/`clash`."""
+    fit: list[list[float]] = []
+    unfit: list[list[float]] = []
+    cur_is_fit: bool | None = None
+    cur_range: list[float] | None = None
+    for sp in spans:
+        is_fit = sp["Q"]["Q"] >= REGION_FIT_Q and sp["clash"] <= REGION_FIT_CLASH
+        bars = sp["bars"]
+        bucket = fit if is_fit else unfit
+        if cur_range is not None and cur_is_fit == is_fit and cur_range[1] == bars[0]:
+            cur_range[1] = bars[1]
+        else:
+            cur_range = [bars[0], bars[1]]
+            bucket.append(cur_range)
+            cur_is_fit = is_fit
+    return {"fit": fit, "unfit": unfit}
+
+
+def steer_suggestions(spans: list[dict], stems: dict[str, dict]) -> list[dict]:
+    """Sec 3.4's suggestions, ranked by projected gain (`expected_dQ`, falling back to a fixed
+    priority for ops that don't project a `Q` delta). Three of the table's rows are generated
+    here in Phase 1 (`track.transpose_span`, `track.eq_notch`, `clip.retune`); `track.harmonic`
+    is P2 (sec 3.4's own table) and `track.hp`/`track.bars` need a register/arrangement judgement
+    this analytic pass doesn't make on its own, so they're left for the agent/optimizer loop to
+    propose from the report's `wrong_notes`/`regions` rather than auto-suggested here."""
+    suggestions: list[dict] = []
+
+    for sp in spans:
+        # A span whose chord already reads well (`Q >= REGION_FIT_Q`, the same threshold
+        # `steer_regions` uses for "fits") isn't worth re-transposing even when the analytic map
+        # prefers a different shift by more than the margin: the map's score (`chord_match_score`,
+        # sec 3.2) is a cheaper proxy for `Q` and can disagree with it on a span that's already a
+        # good, complete chord (voice_leading/spacing/extension credit the proxy doesn't see) --
+        # suggesting a change there would fix a problem the span doesn't actually have.
+        if sp["Q"]["Q"] >= REGION_FIT_Q:
+            continue
+        tmap = sp.get("transposition_map") or {}
+        for stem, shifts in tmap.items():
+            if not shifts:
+                continue
+            solver_shift = sp.get("solver_shift", {}).get(stem)
+            best_shift = max(shifts, key=lambda k: shifts[k])
+            best_score = shifts[best_shift]
+            baseline_shift = solver_shift if solver_shift is not None else 0
+            baseline_score = shifts.get(baseline_shift, best_score)
+            if best_shift == baseline_shift:
+                continue
+            d_q = best_score - baseline_score
+            if d_q < STEER_TRANSPOSE_MARGIN_DQ:
+                continue
+            suggestions.append({
+                "op": "track.transpose_span", "track": stem, "bars": list(sp["bars"]),
+                "value": int(best_shift), "expected_dQ": round(d_q, 3), "expected_dclash": None,
+                "why": f"the loop's own notes at {best_shift:+d} st score {best_score:.2f} against "
+                       f"{sp['label']} vs {baseline_score:.2f} at the solver's {baseline_shift:+d}",
+            })
+
+    for sp in spans:
+        wrong = sp.get("wrong_notes") or []
+        if wrong:
+            top = wrong[0]
+            suggestions.append({
+                "op": "track.eq_notch", "track": top["stem"], "hz": top["hz"], "gain": -9, "q": 12,
+                "bars": list(sp["bars"]), "expected_dQ": None,
+                "why": f"{top['note']} is the loudest non-chord note under {sp['label']}",
+            })
+
+    for name, info in stems.items():
+        cents = info.get("cents", 0.0)
+        if info.get("kind") == "pitched" and abs(cents) > TUNING_CORRECTION_THRESHOLD_CENTS:
+            suggestions.append({
+                "op": "clip.retune", "clip": name, "cents": round(-cents, 1), "expected_dQ": None,
+                "why": f"pinned root reads {cents:+.0f} c {'sharp' if cents > 0 else 'flat'}",
+            })
+
+    suggestions.sort(key=lambda s: -(s["expected_dQ"] if s.get("expected_dQ") is not None else 0.05))
+    for s in suggestions:
+        if s.get("expected_dQ") is None:
+            s.pop("expected_dQ", None)
+    return suggestions
+
+
+def build_steer_report(stems_dir, against: str = "written", target_sr: int = SR) -> dict:
+    """`apricity steer <stems dir> [--against written|heard]`'s output, matching sec 3.1's
+    `apricity.steer/1` schema. Runs the same CQT/NNLS/chord/Q pipeline `analyze_stems_dir` does
+    (this function calls it for the per-span heard/Q/objective numbers) and, separately, re-walks
+    the per-stem beat activations to build the transposition map and wrong-note list sec 3.1-3.3
+    need -- a second, cheap CQT/NNLS pass over the same stems rather than threading extra return
+    values through `analyze_stems_dir`'s existing (and already Rust-ported) contract. A later pass
+    can merge the two if the duplication matters in practice; Phase 1 keeps `analyze_stems_dir`'s
+    signature untouched so its own callers and fixtures don't move."""
+    import json
+    import math
+    import pathlib
+
+    import soundfile as sf
+    from scipy.signal import resample_poly
+
+    stems_dir = pathlib.Path(stems_dir)
+    manifest = json.loads((stems_dir / "stems.json").read_text())
+    base = analyze_stems_dir(stems_dir, target_sr=target_sr)
+
+    def resample(y: np.ndarray, src_sr: int) -> np.ndarray:
+        if src_sr == target_sr:
+            return y.astype(np.float64)
+        g = math.gcd(int(src_sr), int(target_sr))
+        return resample_poly(y, target_sr // g, src_sr // g).astype(np.float64)
+
+    tempo = manifest["tempo"]
+    meter = manifest["meter"]
+    offset_beats = manifest["offset_beats"]
+    sample_rate = manifest["sample_rate"]
+    length = manifest["length"]
+    spb_frames = sample_rate * 60.0 / tempo
+    n_beats = max(1, int(np.ceil(length / spb_frames)))
+
+    pitched_pitch = {t["name"]: t["pitch"] for t in manifest["tracks"] if t.get("pitch")}
+
+    stem_beat_activation: dict[str, np.ndarray] = {}
+    stem_cents: dict[str, float] = {}
+    for t in manifest["tracks"]:
+        if t.get("kit") or not t.get("pitched", True):
+            continue
+        path = stems_dir / f"{t['name']}.wav"
+        if not path.exists():
+            continue
+        data, sr = sf.read(str(path), dtype="float32", always_2d=True)
+        mono = resample(data.mean(axis=1), sr)
+        stem_cents[t["name"]] = cents_offset(mono)
+        A = nnls_activations(fold_to_semitones(cqt(mono)))
+        times = frame_times(A.shape[1])
+        stem_beat_activation[t["name"]] = beat_aggregate(A, times, tempo, 0.0, n_beats)
+
+    stems_out: dict[str, dict] = {}
+    for name, act in stem_beat_activation.items():
+        cents = round(float(stem_cents.get(name, 0.0)), 1)
+        if name in pitched_pitch:
+            stems_out[name] = {"kind": "pitched", "pitch": pitched_pitch[name], "cents": cents}
+        else:
+            # `cents_spread` (sec 3.1's schema) needs a per-note tuning fit; Phase 1 only fits one
+            # offset per stem (`cents_offset`, above), so it's reported as 0 rather than omitted.
+            stems_out[name] = {"kind": "loop", "cents": cents, "cents_spread": 0.0}
+
+    loop_names = [n for n in stem_beat_activation if n not in pitched_pitch]
+
+    # `base["spans"]` (from `analyze_stems_dir`, above) already dropped every harmony span outside
+    # this render's own beat window (its loop's `if b <= a: continue`, sec 2.3's window slicing).
+    # Re-deriving `a`/`b` below needs the SAME filtered list in the SAME order -- zipping against
+    # the raw `manifest["harmony"]` (every span of the whole piece, most of them outside this
+    # window) would pair `base["spans"][0]` with the wrong span and read a negative `b`.
+    def in_window(span: dict) -> bool:
+        a = max(0, int(round(span["start_beat"] - offset_beats)))
+        b = min(n_beats, int(round(span["end_beat"] - offset_beats)))
+        return b > a
+
+    filtered_harmony = [span for span in manifest.get("harmony", []) if in_window(span)]
+
+    spans_out = []
+    for base_span, span in zip(base["spans"], filtered_harmony):
+        a = max(0, int(round(span["start_beat"] - offset_beats)))
+        b = min(n_beats, int(round(span["end_beat"] - offset_beats)))
+        bars = base_span["bars"]
+        chord_tones_pc = [_pitch_name_to_pc(n) for n in span.get("chord_tones", []) if n]
+        written_root_pc = chord_tones_pc[0] if chord_tones_pc else None
+        written_tones_pc = set(chord_tones_pc)
+        heard = base_span.get("heard")
+
+        if against == "heard" and heard:
+            target_root_pc = NAMES.index(heard["root"])
+            target_tones_pc = {(target_root_pc + iv) % 12 for iv in QUALITIES.get(heard["quality"], [0, 4, 7])}
+            target_label = f"heard {heard['root']}{heard['quality']}"
+        else:
+            target_root_pc = written_root_pc
+            target_tones_pc = written_tones_pc
+            target_label = f"written {span.get('label', '')}".strip()
+
+        stem_span_activation = {name: (act[a:b].sum(axis=0) if b > a else np.zeros(N_SEMITONES)) for name, act in stem_beat_activation.items()}
+        # Sec 2.3's "ground truth first": a pinned/pitched single-note track's sounding pitch is
+        # known exactly from the compiled timeline, so it never gets a `wrong_notes` entry (its
+        # own tuning still earns a `clip.retune` suggestion, from `stems_out` below) -- only the
+        # audio-analysed loop stems are checked against the chord.
+        loop_span_activation = {name: a for name, a in stem_span_activation.items() if name not in pitched_pitch}
+        wrong_notes = wrong_notes_for_span(loop_span_activation, target_root_pc, target_tones_pc, target_label, stem_cents, bars)
+
+        tmap: dict[str, dict[int, float]] = {}
+        for stem in loop_names:
+            span_act = stem_span_activation.get(stem)
+            if span_act is None or span_act.sum() <= 0:
+                continue
+            other = sum((v for name, v in stem_span_activation.items() if name != stem), np.zeros(N_SEMITONES))
+            m = transposition_map(span_act, other, written_root_pc if written_root_pc is not None else 0,
+                                   written_quality_from_tones(written_root_pc or 0, chord_tones_pc) or "", target_bass_pc=None)
+            tmap[stem] = {int(k): round(float(v), 3) for k, v in m.items()}
+
+        clash = round(1.0 - base_span["consonance_v1"] / 100.0, 4)
+        spans_out.append({
+            **base_span, "bars": bars, "clash": clash, "wrong_notes": wrong_notes,
+            "transposition_map": tmap, "solver_shift": {}, "fits": base_span["Q"]["Q"] >= REGION_FIT_Q and clash <= REGION_FIT_CLASH,
+        })
+
+    regions = steer_regions(spans_out)
+    suggestions = steer_suggestions(spans_out, stems_out)
+
+    bars_range = [manifest["harmony"][0]["start_beat"] / meter + 1, manifest["harmony"][-1]["end_beat"] / meter + 1] if manifest.get("harmony") else [1, 1]
+    return {
+        "schema": "apricity.steer/1",
+        "render": {"stems_dir": str(stems_dir), "bars": bars_range, "tempo": tempo, "meter": meter, "key": manifest.get("key")},
+        "objective": {
+            "v1": base["window"]["objective_v1"], "v2": base["window"]["objective_v2"],
+            "consonance": base["window"]["consonance_v1"], "guards": [v for sp in spans_out for v in sp.get("guard_violations", [])],
+            "Q_mean": base["window"]["Q_mean"],
+        },
+        "stems": stems_out,
+        "spans": spans_out,
+        "regions": regions,
+        "suggestions": suggestions,
+    }

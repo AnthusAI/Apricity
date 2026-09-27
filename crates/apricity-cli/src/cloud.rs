@@ -21,6 +21,7 @@ const SERVICE: &str = "apricity";
 const ACCOUNT: &str = "cognito-refresh-token";
 const DEFAULT_OUTPUTS_URL: &str = "https://apricity.anth.us/amplify_outputs.json";
 const DEFAULT_CALLBACK: &str = "http://127.0.0.1:5181/";
+const HTTP_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[derive(Clone, Debug)]
 pub struct Config {
@@ -142,13 +143,21 @@ fn keyring() -> Result<keyring::Entry, String> {
     keyring::Entry::new(SERVICE, ACCOUNT).map_err(|e| format!("keychain unavailable: {e}"))
 }
 fn get_text(url: &str) -> Result<String, String> {
-    Client::new()
+    http()?
         .get(url)
         .send()
         .and_then(|r| r.error_for_status())
         .map_err(|e| format!("could not fetch {url}: {e}"))?
         .text()
         .map_err(|e| format!("could not read {url}: {e}"))
+}
+
+fn http() -> Result<Client, String> {
+    Client::builder()
+        .connect_timeout(Duration::from_secs(10))
+        .timeout(HTTP_TIMEOUT)
+        .build()
+        .map_err(|e| format!("could not initialize HTTP client: {e}"))
 }
 fn domain_url(domain: &str) -> String {
     if domain.starts_with("https://") {
@@ -199,10 +208,7 @@ fn login(config: &Config) -> Result<(), String> {
     stream
         .set_read_timeout(Some(Duration::from_secs(300)))
         .map_err(|e| e.to_string())?;
-    let mut request = String::new();
-    stream
-        .read_to_string(&mut request)
-        .map_err(|e| format!("could not read login callback: {e}"))?;
+    let request = read_http_head(&mut stream)?;
     let target = request
         .lines()
         .next()
@@ -223,7 +229,7 @@ fn login(config: &Config) -> Result<(), String> {
     let code = pairs
         .get("code")
         .ok_or("login callback did not include an authorization code")?;
-    let token = Client::new()
+    let token = http()?
         .post(format!("{}/oauth2/token", domain_url(&config.domain)))
         .form(&[
             ("grant_type", "authorization_code"),
@@ -251,11 +257,31 @@ fn login(config: &Config) -> Result<(), String> {
     Ok(())
 }
 
+/// Read just an HTTP request's headers. Browsers keep the connection open while
+/// waiting for our response, so waiting for EOF here would deadlock the login.
+fn read_http_head(stream: &mut impl Read) -> Result<String, String> {
+    let mut bytes = Vec::with_capacity(1024);
+    let mut chunk = [0_u8; 1024];
+    while !bytes.windows(4).any(|w| w == b"\r\n\r\n") {
+        let read = stream
+            .read(&mut chunk)
+            .map_err(|e| format!("could not read login callback: {e}"))?;
+        if read == 0 {
+            return Err("login callback ended before HTTP headers".into());
+        }
+        bytes.extend_from_slice(&chunk[..read]);
+        if bytes.len() > 16 * 1024 {
+            return Err("login callback headers are too large".into());
+        }
+    }
+    String::from_utf8(bytes).map_err(|_| "login callback was not valid HTTP text".into())
+}
+
 fn refresh(config: &Config) -> Result<Tokens, String> {
     let token = keyring()?.get_password().map_err(|_| {
         "No Apricity application session is available. Run `apricity login`.".to_string()
     })?;
-    let response = Client::new()
+    let response = http()?
         .post(format!("{}/oauth2/token", domain_url(&config.domain)))
         .form(&[
             ("grant_type", "refresh_token"),
@@ -315,7 +341,7 @@ fn jwt_identity(token: &str) -> Option<String> {
 }
 fn logout(config: &Config) -> Result<(), String> {
     if let Ok(refresh) = keyring()?.get_password() {
-        let _ = Client::new()
+        let _ = http()?
             .post(format!("{}/oauth2/revoke", domain_url(&config.domain)))
             .form(&[
                 ("client_id", config.client_id.as_str()),
@@ -338,7 +364,7 @@ impl Api {
         Ok(Self {
             config: config.clone(),
             token: refresh(config)?,
-            http: Client::new(),
+            http: http()?,
         })
     }
     fn gql(&mut self, query: &str, variables: Value) -> Result<Value, String> {
@@ -525,7 +551,7 @@ fn reconcile_refs(
                 }
             }
         }
-        let input = json!({"id": format!("sref_{}_{}", score_id, r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "source": r.source, "sampleId": sample_id, "samplePath": r.catalog_path, "clipName": r.clip_name, "clipId": clip_id, "start": start, "end": end, "kitPad": r.kit_pad});
+        let input = json!({"id": format!("sref_{}_{}", score_id, r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "sampleId": sample_id, "samplePath": r.catalog_path, "clipName": r.clip_name, "clipId": clip_id, "start": start, "end": end});
         api.gql("mutation Create($input: CreateScoreRefInput!) { createScoreRef(input: $input) { id } }", json!({"input": input}))?;
     }
     Ok(())
@@ -578,7 +604,7 @@ fn import_library(config: &Config) -> Result<(), String> {
         .ok_or("Amplify outputs has no storage.bucket_name")?;
     let provider = format!("cognito-idp.{region}.amazonaws.com/{user_pool}");
     let identity_endpoint = format!("https://cognito-identity.{region}.amazonaws.com/");
-    let id: Value = Client::new()
+    let id: Value = http()?
         .post(&identity_endpoint)
         .header("X-Amz-Target", "AWSCognitoIdentityService.GetId")
         .header("Content-Type", "application/x-amz-json-1.1")
@@ -591,7 +617,7 @@ fn import_library(config: &Config) -> Result<(), String> {
     let identity_id = id["IdentityId"]
         .as_str()
         .ok_or("Cognito Identity did not return an identity ID")?;
-    let credentials: Value = Client::new()
+    let credentials: Value = http()?
         .post(&identity_endpoint)
         .header(
             "X-Amz-Target",
@@ -744,5 +770,15 @@ mod tests {
         assert_eq!(v["folder"], "scores");
         assert_eq!(v["title"], "beat");
         assert!(refs.is_empty());
+    }
+    #[test]
+    fn callback_reader_stops_at_headers_without_waiting_for_eof() {
+        let mut input =
+            std::io::Cursor::new(b"GET /?code=x HTTP/1.1\r\nHost: localhost\r\n\r\nbody".to_vec());
+        assert!(
+            read_http_head(&mut input)
+                .unwrap()
+                .starts_with("GET /?code=x HTTP/1.1")
+        );
     }
 }
