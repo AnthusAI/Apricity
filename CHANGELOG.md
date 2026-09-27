@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v0.27.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`88bd9ce`](https://github.com/AnthusAI/Apricity/commit/88bd9ce6b626fcd93e4e00bae019e8b71e1acfea))
+
+### Features
+
+- **apricitus-d401a2**: Harmony v2 in Rust: chord recognition, chord quality, objective_v2, and
+  `apricity check` ([#32](https://github.com/AnthusAI/Apricity/pull/32),
+  [`c8a8ed9`](https://github.com/AnthusAI/Apricity/commit/c8a8ed9dec3533eea8a58e28423460f67a4ac29a))
+
+
 ## v0.26.1 (2026-09-27)
 
 
