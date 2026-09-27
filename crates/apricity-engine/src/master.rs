@@ -3,11 +3,11 @@
 //! without allocating or resetting filter memory.
 
 use apricity_dsp::color::{self, DriveParams, Gate, GateParams, LofiParams};
-use apricity_dsp::fx::{BiquadKind, CompParams, Compressor, Eq, EqParams, Limiter, MAX_BANDS};
+use apricity_dsp::fx::{Biquad, BiquadKind, CompParams, Compressor, Eq, EqParams, Limiter, MAX_BANDS};
 use std::collections::HashMap;
 use std::sync::Arc;
 use apricity_dsp::space::{Delay, DelayParams, Reverb, ReverbKind, ReverbParams};
-use apricity_score::score::{CompSpec, DelaySpec, Effect, EqSpec, ReverbSpec, ReverbType};
+use apricity_score::score::{CompSpec, DelaySpec, Effect, EqSpec, FilterFxSpec, FilterKind, ReverbSpec, ReverbType};
 use crate::automation::{Curve, scale_for};
 use apricity_score::compile::Lane;
 
@@ -20,6 +20,25 @@ pub enum Stage {
     Comp(CompParams),
     Limit { ceiling_db: f64, release_ms: f64 },
     Width(f64),
+    Filter(FilterParams),
+}
+
+/// A resonant filter stage's real-time settings: the resolved biquad response, and how many
+/// cascaded passes (1 for 12 dB/octave, 2 for 24).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FilterParams {
+    pub kind: BiquadKind,
+    pub passes: u8,
+}
+
+pub fn filter_params(f: &FilterFxSpec) -> FilterParams {
+    let q = std::f64::consts::FRAC_1_SQRT_2 * 20f64.powf(f.res);
+    let kind = match f.kind {
+        FilterKind::Lp => BiquadKind::LowPass { hz: f.hz, q },
+        FilterKind::Hp => BiquadKind::HighPass { hz: f.hz, q },
+        FilterKind::Bp => BiquadKind::BandPass { hz: f.hz, q },
+    };
+    FilterParams { kind, passes: (f.slope / 12).max(1) as u8 }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -67,6 +86,7 @@ pub fn stage(e: &Effect) -> Option<Stage> {
         Effect::Comp(c) if c.sidechain.is_none() => Stage::Comp(comp_params(c)),
         Effect::Limit(l) => Stage::Limit { ceiling_db: l.ceiling, release_ms: l.release_ms.unwrap_or(50.0) },
         Effect::Width(w) => Stage::Width(*w),
+        Effect::Filter(f) => Stage::Filter(filter_params(f)),
         _ => return None,
     })
 }
@@ -103,6 +123,7 @@ pub fn chain_curves(
     let mut comp_indices = Vec::new();
     let mut reverb_indices = Vec::new();
     let mut delay_indices = Vec::new();
+    let mut filter_indices = Vec::new();
 
     for (idx, effect) in effects.iter().enumerate() {
         match effect {
@@ -110,6 +131,7 @@ pub fn chain_curves(
             Effect::Comp(_) => comp_indices.push(idx),
             Effect::Reverb(_) => reverb_indices.push(idx),
             Effect::Delay(_) => delay_indices.push(idx),
+            Effect::Filter(_) => filter_indices.push(idx),
             _ => {}
         }
     }
@@ -161,6 +183,13 @@ pub fn chain_curves(
                 (1, "delay.")
             };
             delay_indices.get(delay_num - 1).copied()
+        } else if target.starts_with("filter.") || target.starts_with("filter2.") {
+            let (filter_num, _) = if target.starts_with("filter2.") {
+                (2, "filter2.")
+            } else {
+                (1, "filter.")
+            };
+            filter_indices.get(filter_num - 1).copied()
         } else {
             None
         };
@@ -181,6 +210,8 @@ enum State {
     Eq(Eq),
     Comp(Compressor),
     Limit(Limiter),
+    /// Up to two cascaded biquads (24 dB/octave uses both) and how many are active.
+    Filter([Biquad; 2], u8),
 }
 
 /// A running chain. `set` retunes it in place (no allocation), keeping each stage's memory when
@@ -206,6 +237,13 @@ impl MasterChain {
                 (State::Comp(c), Some(Stage::Comp(q))) => c.set(q, self.sr),
                 (State::Limit(l), Some(Stage::Limit { ceiling_db, release_ms })) => l.set(ceiling_db, release_ms, self.sr),
                 (State::Width(w), Some(Stage::Width(v))) => *w = v,
+                (State::Filter(bqs, passes), Some(Stage::Filter(fp))) => {
+                    bqs[0].set(fp.kind, self.sr);
+                    if fp.passes > 1 {
+                        bqs[1].set(fp.kind, self.sr);
+                    }
+                    *passes = fp.passes;
+                }
                 (st, stage) => {
                     *st = match stage {
                         None => State::Off,
@@ -213,6 +251,14 @@ impl MasterChain {
                         Some(Stage::Comp(q)) => State::Comp(Compressor::new(q, self.sr)),
                         Some(Stage::Limit { ceiling_db, release_ms }) => State::Limit(Limiter::new(ceiling_db, release_ms, self.sr)),
                         Some(Stage::Width(v)) => State::Width(v),
+                        Some(Stage::Filter(fp)) => {
+                            let mut bqs = [Biquad::default(); 2];
+                            bqs[0].set(fp.kind, self.sr);
+                            if fp.passes > 1 {
+                                bqs[1].set(fp.kind, self.sr);
+                            }
+                            State::Filter(bqs, fp.passes)
+                        }
                     }
                 }
             }
@@ -249,6 +295,14 @@ impl MasterChain {
                     State::Comp(c) => (x, y) = c.tick(x, y, x.abs().max(y.abs())),
                     State::Limit(lim) => (x, y) = lim.tick(x, y),
                     State::Width(w) => (x, y) = color::width(x, y, *w),
+                    State::Filter(bqs, passes) => {
+                        x = bqs[0].tick(0, x);
+                        y = bqs[0].tick(1, y);
+                        if *passes > 1 {
+                            x = bqs[1].tick(0, x);
+                            y = bqs[1].tick(1, y);
+                        }
+                    }
                 }
             }
             if self.gain_at >= MAX_STAGES {
@@ -333,7 +387,7 @@ pub fn tail_s(effects: &[Effect], frames_per_beat: f64, sr: f64) -> f64 {
             Effect::Delay(d) => delay_params(d, frames_per_beat, sr).tail_s(),
             Effect::Comp(c) => c.release_ms.unwrap_or(100.0) / 1000.0,
             Effect::NoiseGate(g) => (g.hold_ms.unwrap_or(30.0) + g.release_ms.unwrap_or(100.0)) / 1000.0,
-            Effect::Eq(_) | Effect::Limit(_) | Effect::Drive(_) | Effect::Lofi(_) | Effect::Width(_) => 0.0,
+            Effect::Eq(_) | Effect::Limit(_) | Effect::Drive(_) | Effect::Lofi(_) | Effect::Width(_) | Effect::Filter(_) => 0.0,
         })
         .sum()
 }
@@ -394,6 +448,18 @@ fn automated_effect(e: &Effect, curves: &[(String, Curve)], frame: u64) -> Effec
                 }
             }
             e.clone()
+        }
+        Effect::Filter(spec) => {
+            let mut s = *spec;
+            for (target, curve) in curves {
+                let v = curve.value_at(frame);
+                if target.contains("cutoff") {
+                    s.hz = v;
+                } else if target.contains("res") {
+                    s.res = v;
+                }
+            }
+            Effect::Filter(s)
         }
         _ => e.clone(),
     }
@@ -651,7 +717,7 @@ mod automation_tests {
     /// Energy (dB) of `x` above 5 kHz.
     fn highs_db(x: &[f32]) -> f64 {
         let mut y = x.to_vec();
-        crate::render::biquad(&mut y, FilterSpec::Highpass(5000.0), SR);
+        crate::render::biquad(&mut y, FilterSpec::Highpass { hz: 5000.0, res: 0.0, slope: 12 }, SR);
         10.0 * (y.iter().map(|v| (*v as f64).powi(2)).sum::<f64>() / y.len() as f64 + 1e-20).log10()
     }
 
@@ -725,5 +791,42 @@ mod automation_tests {
         let from_beat_4 = run(&input, &[rv], &[lane("reverb.mix", true, &[[0.0, 0.0], [4.0, 1.0]])], 4.0);
         assert!((from_start[0][10] - input[0][10]).abs() < 1e-6);
         assert!((from_beat_4[0][10] - input[0][10]).abs() > 1e-4, "wet at frame 10 when rendering from beat 4");
+    }
+
+    #[test]
+    fn a_filter_effect_cutoff_lane_opens_the_highs_over_the_loop() {
+        // A filter effect on a group (any chain, real or bus): automate filter.cutoff 1=200 5=20k
+        // (here in beats, not bars, since Lane is post-compile). The energy above 5 kHz in the
+        // first half-beat should be well below the last half-beat, once the cutoff has opened up.
+        let filt = Effect::Filter(FilterFxSpec { kind: FilterKind::Lp, hz: 20_000.0, res: 0.0, slope: 12 });
+        let out = run(&noise(), &[filt], &[lane("filter.cutoff", false, &[[0.0, 200.0], [8.0, 20_000.0]])], 0.0);
+        let (first_half, last_half) = (highs_db(&out[0][..12_000]), highs_db(&out[0][N - 12_000..]));
+        assert!(last_half > first_half + 20.0, "filter cutoff sweep: highs {first_half:.1} dB in the first half-beat, {last_half:.1} dB in the last");
+    }
+
+    #[test]
+    fn an_effect_lanes_curves_reach_a_second_filter_by_index() {
+        // A second filter effect's own cutoff lane (filter2.cutoff) must reach the second Filter,
+        // not the first (mirrors the eq2/comp2 indexing tests already covering other effect kinds).
+        let f1 = Effect::Filter(FilterFxSpec { kind: FilterKind::Hp, hz: 20.0, res: 0.0, slope: 12 });
+        let f2 = Effect::Filter(FilterFxSpec { kind: FilterKind::Lp, hz: 20_000.0, res: 0.0, slope: 12 });
+        let out = run(&noise(), &[f1, f2], &[lane("filter2.cutoff", false, &[[0.0, 200.0], [8.0, 20_000.0]])], 0.0);
+        let (first_half, last_half) = (highs_db(&out[0][..12_000]), highs_db(&out[0][N - 12_000..]));
+        assert!(last_half > first_half + 20.0, "filter2.cutoff sweep: highs {first_half:.1} dB in the first half-beat, {last_half:.1} dB in the last");
+    }
+
+    #[test]
+    fn filter_res_step_automation_raises_the_gain_at_the_cutoff() {
+        // automate filter.res step 1=0% 3=80% (here at beat 4, since Lane is post-compile beats):
+        // the gain at the cutoff frequency should rise once the step lands.
+        let cutoff = 800.0;
+        let filt = Effect::Filter(FilterFxSpec { kind: FilterKind::Lp, hz: cutoff, res: 0.0, slope: 12 });
+        let l: Vec<f32> = (0..N).map(|i| 0.3 * (2.0 * std::f64::consts::PI * cutoff * i as f64 / SR).sin() as f32).collect();
+        let input = [l.clone(), l];
+        let out = run(&input, &[filt], &[lane("filter.res", true, &[[0.0, 0.0], [4.0, 0.8]])], 0.0);
+        let rms = |x: &[f32]| (x.iter().map(|v| (*v as f64).powi(2)).sum::<f64>() / x.len() as f64).sqrt();
+        let before = rms(&out[0][..FPB as usize]); // beat 0-1, before the step at beat 4
+        let after = rms(&out[0][(5.0 * FPB) as usize..(6.0 * FPB) as usize]); // beat 5-6, after it
+        assert!(after > before * 1.5, "gain at the cutoff should rise once res steps up at beat 4: before {before}, after {after}");
     }
 }

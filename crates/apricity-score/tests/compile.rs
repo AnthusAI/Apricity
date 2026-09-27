@@ -1174,6 +1174,42 @@ fn automation_error_missing_filter() {
 }
 
 #[test]
+fn automation_error_filter_cutoff_without_a_filter_effect() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate filter.cutoff 1=1000\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("this track has no filter"), "{errs}");
+}
+
+#[test]
+fn automation_filter_res_targets_the_header_when_the_track_has_one() {
+    // A track with a header filter but no filter effect: `filter.res` automates the header.
+    let tl = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn  filter lp 800\n  automate filter.res 1=0% 2=80%\n").unwrap();
+    let lane = tl.tracks[0].automation.iter().find(|l| l.target == "filter.res").expect("filter.res lane");
+    assert_eq!(lane.points[0], [0.0, 0.0]);
+    assert_eq!(lane.points[1], [4.0, 0.8]);
+}
+
+#[test]
+fn automation_filter_res_targets_the_effect_on_a_group() {
+    // A group has no header filter, so `filter.res` there always targets the filter effect.
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+bars: 2
+groups:
+  strings: { effects: [ { filter: { kind: lp, hz: 800 } } ], automate: [ { target: filter.res, points: [["1", 0], ["2", 0.8]] } ] }
+tracks:
+  - { clip: horn, group: strings }
+"#)
+    .unwrap();
+    let bus = tl.buses.iter().find(|b| b.name == "strings").unwrap();
+    assert_eq!(bus.automation[0].target, "filter.res");
+    assert_eq!(bus.automation[0].points[1], [4.0, 0.8]);
+}
+
+#[test]
 fn automation_error_pan_out_of_range() {
     let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate pan 1=150\n").unwrap_err().join("\n");
     assert!(errs.contains("line 7 column"), "{errs}");

@@ -20,7 +20,7 @@
 //! Several `chords` lines append.
 
 use crate::score::{
-    AutomationSpec, ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
+    AutomationSpec, ChordSpec, ClipSpec, CompSpec, DelaySpec, DriveSpec, Effect, EqSpec, GateSpec, LofiSpec, FilterFxSpec, FilterKind, FilterSpec, KitSpec, GroupSpec, ReturnSpec, SliceBy, LimitSpec, MasterSpec, PadSpec, Pattern, ReverbSpec, ReverbType, Score, TrackSpec,
     Transpose, WarpModeSpec, Humanize,
 };
 use apricity_theory::{Role, Voicing};
@@ -164,10 +164,10 @@ fn words(line: &str) -> Vec<Tok<'_>> {
 }
 
 const STATEMENTS: &[&str] = &["apricity", "tempo", "time", "key", "samples", "bars", "swing", "humanize", "seed", "clip", "kit", "chords", "track", "group", "return", "master"];
-const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "pan", "send", "automate"];
-const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "automate"];
+const TRACK_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "pan", "send", "automate"];
+const GROUP_LINES: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter", "automate"];
 const MASTER_LINES: &[&str] = &["eq", "comp", "limit", "width", "loudness"];
-const EFFECTS: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width"];
+const EFFECTS: &[&str] = &["eq", "comp", "limit", "reverb", "delay", "drive", "lofi", "noisegate", "width", "filter"];
 
 /// What indented lines belong to.
 #[derive(Debug, Clone)]
@@ -266,6 +266,48 @@ fn gain_at(t: &str) -> Option<[f64; 2]> {
     let g = g.to_ascii_lowercase();
     let g: f64 = g.strip_suffix("db").unwrap_or(&g).trim_start_matches('+').parse().ok()?;
     Some([g, hz(f)?])
+}
+
+/// Parse the optional `res <pct>` and `12dB`/`24dB` parts that follow a filter's frequency, on
+/// both the header `filter` track option and the `filter` chain effect. Returns (res 0–1, slope).
+/// `strict`: error on any other trailing token (the chain effect, which owns the rest of its
+/// line); when false (the header track option, which shares its line with other options like
+/// `gate` or `half`), an unrecognized token is left for the caller instead, unless it looks like a
+/// slope attempt (`NdB`) that isn't 12 or 24, which is always an error either way.
+fn filter_res_slope(l: &mut Line, strict: bool) -> Result<(f64, u16), ParseError> {
+    let (mut res, mut slope) = (0.0, 12u16);
+    while let Some(o) = l.peek() {
+        match o.text {
+            "res" => {
+                l.pos += 1;
+                let v = l.next("a resonance like 40%")?;
+                res = share(v.text, false).ok_or_else(|| l.err(v.col, format!("`{}`: write resonance as a percentage, e.g. 40%", v.text)))?;
+                if !(0.0..=1.0).contains(&res) {
+                    return Err(l.err(v.col, format!("res is 0% to 100%, not `{}`", v.text)));
+                }
+            }
+            "12dB" => {
+                l.pos += 1;
+                slope = 12;
+            }
+            "24dB" => {
+                l.pos += 1;
+                slope = 24;
+            }
+            other => {
+                if let Some(n) = other.strip_suffix("dB") {
+                    if n.parse::<f64>().is_ok() {
+                        return Err(l.err(o.col, format!("slope is 12dB or 24dB, not `{other}`")));
+                    }
+                }
+                if !strict {
+                    break;
+                }
+                return Err(l.err(o.col, format!("unknown filter part `{other}`{}", suggest(other, &["res", "12dB", "24dB"]))));
+            }
+        }
+    }
+    Ok((res, slope))
 }
 
 /// Parse one effect line (`eq …`, `comp …`, `limit …`) starting after its keyword.
@@ -457,6 +499,19 @@ fn effect_line(l: &mut Line, kind: Tok) -> Result<Effect, ParseError> {
         "width" => {
             let v = l.next("a width like 150% (0% = mono)")?;
             Ok(Effect::Width(share(v.text, false).ok_or_else(|| l.err(v.col, format!("`{}`: write width as a percentage, e.g. 150% (0% = mono)", v.text)))?))
+        }
+        "filter" => {
+            let kind_tok = l.next("lp, hp or bp")?;
+            let kind = match kind_tok.text {
+                "lp" | "lowpass" => FilterKind::Lp,
+                "hp" | "highpass" => FilterKind::Hp,
+                "bp" | "bandpass" => FilterKind::Bp,
+                other => return Err(l.err(kind_tok.col, format!("filter is lp, hp or bp, not `{other}`"))),
+            };
+            let hz_tok = l.next("a frequency in Hz")?;
+            let hz = hz(hz_tok.text).ok_or_else(|| l.err(hz_tok.col, format!("`{}` isn't a frequency (e.g. 800, 6k)", hz_tok.text)))?;
+            let (res, slope) = filter_res_slope(l, true)?;
+            Ok(Effect::Filter(FilterFxSpec { kind, hz, res, slope }))
         }
         _ => unreachable!("caller checks the keyword"),
     }
@@ -679,6 +734,9 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                 match (kw.text, &target) {
                     ("reverb" | "delay" | "drive" | "lofi" | "noisegate", Block::Master) => {
                         return Err(l.err(kw.col, format!("`{}` doesn't go on the master (it plays live); put it on a return track and send tracks to it (or on a group track)", kw.text)));
+                    }
+                    ("filter", Block::Master) => {
+                        return Err(l.err(kw.col, "`filter` doesn't go on the master yet; put it on a group track (or a return)"));
                     }
                     (k, _) if EFFECTS.contains(&k) => {
                         let fx = effect_line(&mut l, kw)?;
@@ -1095,9 +1153,10 @@ pub fn parse(src: &str) -> Result<(Score, SourceMap), Vec<ParseError>> {
                             "filter" => {
                                 let kind = l.next("lp or hp")?;
                                 let hz = l.num("a frequency in Hz")?;
+                                let (res, slope) = filter_res_slope(&mut l, false)?;
                                 t.filter = Some(match kind.text {
-                                    "lp" | "lowpass" => FilterSpec::Lowpass(hz),
-                                    "hp" | "highpass" => FilterSpec::Highpass(hz),
+                                    "lp" | "lowpass" => FilterSpec::Lowpass { hz, res, slope },
+                                    "hp" | "highpass" => FilterSpec::Highpass { hz, res, slope },
                                     other => return Err(l.err(kind.col, format!("filter is lp or hp, not `{other}`"))),
                                 });
                             }
@@ -1311,7 +1370,7 @@ pub fn automation_text(auto: &AutomationSpec) -> String {
         } else if auto.target.contains("volume") || auto.target.contains("threshold") || auto.target.contains("gain") || auto.target.contains("eq.low") || auto.target.contains("eq.high") {
             // dB values
             format!("{}dB", num(*val))
-        } else if auto.target.contains("mix") || auto.target.contains("send") {
+        } else if auto.target.contains("mix") || auto.target.contains("send") || auto.target.contains("res") {
             // Percentages (0-1)
             pct(*val)
         } else if auto.target == "pan" {
@@ -1334,6 +1393,18 @@ pub fn automation_text(auto: &AutomationSpec) -> String {
 
 fn num(x: f64) -> String {
     if x.fract() == 0.0 { format!("{}", x as i64) } else { format!("{x}") }
+}
+
+/// `  res 40%` (omitted at 0) and `  24dB` (omitted at the default, 12dB).
+fn filter_res_slope_text(res: f64, slope: u16) -> String {
+    let mut s = String::new();
+    if res != 0.0 {
+        s += &format!("  res {}", pct(res));
+    }
+    if slope != 12 {
+        s += &format!("  {slope}dB");
+    }
+    s
 }
 
 /// One effect as `.apr` text (also used by `explain`).
@@ -1412,6 +1483,14 @@ pub fn effect_text(fx: &Effect) -> String {
             s
         }
         Effect::Width(w) => format!("width  {}", pct(*w)),
+        Effect::Filter(f) => {
+            let kind = match f.kind {
+                crate::score::FilterKind::Lp => "lp",
+                crate::score::FilterKind::Hp => "hp",
+                crate::score::FilterKind::Bp => "bp",
+            };
+            format!("filter  {kind} {}{}", hzs(f.hz), filter_res_slope_text(f.res, f.slope))
+        }
         Effect::Limit(l) => match l.release_ms {
             Some(r) => format!("limit {}dB  release {}ms", num(l.ceiling), num(r)),
             None => format!("limit {}dB", num(l.ceiling)),
@@ -1628,8 +1707,8 @@ pub fn format(s: &Score) -> String {
         }
         match t.filter {
             None => {}
-            Some(FilterSpec::Lowpass(h)) => out += &format!("  filter lp {}", num(h)),
-            Some(FilterSpec::Highpass(h)) => out += &format!("  filter hp {}", num(h)),
+            Some(FilterSpec::Lowpass { hz, res, slope }) => out += &format!("  filter lp {}{}", num(hz), filter_res_slope_text(res, slope)),
+            Some(FilterSpec::Highpass { hz, res, slope }) => out += &format!("  filter hp {}{}", num(hz), filter_res_slope_text(res, slope)),
         }
         if let Some(g) = t.gate {
             out += &format!("  gate {}%", num((g * 100.0 * 1000.0).round() / 1000.0));
@@ -1784,7 +1863,7 @@ mod tests {
         assert_eq!(s.tracks[0].pattern, Pattern::Steps("1 . 3 . [5 5] . 7 _".into()));
         assert_eq!((s.tracks[0].swing, s.tracks[0].grid), (Some(56.0), Some(16)));
         let t = &s.tracks[1];
-        assert_eq!((t.reverse, t.filter, t.gate, t.stutter, t.speed), (true, Some(FilterSpec::Lowpass(800.0)), Some(0.5), Some(2), Some(0.5)));
+        assert_eq!((t.reverse, t.filter, t.gate, t.stutter, t.speed), (true, Some(FilterSpec::Lowpass { hz: 800.0, res: 0.0, slope: 12 }), Some(0.5), Some(2), Some(0.5)));
         let (again, _) = parse(&format(&s)).unwrap();
         assert_eq!(again, s, "\n{}", format(&s));
         let e = parse("tempo 90\nkey C\nkit k = slice br by laps 2\ntrack k stepz \"1\"\n").unwrap_err();
@@ -1918,6 +1997,35 @@ track v  at 1\n\ngroup music\n  comp 4:1 -30dB attack 5ms release 250ms sidechai
         for (line, want) in [(5, "write drive in dB"), (6, "lofi needs something to do"), (7, "unknown lofi part `crunchy`"), (8, "write width as a percentage"), (10, "doesn't go on the master"), (11, "doesn't go on the master")] {
             assert!(t.iter().any(|x| x.starts_with(&format!("line {line} ")) && x.contains(want)), "line {line}: {want}\n{t:#?}");
         }
+    }
+
+    #[test]
+    fn resonant_filter_parses_formats_and_reports_errors() {
+        let src = "tempo 90\nkey C\nclip a = x.wav\nchords I\n\
+track a  filter lp 800 res 40% 24dB\n\
+group g\n  filter bp 500\nreturn r\n  filter hp 300 res 20%\n";
+        let (s, _) = parse(src).unwrap();
+        assert_eq!(s.tracks[0].filter, Some(FilterSpec::Lowpass { hz: 800.0, res: 0.4, slope: 24 }));
+        assert_eq!(s.groups["g"].effects[0], Effect::Filter(FilterFxSpec { kind: FilterKind::Bp, hz: 500.0, res: 0.0, slope: 12 }));
+        assert_eq!(s.returns["r"].effects[0], Effect::Filter(FilterFxSpec { kind: FilterKind::Hp, hz: 300.0, res: 0.2, slope: 12 }));
+        let text = format(&s);
+        assert_eq!(parse(&text).unwrap().0, s, "\n{text}");
+        assert!(text.contains("filter lp 800  res 40%  24dB"), "{text}");
+        assert!(text.contains("filter  bp 500"), "{text}");
+
+        // res out of range, on both the header filter and the chain effect.
+        let e = parse("tempo 90\nkey C\nchords I\ntrack a  filter lp 800 res 140%\ntrack a2\n  filter lp 800 res 140%\n").unwrap_err();
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 4 ") && x.message.contains("res is 0% to 100%")), "{e:?}");
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 6 ") && x.message.contains("res is 0% to 100%")), "{e:?}");
+
+        // unknown slope, on both.
+        let e = parse("tempo 90\nkey C\nchords I\ntrack a  filter lp 800 res 40% 36dB\ntrack a2\n  filter lp 800 36dB\n").unwrap_err();
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 4 ") && x.message.contains("slope is 12dB or 24dB")), "{e:?}");
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 6 ") && x.message.contains("slope is 12dB or 24dB")), "{e:?}");
+
+        // a filter chain effect line under master is rejected.
+        let e = parse("tempo 90\nkey C\nchords I\nmaster\n  filter lp 800\n").unwrap_err();
+        assert!(e.iter().any(|x| x.to_string().starts_with("line 5 ") && x.message.contains("doesn't go on the master")), "{e:?}");
     }
 
     #[test]
