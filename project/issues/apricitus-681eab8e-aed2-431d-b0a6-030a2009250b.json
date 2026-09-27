@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-681eab8e-aed2-431d-b0a6-030a2009250b",
+  "title": "Bound CLI cloud HTTP requests with timeouts",
+  "description": "The authenticated CLI can hang indefinitely while fetching outputs, refreshing Cognito tokens, or calling AppSync because its blocking HTTP clients lack timeouts. Apply a shared bounded timeout and return actionable transport errors.",
+  "type": "bug",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T22:45:31.262257Z",
+  "updated_at": "2026-09-27T22:45:31.262291Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
