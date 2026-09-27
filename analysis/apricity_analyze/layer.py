@@ -174,8 +174,8 @@ def window_features(feat: StemFeatures, tempo: float, start_beat: int, end_beat:
     """`feat` cut to beats `[start_beat, end_beat)` of its render: per-beat arrays by beat, frame
     arrays by the same hop grid `band_energy` uses, `mono` by sample (a cached stack's placeholder
     `mono` is left as is). Judging a part that plays in only some bars over the whole song makes
-    every gate and term see mostly silence (the optimizer's L1 gate did, 2026-09-27); callers cut the
-    candidate and the stack to the bars the part actually plays in."""
+    every gate and term see mostly silence, so callers cut the candidate and the stack to the bars
+    the part actually plays in."""
     start_beat = max(0, int(start_beat))
     end_beat = max(start_beat + 1, min(int(end_beat), len(feat.energy_db)))
     frames_per_beat = feat.sr * 60.0 / tempo / check.HOP

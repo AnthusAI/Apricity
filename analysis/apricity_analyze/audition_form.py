@@ -7,7 +7,7 @@ actually listens to it, not by rendering (and keeping) a full 40-bar take.
     bars 9-16 of W: both together, TRACK ramped in (linear gain) over the first 2 bars
 
 16 bars at 120 BPM = 32 s. Documented for humans in
-`.claude/skills/write-score/references/recipes.md` ("Auditioning a layer (the 16-bar form)").
+`.agents/skills/write-score/references/recipes.md` ("Auditioning a layer (the 16-bar form)").
 
 A window W is 8 bars chosen where the scene is in full groove (`choose_window`); the candidate's
 TRACK is rewritten (comment-safe, via `explore.ops._split_comment`/`_edit_code`) so it plays

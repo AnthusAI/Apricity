@@ -176,6 +176,196 @@ def test_bass_stem_sanity_real_emerge_bar35(tmp_path):
     assert -12.0 < e2_share_db < 0.0, f"expected a real but secondary E2 component under F2, got {e2_share_db:+.1f} dB"
 
 
+# --------------------------------------------------------------------------- Harmony v2 Phase 1 task 4:
+# chord recognition, Q, objective_v2, the v1 port and guards (sec 2.4-2.6 of spec-harmony-v2.md,
+# Kanbus apricitus-a164db)
+
+
+def _tone(name: str, octave: int, amp: float, v: np.ndarray | None = None) -> np.ndarray:
+    v = np.zeros(h.N_SEMITONES) if v is None else v
+    pc = h.NAMES.index(name)
+    idx = pc + 12 * (octave + 1) - h.MIDI_C1  # MIDI = 12*(octave+1)+pc
+    v[idx] = amp
+    return v
+
+
+def test_recognise_chord_full_reports_extension_inversion_and_confidence():
+    """A root-position Am7 (A2 C3 E3 G3, known A bass) is heard with no extensions, `inversion ==
+    "root"`, and positive confidence."""
+    v = _tone("A", 2, 1.0)
+    _tone("C", 3, 1.0, v)
+    _tone("E", 3, 1.0, v)
+    _tone("G", 3, 1.0, v)
+    heard = h.recognise_chord_full(v, known_bass_pc=h.NAMES.index("A"))
+    assert heard["root"] == "A" and heard["quality"] == "m7" and heard["bass"] == "A"
+    assert heard["extensions"] == []
+    assert heard["inversion"] == "root"
+    assert heard["confidence"] > 0
+
+
+def test_q_is_1_for_an_exactly_written_chord_with_known_bass():
+    v = _tone("A", 2, 1.0)
+    _tone("C", 3, 1.0, v)
+    _tone("E", 3, 1.0, v)
+    _tone("G", 3, 1.0, v)
+    heard = h.recognise_chord_full(v, known_bass_pc=h.NAMES.index("A"))
+    q = h.compute_q(heard, h.NAMES.index("A"), "m7", h.NAMES.index("A"), {"x": [45, 48, 52, 55]}, None, None)
+    assert q["Q"] == 1.0, q
+
+
+def test_spacing_does_not_penalise_a_maj7_a_semitone_under_the_bass():
+    """The user's 2026-09-27 decision (epic `apricitus-445cae` comment `e41349`): a maj7's 7th
+    sitting a semitone under the bass in its own octave is at most neutral, never a clash -- the
+    user heard the Fmaj7 bars with and without that E2-under-F2 component and said "Those are
+    both awesome!". A genuine close dissonant pair below C3 that ISN'T the maj7-under-bass shape
+    (e.g. a major 2nd) must still be penalised."""
+    maj7_under_bass = {"bass": [41], "loop": [40]}  # F2, E2 (a semitone apart)
+    assert h.q_spacing(maj7_under_bass) == 1.0
+
+    major_second_clash = {"bass": [41], "loop": [43]}  # F2, G2 (2 semitones apart)
+    assert h.q_spacing(major_second_clash) < 1.0
+
+
+def test_objective_v2_mute_gaming_guard_does_not_raise_the_objective():
+    """Sec 2.6's anti-gaming guard: muting the loop over a written Fmaj7 (keeping only the bass)
+    must not raise `objective_v2` -- the bass alone reads as a bare root (low `target`, no
+    `extension`), which must not outscore the full, correctly-voiced chord."""
+    bass = _tone("F", 2, 1.0)
+    loop = _tone("F", 3, 1.0)
+    _tone("A", 3, 1.0, loop)
+    _tone("C", 4, 1.0, loop)
+    _tone("E", 4, 1.0, loop)
+    chord_tones = [h.NAMES.index(n) for n in ["F", "A", "C", "E"]]
+
+    full = h.objective_v2_for_span({"bass": bass, "loop": loop}, chord_tones, h.NAMES.index("F"), "maj7", h.NAMES.index("F"), "bass", None)
+    muted = h.objective_v2_for_span({"bass": bass, "loop": np.zeros(h.N_SEMITONES)}, chord_tones, h.NAMES.index("F"), "maj7", h.NAMES.index("F"), "bass", None)
+    assert muted["objective_v2"] <= full["objective_v2"], (muted, full)
+
+
+def test_extension_guard_fires_on_a_dominant_extension():
+    """Sec 2.6's new guard: a span where the heard extension carries > 40% of the span's tonal
+    mass must be flagged ("a 9th louder than the chord is not colour"). Tested directly against
+    `check_span_guards` with a hand-built `heard`, since a sufficiently loud "extension" pitch
+    class can itself change which quality `recognise_chord_full` calls best-fitting (there's no
+    9-chord in the modelled `QUALITIES`, sec 0's chord-model gap) -- the guard must still catch it
+    whenever the report does say an extension was heard."""
+    v = _tone("C", 3, 1.0)
+    _tone("E", 3, 1.0, v)
+    _tone("G", 3, 1.0, v)
+    _tone("D", 4, 5.0, v)  # a 9th far louder than the triad itself
+    heard = {"root": "C", "quality": "", "extensions": ["add9"], "bass": "C", "inversion": "root", "confidence": 1.0, "score": 1.0}
+    violations, penalty = h.check_span_guards(v, [h.NAMES.index(n) for n in ["C", "E", "G"]], heard)
+    assert any("extension" in msg for msg in violations), violations
+    assert penalty >= h.EXTENSION_GUARD_PENALTY
+
+
+def test_coverage_guard_fires_when_a_chord_tone_is_nearly_silent():
+    v = _tone("C", 3, 1.0)
+    _tone("E", 3, 1.0, v)
+    _tone("G", 3, 0.001, v)  # far under COVERAGE_MIN_SHARE
+    heard = {"root": "C", "quality": "", "extensions": [], "bass": "C", "inversion": "root", "confidence": 1.0, "score": 1.0}
+    violations, penalty = h.check_span_guards(v, [h.NAMES.index(n) for n in ["C", "E", "G"]], heard)
+    assert any("G" in msg for msg in violations), violations
+    assert penalty >= h.COVERAGE_GUARD_PENALTY
+
+
+def test_recognise_chord_bass_fallback_never_picks_below_g1():
+    """The bar-35 fix (Kanbus `apricitus-a164db`): sec 2.4's own floor, "the lowest extracted
+    note ... at or above G1 (49 Hz)", applied to the audio-only bass fallback. Reproduces the
+    documented failure mode (`emerge_fixture.py`'s bass-stem-sanity finding: the reference's
+    84-row NNLS simplification can put spurious activation an octave low, F1/E1/D1 "ghosts" under
+    a real F2) directly at the `recognise_chord` level: with F1 given MORE mass than the real F2,
+    the audio-only fallback must still land on F2 (index >= G1's), never the F1 ghost."""
+    v = np.zeros(h.N_SEMITONES)
+    f1 = h.NAMES.index("F") + 12 * (1 + 1) - h.MIDI_C1
+    f2 = h.NAMES.index("F") + 12 * (2 + 1) - h.MIDI_C1
+    v[f1] = 1.0   # a ghost, louder than the real note
+    v[f2] = 0.9   # the real fundamental
+    root, quality, bass_pc, _ = h.recognise_chord(v)
+    assert h.NAMES[bass_pc] == "F", f"bass fallback picked a below-G1 ghost: {h.NAMES[bass_pc]}"
+
+
+def test_combined_pipeline_hears_emerge_bar35_bass_as_f_not_an_octave_low(tmp_path):
+    """End-to-end acceptance test for the bar-35 fix (Kanbus `apricitus-a164db`, the "known gap"
+    the task brief calls out): running the FULL combined pipeline (`analyze_stems_dir`) on a
+    fresh real render of `examples/ave-emerge.apr` bar 35 (`VImaj7`, Fmaj7/F) must hear the span's
+    bass as F, not the F1/E1/D1 octave-low ghost the reference's 84-row NNLS simplification can
+    produce (recorded in `emerge_fixture.py`'s bass-stem-sanity docstring). Uses the DEBUG binary
+    (`emerge_fixture.DEBUG_BINARY`) because the combined pipeline needs `stems.json`'s `bass`/
+    `events` fields, which the release binary in this checkout predates."""
+    if not emerge_fixture.library_available(emerge_fixture.DEFAULT_SAMPLES_ROOT):
+        pytest.skip(f"sample library audio not present under {emerge_fixture.DEFAULT_SAMPLES_ROOT}")
+    if not emerge_fixture.DEBUG_BINARY.exists():
+        pytest.skip(f"debug apricity binary not built: {emerge_fixture.DEBUG_BINARY}")
+    out_dir = emerge_fixture.render_bar35_dir(tmp_path / "bar35")
+    result = h.analyze_stems_dir(out_dir)
+    span = next(s for s in result["spans"] if s["label"].startswith("VImaj7"))
+    assert span["heard"] is not None, "expected a chord to be heard for the Fmaj7 span"
+    assert span["heard"]["bass"] == "F", f"expected the bass to be heard as F, got {span['heard']}"
+    assert span["heard"]["root"] == "F"
+
+
+def _replay_window(fixture_song: dict) -> dict:
+    """Recomputes `objective_v2_for_span`/`window_objective` from a committed activation-summary
+    fixture (numbers only -- built by rendering the real window once, offline, and thrown away;
+    see the scratchpad `build_lounge_fixture.py`/`build_cycle2_fixture.py` drivers referenced in
+    the fixture files' own generation), needing no audio at test time."""
+    span_results = []
+    span_mass = []
+    prev_notes = None
+    for span in fixture_song["spans"]:
+        chord_tones_pc = [h.NAMES.index(n) for n in span["chord_tones"] if n]
+        written_root_pc = chord_tones_pc[0] if chord_tones_pc else None
+        written_quality = h.written_quality_from_tones(written_root_pc, chord_tones_pc) if chord_tones_pc else None
+        written_bass_pc = h.NAMES.index(span["bass"]) if span.get("bass") else None
+        stem_beats = {name: np.array(beats) if beats else np.zeros((0, h.N_SEMITONES)) for name, beats in span["activations_by_beat"].items()}
+        stem_activations = {name: (beats.sum(axis=0) if len(beats) else np.zeros(h.N_SEMITONES)) for name, beats in stem_beats.items()}
+        result = h.objective_v2_for_span(
+            stem_activations, chord_tones_pc, written_root_pc, written_quality, written_bass_pc,
+            span.get("bass_stem_name"), prev_notes, key_scale_pcs=None, stem_beat_activations=stem_beats,
+        )
+        notes_now = [n for act in stem_activations.values() for n in h.notes_from_activation(act)]
+        prev_notes = notes_now or prev_notes
+        span_results.append(result)
+        span_mass.append(result["mass"])
+    return h.window_objective(span_results, span_mass)
+
+
+def test_lounge_fixture_ranks_emerge_first_with_q_weight_10():
+    """Acceptance test for Kanbus `apricitus-a164db` (sec 5.1 of spec-harmony-v2.md): of the four
+    lounge bright-loop swaps rendered over bars 33-40, the user's pick (Emerge, "much better...
+    good enough that I sent it to my business partner") must rank FIRST by `objective_v2`, even
+    though v1 alone ranked it only 2nd-3rd (`renders/log.jsonl`'s `listen-note` at 12:38: "checker
+    objective ranked Emerge 3rd of 4"). Replays the committed `lounge_summaries.json` fixture (no
+    audio, no render) built by rendering the real four `.apr` windows once."""
+    fixture = json.loads((FIXTURES / "lounge_summaries.json").read_text())
+    scores = {name: _replay_window(song)["objective_v2"] for name, song in fixture.items()}
+    ranked = sorted(scores, key=scores.get, reverse=True)
+    assert ranked[0] == "3-emerge", f"expected Emerge to rank first, got {ranked} ({scores})"
+
+
+def test_cycle2_fixture_ranks_the_incumbent_keep_first_with_q_weight_10():
+    """Acceptance test (sec 5.2): of the four `c2-ave-bright` candidates, the user's preferred
+    incumbent ("keep", Funky Nurykabe, 3 stars) must rank first by `objective_v2` at weight 10 --
+    matching both v1 and the user's verdict (`renders/log.jsonl`'s `ab-pair` at 07:34:28).
+    Replays the committed `cycle2_summaries.json` fixture (no audio, no render)."""
+    fixture = json.loads((FIXTURES / "cycle2_summaries.json").read_text())
+    scores = {name: _replay_window(song)["objective_v2"] for name, song in fixture.items()}
+    ranked = sorted(scores, key=scores.get, reverse=True)
+    assert ranked[0] == "keep", f"expected 'keep' to rank first, got {ranked} ({scores})"
+
+
+def test_window_objective_combines_consonance_and_q_with_weight_10():
+    """Sec 2.6: `objective_v2 = consonance_v1' - guards + 10*mean(Q)`, at the whole-window level."""
+    span = {"consonance_v1": 90.0, "guard_penalty": 2.0, "Q": {"Q": 0.8}}
+    w = h.window_objective([span], [1.0])
+    assert w["consonance_v1"] == 90.0
+    assert w["guard_penalty"] == 2.0
+    assert w["Q_mean"] == 0.8
+    assert w["objective_v1"] == 88.0
+    assert abs(w["objective_v2"] - 96.0) < 1e-9  # 90 - 2 + 10*0.8
+
+
 # --------------------------------------------------------------------------- expected.json regeneration
 
 

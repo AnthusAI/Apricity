@@ -8,7 +8,7 @@ checker's objective (render --stems + scripts/check-stems.py) is the main qualit
 """
 import glob, json, os, pathlib, re, subprocess, sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[4]          # the repo root (…/.claude/skills/write-score/evals)
+ROOT = pathlib.Path(__file__).resolve().parents[4]          # the repo root (…/.agents/skills/write-score/evals)
 BIN = ROOT / "target/release/apricity"
 PY = pathlib.Path("/Users/home/Projects/Apricity/analysis/.venv/bin/python")
 

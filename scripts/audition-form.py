@@ -12,7 +12,7 @@ for an Ave-House-shaped score's drop). `--check` also scores the together-window
 alone baseline over the same W (cached per score+window) and reports Δwindow.
 
 Renders exactly once; deletes the render's WAV and stems directory before exiting -- only the
-`.m4a` and a small `<out>.json` of numbers are kept. See `.claude/skills/write-score/references/
+`.m4a` and a small `<out>.json` of numbers are kept. See `.agents/skills/write-score/references/
 recipes.md` ("Auditioning a layer (the 16-bar form)") for the human-facing recipe this implements.
 """
 
