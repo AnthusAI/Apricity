@@ -2898,7 +2898,7 @@
         {
           "type": "key",
           "properties": {
-            "name": "talliesByTargetIdAndDay",
+            "name": "talliesByTarget",
             "queryField": "talliesByTarget",
             "fields": [
               "targetId",
@@ -3107,7 +3107,7 @@
         {
           "type": "key",
           "properties": {
-            "name": "rankedsByListAndSort",
+            "name": "rankedByList",
             "queryField": "rankedByList",
             "fields": [
               "list",
@@ -3118,7 +3118,7 @@
         {
           "type": "key",
           "properties": {
-            "name": "rankedsByTargetId",
+            "name": "rankedByTarget",
             "queryField": "rankedByTarget",
             "fields": [
               "targetId"

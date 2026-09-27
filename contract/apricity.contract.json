@@ -1,5 +1,5 @@
 {
-  "version": "b448901dc9223991",
+  "version": "e557382108f76aa1",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -2464,7 +2464,7 @@
           "sortArgument": "day"
         },
         {
-          "name": "talliesByTargetIdAndDay",
+          "name": "talliesByTarget",
           "queryField": "talliesByTarget",
           "partitionField": "targetId",
           "sortFields": [
@@ -2648,7 +2648,7 @@
       ],
       "indexes": [
         {
-          "name": "rankedsByListAndSort",
+          "name": "rankedByList",
           "queryField": "rankedByList",
           "partitionField": "list",
           "sortFields": [
@@ -2657,7 +2657,7 @@
           "sortArgument": "sort"
         },
         {
-          "name": "rankedsByTargetId",
+          "name": "rankedByTarget",
           "queryField": "rankedByTarget",
           "partitionField": "targetId",
           "sortFields": []

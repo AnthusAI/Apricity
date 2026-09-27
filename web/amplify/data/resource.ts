@@ -377,7 +377,7 @@ const schema = a.schema({
       count: a.integer().required(),
       sum: a.integer().required(),
     })
-    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay"), i("targetId").sortKeys(["day"]).queryField("talliesByTarget")])
+    .secondaryIndexes((i) => [i("targetType").sortKeys(["day"]).queryField("talliesByTypeAndDay"), i("targetId").sortKeys(["day"]).name("talliesByTarget").queryField("talliesByTarget")])
     .authorization(everyone),
 
   // A ranked list as rows (design/scale.md §2.1; web/src/data/ranked.ts): one row per item per list it appears in,
@@ -405,7 +405,7 @@ const schema = a.schema({
       lastWhat: a.string(),
       lastBy: a.string(),
     })
-    .secondaryIndexes((i) => [i("list").sortKeys(["sort"]).queryField("rankedByList"), i("targetId").queryField("rankedByTarget")])
+    .secondaryIndexes((i) => [i("list").sortKeys(["sort"]).name("rankedByList").queryField("rankedByList"), i("targetId").name("rankedByTarget").queryField("rankedByTarget")])
     .authorization(everyone),
 
   Job: a

@@ -7,6 +7,7 @@ import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
+import { ranking } from "./functions/ranking/resource";
 
 export const backend = defineBackend({
   auth,
@@ -14,6 +15,7 @@ export const backend = defineBackend({
   storage,
   tally,
   activity,
+  ranking,
 });
 
 // Ratings are private; their public tallies are kept by the tally Lambda, fed by the Rating table's stream (Amplify
@@ -77,4 +79,42 @@ for (const model of fed) {
     retryAttempts: 10,
   });
   m.node.addDependency(activityStreams);
+}
+
+// The ranked lists (design/scale.md) are kept by the ranking Lambda: fed by the streams of the Activity cards (an item's
+// news), the Tally rows (its stars) and the Score records (a score's title, kind and tags), and run once a day to age
+// the windows. Only it writes the Ranked table.
+const rk = backend.ranking.resources.lambda;
+for (const [env, model] of [
+  ["ACTIVITY_TABLE", "Activity"],
+  ["SCORE_TABLE", "Score"],
+  ["SAMPLE_TABLE", "Sample"],
+  ["CLIP_TABLE", "Clip"],
+  ["TALLY_TABLE", "Tally"],
+  ["RANKED_TABLE", "Ranked"],
+] as const)
+  backend.ranking.addEnvironment(env, tables[model].tableName);
+for (const m of ["Activity", "Score", "Sample", "Clip", "Tally"]) tables[m].grantReadData(rk);
+tables["Ranked"].grantReadWriteData(rk);
+const rankingFed = ["Activity", "Tally", "Score"];
+const rankingStreams = new Policy(Stack.of(rk), "RankingReadsStreams", {
+  statements: [
+    new PolicyStatement({
+      effect: Effect.ALLOW,
+      actions: ["dynamodb:DescribeStream", "dynamodb:GetRecords", "dynamodb:GetShardIterator", "dynamodb:ListStreams"],
+      resources: rankingFed.map((m) => tables[m].tableStreamArn!),
+    }),
+  ],
+});
+rk.role?.attachInlinePolicy(rankingStreams);
+for (const model of rankingFed) {
+  const m = new EventSourceMapping(Stack.of(rk), `RankingFrom${model}`, {
+    target: rk,
+    eventSourceArn: tables[model].tableStreamArn,
+    startingPosition: StartingPosition.LATEST,
+    batchSize: 25,
+    reportBatchItemFailures: true,
+    retryAttempts: 10,
+  });
+  m.node.addDependency(rankingStreams);
 }

@@ -299,7 +299,7 @@ type Tally @model @auth(rules: [{allow: public, provider: identityPool, operatio
 {
   id: ID! @primaryKey
   targetType: RatingTarget! @index(sortKeyFields: ["day"], queryField: "talliesByTypeAndDay")
-  targetId: ID! @index(sortKeyFields: ["day"], queryField: "talliesByTarget")
+  targetId: ID! @index(name: "talliesByTarget", sortKeyFields: ["day"], queryField: "talliesByTarget")
   day: String!
   count: Int!
   sum: Int!
@@ -309,10 +309,10 @@ type Ranked @model @auth(rules: [{allow: public, provider: identityPool, operati
   {allow: private, operations: [read]}])
 {
   id: ID! @primaryKey
-  list: String! @index(sortKeyFields: ["sort"], queryField: "rankedByList")
+  list: String! @index(name: "rankedByList", sortKeyFields: ["sort"], queryField: "rankedByList")
   sort: String!
   targetType: RatingTarget!
-  targetId: ID! @index(queryField: "rankedByTarget")
+  targetId: ID! @index(name: "rankedByTarget", queryField: "rankedByTarget")
   kind: String!
   title: String
   owner: String
