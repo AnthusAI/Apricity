@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-192524af-09ae-423d-b358-20ffac020820",
+  "title": "One navigation: sections as card grids, one filter bar, leaf pages without sidebars",
+  "description": "The top bar is the kind filter (home = all); each section's front page is the card grid filtered to its kind; an item's page is only that item, full width, no left sidebar (works on phones). One filter bar everywhere: Top/Recent, time window with widening, Mine, search, per-section More filters (Clips' curation filters), + New. Search box in the top bar (filters a section; elsewhere a results page across kinds). The account pill moves into the top bar as a badge with a menu (in the hamburger on phones). Agreed with the user 2026-09-27.",
+  "type": "epic",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T18:43:16.785142Z",
+  "updated_at": "2026-09-27T19:40:11.500046Z",
+  "closed_at": "2026-09-27T19:40:11.500009Z",
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Opus session"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
