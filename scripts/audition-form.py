@@ -3,13 +3,14 @@
 existing scene alone, 5-8 the new/re-cast TRACK solo, 9-16 both together with a 2-bar build --
 instead of a full 40-bar render, which takes about 80s to review and fills the disk.
 
-    scripts/audition-form.py CANDIDATE.apr --layer bright -o renders/bright-audition.m4a
-    scripts/audition-form.py CANDIDATE.apr --layer bright --window 33-40 -o out.m4a --check
+    scripts/audition-form.py CANDIDATE.apr --layer <track> -o out.m4a
+    scripts/audition-form.py CANDIDATE.apr --layer <track> --window 33-40 -o out.m4a --check
 
 `--window a-b` picks the 8-bar window W where the scene is judged (default: the 8 bars before the
-score's last 8, or its first 8 for a song under 24 bars -- prefer an explicit window, e.g. 33-40
-for an Ave-House-shaped score's drop). `--check` also scores the together-window against a scene-
-alone baseline over the same W (cached per score+window) and reports Δwindow.
+score's last 8, or its first 8 for a song under 24 bars -- prefer an explicit window when the
+score has a section, such as a drop or hook, that should be judged specifically). `--check` also
+scores the together-window against a scene-alone baseline over the same W (cached per
+score+window) and reports Δwindow.
 
 Renders exactly once; deletes the render's WAV and stems directory before exiting -- only the
 `.m4a` and a small `<out>.json` of numbers are kept. See `.agents/skills/write-score/references/

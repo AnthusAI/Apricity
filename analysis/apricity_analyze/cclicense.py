@@ -14,17 +14,18 @@ NAMES = {"public-domain": "Public domain", "cc0-1.0": "CC0 1.0", "cc-by-3.0": "C
 def classify(url: str | None) -> tuple[str | None, str]:
     """(license code or None, plain reason). Code is None when Apricity can't use it.
 
-    `"public-domain-statement"` (round 3, Kanbus apricitus-a9ad5b review): a free-text `rights`
-    field that plainly states public domain, not a `creativecommons.org`/`publicdomain.zero`
-    *URL* -- e.g. `sources.json`'s real entries for `loc/`, `citizen-dj/` and `marine-band/`:
+    `"public-domain-statement"` (Kanbus apricitus-a9ad5b): a free-text `rights` field that plainly
+    states public domain, not a `creativecommons.org`/`publicdomain.zero` *URL* -- e.g. a
+    `sources.json` entry might read:
       "Public domain (composition pre-1923; recording is a work of the U.S. Government)."
-      "Public domain (Edison recordings 1890-1929; assets transferred to the National Park Service)."
-      "No known U.S. copyright or other restrictions per the Library of Congress (AFC 1939/001);
-       privacy and publicity rights may apply."
+      "Public domain (Edison recordings; assets transferred to the National Park Service)."
+      "No known U.S. copyright or other restrictions per the Library of Congress; privacy and
+       publicity rights may apply."
     Before this, `classify()` only recognized CC/PDM *URLs*, so every one of the above came back
-    "unrecognized license" -- confirmed by inspection: this is why `region_candidates()`'s
-    `_license_ok` rejected every non-ccMixter sample even after widening its directory scan
-    (apricitus-a9ad5b round 2's report). Matched case-insensitively on the statement *starting*
+    "unrecognized license" -- which meant `region_candidates()`'s `_license_ok` rejected any
+    sample whose catalog entry used a plain-text public-domain statement instead of a URL, even
+    once its directory scan covered every source family (see Kanbus apricitus-a9ad5b). Matched
+    case-insensitively on the statement *starting*
     with "public domain" (so a caveat like the LoC one above, or "no known copyright", is not
     swept in by this rule alone) or containing "work of the u.s. government" anywhere (a federal
     government work is public domain by statute, 17 U.S.C. Sec. 105, regardless of where the

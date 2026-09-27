@@ -79,9 +79,9 @@ def compiled_song_shape(text: str) -> tuple[float, int, float]:
 
 def choose_window(text: str, explicit: tuple[int, int] | None = None) -> tuple[int, int]:
     """The 8-bar window W (1-based, inclusive) where the scene is judged: an explicit `--window`
-    always wins (recommended -- e.g. bars 33-40, the drop, for an Ave-House-shaped score). Absent
-    that, the default is the 8 bars right before the song's last 8 bars when the song is >= 24
-    bars, else its first 8 bars."""
+    always wins (recommended when the score has a section, such as a drop or hook, that should be
+    judged specifically). Absent that, the default is the 8 bars right before the song's last 8
+    bars when the song is >= 24 bars, else its first 8 bars."""
     if explicit is not None:
         a, b = explicit
         if b - a + 1 != WINDOW_BARS:

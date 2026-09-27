@@ -156,8 +156,7 @@ def track_eq_notch(text: str, *, track: str, hz: float, gain: int, q: int) -> st
 
 def track_hp(text: str, *, track: str, hz: float, slope: str = "24dB", on: bool = True) -> str:
     """Toggle a highpass on `track`'s own declaration line (the inline `filter hp <hz> <slope>`
-    option, the same one Ave House already uses on `bright`/`h`), replacing any filter already
-    there. `slope` is `"12dB"` or `"24dB"`."""
+    option), replacing any filter already there. `slope` is `"12dB"` or `"24dB"`."""
     if slope not in ("12dB", "24dB"):
         raise OpError(f"track.hp slope must be 12dB or 24dB, not {slope}")
     lines = _lines(text)

@@ -40,8 +40,8 @@ def write_cycle(run_dir: pathlib.Path, *, finalists: list[dict], incumbent: dict
 
 def write_leaderboard(run_dir: pathlib.Path, *, l1_rows: list[dict], archive_top: list[dict],
                        rho_by_role: dict, recall_by_role: dict) -> None:
-    # Round 3: ranked/gated by the whole-mix Δmix (objective.WHOLE_MIX_MARGIN), not the
-    # render_terms composite -- render_J/J_null(render) kept as diagnostic columns.
+    # Ranked/gated by the whole-mix Δmix (objective.WHOLE_MIX_MARGIN), not the render_terms
+    # composite -- render_J/J_null(render) kept as diagnostic columns.
     lines = ["# Optimizer leaderboard", "", "## L1 (8-bar render, whole-mix Δmix gate)", "",
              "| rank | role | surrogate J | Δmix | contribution | rank score | gate | render J (diag) | source#clip | genome |",
              "|---|---|---|---|---|---|---|---|---|---|"]

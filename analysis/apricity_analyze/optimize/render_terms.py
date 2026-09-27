@@ -1,4 +1,4 @@
-"""Render-fidelity scoring for L1 (Kanbus apricitus-a9ad5b, round 2): the positive **contribution**
+"""Render-fidelity scoring for L1 (Kanbus apricitus-a9ad5b): the positive **contribution**
 term (spec section 4) computed from the actual rendered stems, plus a rendered composite `J` that
 puts a candidate and the null control ("nothing added") on the *same* scale.
 
@@ -8,10 +8,9 @@ carry a weak contribution proxy), not on anything computed from the render. At r
 term -- so no rendered candidate could ever score above the null's implicit ceiling. This module
 adds the missing positive channels so `J_render` can exceed 100, and a `null_render_terms()` that
 is computed the same way (not just asserted to be zero), so `delta = J - J_null` is a real,
-render-fidelity comparison, per the reviewer's finding.
+render-fidelity comparison.
 
-All three of the spec's contribution channels are implemented against rendered stems (round 3
-adds (c); round 2 had (a)/(b) only):
+All three of the spec's contribution channels are implemented against rendered stems:
   (a) band fill: energy the candidate adds in bands where the stack is > 24 dB below its own
       loudest band, as a share of what's added there (candidate vs stack, so it saturates at 1.0
       rather than rewarding raw loudness).
@@ -24,16 +23,16 @@ adds (c); round 2 had (a)/(b) only):
       own tempo/meter -- returns 0.0 below `MOTION_MIN_BARS` bars rather than trust a noisy
       variance estimate; an 8-bar L1 window clears that floor.
 
-Round 3 (per review) also stopped using this module's `RenderTerms`/`render_composite` for the L1
-*gate* -- see `scripts/optimize.py`: gating and ranking now use the whole-mix `check.py` objective
-(the same function `scripts/check-stems.py` calls, guards included), because `layer.check_layer`'s
-score is a pure pairwise-penalty term whose null is 100 by construction, so no addition could ever
-clear a positive margin against it, and it charges a candidate's onset correlation with the stack
-as a rhythm *penalty* even when that's the groove-lock-in a listener wants (see
-`scripts/optimize.py`'s `WHOLE_MIX_MARGIN` docstring for the listening data this was checked
-against). `compute_render_terms`/`render_composite`/`null_render_terms` are kept and still run --
-their output goes into the notebook as a diagnostic term vector and this module's `contribution`
-score still ranks survivors after the whole-mix gate, but they are no longer the pass/fail gate.
+This module's `RenderTerms`/`render_composite` are not used as the L1 *gate* -- see
+`scripts/optimize.py`: gating and ranking use the whole-mix `check.py` objective instead (the same
+function `scripts/check-stems.py` calls, guards included), because `layer.check_layer`'s score is
+a pure pairwise-penalty term whose null is 100 by construction, so no addition could ever clear a
+positive margin against it, and it charges a candidate's onset correlation with the stack as a
+rhythm *penalty* even when that's the groove-lock-in a listener wants (see
+`scripts/optimize.py`'s `WHOLE_MIX_MARGIN` docstring). `compute_render_terms`/`render_composite`/
+`null_render_terms` are kept and still run -- their output goes into the notebook as a diagnostic
+term vector and this module's `contribution` score still ranks survivors after the whole-mix gate,
+but they are no longer the pass/fail gate.
 """
 
 from __future__ import annotations
@@ -145,10 +144,10 @@ def motion_term(candidate, stack: list, manifest: dict) -> float:
     makes the mix's bar-to-bar total band energy move around 10-40% more than it already does --
     spec channel (c). Uses `candidate`/stack `.bands` (per-STFT-frame, `layer.band_energy`'s
     grid) binned into bars via the manifest's own tempo/meter and `check.frame_times`, so it needs
-    no new feature extraction. Robust-at-8-bars note (per review): with `MOTION_MIN_BARS` bars or
-    fewer in the window this returns 0.0 rather than a noisy estimate off ~8 samples; callers
-    wanting a steadier number can render a 16-bar L1 window instead (not done by default this
-    round -- would roughly double L1 render cost for every candidate, not just the minority whose
+    no new feature extraction. With `MOTION_MIN_BARS` bars or fewer in the window this returns 0.0
+    rather than a noisy estimate off too few samples; callers wanting a steadier number can render
+    a 16-bar L1 window instead (not done by default -- would roughly double L1 render cost for
+    every candidate, not just the minority whose
     only differentiator is motion)."""
     from .. import check as checker
 
