@@ -43,6 +43,8 @@ export interface FeedItem {
   note?: string;
   /** Its place on a leaderboard. */
   rank?: number;
+  /** What it comes from (a clip's sample). */
+  from?: string;
 }
 
 /** "@ann rated it · 5m ago", from a row's latest news (its stars aren't kept on the row, so a rating says only that). */
@@ -54,7 +56,7 @@ function newsOf(r: RankedRow, deps: FeedDeps): string | undefined {
 
 /** A ranked list's row as a card (`rank`: its place, on a leaderboard). */
 export function feedItemOf(r: RankedRow, deps: FeedDeps, rank?: number): FeedItem {
-  const common = { id: r.targetId, title: r.title || "(untitled)", kindLabel: kindName({ targetType: r.targetType, kind: r.kind }), kindKey: r.kind, owner: r.owner, tags: r.tags ?? [], stars: { average: r.stars, count: r.ratings ?? 0 }, ...(rank ? { rank } : {}) };
+  const common = { id: r.targetId, title: r.title || "(untitled)", kindLabel: kindName({ targetType: r.targetType, kind: r.kind }), kindKey: r.kind, owner: r.owner, tags: r.tags ?? [], stars: { average: r.stars, count: r.ratings ?? 0 }, ...(rank ? { rank } : {}), ...(r.from ? { from: r.from } : {}) };
   const note = newsOf(r, deps);
   if (r.targetType === "score") return { ...common, type: "score", route: { page: PAGE_OF_KIND[(r.kind in PAGE_OF_KIND ? r.kind : "song") as ScoreKind], score: r.path ?? "" }, score: { path: r.path ?? "" }, ...(note ? { note } : {}) };
   if (r.targetType === "sample") return { ...common, type: "sample", route: { page: "samples", sample: sampleKey(r.path ?? "") }, sample: { path: r.path ?? "" }, ...(note ? { note } : {}) };
@@ -150,7 +152,7 @@ export class FeedCard {
           "div",
           { className: "feed-head" },
           ...(item.rank ? [el("span", { className: "feed-rank" }, String(item.rank))] : []),
-          el("div", { className: "feed-titles" }, title, el("div", { className: "feed-by" }, el("span", { className: "feed-kind" }, item.kindLabel), item.owner ? ` by ${whoLabel(deps, item.owner)}` : "")),
+          el("div", { className: "feed-titles" }, title, el("div", { className: "feed-by" }, el("span", { className: "feed-kind" }, item.kindLabel), item.owner ? ` by ${whoLabel(deps, item.owner)}` : "", item.from ? ` · from ${item.from}` : "")),
           stars.el,
         ),
         ...(item.tags.length ? [tagRow(item.tags)] : []),

@@ -244,22 +244,20 @@ body.col-resizing iframe, body.col-resizing canvas { pointer-events: none; }
 @media (max-width: 900px) { #docs { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } .docs-page { padding: 16px; } }
 
 /* Account control (cloud only): header buttons and the sign-in dialog, in the app's tokens with the landing's apricot. */
-.account { position: fixed; left: 12px; bottom: 12px; z-index: 20; font-size: 13px; max-width: min(260px, calc(100vw - 24px)); }
+.account { position: relative; flex: none; font-size: 13px; }
 .account[hidden] { display: none; }
 .account button { font: inherit; color: var(--fg); }
-.account .acct-in { border: 1px solid #f59e5b; background: #f59e5b; color: #2a1420; font-weight: 550; border-radius: 999px; padding: 6px 14px; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-.account .acct-pill { display: flex; align-items: center; gap: 8px; max-width: 100%; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 12px 4px 4px; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-.acct-avatar { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #f59e5b; color: #2a1420; display: grid; place-items: center; font-weight: 650; font-size: 12px; }
-.account .acct-email { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.acct-menu { position: absolute; left: 0; bottom: calc(100% + 6px); min-width: 210px; display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+.account .acct-in { border: 1px solid #f59e5b; background: #f59e5b; color: #2a1420; font-weight: 550; border-radius: 999px; padding: 5px 14px; white-space: nowrap; }
+/* In the bar, the badge alone (your initial); the menu names you. */
+.account .acct-pill { display: flex; align-items: center; border: 0; background: none; border-radius: 999px; padding: 2px; cursor: pointer; }
+.account .acct-pill:hover .acct-avatar { box-shadow: 0 0 0 3px var(--accent-soft); }
+.acct-avatar { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #f59e5b; color: #2a1420; display: grid; place-items: center; font-weight: 650; font-size: 13px; }
+.account .acct-email { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.acct-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; min-width: 220px; display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
 .acct-menu[hidden] { display: none; }
-body[data-tab="about"] .account { top: 10px; right: 16px; left: auto; bottom: auto; }
-body[data-tab="about"] .acct-menu { top: calc(100% + 6px); bottom: auto; left: auto; right: 0; }
 .acct-who { padding: 6px 10px; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .account .acct-item { border: 0; background: none; text-align: left; padding: 7px 10px; border-radius: 6px; }
 .account .acct-item:hover { background: var(--accent-soft); }
-/* Keep the fixed account pill clear of the left panes' bottom controls. */
-.sidebar { padding-bottom: 56px; }
 .acct-dialog { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--fg); padding: 20px; width: min(92vw, 380px); }
 .acct-dialog::backdrop { background: rgba(20, 14, 20, .45); }
 .acct-form { display: flex; flex-direction: column; gap: 12px; }
@@ -730,3 +728,24 @@ body.nav-open { overflow: hidden; }
 .about-card-kicker { position: absolute; right: 12px; bottom: 9px; font-size: 10.5px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; color: color-mix(in srgb, var(--sun) 70%, var(--muted)); }
 .about-card p { margin: 0; font-size: 14px; line-height: 1.5; }
 .about-card-go { justify-self: start; text-decoration: none; }
+
+/* The top bar's search: a box that grows while you type in it. */
+.top-search-host { flex: none; margin-left: auto; }
+.transport:not([hidden]) ~ .top-search-host { margin-left: 0; }
+.top-search { position: relative; display: flex; align-items: center; }
+.top-search-icon { position: absolute; left: 10px; width: 13px; height: 13px; border: 2px solid var(--muted); border-radius: 50%; pointer-events: none; }
+.top-search-icon::after { content: ""; position: absolute; width: 2px; height: 6px; background: var(--muted); right: -4px; bottom: -5px; transform: rotate(-45deg); border-radius: 1px; }
+.top-search-input { width: 150px; font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px 6px 30px; transition: width .15s ease; }
+.top-search-input:focus { width: 240px; outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.top-search-input::-webkit-search-cancel-button { cursor: pointer; }
+@media (max-width: 700px) {
+  .top-search-input { width: 36px; padding-right: 0; cursor: pointer; }
+  .top-search-input::placeholder { color: transparent; }
+  .top-search-input:focus { width: min(60vw, 240px); padding-right: 12px; cursor: text; }
+  .top-search-input:focus::placeholder { color: var(--muted); }
+}
+/* Search results: a row of cards per kind. */
+.search-section { margin-top: 18px; }
+.search-section[hidden] { display: none; }
+.search-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+.search-head h2 { font-size: 17px; margin: 0; }

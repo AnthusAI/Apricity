@@ -33,6 +33,8 @@ export interface RankItem {
   lastWhat?: string | null;
   lastBy?: string | null;
   comments?: number | null;
+  /** What it comes from, when its title alone doesn't say (a clip's sample: "Remixing is Okay"). */
+  from?: string | null;
 }
 
 export interface RankedRow extends RankItem {

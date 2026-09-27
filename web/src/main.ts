@@ -10,6 +10,7 @@ import { HowItWorks } from "./ui/how-it-works";
 import { ListenView } from "./ui/listen";
 import { ActivityView } from "./ui/activity";
 import { TagsView } from "./ui/tags";
+import { mountSearch, SearchView } from "./ui/search";
 import { mountNav } from "./ui/nav";
 import { stopFeed } from "./audio/feed-audio";
 import { bootstrap, bootstrapError, mode } from "./data/client";
@@ -53,13 +54,14 @@ const docs = new DocsView(document.querySelector("#docs")!);
 // Home is the feed (ui/activity.ts): the best-rated first, or the newest.
 const activity = new ActivityView(document.querySelector("#home")!);
 const tagsView = new TagsView(document.querySelector("#tags")!);
+const searchView = new SearchView(document.querySelector("#search")!, mountSearch(document.querySelector("#top-search")!));
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
 // ---- tabs
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB = KIND_OF_PAGE as Record<string, ScoreKind>;
 const TAB_OF_KIND = PAGE_OF_KIND as Record<ScoreKind, string>;
-const TABS = ["home", "about", "how-it-works", "listen", "tags", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "about", "how-it-works", "listen", "tags", "search", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
@@ -90,7 +92,7 @@ function showTab(name: string) {
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
   // (Cards on Activity and the tag pages have their own play buttons.)
-  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "how-it-works", "listen", "tags"].includes(name);
+  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "how-it-works", "listen", "tags", "search"].includes(name);
   activity.show(name === "home");
   syncTransport();
   if (kind) score.setKind(kind);
@@ -119,6 +121,7 @@ async function follow(r: Route) {
     document.title = titleOf(r, r.tag ? `#${r.tag}` : undefined);
     await tagsView.show(r.tag ?? null, r.list);
   }
+  else if (r.page === "search") await searchView.show(r.q);
   else if (r.page === "listen") await (listen ??= new ListenView(document.querySelector("#listen")!)).show(r.listenCycle ?? null);
   else document.title = titleOf(r); // an item's view titles the page with its name
 }

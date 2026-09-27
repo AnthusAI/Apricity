@@ -57,3 +57,10 @@ test("odd names survive; bad paths go to the page; unknown ones go home", () => 
   assert.equal(titleOf({ page: "listen" }), "Listen · Apricity");
   assert.deepEqual(parse("/listen/cyc_abc/extra"), { page: "listen" });
 });
+
+test("search: its words in the query, and back", () => {
+  for (const r of [{ page: "search", q: "deep house #lounge" }, { page: "search" }] as Route[]) assert.deepEqual(url(r), r);
+  assert.equal(href({ page: "search", q: "a&b" }), "/search?q=a%26b");
+  assert.deepEqual(parse("/search", "?q=%20%20"), { page: "search" });
+  assert.equal(titleOf({ page: "search", q: "x" }, "“x”"), "“x” · Search · Apricity");
+});
