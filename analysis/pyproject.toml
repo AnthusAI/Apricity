@@ -29,6 +29,9 @@ dev = ["pytest"]
 # Noise reduction (scripts/catalog-add-loc.py denoises by default). Install `denoiser` with
 # `pip install --no-deps denoiser`: its hydra/omegaconf pins are not needed to run the pretrained model.
 denoise = ["noisereduce"]
+# CLAP audio/text embeddings (scripts/fit-features.py, apricity_analyze/clap.py). Checkpoint
+# (laion/clap-htsat-unfused, ~620 MB; see clap.py for why not the music one) downloads to the HF cache on first use, not at install time.
+clap = ["transformers"]
 
 [project.scripts]
 apricity-analyze = "apricity_analyze.cli:main"
