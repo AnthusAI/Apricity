@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.13.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-f38b94**: The workspace skips crates/apricity-daw until it's a crate
+  ([`3a9e6ef`](https://github.com/AnthusAI/Apricity/commit/3a9e6ef93c93b073cdef1270fe05a681614cf845))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`bf39182`](https://github.com/AnthusAI/Apricity/commit/bf39182005a5435c3295e632589163b3b1170b64))
+
+
 ## v0.12.0 (2026-09-26)
 
 
