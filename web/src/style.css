@@ -54,7 +54,8 @@ button { cursor: pointer; }
     color-mix(in srgb, var(--sun) 4%, transparent) 63%,
     transparent 70%);
 }
-@media (prefers-color-scheme: dark) { .topbar .brand .logo { --sun: #ffa866; --sun-2: #ffd59a; } }
+/* Dark mode: the letters are light, so a bright sun behind them washes them out; it glows faintly instead. */
+@media (prefers-color-scheme: dark) { .topbar .brand .logo { --sun: #ffa866; --sun-2: #ffd59a; opacity: 0.45; } }
 .tabs { display: flex; gap: 4px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
 .tabs a { border: 0; background: none; padding: 6px 12px; border-radius: 8px; color: var(--muted); white-space: nowrap; flex: none; text-decoration: none; font-size: 14px; }
 .tabs a[aria-selected="true"] { background: var(--accent-soft); color: var(--fg); font-weight: 550; }
