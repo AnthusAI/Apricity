@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-8c09363f-c3e5-42a6-b2ad-acb09c9125a7",
+  "title": "story CLI users authenticate and manage cloud scores",
+  "description": "As an Apricity user, I want to sign in from the CLI and manage my cloud Scores, so that I can publish and maintain .apr work without using the browser.\n\nFeature: Authenticated cloud CLI\n\nScenario: A signed-out user publishes a score\nGiven the user has no CLI session\nWhen they run `apricity login` and complete Google authorization\nAnd they run `apricity score create beat.apr`\nThen Apricity creates a Score and its extracted ScoreRefs under that user identity\nAnd prints the score ID without printing credentials\n\nScenario: A curator imports the library records\nGiven the signed-in user belongs to both admins and curators\nWhen they run `apricity sample import`\nThen Apricity mirrors existing storage record files into AppSync in dependency order\n\nScenario: An unauthorized user imports records\nGiven the signed-in user lacks admin or curator membership\nWhen they run `apricity sample import`\nThen Apricity refuses before it changes cloud records",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T22:15:38.425631Z",
+  "updated_at": "2026-09-27T22:15:53.935286Z",
+  "closed_at": "2026-09-27T22:15:53.935016Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
