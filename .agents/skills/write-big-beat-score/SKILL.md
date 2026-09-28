@@ -44,6 +44,10 @@ Treat samples as playable material:
 - Use `shot-N` clips for punctuation, not sustained harmony. Add `release` when a stab needs to ring through a transition.
 - A repeated spoken fragment works when it is a hook; a long archival recording under unrelated instruments usually becomes a collage. Keep a single sonic world per section.
 
+### Tease, then reveal a recognizable phrase
+
+When a source is iconic enough that pitch-shifting or continuous looping makes it feel wrong, use a **tease-and-reveal** phrase instead. Take a short opening region (often an eighth- or quarter-note chop), repeat it at its recorded pitch as a rhythmic hook, then stop the chops and play one complete, untransposed phrase. Let the drums carry the space after the reveal. This is a deliberate build of recognition, not a sparse-chop breakdown: the small cut should announce the same source that the longer pass resolves.
+
 The main loop can carry chromatic notes. Choose the key and progression from its actual loud notes, test with `apricity explain`, and simplify the harmony rather than forcing it to follow a chord chart. A one-chord vamp is valid when the hook is the harmonic event.
 
 ## Arrange for impact
