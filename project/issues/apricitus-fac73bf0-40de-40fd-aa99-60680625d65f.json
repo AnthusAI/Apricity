@@ -3,17 +3,25 @@
   "title": "Repair missing Hammer Song clip annotation in production",
   "description": "Synchronize the production Hammer Song sample manifest so loop-1 exists, then update the published Hammer Time score to resolve its clip reference and compile in the hosted player.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "74c6be55-0a9b-4382-9b7a-8c2db8a6a5e1",
+      "author": "home",
+      "text": "Synchronized loc/lomax-1939/Hammer-Song_lomaxbib000047.clean.wav manifest to production (48 created, 12 updated), restoring loop-1. Updated scr_scores_big-beat-hammer-time_apr with the same score text against the repaired catalog; the strict resolver completed successfully.",
+      "created_at": "2026-09-28T02:55:48.058142Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-28T02:54:20.705613Z",
-  "updated_at": "2026-09-28T02:54:20.705645Z",
-  "closed_at": null,
+  "updated_at": "2026-09-28T02:55:48.107837Z",
+  "closed_at": "2026-09-28T02:55:48.107802Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
