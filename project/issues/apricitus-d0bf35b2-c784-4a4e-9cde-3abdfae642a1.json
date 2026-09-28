@@ -3,16 +3,24 @@
   "title": "Compose a contrasting riff-driven Big Beat score",
   "description": "Create and render a third Big Beat score that is materially different from the two chant-driven Big Beat scores: use a melodic or riff-driven hook and a distinct arrangement.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "91ef4915-8aec-46da-9bb3-ae46d1459463",
+      "author": "home",
+      "text": "Built Tin Can Thunder: 125 BPM ragtime-piano Big Beat built from chopped and full one-bar ragtime drummer riff, deliberately distinct from the chant-driven scores. Main audition measured objective_v2 104.49. Final local render is in renders/tin-can-final.",
+      "created_at": "2026-09-28T02:43:01.674218Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-09-28T02:41:37.294781Z",
-  "updated_at": "2026-09-28T02:41:37.294811Z",
+  "updated_at": "2026-09-28T02:43:01.674260Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
