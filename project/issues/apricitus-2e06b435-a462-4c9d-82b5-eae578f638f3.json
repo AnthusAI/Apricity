@@ -3,7 +3,7 @@
   "title": "Implement Commons audio ingestion and production import",
   "description": "Implement the Commons category importer and production-library integration described by the sibling behavior story.\n\n- Enumerate direct members for four configured category pages through MediaWiki API; deduplicate by page identity and preserve every category membership.\n- Fetch revisioned file-page content and extmetadata in small batches; normalize only supported license forms with required attribution, and report non-audio or incomplete/unsupported candidates.\n- Download eligible audio serially with a descriptive User-Agent, request delay, Retry-After-aware backoff, checksum verification, and resumable/idempotent state.\n- Preserve raw metadata/license statements and page revision in Recording sourceMetadata; keep original media source URL and checksum in the source catalog/sample.\n- Add Ogg/Vorbis and Opus decoding; analyze/import eligible samples and records into the production library.\n- Write Gherkin-backed tests for discovery, pagination, rights qualification, throttling/resume, formats, provenance, and idempotency.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -37,7 +37,7 @@
     }
   ],
   "created_at": "2026-09-28T01:53:17.226719Z",
-  "updated_at": "2026-09-28T02:57:16.543681Z",
+  "updated_at": "2026-09-28T03:44:02.774645Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
