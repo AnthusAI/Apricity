@@ -31,13 +31,12 @@ their business partner. Emerge is by the same artist as Ave, natively in the son
 
 ## 3. Let the user rate
 
-Send the audition `.m4a` files (SendUserFile, one-line caption with timestamps), or publish a blind cycle:
-`scripts/lab cycle publish --score S --incumbent-score-id ID --incumbent-audio A --candidate X.apr X.m4a
-… --target local` for the local library (`apricity serve`, the `/listen` page), or the convenience form
-`--candidates A.apr B.apr … --window A-B` to have `lab` build each candidate's (and the incumbent's)
-audition itself. `--target cloud --owner '<sub>::<username>'` for the deployed app (never guess the owner).
-`scripts/lab cycle pull <cycle id>` logs the verdicts to `renders/log.jsonl`. Keep working while they
-listen: their verdict calibrates the next round, it doesn't gate it.
+Publish a blind listening cycle into the session's lab, and the user rates it on the web app's `/labs` and
+`/listen` pages: `scripts/lab cycle --target cloud publish --lab <lab id> --score S --incumbent-score-id ID
+--candidates A.apr B.apr … --window A-B` builds every audition (the incumbent's too) and publishes them.
+`references/lab.md` has the whole workflow: `apricity login`, starting a lab, publishing, pulling verdicts
+back. For a single quick listen, sending the `.m4a` with SendUserFile (a one-line caption with timestamps)
+is still fine. Keep working while they listen: their verdict calibrates the next round, it doesn't gate it.
 
 ## The measure -> try -> keep loop: `lab measure` and `lab try`
 
