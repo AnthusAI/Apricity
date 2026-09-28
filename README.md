@@ -148,6 +148,23 @@ Test material is real, public-domain march music, listed with credits and rights
 scripts/fetch-samples.py
 ```
 
+### Wikimedia Commons audio
+
+To refresh the direct members of Apricity's four configured Commons music categories, download
+eligible audio, and write a review report for excluded files:
+
+```sh
+PYTHONPATH=analysis analysis/.venv/bin/python scripts/import-commons.py --delay 1
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.cli --no-notes --max-minutes 0 samples/wikimedia-commons
+```
+
+The importer deduplicates Commons page IDs, checks supported licenses and attribution, saves the
+revisioned source metadata in `samples/sources.json`, and writes `samples/commons-review.json`.
+It downloads one file at a time and resumes by verifying existing files against Commons checksums.
+Review the report before publishing. To add analyzed recordings to a library, run `apricity migrate`
+for that library, then `apricity sync push` and use the signed-in production app's **Import library**
+action to upsert its records into AppSync.
+
 - **Library of Congress, [Citizen DJ](https://citizen-dj.labs.loc.gov/):** 27 excerpts from Edison
   and National Jukebox recordings (1890s–1920s) plus a Tony Schwartz street recording of a St. Patrick's parade.
 - **"The President's Own" U.S. Marine Band, *The Complete Marches of John Philip Sousa*:** 8 modern

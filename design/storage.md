@@ -55,6 +55,8 @@ const schema = a.schema({
     title: a.string().required(), collection: a.string().required(),   // "marine-band", "citizen-dj/loc-edison", "uploads"
     performer: a.string(), composed: a.integer(), recorded: a.string(),
     credit: a.string(), rights: a.string(), sourcePage: a.url(), url: a.url(),
+    license: a.string(), licenseUrl: a.url(), author: a.string(), attribution: a.string(),
+    sourceMetadata: a.json(), // revisioned Commons file-page source, raw credits and license metadata
     documents: a.ref('FileRef').array(),            // sheet-music PDFs (sources.json kind:"score")
     samples: a.hasMany('Sample', 'recordingId'),
   }).secondaryIndexes(i => [i('collection').sortKeys(['title']).queryField('recordingsByCollection')])

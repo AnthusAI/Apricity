@@ -92,7 +92,7 @@ fn build_repo() -> TempDir {
     write_json(
         &r.join("samples/sources.json"),
         &json!({"files": [
-            {"path": "marine-band/Piece.wav", "title": "The Piece", "performer": "The Band", "composed": 1896, "credit": "Band credit", "rights": "Public domain", "source_page": "https://example.com/piece"},
+            {"path": "marine-band/Piece.wav", "title": "The Piece", "performer": "The Band", "composed": 1896, "credit": "Band credit", "rights": "Public domain", "source_page": "https://example.com/piece", "url": "https://example.com/piece.wav", "license": "cc-by-4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "The Piece by The Band, CC BY 4.0.", "tags": ["electronic-music", "techno-music-samples"], "source_metadata": {"platform": "Wikimedia Commons", "pageid": 123, "revision_id": 456, "raw_wikitext": "{{Cc-by-4.0}}"}},
             {"path": "marine-band/scores/Piece.pdf", "kind": "score", "title": "The Piece", "url": "https://example.com/piece.pdf"},
         ]}),
     );
@@ -215,6 +215,15 @@ fn samples_recordings_and_stems() {
         (Some("The Piece"), Some("The Band"), Some(1896))
     );
     assert_eq!(rec["collection"], "marine-band");
+    assert_eq!(rec["license"], "cc-by-4.0");
+    assert_eq!(rec["licenseUrl"], "https://creativecommons.org/licenses/by/4.0/");
+    assert_eq!(rec["attribution"], "The Piece by The Band, CC BY 4.0.");
+    assert_eq!(rec["sourcePage"], "https://example.com/piece");
+    assert_eq!(rec["url"], "https://example.com/piece.wav");
+    assert_eq!(
+        serde_json::from_str::<Value>(rec["sourceMetadata"].as_str().unwrap()).unwrap(),
+        json!({"platform": "Wikimedia Commons", "pageid": 123, "revision_id": 456, "raw_wikitext": "{{Cc-by-4.0}}"})
+    );
 
     let c = m.get("Sample", json!({"id": piece}));
     assert_eq!(
@@ -230,6 +239,12 @@ fn samples_recordings_and_stems() {
         )
     );
     assert_eq!(c["aliases"], json!(["samples/marine-band/Piece.wav"]));
+    assert_eq!(
+        c["audio"]["sha256"],
+        sha256_hex(&fs::read(m.repo.join("samples/marine-band/Piece.wav")).unwrap())
+    );
+    assert_eq!(c["title"], "The Piece");
+    assert_eq!(c["tags"], json!(["electronic-music", "techno-music-samples"]));
     assert_eq!(
         (
             c["key"].as_str(),

@@ -42,6 +42,8 @@ export interface Provenance {
   licenseUrl?: string | null;
   author?: string | null;
   attribution?: string | null;
+  /** Raw, revisioned source metadata retained for provenance and audit. */
+  sourceMetadata?: unknown | null;
 }
 
 /** A recording's license: its own `license` field, else read from its rights text. Null: not documented. */

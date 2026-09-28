@@ -1,0 +1,114 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "LL-Q652 (ita)-XANA000-funk carioca.wav",
+  "sha256": "926be3d72434d0210420c96e5c4cf514e1ddacf9e3141f50d2f6d6912144974a",
+  "sample_rate": 48000,
+  "channels": 1,
+  "duration": 1.48
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-28T04:52:44+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [],
+  "downbeats": [],
+  "meter": null,
+  "warp_markers": [],
+  "beat_loudness": [],
+  "loudness": [
+   -21.4,
+   -16.1,
+   -30.3
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Ab",
+   "mode": "major",
+   "strength": 0.4078,
+   "camelot": "4B",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "C",
+    "mode": "minor",
+    "strength": 0.3586,
+    "camelot": "5A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "F",
+    "mode": "minor",
+    "strength": 0.3316,
+    "camelot": "4A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "C",
+    "mode": "major",
+    "strength": 0.1627,
+    "camelot": "8B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 440.0,
+  "tuning_cents": 0.0,
+  "pitch_class_profile": [
+   1.0,
+   0.6931,
+   0.418,
+   0.4025,
+   0.2172,
+   0.2412,
+   0.2024,
+   0.3749,
+   0.3731,
+   0.2194,
+   0.4696,
+   0.6877
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 1.44,
+    "key": {
+     "tonic": "Ab",
+     "mode": "major",
+     "strength": 0.4078,
+     "camelot": "4B",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     1.0,
+     0.6931,
+     0.418,
+     0.4025,
+     0.2172,
+     0.2412,
+     0.2024,
+     0.3749,
+     0.3731,
+     0.2194,
+     0.4696,
+     0.6877
+    ]
+   }
+  ],
+  "beat_chroma": [],
+  "tuning_uncertain": true
+ },
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}

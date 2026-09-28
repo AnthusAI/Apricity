@@ -58,6 +58,7 @@ type Recording @aws_iam @aws_cognito_user_pools {
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRef]
   samples(filter: ModelSampleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSampleConnection
   createdAt: AWSDateTime!
@@ -616,6 +617,7 @@ input ModelRecordingFilterInput {
   licenseUrl: ModelStringInput
   author: ModelStringInput
   attribution: ModelStringInput
+  sourceMetadata: ModelStringInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelRecordingFilterInput]
@@ -717,6 +719,7 @@ input ModelRecordingConditionInput {
   licenseUrl: ModelStringInput
   author: ModelStringInput
   attribution: ModelStringInput
+  sourceMetadata: ModelStringInput
   and: [ModelRecordingConditionInput]
   or: [ModelRecordingConditionInput]
   not: ModelRecordingConditionInput
@@ -739,6 +742,7 @@ input CreateRecordingInput {
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRefInput]
 }
 
@@ -757,6 +761,7 @@ input UpdateRecordingInput {
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRefInput]
 }
 
@@ -845,6 +850,7 @@ input ModelSubscriptionRecordingFilterInput {
   licenseUrl: ModelSubscriptionStringInput
   author: ModelSubscriptionStringInput
   attribution: ModelSubscriptionStringInput
+  sourceMetadata: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionRecordingFilterInput]

@@ -102,6 +102,13 @@
           "isRequired": false,
           "attributes": []
         },
+        "sourceMetadata": {
+          "name": "sourceMetadata",
+          "isArray": false,
+          "type": "AWSJSON",
+          "isRequired": false,
+          "attributes": []
+        },
         "documents": {
           "name": "documents",
           "isArray": true,
