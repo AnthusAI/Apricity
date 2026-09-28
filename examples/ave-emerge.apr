@@ -2,7 +2,8 @@
 # groove loop swapped for Beroza's own "Emerge" (ccMixter, CC BY 3.0), natively A minor at 120 BPM: the
 # lounge-y swap the user picked as "much better" (CLAP chose it as closest to Ave's loop), replacing the
 # funky guitar of Ave House. Drums: the Salamander Drumkit (CC BY-SA 3.0, Alexander Holm). A minor: Am7, Fmaj7,
-# Dm7, G, two bars each (the key Ave's own loops are in). Apricity fits Ave's loops to every chord and retunes them to A440; its
+# Dm7, then Em7 over G (a G6 colour: over the G bass, Emerge plays the E that the old plain G fought), two bars
+# each (the key Ave's own loops are in). Apricity fits the loops to every chord and retunes them to A440; its
 # clean low A♭ (pinned: the checker caught it) becomes the bass on each chord's root. A classic shape in eight-bar phrases:
 #   1–8    intro: the dark loop, a low-pass opening; the kick from bar 5
 #   9–24   groove: the bright loop, bass and clap; the open hat and the pump from 17
@@ -26,7 +27,7 @@ kit drums
   clap = clap
   open = open
 
-chords (i7*2 VImaj7*2 iv7*2 VII*2)*5
+chords (i7*2 VImaj7*2 iv7*2 v7/3*2)*5
 
 # ---- The music, all through one group, so the breakdown can filter it as one.
 
