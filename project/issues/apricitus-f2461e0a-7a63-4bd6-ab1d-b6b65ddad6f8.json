@@ -3,7 +3,7 @@
   "title": "Compose a second chant-driven Big Beat score",
   "description": "Create, render, measure, and present a second Big Beat score with a distinct chant hook and break from Call the Floor.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,11 +17,18 @@
       "text": "Built Hammer Time: a 124 BPM Big Beat score where all vocal material is chopped from one Hammer Song loop into four pads; no intact loop plays. Main audition measured objective_v2 106.50 with no v2 guard violations. Final local render is in renders/hammer-time-final.",
       "created_at": "2026-09-28T02:40:19.988383Z",
       "comment_type": "default"
+    },
+    {
+      "id": "c22ac9a5-c065-495d-a8a0-9c4897a54394",
+      "author": "home",
+      "text": "Published Hammer Time through the authenticated production CLI after strict asset preflight.",
+      "created_at": "2026-09-28T02:41:37.007715Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-28T02:38:56.582914Z",
-  "updated_at": "2026-09-28T02:40:19.988406Z",
-  "closed_at": null,
+  "updated_at": "2026-09-28T02:41:37.172524Z",
+  "closed_at": "2026-09-28T02:41:37.172486Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
   "custom": {}
