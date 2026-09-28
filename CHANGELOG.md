@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.33.2 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-af4eba**: Allow scoped cycle uploads for members
+  ([`4439ea7`](https://github.com/AnthusAI/Apricity/commit/4439ea789a28da6703e608ca06f19fe5fd2dd1f9))
+
+- **apricitus-af4eba**: Deploy cycle upload group policy
+  ([`b8c24d8`](https://github.com/AnthusAI/Apricity/commit/b8c24d851687a8a84184b4944378a3c1f31b0f4a))
+
+
 ## v0.33.1 (2026-09-28)
 
 ### Bug Fixes
