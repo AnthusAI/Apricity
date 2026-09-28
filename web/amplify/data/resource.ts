@@ -77,6 +77,8 @@ const schema = a.schema({
       licenseUrl: a.url(),
       author: a.string(),
       attribution: a.string(),
+      /** Revisioned Wikimedia Commons file-page content and raw license/credit metadata, when imported from Commons. */
+      sourceMetadata: a.json(),
       documents: a.ref("FileRef").array(),
       samples: a.hasMany("Sample", "recordingId"),
     })

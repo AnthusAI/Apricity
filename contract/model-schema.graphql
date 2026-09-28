@@ -61,6 +61,7 @@ type Recording @model @auth(rules: [{allow: public, provider: identityPool, oper
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRef]
   samples: [Sample] @hasMany(references: ["recordingId"])
 }

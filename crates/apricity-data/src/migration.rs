@@ -248,6 +248,7 @@ fn recording_key(rel: &str) -> (String, String) {
             .map_or(file.to_string(), |(s, _)| s.to_string())
     };
     match parts.as_slice() {
+        ["wikimedia-commons", pageid, ..] => (format!("rec_commons_{pageid}"), "wikimedia-commons".into()),
         ["marine-band", "stems", piece, ..] => (format!("rec_{piece}"), "marine-band".into()),
         ["marine-band", "scores", file] | ["marine-band", file] => {
             (format!("rec_{}", stem_of(file)), "marine-band".into())
@@ -510,6 +511,9 @@ fn migrate_recordings(
             ),
         );
         if let Some(m) = meta {
+            if let Some(collection) = str_of(m, "collection") {
+                rec.insert("collection".into(), json!(collection));
+            }
             for (from, to) in [
                 ("performer", "performer"),
                 ("recorded", "recorded"),
@@ -519,6 +523,8 @@ fn migrate_recordings(
                 ("author", "author"),
                 ("source_page", "sourcePage"),
                 ("url", "url"),
+                ("license_url", "licenseUrl"),
+                ("attribution", "attribution"),
             ] {
                 if let Some(v) = str_of(m, from) {
                     rec.insert(to.into(), json!(v));
@@ -530,6 +536,9 @@ fn migrate_recordings(
             }
             if let Some(c) = m.get("composed").and_then(Value::as_i64) {
                 rec.insert("composed".into(), json!(c));
+            }
+            if let Some(snapshot) = m.get("source_metadata") {
+                rec.insert("sourceMetadata".into(), json!(snapshot.to_string()));
             }
         }
         let mut docs = Vec::new();
@@ -608,6 +617,8 @@ fn migrate_samples(
             "audio/mpeg"
         } else if filename.ends_with(".flac") {
             "audio/flac"
+        } else if filename.ends_with(".ogg") || filename.ends_with(".oga") || filename.ends_with(".opus") {
+            "audio/ogg"
         } else {
             "audio/wav"
         };
@@ -643,7 +654,8 @@ fn migrate_samples(
         let m = &p.manifest;
         let mut sample = json!({
             "id": p.id, "recordingId": recording_id, "path": p.rel, "aliases": [format!("samples/{}", p.rel)],
-            "collection": collection, "title": filename, "role": role, "status": "ready",
+            "collection": entry.and_then(|e| str_of(e, "collection")).unwrap_or(&collection),
+            "title": entry.and_then(|e| str_of(e, "title")).unwrap_or(filename), "role": role, "status": "ready",
             "audio": file_ref_json(&audio), "analysis": file_ref_json(&analysis_ref),
             "duration": m["source"]["duration"], "sampleRate": m["source"]["sample_rate"], "channels": m["source"]["channels"],
             "analysisVersion": m["apricity_manifest"], "analyzedAt": m["analysis"]["analyzed_at"],
@@ -651,6 +663,9 @@ fn migrate_samples(
             "tuningCents": m["tonal"]["tuning_cents"],
             "nameCounters": name_counters(m).to_string(),
         });
+        if let Some(tags) = entry.and_then(|e| e.get("tags")).and_then(Value::as_array) {
+            sample["tags"] = Value::Array(tags.clone());
+        }
         if let Some(k) = m["tonal"]
             .get("key")
             .and_then(|k| Some(format!("{} {}", str_of(k, "tonic")?, str_of(k, "mode")?)))
@@ -1103,6 +1118,13 @@ mod recording_key_tests {
                 ("rec_salamander-drumkit".to_string(), "salamander-drumkit".to_string())
             );
         }
+    }
+
+    #[test]
+    fn commons_files_get_stable_individual_recording_ids() {
+        let expected = ("rec_commons_123".to_string(), "wikimedia-commons".to_string());
+        assert_eq!(key("wikimedia-commons/123/Solarity.ogg"), expected);
+        assert_eq!(key("wikimedia-commons/123/Renamed-Solarity.opus"), expected);
     }
 
     fn key(rel: &str) -> (String, String) {
