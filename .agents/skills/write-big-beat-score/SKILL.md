@@ -9,11 +9,19 @@ Use this alongside `write-score`: it supplies Apricity syntax, palette search, a
 
 Big Beat is sample music with a physical, rock-sized sense of impact: a loud break, one memorable hook, conspicuous edits, and motion between sections. It is not simply fast house, generic breakbeat, or a dense collage. Decide whether the brief wants playful/funky, psychedelic/menacing, or cinematic/industrial before casting sounds.
 
+## Make a score-specific plan
+
+Before writing `.apr`, name the hook source, tempo, and one drum identity in a sentence. Choose a different identity when making another Big Beat score in the same session: for example a loose live break, a stomping halftime rock break, a tight dance-punk sixteenth pattern, or a sparse break that blooms into toms and cymbals. Do not reuse the last score's kick/snare placement, hat grid, sample-entry order, and breakdown device together.
+
+Map the first 16 bars before adding tracks. At minimum, specify the function of each four-bar phrase: which phrase introduces the hook, which is the fullest groove, which removes or recasts an element, and which lands the return. The answer need not be a conventional build/drop; a riff can arrive late, a break can start full and go empty, or the drums can be the hook. The plan prevents every score from becoming intro cuts → whole loop → filtered breakdown → same loop again.
+
 ## Set the engine
 
 Start around 100–128 BPM. The centre is a break-derived groove: a heavy downbeat, a decisive backbeat, and syncopated kicks or fills that make the bar feel like it is being pulled forward. Use straight sixteenths for tight sampled drums; add modest swing only when it helps the source's feel.
 
-Build a four- or eight-bar rhythm sketch before adding a hook. A Big Beat groove needs contrast between strong hits and space; do not fill every sixteenth. If the library has a suitable drum loop, slice it by beats or transients and resequence a few hits so the break has a recognisable identity rather than repeating untouched. Otherwise, layer only the minimum kit parts needed to create a break-like contour.
+Build a four- or eight-bar rhythm sketch before adding a hook. A Big Beat groove needs contrast between strong hits and space; do not fill every sixteenth. If the library has a suitable drum loop, slice it by beats or transients and resequence a few hits so the break has a recognisable identity rather than repeating untouched.
+
+When a real drum kit is available, write it as a drummer rather than falling back to one kick/snare/hat template. Start with a kick/snare contour that belongs to this score, then write the hats, ghost notes, rim answers, and fills around it. Change at least two of kick placement, snare answer, hat density, cymbal voice, or tom activity between the main groove and the next section. Use tom or snare fills to hand off between four- or eight-bar phrases. Bring in open hats, ride, crashes, and cymbal chokes only where they make a section land. The chopped sample remains the Big Beat basis; the kit gives the record its evolving physical force.
 
 ## Cast one unmistakable hook
 
@@ -32,7 +40,7 @@ The main loop can carry chromatic notes. Choose the key and progression from its
 
 Give a finished piece a clear 16-, 24-, or 32-bar arc: establish the break and hook, pull one away, build tension through edits or filtering, then return with a changed density. Make the changes unmistakable on four- or eight-bar boundaries.
 
-Useful Big Beat transitions are short and concrete: mute the kick for half or one bar, stutter a phrase, turn a break into sparse slices, reverse a held sound into a downbeat, or close and snap-open a low-pass filter. Avoid EDM risers by default; the drama should sound like a record being cut up and thrown back in.
+Useful Big Beat transitions are short and concrete: mute the kick for half or one bar, stutter a phrase, turn a break into sparse slices, reverse a held sound into a downbeat, switch from hats to ride, answer with a tom fill, or close and snap-open a low-pass filter. Choose one or two that express this record's hook; do not stack the same filter-breakdown routine into every arrangement. Avoid EDM risers by default; the drama should sound like a record being cut up and thrown back in.
 
 Keep the hook legible. If several layers compete, remove or automate one instead of making every sound louder. The final section may add one new counter-hook, but it should still feel like the same record.
 
