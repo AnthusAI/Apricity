@@ -2,6 +2,23 @@
 
 <!-- version list -->
 
+## v0.31.0 (2026-09-28)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`4e2f1f2`](https://github.com/AnthusAI/Apricity/commit/4e2f1f222c69788af113568cc6cc0a616131633a))
+
+- **kanbus**: Commit board state (issues)
+  ([`104b54e`](https://github.com/AnthusAI/Apricity/commit/104b54e876848a308ae36ef1a110eae9d288bc11))
+
+### Features
+
+- **apricitus-daebf8**: `scripts/lab`, one front door for the music tools
+  ([#47](https://github.com/AnthusAI/Apricity/pull/47),
+  [`f40f5d9`](https://github.com/AnthusAI/Apricity/commit/f40f5d90e15ff372b51181e8dce8c2efe6a040db))
+
+
 ## v0.30.2 (2026-09-28)
 
 ### Bug Fixes
