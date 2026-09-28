@@ -14,7 +14,7 @@
     {
       "id": "5b4bc5c6-f6ba-4c06-97a4-2a6092249115",
       "author": "home",
-      "text": "Targeted production repair: synchronized samples/voice/announcer.wav.apricity.json with  (10 Clip/Marker records created, 2 updated). Reloaded the hosted Voice Layer score and verified its former three missing-pad compiler errors are gone; it now compiles as a 16-bar, 88 BPM timeline.",
+      "text": "Targeted production repair: synchronized samples/voice/announcer.wav.apricity.json using the repository sample-import command for voice/announcer.wav (10 Clip/Marker records created, 2 updated). Reloaded the hosted Voice Layer score and verified its former three missing-pad compiler errors are gone; it now compiles as a 16-bar, 88 BPM timeline.",
       "created_at": "2026-09-28T00:02:53.405514Z",
       "comment_type": "default",
       "agent": {
@@ -25,7 +25,7 @@
     }
   ],
   "created_at": "2026-09-27T23:41:39.295846Z",
-  "updated_at": "2026-09-28T00:02:53.405931Z",
+  "updated_at": "2026-09-28T00:03:02.808296Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
