@@ -5,6 +5,7 @@ import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
+import { cycleUploadPolicy } from "./storage/cycle-upload-policy";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
 import { ranking } from "./functions/ranking/resource";
@@ -17,6 +18,18 @@ export const backend = defineBackend({
   activity,
   ranking,
 });
+
+// Cognito group users assume their group role instead of the authenticated identity-pool role. Preserve per-owner
+// cycle upload access for those roles by scoping the object ARN to the caller's Cognito identity ID.
+const cycleBucketArn = backend.storage.resources.bucket.bucketArn;
+for (const group of ["members", "curators"] as const) {
+  backend.auth.resources.groups[group].role.addToPrincipalPolicy(
+    new PolicyStatement({
+      effect: Effect.ALLOW,
+      ...cycleUploadPolicy(cycleBucketArn),
+    }),
+  );
+}
 
 // Ratings are private; their public tallies are kept by the tally Lambda, fed by the Rating table's stream (Amplify
 // model tables stream new and old images). Only the Lambda writes the Tally table.
