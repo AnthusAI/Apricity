@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Apricity cycle storage fix"
       }
+    },
+    {
+      "id": "428e8233-ac09-43a9-b6e2-8c8775cea093",
+      "author": "home",
+      "text": "Implementation is ready for review in https://github.com/AnthusAI/Apricity/pull/57. Focused Rust rollback/publish tests and the identity-scoped IAM policy test pass. The production smoke is intentionally not repeated until the storage policy change is deployed.",
+      "created_at": "2026-09-28T11:44:50.386031Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T11:40:24.546400Z",
+  "updated_at": "2026-09-28T11:44:50.386067Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
