@@ -22,10 +22,22 @@
         "model": "gpt-6",
         "name": "Codex desktop"
       }
+    },
+    {
+      "id": "24957022-23ff-45a5-a41e-3ac74b7983d1",
+      "author": "home",
+      "text": "Implementation progress: refactored `.agents/skills/write-score/scripts/ratings.py` to enumerate/parse Rating records once and load only referenced Clip/Sample/Score JSON files. Added `--sort recent`, `--search`/`--query`/`--q`, retained stars-first and `--min`, and surfaced clip kind/tags/duration, sample key/BPM, clip added date, and rating date. Updated write-score guidance. On the local library (13,873 Clip, 169 Rating, including 95 clip ratings), a suppressed-output run went from 2.76s to 0.11s. Added behavior tests for default ranking, recent order, search/minimum, missing records and selective reads. The deployed web list remains a separate diagnosed issue (scan plus duplicate catalog scan); this task now focuses on local authoring as requested. CLAP neighbors already exists and is unchanged.",
+      "created_at": "2026-09-28T11:05:04.452243Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
     }
   ],
   "created_at": "2026-09-28T10:54:17.164096Z",
-  "updated_at": "2026-09-28T11:00:11.212716Z",
+  "updated_at": "2026-09-28T11:05:04.452274Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
