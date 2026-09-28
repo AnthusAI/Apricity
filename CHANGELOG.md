@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v0.32.1 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-798cd0**: Grant files/ per folder so the cycle rule deploys
+  ([`2c07a23`](https://github.com/AnthusAI/Apricity/commit/2c07a230a855a222b1424fa26c270aa962e523b3))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`36eabb5`](https://github.com/AnthusAI/Apricity/commit/36eabb56e027029d3d55331a9f52b48736c7b220))
+
+- **kanbus**: Commit board state (issues)
+  ([`3eeec19`](https://github.com/AnthusAI/Apricity/commit/3eeec1901705e1964eaed47a4d4bf50f87085582))
+
+### Documentation
+
+- **apricitus-e3a622**: Teach the write-score skill to work in a lab
+  ([`949f61b`](https://github.com/AnthusAI/Apricity/commit/949f61bdba29baaed492f9581a91ad5a56a08a99))
+
+
 ## v0.32.0 (2026-09-28)
 
 ### Chores
