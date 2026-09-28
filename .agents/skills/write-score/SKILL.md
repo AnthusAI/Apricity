@@ -1,6 +1,6 @@
 ---
 name: write-score
-description: "Write, fork, remix or improve Apricity scores (.apr files): songs, beats, grooves, demos, and example scores built from the sample library, iterating by rendering and listening with the user. Use this whenever someone wants to make music in Apricity, make a new example or demo score, fork or rework an existing score, make something 'sound better/smoother/fuller', build up an arrangement (intro, build, drop, breakdown), or asks what sounds are available, even if they never say 'score' or '.apr'."
+description: "Write, fork, remix or improve Apricity scores (.apr files): songs, beats, grooves, demos, and example scores built from the sample library, iterating by rendering and listening with the user. Use this whenever someone wants to make music in Apricity, make a new example or demo score, fork or rework an existing score, make something 'sound better/smoother/fuller', build up an arrangement (intro, build, drop, breakdown), sit down to a lab (try parts over a scene and rate them), or asks what sounds are available, even if they never say 'score' or '.apr'."
 ---
 
 # Writing Apricity scores
@@ -11,6 +11,12 @@ An Apricity score is a text file (`.apr`) that arranges clips of real recordings
 
 ## The loop
 
+**Most sessions are a lab.** A lab is a sit-down with one scene. You try things and publish blind listening
+cycles into it, and the user rates them in the web app (`/labs`, `/listen`) while you keep working. When the
+session will take more than one round of listening, start or resume a lab first (`scripts/lab start`; the
+user signs in once with `apricity login`), and publish each round into it. `references/lab.md` has the
+workflow.
+
 1. **Understand the brief.** Genre, mood, tempo range, length, and what the piece is for (a demo that introduces the product? a beat?). If the user names a reference artist or style, translate it into concrete choices: tempo, how often the chords change, density, which sounds are sustained and which are punchy, how much reverb.
 2. **Start from what the user likes, within the genre.** Run `scripts/lab ratings`: it lists the clips and samples the user has rated, best first. Ratings are the best signal of their taste, but they rate clips they like, not clips that suit every style. **Filter by genre fit first, then prefer the highest-rated.** In a blind test, a deep-house piece built from the user's 4★ *brass-band* loops got 1★, while one built from a 4★ loop of electronic music got 4★. (The harmony checker preferred the brass one: it can't hear genre or timbre, so don't let its number override genre fit.)
 3. **Survey the palette.** Run `scripts/lab palette [filter] [-v]`; it lists every analyzed sample with its key, tempo and saved clips. Only samples with a manifest can be used. Read `references/palette.md` for which sources suit which roles, and for the traps.
@@ -20,7 +26,7 @@ An Apricity score is a text file (`.apr`) that arranges clips of real recordings
    - `silent` or far below the others (−40 LUFS and down) means something is broken. Typical causes: a region of silence, notes gated to nothing, or a pad that doesn't exist.
    - A pitched track's pitch says `(guessed)` means pin it with `root <note><octave>`.
    - Low sounds read quiet in LUFS (the meter is K-weighted), so judge bass by its peak as well.
-7. **Let the user listen, and lead with the audio.** `audition.sh` also writes a small `.m4a` next to the WAV. Send *that* with SendUserFile (the WAVs are 10–15 MB and often fail to reach a phone), with a one-line caption giving timestamps for the moments to listen for. Keep the words short: the user wants to hear music, not read about it. Describe the arrangement **by bars** in a short table, so they can hear each stage, and ask one or two specific questions ("does the kick sit with the bass?"), not "thoughts?".
+7. **Let the user listen, and lead with the audio.** In a lab, publish the round as a cycle into it (`scripts/lab cycle --target cloud publish --lab <id> …`, see `references/lab.md`) and tell the user in one line what to listen for; read the verdict back with `scripts/lab cycle --target cloud pull <cycle id>`. For a quick one-off listen, `audition.sh` also writes a small `.m4a` next to the WAV. Send *that* with SendUserFile (the WAVs are 10–15 MB and often fail to reach a phone), with a one-line caption giving timestamps for the moments to listen for. Keep the words short: the user wants to hear music, not read about it. Describe the arrangement **by bars** in a short table, so they can hear each stage, and ask one or two specific questions ("does the kick sit with the bass?"), not "thoughts?".
 8. **Revise one idea at a time, and let the checker vote first.** Change one or two things per round, so the listener can tell what the change did. Between listens, iterate on your own with `scripts/lab measure <score> --bars A-B`: it renders the window, runs `apricity check` and `apricity steer`, and prints `objective_v2` (chord recognition, inversion and extensions included, and it rewards good chords, not just penalizes clashes) plus the top suggestions, numbered. `scripts/lab try <score> --suggestion N [--bars A-B] [--apply]` applies one, re-renders, and prints KEEP or REJECT (the objective must rise by at least 2, no new guard violation); `--apply` writes a KEEP back to the score. Fix the **top finding** first (harmony first, then material, transposition, EQ notches and filters, and levels last; never mute to raise the score) and repeat `measure` -> `try` -> keep. After 2–3 kept edits, or on a question of taste, let the user listen. Before a big rework, copy the last render to `renders/<name>-vN.wav` so they can compare.
 9. **Keep notes.** When the language got in your way (a workaround, a missing feature, a confusing error), tell the user in a line. Those notes become features.
 

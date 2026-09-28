@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-f4ef7235-36ce-48bc-8ead-283d30d8b5ec",
+  "title": "Cloud cycle pull should append verdicts to renders/log.jsonl",
+  "description": "lab cycle --target cloud pull prints the findings but, unlike the local pull, doesn't append them to renders/log.jsonl, so lab backtest never sees verdicts rated on the live site. Append them (same entry shape as local), or let backtest read the cloud.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T03:32:55.411977Z",
+  "updated_at": "2026-09-28T03:32:55.412012Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
