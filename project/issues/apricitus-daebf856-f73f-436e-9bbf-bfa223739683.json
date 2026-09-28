@@ -3,17 +3,30 @@
   "title": "apricity lab: one agent-friendly front door for the music tools",
   "description": "User (2026-09-27): \"fold those new tools into elegant subcommands or whatever to make an agent's life easier.\"\n\nToday an agent must, by hand:\n- build a current binary;\n- link the sample audio into its worktree;\n- render a window with --stems and run apricity check and steer;\n- apply ops through Python and re-render;\n- delete the stems and convert to m4a;\n- publish or pull listening cycles.\n\nThat's about 10 scripts with inconsistent flags: scripts/optimize.py, explore.py, audition-form.py, cycle.py, harmony-backtest.py, fit-features.py and check-stems.py, plus the skill's clap-neighbors.py, audition.sh, swap-audition.py, palette.py and ratings.py.\n\nDesign: one entry point, scripts/lab. It's thin Python: it calls the Rust CLI for render, check and steer, and the existing modules for the rest.\n- Consistent subcommands, and --json on all of them.\n- A shared context that finds the binary (preferring target/release, otherwise building it with a clear message) and links the score's sample audio automatically.\n- Every render goes to a managed temp dir and is deleted afterwards; only .m4a and .json are kept, unless --keep.\n\n    lab measure SCORE [--bars A-B]                  render the window, check and steer; print objective_v2, the heard chords and the top suggestions\n    lab try SCORE --op JSON | --suggestion N        apply an op or a steer suggestion to a copy, measure before and after, keep it only if better (--min-gain 2)\n    lab audition SCORE --layer TRACK [--window A-B] the 16-bar audition .m4a (+ Δwindow)\n    lab neighbors --ref 'SAMPLE CLIP' [--prompt T]  the CLAP shortlist\n    lab swap SCORE --role TRACK (--candidates F | --neighbors)   the explorer\n    lab add SCORE [--roles ...] [--style T]         the optimizer\n    lab cycle publish | list | pull ... [--target local|cloud]   listening cycles (the Listen page)\n    lab backtest                                    the harmony backtest\n    lab palette | ratings | features\n\nThe old scripts become thin wrappers or are removed (no backward compatibility unless a test needs it). Update the write-score skill to use lab everywhere. Tests: the dispatcher, the context, and the measure/try path on a small example score.",
   "type": "task",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-7e51f2b5-e837-4442-aa9d-5d11e5295340",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2f24ca0a-4ace-4544-849c-1d2a911e0205",
+      "author": "home",
+      "text": "Merged in PR #47: scripts/lab with measure, try, audition, neighbors, swap, add, cycle, backtest, palette, ratings and features; the old scripts are wrappers; the skill teaches lab. Owner config and boto3 handling for cloud publishing move to apricitus-e59a0b.",
+      "created_at": "2026-09-28T02:10:42.097870Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
   "created_at": "2026-09-28T00:28:43.861358Z",
-  "updated_at": "2026-09-28T00:29:48.386086Z",
-  "closed_at": null,
+  "updated_at": "2026-09-28T02:10:42.222696Z",
+  "closed_at": "2026-09-28T02:10:42.222660Z",
   "agent": {
     "platform": "claude-code",
     "model": "claude-opus-5-5",
