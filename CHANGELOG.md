@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.33.1 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-af4eba**: Allow scoped cycle uploads for members
+  ([`037e28e`](https://github.com/AnthusAI/Apricity/commit/037e28ead77893f5ea985a552b926b5b6d6bd2aa))
+
+
 ## v0.33.0 (2026-09-28)
 
 ### Chores
