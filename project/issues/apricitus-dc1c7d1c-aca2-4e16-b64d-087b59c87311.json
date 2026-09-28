@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-dc1c7d1c-aca2-4e16-b64d-087b59c87311",
+  "title": "Compose a radically different Big Beat sketch",
+  "description": "Create and audition a new 16-bar Big Beat score that deliberately avoids Fence Signal’s found-object-loop opening, tom-led rhythm family, and section recipe. Use a different hook source and a new drum identity; render and measure it for listener review before any cloud publish.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d5612b1c-4069-4a43-9f7d-bff10ef72a73",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T03:26:07.977930Z",
+  "updated_at": "2026-09-28T03:26:07.977967Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Music"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
