@@ -17,10 +17,17 @@
       "text": "Built Fence Signal using the new drum-first gate. Auditioned an eight-bar tom-led drum sketch before adding Percussive Fences. Full score has six distinct phrase-level drum roles and 21 stems; full render measured objective_v2 101.49. Final audition audio is renders/fence-signal-audition/big-beat-fence-signal-bars-1-16.m4a.",
       "created_at": "2026-09-28T03:00:24.591423Z",
       "comment_type": "default"
+    },
+    {
+      "id": "f14651f7-237e-4cdb-9107-4d73ce681583",
+      "author": "home",
+      "text": "Published the user-approved Fence Signal revision to production as scr_scores_Fence Signal_apr. Authenticated CLI preflight passed; score was fetched back and is listed at scores/Fence Signal.apr.",
+      "created_at": "2026-09-28T03:08:32.957174Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-28T02:58:03.495313Z",
-  "updated_at": "2026-09-28T03:00:24.591459Z",
+  "updated_at": "2026-09-28T03:08:32.957209Z",
   "closed_at": null,
   "right_now_summary": null,
   "right_now_updated_at": null,
