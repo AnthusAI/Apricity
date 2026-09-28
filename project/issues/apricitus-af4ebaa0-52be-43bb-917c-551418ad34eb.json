@@ -82,10 +82,22 @@
         "model": "GPT-5",
         "name": "Music"
       }
+    },
+    {
+      "id": "951c53b3-2ec8-427c-a038-feb09d08067e",
+      "author": "home",
+      "text": "2026-09-28 production retest after PR #58 merged to main and release v0.33.1: apricity whoami still returns ryan@anth.us. Published three options into lab_403470bc015eefd2 using a fresh cycle ID cyc_0a0d6c56bdb0ec43 and valid M4A inputs. Upload failed on option B with AWS AccessDenied: the assumed amplifyAuth membersGroupReadOnly role is not authorized for s3:PutObject on files/cycles/<identity>/cyc_0a0d6c56bdb0ec43/B.m4a because no identity-based policy allows it. Compensation also failed deleting B.m4a (S3 delete returned service error). CLI cycle list shows no newly created ListeningCycle. The production backend policy has therefore not taken effect despite the main merge/release; this is a deployment/runtime issue now. Investigate/redeploy the Amplify backend so members/curators receive the identity-scoped cycle object policy, clean any orphan object from this attempt, then rerun publish+Lab attach smoke.",
+      "created_at": "2026-09-28T19:23:12.709501Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "home"
+      }
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T14:22:22.624056Z",
+  "updated_at": "2026-09-28T19:23:12.709782Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
