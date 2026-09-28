@@ -207,7 +207,9 @@ export class ListenView {
         "li",
         { className: "listen-option" },
         el("div", { className: "listen-option-head" }, el("span", { className: "listen-letter" }, o.letter), heading),
-        urls[i] ? el("audio", { className: "listen-player", controls: true, preload: "none", src: urls[i]! }) : el("p", { className: "listen-note-missing" }, "Audio unavailable."),
+        // crossOrigin before src: the site sends Cross-Origin-Embedder-Policy: require-corp, so cross-origin media
+        // (the bucket's signed URLs) only loads as a CORS request; a plain <audio src> is blocked and shows "Error".
+        urls[i] ? el("audio", { className: "listen-player", controls: true, preload: "none", crossOrigin: "anonymous", src: urls[i]! }) : el("p", { className: "listen-note-missing" }, "Audio unavailable."),
         stars.el,
         noteArea(o.letter),
       );
