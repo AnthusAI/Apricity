@@ -1,10 +1,10 @@
 # The palette: what's in the library and how to find good sounds
 
-`scripts/palette.py` lists every analyzed sample. With a filter it shows only matching paths; with `-v` it lists each saved clip with its length and the pitch a pitched track would hear.
+`scripts/lab palette` lists every analyzed sample. With a filter it shows only matching paths; with `-v` it lists each saved clip with its length and the pitch a pitched track would hear.
 
 ```
-python3 .agents/skills/write-score/scripts/palette.py marine-band/stems      # the march stems
-python3 .agents/skills/write-score/scripts/palette.py Thunderer/other -v     # every clip of one stem
+scripts/lab palette marine-band/stems      # the march stems
+scripts/lab palette Thunderer/other -v     # every clip of one stem
 ```
 
 ## Sources by role

@@ -1,0 +1,32 @@
+#!/usr/bin/env /Users/home/Projects/Apricity/analysis/.venv/bin/python
+"""One agent-friendly front door for the Apricity music tools (Kanbus apricitus-daebf8).
+
+    lab measure SCORE [--bars A-B]                          render + check + steer
+    lab try SCORE (--suggestion N | --op JSON) [--apply]     apply an op, keep it only if better
+    lab audition SCORE --layer TRACK [--window A-B]          the 16-bar audition form
+    lab neighbors --ref 'SAMPLE CLIP' [--prompt T]           the CLAP shortlist
+    lab swap SCORE --role TRACK (--candidates F | --neighbors)  the explorer
+    lab add SCORE [--roles ...] [--style T]                  the optimizer
+    lab cycle publish | list | pull                          listening cycles (the Listen page)
+    lab backtest                                             the harmony v2 backtest
+    lab palette | ratings | features                         library/taste lookups
+
+`--json` works on every subcommand. `--bars`/`--window` take "A-B" (1-based, inclusive). `--keep`
+keeps a render's wav/stems under renders/lab/ instead of deleting them.
+
+The logic lives in analysis/apricity_analyze/lab/ (context.py, cli.py, commands/*.py); this file
+only locates the analysis venv and its own repo root and calls in.
+"""
+from __future__ import annotations
+
+import pathlib
+import sys
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "analysis"))
+
+from apricity_analyze.lab.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    sys.exit(main())
