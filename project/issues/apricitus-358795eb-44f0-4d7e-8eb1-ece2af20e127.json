@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-358795eb-44f0-4d7e-8eb1-ece2af20e127",
+  "title": "Show My Labs in the signed-in account menu",
+  "description": "Add a signed-in account-menu destination labeled **My Labs** that navigates to `/listen`, alongside the existing personal destinations such as logout and the user’s tracks. The destination should be visible only when authenticated, use the existing menu/link conventions, and have focused UI coverage for visibility and navigation. This does not change ListeningCycle or Lab behavior.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0aa1f157-3a16-4e12-b2d5-e0238cef669f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T23:49:11.901361Z",
+  "updated_at": "2026-09-28T23:49:11.901412Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Music"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
