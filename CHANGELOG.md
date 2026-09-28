@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.30.2 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-2101dd**: The Listen page's players request audio with CORS
+  ([#45](https://github.com/AnthusAI/Apricity/pull/45),
+  [`e22c6ca`](https://github.com/AnthusAI/Apricity/commit/e22c6ca38cc6cb6ffd7396eddf311bf7301876dd))
+
+
 ## v0.30.1 (2026-09-28)
 
 ### Bug Fixes
