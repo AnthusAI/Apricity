@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v0.30.1 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-2101dd**: Regenerate the contract after the storage rule change
+  ([#44](https://github.com/AnthusAI/Apricity/pull/44),
+  [`9c057fd`](https://github.com/AnthusAI/Apricity/commit/9c057fd4112e4c84de2333b4db5f480f94c578ea))
+
+- **apricitus-2101dd**: The Listen page can play cycle audio
+  ([#42](https://github.com/AnthusAI/Apricity/pull/42),
+  [`013d2bd`](https://github.com/AnthusAI/Apricity/commit/013d2bdba1d6df3f5edfae617cd1e3fa8e20ce24))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`9b1ed8f`](https://github.com/AnthusAI/Apricity/commit/9b1ed8f2cb76a85f6e7232be969b7fbd0fc7c229))
+
+- **kanbus**: Commit board state (issues)
+  ([`0fd791d`](https://github.com/AnthusAI/Apricity/commit/0fd791d7b1ad1ce756ca689f8eac44e5b4b9adc8))
+
+- **kanbus**: Commit board state (issues)
+  ([`30f4b69`](https://github.com/AnthusAI/Apricity/commit/30f4b69eb548895872ac169761342d0f1256f68a))
+
+
 ## v0.30.0 (2026-09-28)
 
 ### Bug Fixes
