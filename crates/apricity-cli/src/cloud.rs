@@ -46,7 +46,7 @@ pub enum Command {
     Logout,
     Whoami,
     Score(ScoreCommand),
-    Import,
+    Import { from: Option<PathBuf>, path: Option<String> },
 }
 
 pub enum ScoreCommand {
@@ -83,7 +83,7 @@ pub fn run(command: Command) -> Result<(), String> {
         Command::Logout => logout(&config),
         Command::Whoami => whoami(&config),
         Command::Score(command) => score(&config, command),
-        Command::Import => import_library(&config),
+        Command::Import { from, path } => import_library(&config, from.as_deref(), path.as_deref()),
     }
 }
 
@@ -403,12 +403,13 @@ fn score(config: &Config, command: ScoreCommand) -> Result<(), String> {
             tags,
         } => {
             let (input, refs) = score_input(&file, title, folder, kind, tags)?;
+            let resolved = resolve_refs(&mut api, refs)?;
             let data = api.gql("mutation Create($input: CreateScoreInput!) { createScore(input: $input) { id title } }", json!({"input": input}))?;
             let id = data["createScore"]["id"]
                 .as_str()
                 .ok_or("AppSync did not return a score id")?
                 .to_string();
-            reconcile_refs(&mut api, &id, refs)?;
+            reconcile_refs(&mut api, &id, resolved)?;
             println!("{id}");
         }
         ScoreCommand::Get { id, out } => {
@@ -447,13 +448,14 @@ fn score(config: &Config, command: ScoreCommand) -> Result<(), String> {
             tags,
         } => {
             let (mut input, refs) = score_input(&file, title, folder, kind, tags)?;
+            let resolved = resolve_refs(&mut api, refs)?;
             input["id"] = json!(id);
             api.gql(
                 "mutation Update($input: UpdateScoreInput!) { updateScore(input: $input) { id } }",
                 json!({"input": input}),
             )?;
             let id = input["id"].as_str().unwrap();
-            reconcile_refs(&mut api, id, refs)?;
+            reconcile_refs(&mut api, id, resolved)?;
             println!("{id}");
         }
         ScoreCommand::Delete { id, yes } => {
@@ -515,12 +517,11 @@ fn score_input(
     Ok((input, refs))
 }
 
-fn reconcile_refs(
-    api: &mut Api,
-    score_id: &str,
-    refs: Vec<apricity_data::CatalogRef>,
-) -> Result<(), String> {
-    delete_refs(api, score_id)?;
+/// Resolve every declared score asset before changing the Score record.  A named
+/// clip is not optional: a missing Clip would let the record save but leaves the
+/// browser unable to compile it.
+fn resolve_refs(api: &mut Api, refs: Vec<apricity_data::CatalogRef>) -> Result<Vec<Value>, String> {
+    let mut resolved = Vec::with_capacity(refs.len());
     for r in refs {
         let mut sample_id = r.sample_id.clone();
         if sample_id.is_none() {
@@ -536,7 +537,16 @@ fn reconcile_refs(
         let mut clip_id = r.clip_id.clone();
         let mut start = None;
         let mut end = None;
-        if clip_id.is_none() {
+        if let Some(id) = clip_id.as_deref() {
+            let found = api.gql("query Clip($id: ID!) { getClip(id: $id) { id sampleId start end } }", json!({"id": id}))?;
+            let clip = &found["getClip"];
+            if clip.is_null() { return Err(format!("score asset `{}`: no production clip `{id}`", r.alias)); }
+            if clip["sampleId"].as_str() != Some(&sample_id.clone().unwrap_or_default()) {
+                return Err(format!("score asset `{}`: production clip `{id}` belongs to another sample", r.alias));
+            }
+            start = clip["start"].as_f64();
+            end = clip["end"].as_f64();
+        } else {
             if let (Some(sample), Some(name)) = (&sample_id, &r.clip_name) {
                 let found = api.gql("query Clips($id: ID!) { clipsBySample(sampleId: $id, limit: 1000) { items { id name start end } } }", json!({"id": sample}))?;
                 if let Some(clip) = found["clipsBySample"]["items"]
@@ -551,8 +561,60 @@ fn reconcile_refs(
                 }
             }
         }
-        let input = json!({"id": format!("sref_{}_{}", score_id, r.id_suffix), "scoreId": score_id, "clipAlias": r.alias, "sampleId": sample_id, "samplePath": r.catalog_path, "clipName": r.clip_name, "clipId": clip_id, "start": start, "end": end});
-        api.gql("mutation Create($input: CreateScoreRefInput!) { createScoreRef(input: $input) { id } }", json!({"input": input}))?;
+        let sample = sample_id.ok_or_else(|| {
+            format!(
+                "score asset `{}`: no production sample at `{}`",
+                r.alias,
+                r.catalog_path.as_deref().unwrap_or(&r.source)
+            )
+        })?;
+        if r.clip_name.is_some() || r.clip_id.is_some() {
+            if clip_id.is_none() {
+                let clip = r.clip_name.as_deref().or(r.clip_id.as_deref()).unwrap_or_default();
+                return Err(format!(
+                    "score asset `{}`: no production clip `{clip}` on sample `{sample}`",
+                    r.alias
+                ));
+            }
+            if start.is_none() || end.is_none() {
+                return Err(format!(
+                    "score asset `{}`: production clip `{}` has no playable span",
+                    r.alias,
+                    r.clip_name.as_deref().or(r.clip_id.as_deref()).unwrap_or_default()
+                ));
+            }
+        }
+        resolved.push(json!({"clipAlias": r.alias, "sampleId": sample, "samplePath": r.catalog_path, "clipName": r.clip_name, "clipId": clip_id, "start": start, "end": end, "suffix": r.id_suffix}));
+    }
+    Ok(resolved)
+}
+
+/// Write the fully validated desired reference set, then remove obsolete rows.
+/// This deliberately never clears the old set before the replacements exist.
+fn reconcile_refs(api: &mut Api, score_id: &str, refs: Vec<Value>) -> Result<(), String> {
+    let existing = api.gql(
+        "query Refs($id: ID!) { refsByScore(scoreId: $id, limit: 1000) { items { id } } }",
+        json!({"id": score_id}),
+    )?;
+    let existing_ids: BTreeSet<String> = existing["refsByScore"]["items"]
+        .as_array().into_iter().flatten().filter_map(|v| v["id"].as_str().map(str::to_owned)).collect();
+    let mut wanted = BTreeSet::new();
+    for r in refs {
+        let suffix = r["suffix"].as_str().ok_or("resolved score reference has no suffix")?;
+        let id = format!("sref_{score_id}_{suffix}");
+        wanted.insert(id.clone());
+        let input = json!({"id": id, "scoreId": score_id, "clipAlias": r["clipAlias"], "sampleId": r["sampleId"], "samplePath": r["samplePath"], "clipName": r["clipName"], "clipId": r["clipId"], "start": r["start"], "end": r["end"]});
+        let operation = if existing_ids.contains(&id) {
+            "mutation Put($input: UpdateScoreRefInput!) { updateScoreRef(input: $input) { id } }"
+        } else {
+            "mutation Put($input: CreateScoreRefInput!) { createScoreRef(input: $input) { id } }"
+        };
+        api.gql(operation, json!({"input": input}))?;
+    }
+    for old in existing["refsByScore"]["items"].as_array().into_iter().flatten() {
+        if let Some(id) = old["id"].as_str().filter(|id| !wanted.contains(*id)) {
+            api.gql("mutation Delete($input: DeleteScoreRefInput!) { deleteScoreRef(input: $input) { id } }", json!({"input": {"id": id}}))?;
+        }
     }
     Ok(())
 }
@@ -574,7 +636,11 @@ fn delete_refs(api: &mut Api, score_id: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn import_library(config: &Config) -> Result<(), String> {
+fn import_library(config: &Config, from: Option<&Path>, path: Option<&str>) -> Result<(), String> {
+    if let Some(root) = from {
+        return import_repository_library(config, root, path);
+    }
+    if path.is_some() { return Err("--path requires --from".into()); }
     let token = refresh(config)?;
     let claims = jwt_claims(&token.id_token).ok_or("Cognito returned an invalid ID token")?;
     let groups: BTreeSet<&str> = claims["cognito:groups"]
@@ -727,6 +793,90 @@ fn import_library(config: &Config) -> Result<(), String> {
     Ok(())
 }
 
+/// Additive manifest synchronization for a checked-out repository.  Audio is
+/// deliberately verified rather than guessed: a manifest without its matching
+/// audio is reported, and no unusable Sample is invented.  Existing production
+/// Samples retain their media keys; this pass makes their annotations available
+/// as cloud Clip and Marker records.
+fn import_repository_library(config: &Config, root: &Path, only_path: Option<&str>) -> Result<(), String> {
+    let token = refresh(config)?;
+    let claims = jwt_claims(&token.id_token).ok_or("Cognito returned an invalid ID token")?;
+    let groups: BTreeSet<&str> = claims["cognito:groups"].as_array().into_iter().flatten().filter_map(Value::as_str).collect();
+    if !groups.contains("admins") || !groups.contains("curators") {
+        return Err("sample import requires both admins and curators membership".into());
+    }
+    let samples = root.join("samples");
+    if !samples.is_dir() { return Err(format!("{} has no samples directory", root.display())); }
+    let mut manifests = Vec::new();
+    collect_manifests(&samples, &mut manifests)?;
+    if let Some(path) = only_path {
+        let wanted = path.trim_start_matches("samples/");
+        manifests.retain(|manifest| {
+            manifest.strip_prefix(&samples).ok().map(|p| p.to_string_lossy().trim_end_matches(".apricity.json") == wanted).unwrap_or(false)
+        });
+        if manifests.is_empty() { return Err(format!("no manifest for samples/{wanted}")); }
+    }
+    let mut api = Api::new(config)?;
+    let mut created = 0usize;
+    let mut updated = 0usize;
+    let mut skipped = 0usize;
+    let mut failures = Vec::new();
+    for manifest_path in manifests {
+        let audio_path = PathBuf::from(manifest_path.to_string_lossy().trim_end_matches(".apricity.json"));
+        // A thin checkout can carry the manifest without the large audio file.
+        // The existing production Sample remains usable in that case; synchronize
+        // its annotations and report the absent local media for a later upload.
+        if !audio_path.is_file() {
+            failures.push(format!("{}: local audio absent; synchronizing annotations onto existing production media", audio_path.display()));
+        }
+        let rel = audio_path.strip_prefix(&samples).map_err(|_| format!("{} is outside samples", audio_path.display()))?
+            .to_string_lossy().replace('\\', "/");
+        let sample = api.gql("query Sample($path: String!) { samplesByPath(path: $path, limit: 1) { items { id } } }", json!({"path": rel}))?;
+        let Some(sample_id) = sample["samplesByPath"]["items"].as_array().and_then(|v| v.first()).and_then(|v| v["id"].as_str()) else {
+            skipped += 1;
+            failures.push(format!("{rel}: production Sample is absent (run the media/sample bootstrap first)"));
+            continue;
+        };
+        let manifest: Value = serde_json::from_str(&std::fs::read_to_string(&manifest_path).map_err(|e| format!("{}: {e}", manifest_path.display()))?)
+            .map_err(|e| format!("{}: invalid manifest: {e}", manifest_path.display()))?;
+        for clip in manifest["annotations"]["clips"].as_array().into_iter().flatten() {
+            let (Some(name), Some(start), Some(end)) = (clip["name"].as_str(), clip["start"].as_f64(), clip["end"].as_f64()) else { failures.push(format!("{rel}: malformed clip annotation")); continue };
+            let id = apricity_data::ids::migrated_clip_id(sample_id, name);
+            let source = clip["source"].as_str().filter(|s| ["ml", "user", "curated"].contains(s)).unwrap_or("ml");
+            let tags: Vec<&str> = clip["tags"].as_array().into_iter().flatten().filter_map(Value::as_str).collect();
+            let kind = tags.first().copied().filter(|k| ["loop", "break", "hit", "phrase", "section", "chop", "other"].contains(k));
+            let evidence = if clip["evidence"].is_null() { Value::Null } else { json!(clip["evidence"].to_string()) };
+            let exists = api.gql("query Clip($id: ID!) { getClip(id: $id) { id } }", json!({"id": id}))?["getClip"].is_object();
+            let input = json!({"id": id, "sampleId": sample_id, "name": name, "start": start, "end": end, "source": source, "kind": kind, "tags": tags, "evidence": evidence});
+            let operation = if exists { "mutation Put($input: UpdateClipInput!) { updateClip(input: $input) { id } }" } else { "mutation Put($input: CreateClipInput!) { createClip(input: $input) { id } }" };
+            api.gql(operation, json!({"input": input}))?;
+            if exists { updated += 1 } else { created += 1 }
+        }
+        for marker in manifest["annotations"]["markers"].as_array().into_iter().flatten() {
+            let (Some(name), Some(seconds)) = (marker["name"].as_str(), marker["seconds"].as_f64()) else { failures.push(format!("{rel}: malformed marker annotation")); continue };
+            let id = apricity_data::ids::migrated_marker_id(sample_id, name, seconds);
+            let exists = api.gql("query Marker($id: ID!) { getMarker(id: $id) { id } }", json!({"id": id}))?["getMarker"].is_object();
+            let source = marker["source"].as_str().filter(|s| ["ml", "user", "curated"].contains(s));
+            let input = json!({"id": id, "sampleId": sample_id, "name": name, "seconds": seconds, "source": source, "note": marker["note"]});
+            let operation = if exists { "mutation Put($input: UpdateMarkerInput!) { updateMarker(input: $input) { id } }" } else { "mutation Put($input: CreateMarkerInput!) { createMarker(input: $input) { id } }" };
+            api.gql(operation, json!({"input": input}))?;
+            if exists { updated += 1 } else { created += 1 }
+        }
+    }
+    println!("repository assets: {created} created, {updated} updated, {skipped} skipped");
+    if !failures.is_empty() { eprintln!("asset import warnings:\n{}", failures.join("\n")); }
+    Ok(())
+}
+
+fn collect_manifests(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), String> {
+    for entry in std::fs::read_dir(dir).map_err(|e| format!("{}: {e}", dir.display()))? {
+        let path = entry.map_err(|e| e.to_string())?.path();
+        if path.is_dir() { collect_manifests(&path, out)?; }
+        else if path.to_string_lossy().ends_with(".apricity.json") { out.push(path); }
+    }
+    Ok(())
+}
+
 fn jwt_claims(token: &str) -> Option<Value> {
     let payload = token.split('.').nth(1)?;
     serde_json::from_slice(&URL_SAFE_NO_PAD.decode(payload).ok()?).ok()
@@ -770,6 +920,18 @@ mod tests {
         assert_eq!(v["folder"], "scores");
         assert_eq!(v["title"], "beat");
         assert!(refs.is_empty());
+    }
+
+    #[test]
+    fn repository_import_finds_nested_manifests() {
+        let d = tempfile::tempdir().unwrap();
+        let nested = d.path().join("one/two");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(nested.join("sample.wav.apricity.json"), "{}").unwrap();
+        std::fs::write(nested.join("ignored.json"), "{}").unwrap();
+        let mut found = Vec::new();
+        collect_manifests(d.path(), &mut found).unwrap();
+        assert_eq!(found, vec![nested.join("sample.wav.apricity.json")]);
     }
     #[test]
     fn callback_reader_stops_at_headers_without_waiting_for_eof() {
