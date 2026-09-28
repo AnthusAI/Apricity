@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-4515427b-7fe2-4792-81cb-3258457e48ab",
+  "title": "Clips library loads every clip before rendering",
+  "description": "## Expected\nThe public Clips page displays a useful first batch promptly, then lazily loads later batches as the reader scrolls. The backing data access should use a bounded indexed query or another scalable paginated read.\n\n## Observed\nThe Clips page currently fetches all Clip records (in pages of 1,000) before it can create the list. The user reports that listing clips takes a long time and asks whether this is an unindexed scan or lack of pagination.\n\n## Definition of done\n- Trace the deployed page's request and data access path, including whether Clip.list resolves to a scan or an indexed query.\n- Identify other eager fetches that materially delay the first clip rows.\n- Make the Clips view return/render a first bounded page and fetch more on scroll, preserving URL filters, ranking, and visibility rules, or document a concrete blocker if the current API cannot support it.\n- Add behavior coverage for initial load and subsequent page loading.\n- Record verified findings and implementation progress here.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "3e55dfb9-f533-427e-b2d2-6a68cfb595e2",
+      "author": "home",
+      "text": "Verified from the page code and schema: the UI already lazily constructs 24 cards through feedGrid/IntersectionObserver, but it first calls api.clips() and materializes the complete list. Clip has no library-wide GSI; its GSIs are sampleId/copyOf/candidateId. Amplify Clip.list therefore uses a table Scan, and listAll follows nextToken until the entire table is returned. Additionally, Catalog.clips() first awaits load(), whose library index performs a full Clip.list scan for counts, then performs a second full Clip.list scan for clip details. The broad design/scale.md explicitly deferred a Ranked-backed paginated Clips tab because top ranking, search, Mine, and clip filters currently depend on the full set. Current live page remained on Loading… while inspected. Next: decide and implement the paged ranked-list path (with visibility/filter semantics and backfill), or treat this as a diagnostic report.",
+      "created_at": "2026-09-28T10:57:07.073441Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
+    }
+  ],
+  "created_at": "2026-09-28T10:54:17.164096Z",
+  "updated_at": "2026-09-28T10:57:07.212879Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6",
+    "name": "Codex desktop"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
