@@ -39,11 +39,10 @@ export const storage = defineStorage({
   access: (allow) => ({
     // Audio, analysis, documents and the breakdowns' sound. (No narrower `files/...` path: a more specific path
     // REPLACES the broader grant, with an explicit deny for every role it does not list.)
+    // Listening-cycle renders (files/cycles/<cycleId>/<letter>.m4a) are covered by this too. Their blindness comes from
+    // the ListeningCycle records, which only signed-in people can read (the keys hold random cycle ids), not from the
+    // bucket; a narrower rule here denied the audio to the very page that plays it.
     "files/*": readAll(allow),
-    // Listening-cycle candidate renders (files/cycles/<cycleId>/<letter>.m4a): options must stay blind and out of the
-    // public catalog, so only signed-in people read; the local runner writes with its own AWS credentials (admins),
-    // not through Cognito.
-    "files/cycles/*": readSignedIn(allow),
     ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, PRIVATE.has(model) ? readSignedIn(allow) : readAll(allow)])),
     "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
   }),
