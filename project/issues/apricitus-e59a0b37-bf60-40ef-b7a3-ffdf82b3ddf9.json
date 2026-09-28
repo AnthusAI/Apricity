@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e59a0b37-bf60-40ef-b7a3-ffdf82b3ddf9",
+  "title": "Your labs: a Lab record, a Your-labs page, and lab CLI integration",
+  "description": "User (2026-09-27): \"We need to integrate this better into the UI. Does the data structure record that the lab is for me, specifically? Could we show 'your labs' somewhere in the UI?\" The user wants to \"sit down to a lab and talk with an agent and play music and rate things and see what happens\".\n\nToday: ListeningCycle records carry `owner` (sub::username) and the verdicts are keyed to the judge's sub, but nothing groups a session's work, and /listen shows every open cycle to anyone signed in.\n\nBuild, version 1:\n1. Data: a new `Lab` model in web/amplify/data/resource.ts: id, title, brief, sceneScoreId (the score being worked on), status (open|closed), owner, createdAt, updatedAt. Owner writes; signed-in people read (like ListeningCycle); curators manage. ListeningCycle gains an optional `labId` with an index (cyclesByLab). Regenerate the contract (npm run contract, contract:check green) and make sure `apricity serve` serves the new model locally (contract-driven; rebuild the CLI so its embedded contract matches).\n2. Web: a \"Your labs\" page at /labs, listing the signed-in user's labs (owner = them), newest first. Each shows the title, brief and scene, and how many cycles wait for the user's verdict. /labs/<id> shows the lab's scene (with a link to its score), its cycles newest first (open ones marked \"waiting for you\" if the user has no CycleVerdict yet, linking to /listen/<cycleId>), and a short history of the user's picks. Link /labs in the menu near Listen. /listen gains a \"waiting for you\" filter or badge, and each cycle shows its lab. Reuse existing components, classes and tokens; no restyling. Signed-in only; cloud and local modes.\n3. The lab CLI:\n   - `lab start SCORE --title T --brief B [--target local|cloud]` creates a Lab and prints its id.\n   - `lab list` lists the user's labs.\n   - `lab cycle publish … --lab ID` sets labId.\n   - `lab attach CYCLE_ID --lab ID` attaches an existing cycle.\n   - Cloud publishing: the owner comes from --owner, else $APRICITY_OWNER, else ~/.config/apricity/lab.json {\"owner\": …}; never guess it, and say how to set it. When the analysis venv lacks boto3, re-run under an interpreter that has it ($APRICITY_AWS_PYTHON, then python3 on PATH) or fail with a one-line fix; add boto3 as an optional `cloud` dependency group in analysis/pyproject.toml. If the incumbent Score doesn't exist in the cloud, create it as a hidden copy (tags [\"candidate\"], folder cycles/incumbents).\n4. Tests: web unit tests for the labs data helpers and the routes; pytest for the lab CLI's start/list/attach against a temp local library and a fake DynamoDB; an end-to-end run in local mode (apricity serve with the rebuilt binary, a temp library): lab start, publish a small cycle into the lab, see it on /labs and /labs/<id> in the browser pane, rate it on /listen, see \"waiting for you\" clear. Take screenshots at desktop and phone width.\n\nLater, not now: steering from the lab page (queue an optimizer job, pick the next clip), and a chat panel with the agent.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-a50d52a1-f1d1-4d66-81b3-a375a07fbc44",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T02:09:17.645092Z",
+  "updated_at": "2026-09-28T02:09:17.645147Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
