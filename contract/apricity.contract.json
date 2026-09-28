@@ -1,5 +1,5 @@
 {
-  "version": "6ae2c625b9408504",
+  "version": "f7ade21fa4a3c5bc",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -4017,19 +4017,6 @@
         ],
         "writable": [
           "owner"
-        ]
-      },
-      {
-        "path": "files/*",
-        "readable": [
-          "guest",
-          "authenticated",
-          "members",
-          "curators",
-          "admins"
-        ],
-        "writable": [
-          "admins"
         ]
       },
       {
