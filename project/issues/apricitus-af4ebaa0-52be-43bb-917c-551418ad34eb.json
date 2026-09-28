@@ -3,7 +3,7 @@
   "title": "Cycle publish fails uploading third blind preview to production storage",
   "description": "## Observed behavior\n\nAuthenticated `apricity cycle publish` creates/uses the incumbent and uploads preview options A and B, then deterministically fails while uploading option C with a generic `service error`. No `ListeningCycle` record is written, leaving the Lab unable to present the intended three-option blind comparison.\n\n## Reproducer\n\n1. Log in as a production user who can create Scores and Labs (`apricity whoami` returns `ryan@anth.us`).\n2. Run `apricity cycle publish` with an incumbent and two `--candidate <APR> <M4A>` options (three total blind options).\n3. Observe failure at `cycles/us-east-1:4e0950fc-fd10-cd29-df2a-3e6182f0d84b/cyc_<id>/C.m4a` with `could not upload ...: service error`.\n4. Repeat: the same third-option failure occurs with a new cycle ID.\n\nThe M4A files are valid, small (565–758 KB), and the failure is independent of their source recordings. Cognito/AppSync authentication is established: `whoami`, hidden incumbent Score creation, and `lab start` all succeed in the same session.\n\n## Expected behavior\n\nA cycle with an incumbent plus two candidates uploads all A/B/C preview audio, writes exactly one open `ListeningCycle` record, and can be attached to a Lab.\n\n## Definition of done\n\n- Surface the underlying storage error without exposing credentials.\n- Correct the production upload/configuration/authorization defect so A, B, C, and D option keys upload for authenticated authorized users.\n- Make publish atomic or perform compensating cleanup: on failure, do not leave orphan candidate Scores or uploaded objects.\n- Add an integration test using a fake/object-store boundary that proves a three-option cycle writes A/B/C and its `ListeningCycle`; add a failure-path test proving cleanup and actionable diagnostics.\n- Confirm a production smoke test can publish and attach a three-option cycle to `lab_403470bc015eefd2`.\n\n## Out of scope\n\nThis is not a Cognito login issue and does not change the blind-lettered cycle design.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -94,11 +94,42 @@
         "model": "gpt-6",
         "name": "home"
       }
+    },
+    {
+      "id": "5683931b-50d1-4f93-966d-26e1cb667009",
+      "author": "home",
+      "text": "Root cause confirmed from AWS Amplify build logs: automatic builds 126 (merge e21b9df) and 127 (release b964c1a) both failed during backend deploy with CloudformationStackCircularDependencyError among storage, auth, and data. The live members role policy remains read-only as a result. The cause is the first fix attaching an IAM policy directly to the auth-stack group role while referencing the storage bucket, creating auth → storage on top of existing storage → auth dependencies. Follow-up implementation moves the AWS::IAM::Policy resource into the storage stack and targets the group roles from there, preserving only the existing storage → auth direction. Focused cycle-policy test and TypeScript compilation pass; review/CI and a successful Amplify build remain required before retesting production.",
+      "created_at": "2026-09-28T22:00:57.094767Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-5",
+        "name": "home"
+      }
+    },
+    {
+      "id": "98180d3d-1c93-4ce2-bc32-4e4ab08fc81e",
+      "author": "home",
+      "text": "Resolved and verified in production. PR #59 moved the group-role cycle upload policy resource into the Amplify storage stack, eliminating the auth/storage/data circular dependency. PR #60 promoted it to main. CloudFormation successfully created CycleUploadFormembers and CycleUploadForcurators; the live members role policy now grants scoped s3:PutObject and s3:DeleteObject at files/cycles/identity.amazonaws.com:sub/*. Production smoke publish succeeded on 2026-09-28: cycle cyc_4164776a0795bd32 uploaded A.m4a, B.m4a, and C.m4a, created an open ListeningCycle, and readback confirms labId lab_403470bc015eefd2. The semantic release completed successfully. Amplify job 128 is still finishing its frontend phase, but its CloudFormation backend update is complete and the production command has already succeeded.",
+      "created_at": "2026-09-28T22:12:32.619036Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-5",
+        "name": "home"
+      }
+    },
+    {
+      "id": "c2c0802e-df19-4a11-90d6-8d28ca141424",
+      "author": "home",
+      "text": "Production cycle publish and Lab attachment verified after the deployed IAM policy fix.",
+      "created_at": "2026-09-28T22:12:32.791480Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T19:23:12.709782Z",
-  "closed_at": null,
+  "updated_at": "2026-09-28T22:12:32.845699Z",
+  "closed_at": "2026-09-28T22:12:32.845653Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
