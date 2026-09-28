@@ -58,10 +58,22 @@
         "model": "GPT-6",
         "name": "Apricity cycle storage fix"
       }
+    },
+    {
+      "id": "bb05a16d-72a5-4c56-b6a4-3a6ded95dc5b",
+      "author": "home",
+      "text": "PR #57 merged into origin/develop at 037e28ead77893f5ea985a552b926b5b6d6bd2aa. All CI checks passed. The issue remains in progress pending the post-deployment publish-and-attach smoke test.",
+      "created_at": "2026-09-28T14:02:16.942070Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T13:02:39.604340Z",
+  "updated_at": "2026-09-28T14:02:16.942416Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
