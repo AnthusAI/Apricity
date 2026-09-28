@@ -137,10 +137,22 @@
         "model": "gpt-5",
         "name": "home"
       }
+    },
+    {
+      "id": "476abf85-5218-430b-81ce-8dcc20da7832",
+      "author": "home",
+      "text": "Production retest now passes. `apricity cycle publish` created open cycle `cyc_53345a82afd04ecc` with three complete blind options A/B/C; each audio FileRef has an audio/mp4 key, SHA-256, and nonzero size. `apricity cycle attach --lab lab_403470bc015eefd2 cyc_53345a82afd04ecc` succeeded, and `apricity cycle list --json` confirms the cycle is open with `labId: lab_403470bc015eefd2`. This verifies the deployed behavior; implementation/tests remain for the assignee to document before closure.",
+      "created_at": "2026-09-28T23:40:53.573710Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T22:14:55.891991Z",
+  "updated_at": "2026-09-28T23:40:53.573770Z",
   "closed_at": "2026-09-28T22:12:32.845653Z",
   "agent": {
     "platform": "codex",
