@@ -2,6 +2,26 @@
 
 <!-- version list -->
 
+## v0.33.0 (2026-09-28)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`b2ef531`](https://github.com/AnthusAI/Apricity/commit/b2ef531690571d1a50db510c418595f775c016a5))
+
+- **kanbus**: Commit board state (issues)
+  ([`6e466d3`](https://github.com/AnthusAI/Apricity/commit/6e466d30fb86384259c43e3e3751928de25f7a17))
+
+- **kanbus**: Commit board state (issues)
+  ([`e302a54`](https://github.com/AnthusAI/Apricity/commit/e302a54c6bf6afe0894c036e60c5893e99b9e509))
+
+### Features
+
+- **apricitus-2e06b4**: Import provenance-first Commons audio
+  ([#55](https://github.com/AnthusAI/Apricity/pull/55),
+  [`6478280`](https://github.com/AnthusAI/Apricity/commit/6478280b0e9dee1511b7e48a37dd53c2158b2a46))
+
+
 ## v0.32.1 (2026-09-28)
 
 ### Bug Fixes
