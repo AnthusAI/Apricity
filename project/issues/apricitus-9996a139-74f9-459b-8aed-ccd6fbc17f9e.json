@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-9996a139-74f9-459b-8aed-ccd6fbc17f9e",
+  "title": "Compose an experimental mixed-source Big Beat sketch",
+  "description": "Create and audition a fresh Big Beat score that deliberately departs from both Fence Signal and Circuit Breaker through a new source world, drum identity, and 16-bar sectional logic. Render and measure for listener review before cloud publication.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d5612b1c-4069-4a43-9f7d-bff10ef72a73",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T03:52:26.518905Z",
+  "updated_at": "2026-09-28T03:52:26.518942Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Music"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
