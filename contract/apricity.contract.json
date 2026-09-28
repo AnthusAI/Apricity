@@ -1,5 +1,5 @@
 {
-  "version": "f7ade21fa4a3c5bc",
+  "version": "d03b627d6d412a77",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -98,6 +98,13 @@
         "attribution": {
           "name": "attribution",
           "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sourceMetadata": {
+          "name": "sourceMetadata",
+          "type": "AWSJSON",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"

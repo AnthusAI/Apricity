@@ -1,0 +1,149 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "Talking Violin.ogg",
+  "sha256": "0d61effcf397adc97a62f0eb59d018732a7a9d8e735bb2b06463d6075803ce60",
+  "sample_rate": 44100,
+  "channels": 2,
+  "duration": 10.158
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-28T02:52:46+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)",
+   "basic-pitch": "0.4.0"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [
+   0.04
+  ],
+  "downbeats": [
+   0.04
+  ],
+  "meter": null,
+  "warp_markers": [
+   {
+    "seconds": 0.04,
+    "beat": 0.0
+   }
+  ],
+  "beat_loudness": [],
+  "loudness": [
+   -16.0,
+   -16.5,
+   -16.6,
+   -20.1,
+   -18.2,
+   -16.0,
+   -15.6,
+   -15.3,
+   -16.6,
+   -17.2,
+   -16.4,
+   -16.4,
+   -17.6,
+   -19.2,
+   -22.3,
+   -15.9,
+   -16.5,
+   -17.4,
+   -36.1,
+   -64.7,
+   -89.9
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "B",
+   "mode": "minor",
+   "strength": 0.3882,
+   "camelot": "10A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "Gb",
+    "mode": "major",
+    "strength": 0.2711,
+    "camelot": "2B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "B",
+    "mode": "major",
+    "strength": 0.2284,
+    "camelot": "1B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "G",
+    "mode": "major",
+    "strength": 0.2124,
+    "camelot": "9B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 434.95,
+  "tuning_cents": -20.0,
+  "pitch_class_profile": [
+   0.7072,
+   0.6171,
+   0.4951,
+   0.2304,
+   0.3,
+   0.2872,
+   0.364,
+   0.2734,
+   0.3011,
+   0.3455,
+   0.7426,
+   1.0
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 10.124,
+    "key": {
+     "tonic": "B",
+     "mode": "minor",
+     "strength": 0.3848,
+     "camelot": "10A",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.707,
+     0.6171,
+     0.4869,
+     0.2304,
+     0.2996,
+     0.2872,
+     0.364,
+     0.2716,
+     0.3011,
+     0.3455,
+     0.742,
+     1.0
+    ]
+   }
+  ],
+  "beat_chroma": []
+ },
+ "notes": [
+  {
+   "start": 2.6251,
+   "end": 2.7993,
+   "midi": 82,
+   "velocity": 0.261
+  }
+ ],
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}

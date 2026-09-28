@@ -1,11 +1,11 @@
-//! Decode audio files (WAV, MP3, FLAC) to planar f32 with symphonia.
+//! Decode audio files (WAV, MP3, FLAC, Ogg/Vorbis, and Opus) to planar f32.
 
 use crate::render::Audio;
 use std::path::Path;
 
 pub fn decode(path: &Path) -> Result<Audio, String> {
     use symphonia::core::audio::SampleBuffer;
-    use symphonia::core::codecs::DecoderOptions;
+    use symphonia::core::codecs::{CodecRegistry, DecoderOptions};
     use symphonia::core::formats::FormatOptions;
     use symphonia::core::io::MediaSourceStream;
     use symphonia::core::meta::MetadataOptions;
@@ -24,7 +24,15 @@ pub fn decode(path: &Path) -> Result<Audio, String> {
     let track = format.default_track().ok_or_else(|| format!("{}: no audio track", path.display()))?;
     let track_id = track.id;
     let sr = track.codec_params.sample_rate.ok_or("unknown sample rate")?;
-    let mut decoder = symphonia::default::get_codecs()
+    // Symphonia 0.5 has no built-in Opus decoder. Build the same registry as the
+    // enabled built-in codecs and register the libopus adapter alongside them.
+    let mut codecs = CodecRegistry::new();
+    codecs.register_all::<symphonia::default::codecs::MpaDecoder>();
+    codecs.register_all::<symphonia::default::codecs::PcmDecoder>();
+    codecs.register_all::<symphonia::default::codecs::FlacDecoder>();
+    codecs.register_all::<symphonia::default::codecs::VorbisDecoder>();
+    codecs.register_all::<symphonia_adapter_libopus::OpusDecoder>();
+    let mut decoder = codecs
         .make(&track.codec_params, &DecoderOptions::default())
         .map_err(|e| format!("{}: {e}", path.display()))?;
     let mut channels: Vec<Vec<f32>> = Vec::new();

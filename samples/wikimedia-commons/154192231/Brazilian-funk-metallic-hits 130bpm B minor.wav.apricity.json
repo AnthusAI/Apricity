@@ -1,0 +1,292 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "Brazilian-funk-metallic-hits 130bpm B minor.wav",
+  "sha256": "6bf3679fe84faf71a33c123ca326f495c385bfbf28f4738131cb9597642baabf",
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration": 3.712
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-28T04:52:14+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": 130.43,
+  "bpm_stability": 0.972,
+  "beats": [
+   0.02,
+   0.46,
+   0.94,
+   1.4,
+   1.88,
+   2.34,
+   2.8,
+   3.26
+  ],
+  "downbeats": [
+   0.02,
+   1.88,
+   2.34,
+   2.8
+  ],
+  "meter": 1,
+  "warp_markers": [
+   {
+    "seconds": 0.02,
+    "beat": 0.0
+   },
+   {
+    "seconds": 0.46,
+    "beat": 1.0
+   },
+   {
+    "seconds": 0.94,
+    "beat": 2.0
+   },
+   {
+    "seconds": 1.4,
+    "beat": 3.0
+   },
+   {
+    "seconds": 1.88,
+    "beat": 4.0
+   },
+   {
+    "seconds": 2.34,
+    "beat": 5.0
+   },
+   {
+    "seconds": 2.8,
+    "beat": 6.0
+   },
+   {
+    "seconds": 3.26,
+    "beat": 7.0
+   }
+  ],
+  "beat_loudness": [
+   -8.0,
+   -8.9,
+   -8.4,
+   -9.0,
+   -8.3,
+   -8.8,
+   -8.4
+  ],
+  "loudness": [
+   -8.2,
+   -8.8,
+   -8.3,
+   -8.7,
+   -8.0,
+   -9.0,
+   -8.0,
+   -10.1
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Bb",
+   "mode": "major",
+   "strength": 0.6347,
+   "camelot": "6B",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "D",
+    "mode": "minor",
+    "strength": 0.5507,
+    "camelot": "7A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "G",
+    "mode": "minor",
+    "strength": 0.4517,
+    "camelot": "6A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Eb",
+    "mode": "major",
+    "strength": 0.436,
+    "camelot": "5B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 440.0,
+  "tuning_cents": 0.0,
+  "pitch_class_profile": [
+   0.2418,
+   0.1976,
+   1.0,
+   0.2059,
+   0.208,
+   0.6451,
+   0.1363,
+   0.4394,
+   0.4494,
+   0.1811,
+   0.4781,
+   0.166
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 3.669,
+    "key": {
+     "tonic": "Bb",
+     "mode": "major",
+     "strength": 0.6345,
+     "camelot": "6B",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.2413,
+     0.2002,
+     1.0,
+     0.2077,
+     0.2102,
+     0.6502,
+     0.1379,
+     0.4284,
+     0.4556,
+     0.183,
+     0.4829,
+     0.1682
+    ]
+   }
+  ],
+  "beat_chroma": [
+   [
+    0.1766,
+    0.2028,
+    1.0,
+    0.1335,
+    0.2379,
+    0.7987,
+    0.1137,
+    0.5238,
+    0.3343,
+    0.1679,
+    0.382,
+    0.0703
+   ],
+   [
+    0.2793,
+    0.156,
+    1.0,
+    0.2588,
+    0.1401,
+    0.2502,
+    0.0949,
+    0.2987,
+    0.2152,
+    0.2497,
+    0.6096,
+    0.1684
+   ],
+   [
+    0.0787,
+    0.2904,
+    0.422,
+    0.2401,
+    0.1159,
+    0.8078,
+    0.1016,
+    0.274,
+    1.0,
+    0.0543,
+    0.2672,
+    0.042
+   ],
+   [
+    0.4395,
+    0.0904,
+    1.0,
+    0.2658,
+    0.3288,
+    0.4749,
+    0.2536,
+    0.4431,
+    0.1721,
+    0.31,
+    0.719,
+    0.3587
+   ],
+   [
+    0.1415,
+    0.1855,
+    1.0,
+    0.2122,
+    0.1456,
+    0.667,
+    0.0941,
+    0.4687,
+    0.4007,
+    0.1186,
+    0.247,
+    0.0384
+   ],
+   [
+    0.3125,
+    0.1679,
+    1.0,
+    0.152,
+    0.1802,
+    0.395,
+    0.1099,
+    0.2784,
+    0.3103,
+    0.1904,
+    0.5895,
+    0.2784
+   ],
+   [
+    0.1697,
+    0.1943,
+    1.0,
+    0.0935,
+    0.1691,
+    0.7017,
+    0.149,
+    0.5606,
+    0.398,
+    0.0996,
+    0.3025,
+    0.1974
+   ]
+  ],
+  "tuning_uncertain": true
+ },
+ "annotations": {
+  "clips": [
+   {
+    "name": "shot-1",
+    "start": 0.924,
+    "end": 1.384,
+    "source": "ml",
+    "tags": [
+     "shot"
+    ],
+    "evidence": {
+     "standout": 43.8
+    }
+   }
+  ],
+  "markers": [
+   {
+    "name": "transient",
+    "seconds": 0.924,
+    "source": "ml"
+   }
+  ]
+ }
+}

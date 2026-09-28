@@ -7,7 +7,7 @@ import pathlib
 import sys
 import time
 
-AUDIO = {".wav", ".mp3", ".flac", ".aif", ".aiff", ".ogg", ".m4a"}
+AUDIO = {".wav", ".mp3", ".flac", ".aif", ".aiff", ".ogg", ".oga", ".opus", ".m4a"}
 
 
 def main(argv: list[str] | None = None) -> int:
