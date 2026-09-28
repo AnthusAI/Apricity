@@ -3282,6 +3282,156 @@
         "sortKeyFieldNames": []
       }
     },
+    "Lab": {
+      "name": "Lab",
+      "fields": {
+        "id": {
+          "name": "id",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "title": {
+          "name": "title",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true,
+          "attributes": []
+        },
+        "brief": {
+          "name": "brief",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "sceneScoreId": {
+          "name": "sceneScoreId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": true,
+          "attributes": []
+        },
+        "status": {
+          "name": "status",
+          "isArray": false,
+          "type": {
+            "enum": "LabStatus"
+          },
+          "isRequired": true,
+          "attributes": []
+        },
+        "owner": {
+          "name": "owner",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false,
+          "attributes": []
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": []
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "isArray": false,
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "attributes": []
+        },
+        "cycles": {
+          "name": "cycles",
+          "isArray": true,
+          "type": {
+            "model": "ListeningCycle"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "isArrayNullable": true,
+          "association": {
+            "connectionType": "HAS_MANY",
+            "associatedWith": [
+              "labId"
+            ]
+          }
+        }
+      },
+      "syncable": true,
+      "pluralName": "Labs",
+      "attributes": [
+        {
+          "type": "model",
+          "properties": {}
+        },
+        {
+          "type": "key",
+          "properties": {
+            "fields": [
+              "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "labsByOwnerAndCreatedAt",
+            "queryField": "labsByOwner",
+            "fields": [
+              "owner",
+              "createdAt"
+            ]
+          }
+        },
+        {
+          "type": "auth",
+          "properties": {
+            "rules": [
+              {
+                "provider": "userPools",
+                "ownerField": "owner",
+                "allow": "owner",
+                "identityClaim": "cognito:username",
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              },
+              {
+                "allow": "private",
+                "operations": [
+                  "read"
+                ]
+              },
+              {
+                "groupClaim": "cognito:groups",
+                "provider": "userPools",
+                "allow": "groups",
+                "groups": [
+                  "curators"
+                ],
+                "operations": [
+                  "create",
+                  "update",
+                  "delete",
+                  "read"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "primaryKeyInfo": {
+        "isCustomPrimaryKey": false,
+        "primaryKeyFieldName": "id",
+        "sortKeyFieldNames": []
+      }
+    },
     "ListeningCycle": {
       "name": "ListeningCycle",
       "fields": {
@@ -3346,6 +3496,28 @@
           "isRequired": false,
           "attributes": []
         },
+        "labId": {
+          "name": "labId",
+          "isArray": false,
+          "type": "ID",
+          "isRequired": false,
+          "attributes": []
+        },
+        "lab": {
+          "name": "lab",
+          "isArray": false,
+          "type": {
+            "model": "Lab"
+          },
+          "isRequired": false,
+          "attributes": [],
+          "association": {
+            "connectionType": "BELONGS_TO",
+            "targetNames": [
+              "labId"
+            ]
+          }
+        },
         "createdAt": {
           "name": "createdAt",
           "isArray": false,
@@ -3375,6 +3547,16 @@
           "properties": {
             "fields": [
               "id"
+            ]
+          }
+        },
+        {
+          "type": "key",
+          "properties": {
+            "name": "listeningCyclesByLabId",
+            "queryField": "cyclesByLab",
+            "fields": [
+              "labId"
             ]
           }
         },
@@ -3603,6 +3785,13 @@
     },
     "CycleStatus": {
       "name": "CycleStatus",
+      "values": [
+        "open",
+        "closed"
+      ]
+    },
+    "LabStatus": {
+      "name": "LabStatus",
       "values": [
         "open",
         "closed"

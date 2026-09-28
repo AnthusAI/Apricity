@@ -31,7 +31,7 @@ const readAll = (allow: any) => [allow.guest.to(["read"]), ...readSignedIn(allow
 
 // One record folder per model in the data contract (Recording/, Sample/, Clip/, ...). Private ones need sign-in.
 const recordFolders = Object.keys((contract as { models: Record<string, unknown> }).models);
-const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating", "ListeningCycle", "CycleVerdict"]);
+const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating", "ListeningCycle", "CycleVerdict", "Lab"]);
 
 export const storage = defineStorage({
   name: "apricityFiles",
@@ -39,10 +39,13 @@ export const storage = defineStorage({
   access: (allow) => ({
     // Audio, analysis, documents and the breakdowns' sound. (No narrower `files/...` path: a more specific path
     // REPLACES the broader grant, with an explicit deny for every role it does not list.)
-    // Listening-cycle renders (files/cycles/<cycleId>/<letter>.m4a) are covered by this too. Their blindness comes from
-    // the ListeningCycle records, which only signed-in people can read (the keys hold random cycle ids), not from the
-    // bucket; a narrower rule here denied the audio to the very page that plays it.
     "files/*": readAll(allow),
+    // Listening-cycle renders (files/cycles/<identityId>/<cycleId>/<letter>.m4a): the lab CLI's cloud target
+    // uploads these as the signed-in person's own identity-pool credentials (`apricity login`), so the key needs
+    // their entity id in it for `allow.entity("identity")` to grant the write. Their blindness comes from the
+    // ListeningCycle records, which only signed-in people can read (the keys hold random cycle ids), not from the
+    // bucket, so a narrower rule here (replacing the broader "files/*" grant above) is fine.
+    "files/cycles/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"]), ...readSignedIn(allow)],
     ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, PRIVATE.has(model) ? readSignedIn(allow) : readAll(allow)])),
     "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
   }),

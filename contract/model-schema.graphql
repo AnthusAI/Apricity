@@ -38,6 +38,11 @@ enum CycleStatus {
   closed
 }
 
+enum LabStatus {
+  open
+  closed
+}
+
 type Recording @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
   {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
@@ -346,6 +351,21 @@ type Job @model @auth(rules: [{allow: public, provider: identityPool, operations
   error: String
 }
 
+type Lab @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  brief: String
+  sceneScoreId: ID!
+  status: LabStatus!
+  owner: String @index(sortKeyFields: ["createdAt"], queryField: "labsByOwner")
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  cycles: [ListeningCycle] @hasMany(references: ["labId"])
+}
+
 type ListeningCycle @model @auth(rules: [{allow: owner, ownerField: "owner"},
   {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
@@ -358,6 +378,8 @@ type ListeningCycle @model @auth(rules: [{allow: owner, ownerField: "owner"},
   status: CycleStatus!
   closedAt: AWSDateTime
   owner: String
+  labId: ID @index(queryField: "cyclesByLab")
+  lab: Lab @belongsTo(references: ["labId"])
 }
 
 type CycleVerdict @model @auth(rules: [{allow: owner, ownerField: "judge", identityClaim: "sub"},

@@ -5,6 +5,7 @@
 //! signed-in person's Cognito token so AppSync can apply owner/group rules.
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use rand::seq::SliceRandom;
 use reqwest::blocking::Client;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -47,6 +48,30 @@ pub enum Command {
     Whoami,
     Score(ScoreCommand),
     Import { from: Option<PathBuf>, path: Option<String> },
+    Lab(LabCommand),
+    Cycle(CycleCommand),
+}
+
+pub enum LabCommand {
+    Start { scene_score_id: String, title: String, brief: Option<String>, json: bool },
+    List { json: bool },
+    Get { id: String, json: bool },
+}
+
+pub enum CycleCommand {
+    Publish {
+        score: PathBuf,
+        incumbent_score_id: String,
+        incumbent_audio: PathBuf,
+        candidates: Vec<(PathBuf, PathBuf)>,
+        question: Option<String>,
+        title: Option<String>,
+        lab: Option<String>,
+        json: bool,
+    },
+    List { json: bool },
+    Pull { cycle_id: String, close: bool, json: bool },
+    Attach { cycle_id: String, lab: String, json: bool },
 }
 
 pub enum ScoreCommand {
@@ -84,6 +109,8 @@ pub fn run(command: Command) -> Result<(), String> {
         Command::Whoami => whoami(&config),
         Command::Score(command) => score(&config, command),
         Command::Import { from, path } => import_library(&config, from.as_deref(), path.as_deref()),
+        Command::Lab(command) => lab(&config, command),
+        Command::Cycle(command) => cycle(&config, command),
     }
 }
 
@@ -367,14 +394,21 @@ impl Api {
             http: http()?,
         })
     }
-    fn gql(&mut self, query: &str, variables: Value) -> Result<Value, String> {
+    /// A fresh ID token, refreshing first if the cached one is about to expire. Used both by `gql`
+    /// and by anything (like the identity-pool credentials exchange for S3) that needs the token
+    /// directly rather than through a GraphQL call.
+    fn id_token(&mut self) -> Result<String, String> {
         if self.token.expires_at <= now() + 60 {
             self.token = refresh(&self.config)?;
         }
+        Ok(self.token.id_token.clone())
+    }
+    fn gql(&mut self, query: &str, variables: Value) -> Result<Value, String> {
+        let id_token = self.id_token()?;
         let v: Value = self
             .http
             .post(&self.config.graphql_url)
-            .bearer_auth(&self.token.id_token)
+            .bearer_auth(&id_token)
             .json(&json!({"query": query, "variables": variables}))
             .send()
             .and_then(|r| r.error_for_status())
@@ -633,6 +667,357 @@ fn delete_refs(api: &mut Api, score_id: &str) -> Result<(), String> {
             api.gql("mutation Delete($input: DeleteScoreRefInput!) { deleteScoreRef(input: $input) { id } }", json!({"input": {"id": id}}))?;
         }
     }
+    Ok(())
+}
+
+// --------------------------------------------------------------------------- labs and listening cycles
+//
+// A lab groups the listening cycles published while working one scene (Kanbus apricitus-e59a0b). Unlike
+// `import_library`/`ScoreCommand`, publishing audio needs identity-pool credentials (not the bucket
+// owner's AWS credentials `sync` uses): the signed-in person's own Cognito identity, so `owner` and the
+// `files/cycles/{entity_id}/*` storage rule apply to *them*, the way the web app's own uploads work.
+
+/// `payload` as pretty JSON when `json_flag`, else `prose(payload)`.
+fn emit(json_flag: bool, payload: &Value, prose: impl FnOnce(&Value)) {
+    if json_flag {
+        println!("{}", serde_json::to_string_pretty(payload).unwrap_or_default());
+    } else {
+        prose(payload);
+    }
+}
+
+/// A short random id ("lab_1a2b3c4d5e6f7890"), the same shape as the local backend's `uuid4().hex[:16]`.
+fn random_id(prefix: &str) -> String {
+    let mut bytes = [0_u8; 8];
+    rand::TryRngCore::try_fill_bytes(&mut rand::rngs::OsRng, &mut bytes)
+        .expect("OS randomness unavailable");
+    format!("{prefix}_{}", bytes.iter().map(|b| format!("{b:02x}")).collect::<String>())
+}
+
+fn content_type_for(ext: &str) -> &'static str {
+    match ext.to_lowercase().as_str() {
+        "m4a" => "audio/mp4",
+        "mp3" => "audio/mpeg",
+        "wav" => "audio/wav",
+        "flac" => "audio/flac",
+        "ogg" => "audio/ogg",
+        _ => "application/octet-stream",
+    }
+}
+
+/// The `owner` value AppSync would inject for this ID token on an `allow.owner()` field ("<sub>::<username>",
+/// the same computation `web/src/data/auth.ts`'s `ownerValue()` makes client-side), needed to query
+/// `labsByOwner` -- the owner is otherwise set automatically and never read back from the token elsewhere.
+fn owner_value(id_token: &str) -> Result<String, String> {
+    let claims = jwt_claims(id_token).ok_or("Cognito returned an invalid ID token")?;
+    let sub = claims["sub"].as_str().ok_or("ID token has no sub claim")?;
+    let username = claims["cognito:username"]
+        .as_str()
+        .or_else(|| claims["username"].as_str())
+        .unwrap_or(sub);
+    Ok(format!("{sub}::{username}"))
+}
+
+/// Cognito identity-pool credentials for the signed-in person (GetId, GetCredentialsForIdentity): the same
+/// exchange `import_library` uses for its curator-only S3 access, but here for anyone signed in, so their own
+/// uploads land under their own `files/cycles/{identityId}/...` prefix.
+fn identity_credentials(config: &Config, id_token: &str) -> Result<(String, aws_credential_types::Credentials), String> {
+    let region = config.region.as_deref().ok_or("Amplify outputs has no auth.aws_region")?;
+    let pool = config.identity_pool_id.as_deref().ok_or("Amplify outputs has no auth.identity_pool_id")?;
+    let user_pool = config.user_pool_id.as_deref().ok_or("Amplify outputs has no auth.user_pool_id")?;
+    let provider = format!("cognito-idp.{region}.amazonaws.com/{user_pool}");
+    let identity_endpoint = format!("https://cognito-identity.{region}.amazonaws.com/");
+    let id: Value = http()?
+        .post(&identity_endpoint)
+        .header("X-Amz-Target", "AWSCognitoIdentityService.GetId")
+        .header("Content-Type", "application/x-amz-json-1.1")
+        .json(&json!({"IdentityPoolId": pool, "Logins": {provider.clone(): id_token}}))
+        .send()
+        .and_then(|r| r.error_for_status())
+        .map_err(|e| format!("could not obtain Cognito Identity: {e}"))?
+        .json()
+        .map_err(|e| e.to_string())?;
+    let identity_id = id["IdentityId"].as_str().ok_or("Cognito Identity did not return an identity ID")?.to_string();
+    let credentials: Value = http()?
+        .post(&identity_endpoint)
+        .header("X-Amz-Target", "AWSCognitoIdentityService.GetCredentialsForIdentity")
+        .header("Content-Type", "application/x-amz-json-1.1")
+        .json(&json!({"IdentityId": identity_id, "Logins": {provider: id_token}}))
+        .send()
+        .and_then(|r| r.error_for_status())
+        .map_err(|e| format!("could not obtain temporary storage credentials: {e}"))?
+        .json()
+        .map_err(|e| e.to_string())?;
+    let c = &credentials["Credentials"];
+    let access = c["AccessKeyId"].as_str().ok_or("Cognito Identity returned no access key")?;
+    let secret = c["SecretKey"].as_str().ok_or("Cognito Identity returned no secret key")?;
+    let session = c["SessionToken"].as_str().ok_or("Cognito Identity returned no session token")?;
+    Ok((
+        identity_id,
+        aws_credential_types::Credentials::new(access, secret, Some(session.to_string()), None, "apricity-cognito"),
+    ))
+}
+
+fn s3_client(config: &Config, credentials: aws_credential_types::Credentials, runtime: &tokio::runtime::Runtime) -> Result<aws_sdk_s3::Client, String> {
+    let region = config.region.as_deref().ok_or("Amplify outputs has no auth.aws_region")?.to_string();
+    Ok(runtime.block_on(async {
+        let sdk_config = aws_config::defaults(aws_config::BehaviorVersion::latest())
+            .region(aws_config::Region::new(region))
+            .credentials_provider(credentials)
+            .load()
+            .await;
+        aws_sdk_s3::Client::new(&sdk_config)
+    }))
+}
+
+fn lab(config: &Config, command: LabCommand) -> Result<(), String> {
+    let mut api = Api::new(config)?;
+    match command {
+        LabCommand::Start { scene_score_id, title, brief, json: json_flag } => {
+            let scene = api.gql("query Get($id: ID!) { getScore(id: $id) { id } }", json!({"id": scene_score_id}))?;
+            if scene["getScore"].is_null() {
+                return Err(format!("no such cloud score: {scene_score_id} (publish or import it first)"));
+            }
+            let id = random_id("lab");
+            let input = json!({"id": id, "title": title, "brief": brief, "sceneScoreId": scene_score_id, "status": "open"});
+            api.gql("mutation Create($input: CreateLabInput!) { createLab(input: $input) { id } }", json!({"input": input}))?;
+            emit(json_flag, &json!({"id": id, "title": title, "brief": brief, "sceneScoreId": scene_score_id}), |v| {
+                println!("{}", v["id"].as_str().unwrap_or(""));
+            });
+        }
+        LabCommand::List { json: json_flag } => {
+            let id_token = api.id_token()?;
+            let owner = owner_value(&id_token)?;
+            let data = api.gql(
+                "query List($owner: String!) { labsByOwner(owner: $owner, sortDirection: DESC, limit: 1000) { items { id title brief sceneScoreId status createdAt } } }",
+                json!({"owner": owner}),
+            )?;
+            let labs = data["labsByOwner"]["items"].clone();
+            emit(json_flag, &json!({"labs": labs}), |v| {
+                for l in v["labs"].as_array().into_iter().flatten() {
+                    println!("{}\t{}\t{}", l["id"].as_str().unwrap_or(""), l["status"].as_str().unwrap_or(""), l["title"].as_str().unwrap_or(""));
+                }
+            });
+        }
+        LabCommand::Get { id, json: json_flag } => {
+            let data = api.gql(
+                "query Get($id: ID!) { getLab(id: $id) { id title brief sceneScoreId status createdAt } }",
+                json!({"id": id}),
+            )?;
+            if data["getLab"].is_null() {
+                return Err(format!("no such lab: {id}"));
+            }
+            emit(json_flag, &data["getLab"], |v| {
+                println!("{}\t{}\t{}", v["id"].as_str().unwrap_or(""), v["status"].as_str().unwrap_or(""), v["title"].as_str().unwrap_or(""));
+            });
+        }
+    }
+    Ok(())
+}
+
+fn cycle(config: &Config, command: CycleCommand) -> Result<(), String> {
+    match command {
+        CycleCommand::Publish { score, incumbent_score_id, incumbent_audio, candidates, question, title, lab, json: json_flag } => {
+            publish_cycle(config, score, incumbent_score_id, incumbent_audio, candidates, question, title, lab, json_flag)
+        }
+        CycleCommand::List { json: json_flag } => {
+            let mut api = Api::new(config)?;
+            let data = api.gql(
+                "query List($status: CycleStatus) { listListeningCycles(filter: {status: {eq: $status}}, limit: 1000) { items { id title question options { letter } status createdAt labId } } }",
+                json!({"status": "open"}),
+            )?;
+            let cycles = data["listListeningCycles"]["items"].clone();
+            emit(json_flag, &json!({"cycles": cycles}), |v| {
+                for c in v["cycles"].as_array().into_iter().flatten() {
+                    let n = c["options"].as_array().map(|a| a.len()).unwrap_or(0);
+                    println!("{}  {}  ({n} options)", c["id"].as_str().unwrap_or(""), c["title"].as_str().unwrap_or(""));
+                }
+            });
+            Ok(())
+        }
+        CycleCommand::Pull { cycle_id, close, json: json_flag } => pull_cycle(config, cycle_id, close, json_flag),
+        CycleCommand::Attach { cycle_id, lab, json: json_flag } => {
+            let mut api = Api::new(config)?;
+            api.gql(
+                "mutation Update($input: UpdateListeningCycleInput!) { updateListeningCycle(input: $input) { id labId } }",
+                json!({"input": {"id": cycle_id, "labId": lab}}),
+            )?;
+            emit(json_flag, &json!({"cycleId": cycle_id, "labId": lab}), |_| println!("attached {cycle_id} to lab {lab}"));
+            Ok(())
+        }
+    }
+}
+
+/// The letters (A, B, C, ... up to `n`), Fisher-Yates shuffled so the blind key isn't guessable from a
+/// deterministic seed the way `apricity_analyze.cycle.publish`'s `--seed` is -- there is no `--seed` here
+/// (the cloud CLI has no test-fixture need for a fixed shuffle).
+fn shuffled_letters(n: usize) -> Vec<char> {
+    const LETTERS: [char; 4] = ['A', 'B', 'C', 'D'];
+    let mut letters: Vec<char> = LETTERS[..n].to_vec();
+    letters.shuffle(&mut rand::rng());
+    letters
+}
+
+#[allow(clippy::too_many_arguments)]
+fn publish_cycle(
+    config: &Config,
+    score: PathBuf,
+    incumbent_score_id: String,
+    incumbent_audio: PathBuf,
+    candidates: Vec<(PathBuf, PathBuf)>,
+    question: Option<String>,
+    title: Option<String>,
+    lab: Option<String>,
+    json_flag: bool,
+) -> Result<(), String> {
+    if candidates.is_empty() {
+        return Err("at least one --candidate APR AUDIO is required (repeatable)".into());
+    }
+    let n = 1 + candidates.len();
+    if n > 4 {
+        return Err(format!("at most 4 options (A-D); got {n}"));
+    }
+    let mut api = Api::new(config)?;
+
+    // The incumbent must exist in the cloud to fork from; if it doesn't (published only locally so far),
+    // create a hidden copy so the cycle still has something real to point at.
+    let existing = api.gql("query Get($id: ID!) { getScore(id: $id) { id forkRoot } }", json!({"id": incumbent_score_id}))?;
+    let fork_root = if existing["getScore"].is_null() {
+        let text = std::fs::read_to_string(&score).map_err(|e| format!("{}: {e}", score.display()))?;
+        let stem = score.file_stem().and_then(|s| s.to_str()).unwrap_or("incumbent").to_string();
+        let input = json!({"id": incumbent_score_id, "title": stem, "folder": "cycles/incumbents", "format": "apr", "text": text, "tags": ["candidate"]});
+        api.gql("mutation Create($input: CreateScoreInput!) { createScore(input: $input) { id } }", json!({"input": input}))?;
+        incumbent_score_id.clone()
+    } else {
+        existing["getScore"]["forkRoot"].as_str().map(str::to_owned).unwrap_or_else(|| incumbent_score_id.clone())
+    };
+
+    let cycle_id = random_id("cyc");
+    let folder = format!("cycles/{cycle_id}");
+    let letters = shuffled_letters(n);
+
+    let id_token = api.id_token()?;
+    let (identity_id, credentials) = identity_credentials(config, &id_token)?;
+    let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
+    let s3 = s3_client(config, credentials, &runtime)?;
+    let bucket = config.bucket.as_deref().ok_or("Amplify outputs has no storage.bucket_name")?;
+
+    struct Slot {
+        existing_score_id: Option<String>,
+        apr: PathBuf,
+        audio: PathBuf,
+    }
+    let mut slots = vec![Slot { existing_score_id: Some(incumbent_score_id.clone()), apr: score.clone(), audio: incumbent_audio }];
+    slots.extend(candidates.into_iter().map(|(apr, audio)| Slot { existing_score_id: None, apr, audio }));
+
+    let mut options = Vec::with_capacity(slots.len());
+    for (letter, slot) in letters.iter().zip(slots.into_iter()) {
+        let sid = if let Some(id) = slot.existing_score_id {
+            id
+        } else {
+            let candidate_title = slot.apr.file_stem().and_then(|s| s.to_str()).unwrap_or("candidate").to_string();
+            let sid = format!("scr_{}_{}_apr", folder.replace('/', "_"), candidate_title);
+            let text = std::fs::read_to_string(&slot.apr).map_err(|e| format!("{}: {e}", slot.apr.display()))?;
+            let input = json!({"id": sid, "title": candidate_title, "folder": folder, "format": "apr", "text": text, "tags": ["candidate"], "forkOf": incumbent_score_id, "forkRoot": fork_root});
+            api.gql("mutation Create($input: CreateScoreInput!) { createScore(input: $input) { id } }", json!({"input": input}))?;
+            sid
+        };
+        let audio_bytes = std::fs::read(&slot.audio).map_err(|e| format!("{}: {e}", slot.audio.display()))?;
+        let ext = slot.audio.extension().and_then(|e| e.to_str()).unwrap_or("m4a");
+        let content_type = content_type_for(ext);
+        let sha256 = format!("{:x}", Sha256::digest(&audio_bytes));
+        let size = audio_bytes.len();
+        // library-relative, matching the web's expectation (files/<key>); the identity id in the path is
+        // what makes `allow.entity("identity")` grant this upload (web/amplify/storage/resource.ts).
+        let key = format!("cycles/{identity_id}/{cycle_id}/{letter}.{ext}");
+        runtime
+            .block_on(
+                s3.put_object()
+                    .bucket(bucket)
+                    .key(format!("files/{key}"))
+                    .body(audio_bytes.into())
+                    .content_type(content_type)
+                    .send(),
+            )
+            .map_err(|e| format!("could not upload {key}: {e}"))?;
+        options.push(json!({"letter": letter.to_string(), "scoreId": sid, "audio": {"key": key, "sha256": sha256, "size": size, "contentType": content_type}}));
+    }
+    options.sort_by(|a, b| a["letter"].as_str().cmp(&b["letter"].as_str()));
+
+    let cycle_title = title.unwrap_or_else(|| {
+        let stem = score.file_stem().and_then(|s| s.to_str()).unwrap_or("cycle");
+        format!("{stem}: {}", question.as_deref().unwrap_or("which is better?"))
+    });
+    let mut input = json!({"id": cycle_id, "title": cycle_title, "question": question, "incumbentScoreId": incumbent_score_id, "options": options, "status": "open"});
+    if let Some(lab_id) = &lab {
+        input["labId"] = json!(lab_id);
+    }
+    api.gql("mutation Create($input: CreateListeningCycleInput!) { createListeningCycle(input: $input) { id } }", json!({"input": input}))?;
+
+    let count = options.len();
+    emit(json_flag, &json!({"cycleId": cycle_id, "options": options}), |_| {
+        println!("published {cycle_id}: {count} options");
+    });
+    Ok(())
+}
+
+fn pull_cycle(config: &Config, cycle_id: String, close: bool, json_flag: bool) -> Result<(), String> {
+    let mut api = Api::new(config)?;
+    let data = api.gql(
+        "query Get($id: ID!) { getListeningCycle(id: $id) { id createdAt options { letter scoreId } } }",
+        json!({"id": cycle_id}),
+    )?;
+    let cyc = data["getListeningCycle"].clone();
+    if cyc.is_null() {
+        return Err(format!("no such cycle: {cycle_id}"));
+    }
+    let since = cyc["createdAt"].as_str().unwrap_or("").to_string();
+    let score_to_letter: std::collections::HashMap<String, String> = cyc["options"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|o| Some((o["scoreId"].as_str()?.to_string(), o["letter"].as_str()?.to_string())))
+        .collect();
+
+    // `listRatings` only returns what the caller's own Cognito session can see -- Rating is owner-only,
+    // with no admin/curator read rule (unlike CycleVerdict) -- so this sees the signed-in person's own
+    // star ratings on the cycle's options, not necessarily everyone's.
+    let ratings = api.gql(
+        "query List($t: RatingTarget) { listRatings(filter: {targetType: {eq: $t}}, limit: 1000) { items { targetId owner stars ratedAt } } }",
+        json!({"t": "score"}),
+    )?;
+    let mut entries = Vec::new();
+    for r in ratings["listRatings"]["items"].as_array().into_iter().flatten() {
+        let Some(target) = r["targetId"].as_str() else { continue };
+        let Some(letter) = score_to_letter.get(target) else { continue };
+        if r["ratedAt"].as_str().unwrap_or("") < since.as_str() {
+            continue; // rated before this cycle existed: not a vote in it
+        }
+        entries.push(json!({"kind": "cycle-verdict", "cycleId": cycle_id, "type": "rating", "judge": r["owner"], "letter": letter, "stars": r["stars"], "ratedAt": r["ratedAt"]}));
+    }
+
+    let verdicts = api.gql(
+        "query List($id: ID!) { verdictsByCycle(cycleId: $id, limit: 1000) { items { judge best notes { letter note } note savedAt } } }",
+        json!({"id": cycle_id}),
+    )?;
+    for v in verdicts["verdictsByCycle"]["items"].as_array().into_iter().flatten() {
+        entries.push(json!({"kind": "cycle-verdict", "cycleId": cycle_id, "type": "verdict", "judge": v["judge"], "best": v["best"], "notes": v["notes"], "note": v["note"], "savedAt": v["savedAt"]}));
+    }
+
+    if close {
+        api.gql(
+            "mutation Update($input: UpdateListeningCycleInput!) { updateListeningCycle(input: $input) { id } }",
+            json!({"input": {"id": cycle_id, "status": "closed"}}),
+        )?;
+    }
+
+    let count = entries.len();
+    emit(json_flag, &json!({"entries": entries, "closed": close}), |v| {
+        for e in v["entries"].as_array().into_iter().flatten() {
+            println!("{e}");
+        }
+        println!("{count} finding(s){}", if close { "; cycle closed" } else { "" });
+    });
     Ok(())
 }
 
@@ -933,6 +1318,69 @@ mod tests {
         collect_manifests(d.path(), &mut found).unwrap();
         assert_eq!(found, vec![nested.join("sample.wav.apricity.json")]);
     }
+    // ----------------------------------------------------------------------- labs and listening cycles
+
+    /// An unsigned JWT-shaped token carrying just these claims (`jwt_claims` never checks the signature).
+    fn fake_id_token(claims: Value) -> String {
+        let header = URL_SAFE_NO_PAD.encode(b"{}");
+        let payload = URL_SAFE_NO_PAD.encode(claims.to_string());
+        format!("{header}.{payload}.sig")
+    }
+
+    #[test]
+    fn owner_value_is_sub_colon_colon_username() {
+        let token = fake_id_token(json!({"sub": "sub-123", "cognito:username": "ryan"}));
+        assert_eq!(owner_value(&token).unwrap(), "sub-123::ryan");
+    }
+
+    #[test]
+    fn owner_value_falls_back_to_the_sub_without_a_username_claim() {
+        let token = fake_id_token(json!({"sub": "sub-123"}));
+        assert_eq!(owner_value(&token).unwrap(), "sub-123::sub-123");
+    }
+
+    #[test]
+    fn random_id_has_the_given_prefix_and_sixteen_hex_chars() {
+        let id = random_id("lab");
+        let (prefix, rest) = id.split_once('_').unwrap();
+        assert_eq!(prefix, "lab");
+        assert_eq!(rest.len(), 16);
+        assert!(rest.chars().all(|c| c.is_ascii_hexdigit()));
+        assert_ne!(random_id("cyc"), random_id("cyc")); // vanishingly unlikely to collide
+    }
+
+    #[test]
+    fn content_type_for_known_and_unknown_extensions() {
+        assert_eq!(content_type_for("m4a"), "audio/mp4");
+        assert_eq!(content_type_for("MP3"), "audio/mpeg");
+        assert_eq!(content_type_for("xyz"), "application/octet-stream");
+    }
+
+    #[test]
+    fn shuffled_letters_are_the_first_n_letters_in_some_order() {
+        for n in 1..=4 {
+            let mut letters = shuffled_letters(n);
+            letters.sort();
+            assert_eq!(letters, ['A', 'B', 'C', 'D'][..n]);
+        }
+    }
+
+    #[test]
+    fn publish_cycle_refuses_no_candidates_and_too_many_options() {
+        let config = Config {
+            domain: "d".into(), client_id: "c".into(), graphql_url: "g".into(),
+            identity_pool_id: None, user_pool_id: None, region: None, bucket: None, callback: DEFAULT_CALLBACK.into(),
+        };
+        let d = tempfile::tempdir().unwrap();
+        let score = d.path().join("incumbent.apr");
+        std::fs::write(&score, "tempo 120\n").unwrap();
+        let err = publish_cycle(&config, score.clone(), "scr_x".into(), score.clone(), vec![], None, None, None, false).unwrap_err();
+        assert!(err.contains("at least one --candidate"), "{err}");
+        let four_candidates = vec![(score.clone(), score.clone()); 4];
+        let err = publish_cycle(&config, score.clone(), "scr_x".into(), score, four_candidates, None, None, None, false).unwrap_err();
+        assert!(err.contains("at most 4 options"), "{err}");
+    }
+
     #[test]
     fn callback_reader_stops_at_headers_without_waiting_for_eof() {
         let mut input =

@@ -245,6 +245,26 @@ export function cycles(): Promise<import("./data/cycles.js").Cycles> {
   return cyclesInstance;
 }
 
+let labsInstance: Promise<import("./data/labs.js").Labs> | null = null;
+/** Labs (Kanbus apricitus-e59a0b): a person's sit-down with a scene, and the cycles published into it. */
+export function labs(): Promise<import("./data/labs.js").Labs> {
+  labsInstance ??= (async () => {
+    const [{ client }, { Labs }] = await Promise.all([import("./data/client.js"), import("./data/labs.js")]);
+    const l = new Labs({
+      client,
+      // Lab is "made"-style (allow.owner()): its owner field is the last of me().owners ("<sub>::<username>" in the
+      // cloud, the local identity's sub locally) -- the same shape the lab CLI writes.
+      owner: async () => {
+        const m = await me();
+        return m ? m.owners[m.owners.length - 1] : null;
+      },
+    });
+    document.addEventListener("apricity:auth-changed", () => l.reset());
+    return l;
+  })();
+  return labsInstance;
+}
+
 /** Who is signed in, as records name their owner; null for a guest. Locally, the library's one identity. */
 export async function me(): Promise<Me | null> {
   const { mode } = await import("./data/client.js");
