@@ -34,10 +34,22 @@
         "model": "gpt-6",
         "name": "Codex desktop"
       }
+    },
+    {
+      "id": "3e7ac835-dfb0-4044-ae6e-42dcb96450a9",
+      "author": "home",
+      "text": "Clarification after finalizing the sort modes: `--sort recent` orders by the clip/sample/score creation timestamp (newest items); `--sort rated` orders by the rating timestamp. The prior progress note described `recent` as rating recency; that was superseded so both signals are explicit. Tests now cover both independent orders. CLAP neighbor search is present in `.agents/skills/write-score/scripts/clap-neighbors.py` and remains unchanged/out of scope.",
+      "created_at": "2026-09-28T11:09:07.413490Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
     }
   ],
   "created_at": "2026-09-28T10:54:17.164096Z",
-  "updated_at": "2026-09-28T11:05:04.452274Z",
+  "updated_at": "2026-09-28T11:09:07.413525Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
