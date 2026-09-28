@@ -2,6 +2,34 @@
 
 <!-- version list -->
 
+## v0.30.0 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-e3c75b**: Preflight cloud score assets
+  ([`c870f4c`](https://github.com/AnthusAI/Apricity/commit/c870f4cd9ded799ef0c4fbff97c1baca9333a82d))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`8e13081`](https://github.com/AnthusAI/Apricity/commit/8e130818c708fb164d402dbc66b91ae85160511e))
+
+- **kanbus**: Commit board state (issues)
+  ([`bc85097`](https://github.com/AnthusAI/Apricity/commit/bc85097ecee9051305e73faaec3c98e0228896ee))
+
+- **kanbus**: Commit board state (issues)
+  ([`bf5a90d`](https://github.com/AnthusAI/Apricity/commit/bf5a90d026cd7de625100661c5aa7d9cea289798))
+
+- **kanbus**: Commit board state (issues)
+  ([`5ca1aa4`](https://github.com/AnthusAI/Apricity/commit/5ca1aa4150f0b920b690a07cbeda792c3b72886b))
+
+### Features
+
+- **examples**: Ave & Emerge's last chord is Em7 over G, the chord its loop plays
+  ([#40](https://github.com/AnthusAI/Apricity/pull/40),
+  [`95a590c`](https://github.com/AnthusAI/Apricity/commit/95a590c1a84784d0b6d9926a972570e4f8da4ee8))
+
+
 ## v0.29.0 (2026-09-27)
 
 ### Bug Fixes
