@@ -110,7 +110,7 @@
     {
       "id": "98180d3d-1c93-4ce2-bc32-4e4ab08fc81e",
       "author": "home",
-      "text": "Resolved and verified in production. PR #59 moved the group-role cycle upload policy resource into the Amplify storage stack, eliminating the auth/storage/data circular dependency. PR #60 promoted it to main. CloudFormation successfully created CycleUploadFormembers and CycleUploadForcurators; the live members role policy now grants scoped s3:PutObject and s3:DeleteObject at files/cycles/identity.amazonaws.com:sub/*. Production smoke publish succeeded on 2026-09-28: cycle cyc_4164776a0795bd32 uploaded A.m4a, B.m4a, and C.m4a, created an open ListeningCycle, and readback confirms labId lab_403470bc015eefd2. The semantic release completed successfully. Amplify job 128 is still finishing its frontend phase, but its CloudFormation backend update is complete and the production command has already succeeded.",
+      "text": "Resolved and verified in production. PR #59 moved the group-role cycle upload policy resource into the Amplify storage stack, eliminating the auth/storage/data circular dependency. PR #60 promoted it to main. CloudFormation successfully created CycleUploadFormembers and CycleUploadForcurators; the live members role policy grants scoped s3:PutObject and s3:DeleteObject at files/cycles/${cognito-identity.amazonaws.com:sub}/*. Production smoke publish succeeded on 2026-09-28: cycle cyc_4164776a0795bd32 uploaded A.m4a, B.m4a, and C.m4a, created an open ListeningCycle, and readback confirms labId lab_403470bc015eefd2. The semantic release completed successfully. Amplify job 128 is still finishing its frontend phase, but its CloudFormation backend update is complete and the production command has already succeeded.",
       "created_at": "2026-09-28T22:12:32.619036Z",
       "comment_type": "default",
       "agent": {
@@ -128,7 +128,7 @@
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T22:12:32.845699Z",
+  "updated_at": "2026-09-28T22:13:08.094512Z",
   "closed_at": "2026-09-28T22:12:32.845653Z",
   "agent": {
     "platform": "codex",
