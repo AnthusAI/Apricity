@@ -22,10 +22,22 @@
         "model": "gpt-6",
         "name": "Codex desktop"
       }
+    },
+    {
+      "id": "6f9341cf-a01c-4b84-a721-e224b433ff5f",
+      "author": "home",
+      "text": "Reproduced the production failure with the authorized smoke publish on 2026-09-28. AWS returned AccessDenied for s3:PutObject under files/cycles/<identity>/<cycle>/A.wav: the signed-in user assumed the membersGroupReadOnly role, which had no write policy for cycle files. The publish compensation removed the partial candidate Scores; no ListeningCycle was created. Added code changes on codex/apricitus-af4eba to report safe S3 service details, stage local files before mutations, and compensate partial writes. Added an identity-scoped IAM grant for members/curators group roles (S3 object ARN uses cognito-identity.amazonaws.com:sub) so it does not grant cross-user writes. Focused Rust and policy tests pass. Post-fix production smoke is pending deployment; deploys run through the repository release flow.",
+      "created_at": "2026-09-28T11:40:24.546052Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T11:12:12.059634Z",
+  "updated_at": "2026-09-28T11:40:24.546400Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
