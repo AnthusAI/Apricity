@@ -6,7 +6,7 @@ trusting any score.
 
 ## 1. Shortlist by sound: CLAP
 
-`scripts/clap-neighbors.py --ref "<sample> <clip>" [--prompt "<style>"] [--top 12] [--out cands.txt]`
+`scripts/lab neighbors --ref "<sample> <clip>" [--prompt "<style>"] [--top 12] [--out cands.txt]`
 ranks the library by how close each clip sounds to a clip already in the scene, optionally blended with a
 text prompt for the style ("smooth lounge electronic jazz"). It keeps the best clip per recording.
 
@@ -17,58 +17,50 @@ their business partner. Emerge is by the same artist as Ave, natively in the son
 
 ## 2. Swap or add, and rank
 
-- **Swap a part** (keep the arrangement, change the clip): `swap-audition.py`, or
-  `scripts/explore.py <score> --role <track> --candidates cands.txt [--audition]`. The explorer renders each
-  swap in place, hill-climbs small fixes (EQ notches, transposition, high-pass, octave, release), and with
-  `--audition` writes a 32-second audition per finalist.
-- **Add a part** (layer something new over a scene): `scripts/optimize.py <score> --seed N [--roles
-  pad,stab,...] [--style "<prompt>"] --run NAME`. It searches clips, regions, roles, entries, levels and
-  filters, judges each on an 8-bar window against the scene alone, and writes a cycle folder of audition
-  `.m4a` files (finalists plus the scene). Its `--role <track>` re-cast mode is broken (Kanbus
-  apricitus-32f53c): use the explorer for swaps.
-- **Hear one layer**: `scripts/audition-form.py CANDIDATE.apr --layer TRACK --window A-B [--check] -o
-  out.m4a` builds the standard 16-bar audition (see recipes.md): the scene 4 bars, the part solo 4, both 8.
+- **Swap a part** (keep the arrangement, change the clip): `scripts/lab swap <score> --role <track>
+  --candidates cands.txt` (or `--neighbors [--prompt "<style>"]` to build the shortlist first). It renders
+  each swap in place, hill-climbs small fixes (EQ notches, transposition, high-pass, octave, release), and
+  with `--audition` writes a 32-second audition per finalist.
+- **Add a part** (layer something new over a scene): `scripts/lab add <score> --seed N [--roles
+  pad,stab,...] [--style "<prompt>"]`. It searches clips, regions, roles, entries, levels and filters,
+  judges each on an 8-bar window against the scene alone, and writes a cycle folder of audition `.m4a`
+  files (finalists plus the scene). Its `--role <track>` re-cast mode is broken (Kanbus apricitus-32f53c):
+  use `lab swap` for swaps.
+- **Hear one layer**: `scripts/lab audition CANDIDATE.apr --layer TRACK --window A-B` builds the standard
+  16-bar audition (see recipes.md): the scene 4 bars, the part solo 4, both 8.
 
 ## 3. Let the user rate
 
 Send the audition `.m4a` files (SendUserFile, one-line caption with timestamps), or publish a blind cycle:
-`scripts/cycle.py publish --score S --incumbent-score-id ID --incumbent-audio A --candidate X.apr X.m4a
-… --target local` for the local library (`apricity serve`, the `/listen` page), `--target cloud --owner
-'<sub>::<username>'` for the deployed app. `scripts/cycle.py pull <cycle id>` logs the verdicts to
-`renders/log.jsonl`. Keep working while they listen: their verdict calibrates the next round, it doesn't
-gate it.
+`scripts/lab cycle publish --score S --incumbent-score-id ID --incumbent-audio A --candidate X.apr X.m4a
+… --target local` for the local library (`apricity serve`, the `/listen` page), or the convenience form
+`--candidates A.apr B.apr … --window A-B` to have `lab` build each candidate's (and the incumbent's)
+audition itself. `--target cloud --owner '<sub>::<username>'` for the deployed app (never guess the owner).
+`scripts/lab cycle pull <cycle id>` logs the verdicts to `renders/log.jsonl`. Keep working while they
+listen: their verdict calibrates the next round, it doesn't gate it.
 
-## Scoring harmony: `apricity check`
+## The measure -> try -> keep loop: `lab measure` and `lab try`
 
-`apricity render SCORE --bars A-B -o w.wav --stems DIR` then `apricity check DIR --json` scores a window.
-Besides the clash measure (v1), it recognises the chord the parts actually make (root, quality,
-inversion, extensions) and adds a chord-quality term: `objective_v2`. On the two logged verdict sets it
-picked the user's preferred version both times; the v1 measure did once (`scripts/harmony-backtest.py`
-re-runs that comparison as verdicts accumulate). Use `objective_v2` to rank harmony, and keep checking
-by ear: two sets is thin evidence, and it still can't hear genre, timbre or groove.
+`scripts/lab measure SCORE --bars A-B` renders the window, runs `apricity check` and `apricity steer`, and
+prints `objective_v2`, each span's written and heard chord with Q, and the top suggestions, numbered.
+Besides the clash measure (v1), `objective_v2` recognises the chord the parts actually make (root,
+quality, inversion, extensions) and adds a chord-quality term. On the two logged verdict sets it picked
+the user's preferred version both times; the v1 measure did once (`scripts/lab backtest` re-runs that
+comparison as verdicts accumulate). Use `objective_v2` to rank harmony, and keep checking by ear: two sets
+is thin evidence, and it still can't hear genre, timbre or groove.
 
-## Steering: `apricity steer`
-
-`apricity steer DIR [--score SCORE] -o steer.json` (schema: `schema/steer.schema.json`) says what to
-change, not just how good it is:
-- per chord span: the chord it hears, the quality breakdown, and the wrong notes with octave and Hz;
-- per stem: a cents correction;
-- per loop: all 12 transpositions scored;
-- the bars that fit and don't;
-- ranked suggestions, each an optimizer op (`track.transpose_span`, `track.eq_notch`, `track.hp`,
-  `clip.retune`, ...).
-
-Pass `--score` so it knows the solver's actual shift per span.
-
-Use it as a hill-climb: apply the top suggestion (via `analysis/apricity_analyze/explore/ops.py`),
-re-render the window, re-run `apricity check`, and keep the change only if `objective_v2` rises by 2 or
-more; otherwise try the next suggestion. Expect rejections: suggestions are predictions, and the
-re-render is the test. When three or more different wrong notes recur across chords, reach for the
-chord-following EQ (`harmonic`) instead of stacking fixed notches.
+`scripts/lab try SCORE --suggestion N [--bars A-B] [--apply]` applies the Nth suggestion (or `--op JSON`
+for an op of your own), measures before and after, and prints KEEP or REJECT (the objective must rise by
+`--min-gain`, default 2, with no new guard violation). This is the whole hill-climb loop in one call: run
+`lab measure`, pick a suggestion number, `lab try --suggestion N`, and re-run `lab measure` if it's a
+KEEP. `--apply` writes a KEEP straight back to SCORE; otherwise SCORE is untouched and the candidate is
+written next to the render outputs for you to inspect or apply by hand. Expect rejections: suggestions
+are predictions, and the re-render is the test. When three or more different wrong notes recur across
+chords, reach for the chord-following EQ (`harmonic`) instead of stacking fixed notches.
 
 ## What the numbers can't hear
 
-- **The v1 harmony checker (`scripts/check-stems.py`, `audition.sh --check`) measures clash, not
+- **The v1 harmony checker (`apricity check`'s `objective`, `audition.sh --check`) measures clash, not
   style or quality.** It folds every stem into 12 pitch classes per beat and penalises clashing
   intervals and off-chord notes. It can't hear genre, timbre, groove or whether two parts sound like
   one record, and it never rewards a good chord. It ranked the four lounge swaps within 4 points and
