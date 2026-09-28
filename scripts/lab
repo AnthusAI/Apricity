@@ -8,6 +8,9 @@
     lab swap SCORE --role TRACK (--candidates F | --neighbors)  the explorer
     lab add SCORE [--roles ...] [--style T]                  the optimizer
     lab cycle publish | list | pull                          listening cycles (the Listen page)
+    lab start SCORE --title T [--brief B]                    start a lab (a sit-down with a scene)
+    lab list                                                 list your labs
+    lab attach CYCLE_ID --lab ID                              attach a cycle to a lab
     lab backtest                                             the harmony v2 backtest
     lab palette | ratings | features                         library/taste lookups
 

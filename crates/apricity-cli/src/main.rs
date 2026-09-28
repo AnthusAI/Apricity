@@ -167,6 +167,89 @@ enum Cmd {
         #[command(subcommand)]
         action: SampleAction,
     },
+    /// Start, list or read your cloud labs (Kanbus apricitus-e59a0b: a sit-down with a scene).
+    Lab {
+        #[command(subcommand)]
+        action: LabAction,
+    },
+    /// Publish, list, pull or attach cloud listening cycles.
+    Cycle {
+        #[command(subcommand)]
+        action: CycleAction,
+    },
+}
+
+#[derive(Subcommand)]
+enum LabAction {
+    /// Start a lab: an existing cloud Score id (the scene), a title and an optional brief.
+    Start {
+        scene_score_id: String,
+        #[arg(long)]
+        title: String,
+        #[arg(long)]
+        brief: Option<String>,
+        /// Print machine-readable JSON instead of prose.
+        #[arg(long)]
+        json: bool,
+    },
+    /// List your labs, newest first.
+    List {
+        #[arg(long)]
+        json: bool,
+    },
+    /// Print one lab.
+    Get {
+        id: String,
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum CycleAction {
+    /// Publish a listening cycle: the incumbent plus one or more candidates, blind-lettered.
+    Publish {
+        /// The incumbent's .apr (used only to create a hidden cloud copy if `--incumbent-score-id` doesn't exist yet).
+        #[arg(long)]
+        score: PathBuf,
+        #[arg(long = "incumbent-score-id")]
+        incumbent_score_id: String,
+        #[arg(long = "incumbent-audio")]
+        incumbent_audio: PathBuf,
+        /// A candidate's .apr and its rendered audio (repeatable): `--candidate A.apr A.m4a`.
+        #[arg(long = "candidate", num_args = 2, value_names = ["APR", "AUDIO"])]
+        candidate: Vec<PathBuf>,
+        #[arg(long)]
+        question: Option<String>,
+        #[arg(long)]
+        title: Option<String>,
+        /// A Lab id to publish this cycle into (sets `labId`).
+        #[arg(long)]
+        lab: Option<String>,
+        #[arg(long)]
+        json: bool,
+    },
+    /// List open cycles.
+    List {
+        #[arg(long)]
+        json: bool,
+    },
+    /// Log a cycle's ratings and verdicts (your own visible ones), optionally closing it.
+    Pull {
+        cycle_id: String,
+        #[arg(long)]
+        close: bool,
+        #[arg(long)]
+        json: bool,
+    },
+    /// Attach an existing cycle to a lab (sets `labId`).
+    Attach {
+        cycle_id: String,
+        #[arg(long)]
+        lab: String,
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -243,7 +326,13 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
     if matches!(
         cli.cmd,
-        Cmd::Login | Cmd::Logout | Cmd::Whoami | Cmd::Score { .. } | Cmd::Sample { .. }
+        Cmd::Login
+            | Cmd::Logout
+            | Cmd::Whoami
+            | Cmd::Score { .. }
+            | Cmd::Sample { .. }
+            | Cmd::Lab { .. }
+            | Cmd::Cycle { .. }
     ) {
         let command = match cli.cmd {
             Cmd::Login => cloud::Command::Login,
@@ -285,6 +374,44 @@ fn main() -> ExitCode {
             Cmd::Sample {
                 action: SampleAction::Import { from, path },
             } => cloud::Command::Import { from, path },
+            Cmd::Lab { action } => cloud::Command::Lab(match action {
+                LabAction::Start { scene_score_id, title, brief, json } => {
+                    cloud::LabCommand::Start { scene_score_id, title, brief, json }
+                }
+                LabAction::List { json } => cloud::LabCommand::List { json },
+                LabAction::Get { id, json } => cloud::LabCommand::Get { id, json },
+            }),
+            Cmd::Cycle { action } => cloud::Command::Cycle(match action {
+                CycleAction::Publish {
+                    score,
+                    incumbent_score_id,
+                    incumbent_audio,
+                    candidate,
+                    question,
+                    title,
+                    lab,
+                    json,
+                } => cloud::CycleCommand::Publish {
+                    score,
+                    incumbent_score_id,
+                    incumbent_audio,
+                    candidates: candidate
+                        .chunks_exact(2)
+                        .map(|pair| (pair[0].clone(), pair[1].clone()))
+                        .collect(),
+                    question,
+                    title,
+                    lab,
+                    json,
+                },
+                CycleAction::List { json } => cloud::CycleCommand::List { json },
+                CycleAction::Pull { cycle_id, close, json } => {
+                    cloud::CycleCommand::Pull { cycle_id, close, json }
+                }
+                CycleAction::Attach { cycle_id, lab, json } => {
+                    cloud::CycleCommand::Attach { cycle_id, lab, json }
+                }
+            }),
             _ => unreachable!(),
         };
         return match cloud::run(command) {
@@ -432,7 +559,9 @@ fn main() -> ExitCode {
         | Cmd::Logout
         | Cmd::Whoami
         | Cmd::Score { .. }
-        | Cmd::Sample { .. } => unreachable!(),
+        | Cmd::Sample { .. }
+        | Cmd::Lab { .. }
+        | Cmd::Cycle { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let compiled = match &cli.cmd {
@@ -470,7 +599,9 @@ fn main() -> ExitCode {
         | Cmd::Logout
         | Cmd::Whoami
         | Cmd::Score { .. }
-        | Cmd::Sample { .. } => unreachable!(),
+        | Cmd::Sample { .. }
+        | Cmd::Lab { .. }
+        | Cmd::Cycle { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {
