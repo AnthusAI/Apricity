@@ -125,10 +125,22 @@
       "text": "Production cycle publish and Lab attachment verified after the deployed IAM policy fix.",
       "created_at": "2026-09-28T22:12:32.791480Z",
       "comment_type": "default"
+    },
+    {
+      "id": "8b3ca546-fbe0-43b4-8bec-f5c6f1061d37",
+      "author": "home",
+      "text": "Final deployment gate passed: Amplify job 128 completed successfully in BUILD, DEPLOY, and VERIFY after the production publish smoke succeeded.",
+      "created_at": "2026-09-28T22:14:55.891942Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-5",
+        "name": "home"
+      }
     }
   ],
   "created_at": "2026-09-28T11:00:56.006818Z",
-  "updated_at": "2026-09-28T22:13:08.094512Z",
+  "updated_at": "2026-09-28T22:14:55.891991Z",
   "closed_at": "2026-09-28T22:12:32.845653Z",
   "agent": {
     "platform": "codex",
