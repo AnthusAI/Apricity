@@ -2,6 +2,33 @@
 
 <!-- version list -->
 
+## v0.32.0 (2026-09-28)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`2e9a91e`](https://github.com/AnthusAI/Apricity/commit/2e9a91ebef22b5682c7999ea65d1ebee0ba70489))
+
+- **kanbus**: Commit board state (issues)
+  ([`0d8ded7`](https://github.com/AnthusAI/Apricity/commit/0d8ded744655e9232d3c50af1a7cdeacdbd20f83))
+
+### Features
+
+- **apricitus-e59a0b**: Your labs: a Lab record, the /labs pages, and lab and cycle commands through
+  apricity login ([#49](https://github.com/AnthusAI/Apricity/pull/49),
+  [`a53cd5a`](https://github.com/AnthusAI/Apricity/commit/a53cd5a689d4c398f46ceab81ff009f0b9fe884b))
+
+- **examples**: Ave & Emerge with a pulse, the optimizer's first picked layer
+  ([#50](https://github.com/AnthusAI/Apricity/pull/50),
+  [`9d1f582`](https://github.com/AnthusAI/Apricity/commit/9d1f582bc5287861788be73ceac408fc0d8213e4))
+
+### Testing
+
+- **apricitus-e59a0b**: A Lab fixture for the record-conversion test
+  ([#49](https://github.com/AnthusAI/Apricity/pull/49),
+  [`a53cd5a`](https://github.com/AnthusAI/Apricity/commit/a53cd5a689d4c398f46ceab81ff009f0b9fe884b))
+
+
 ## v0.31.0 (2026-09-28)
 
 ### Chores
