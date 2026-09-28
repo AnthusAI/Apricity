@@ -46,10 +46,22 @@
         "model": "GPT-5",
         "name": "Music"
       }
+    },
+    {
+      "id": "996e855c-cf5b-4ab8-b955-90c9c4e9b8b3",
+      "author": "home",
+      "text": "Listener clarified that the prior two-pass version did not repeat the source enough. The hook’s natural length is about two bars at 128 BPM, so it is now scheduled explicitly at bars 5, 7, and 9 (three complete passes), then removed at bar 11 for the drum-only choke and finish. Rendered objective_v2 remains 102.00.",
+      "created_at": "2026-09-28T03:42:08.583173Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
     }
   ],
   "created_at": "2026-09-28T03:26:07.977930Z",
-  "updated_at": "2026-09-28T03:39:28.235557Z",
+  "updated_at": "2026-09-28T03:42:08.583218Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
