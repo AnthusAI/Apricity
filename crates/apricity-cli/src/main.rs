@@ -214,7 +214,15 @@ enum ScoreAction {
 
 #[derive(Subcommand)]
 enum SampleAction {
-    Import,
+    /// Import library records already staged in cloud storage, or synchronize a repository.
+    Import {
+        /// Repository root containing samples/ and their .apricity.json manifests.
+        #[arg(long)]
+        from: Option<PathBuf>,
+        /// Synchronize one sample path (relative to samples/) instead of the full repository.
+        #[arg(long)]
+        path: Option<String>,
+    },
 }
 
 /// Compile a score with its clips taken from a library.
@@ -275,8 +283,8 @@ fn main() -> ExitCode {
                 ScoreAction::Delete { id, yes } => cloud::ScoreCommand::Delete { id, yes },
             }),
             Cmd::Sample {
-                action: SampleAction::Import,
-            } => cloud::Command::Import,
+                action: SampleAction::Import { from, path },
+            } => cloud::Command::Import { from, path },
             _ => unreachable!(),
         };
         return match cloud::run(command) {

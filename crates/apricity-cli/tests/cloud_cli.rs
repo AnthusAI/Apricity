@@ -32,4 +32,7 @@ fn score_and_sample_commands_expose_the_approved_operations() {
         assert!(score.contains(command), "missing {command} from:\n{score}");
     }
     assert!(help(&["sample", "--help"]).contains("import"));
+    let import = help(&["sample", "import", "--help"]);
+    assert!(import.contains("--from"), "missing repository import from:\n{import}");
+    assert!(import.contains("--path"), "missing targeted import path:\n{import}");
 }
