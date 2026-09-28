@@ -1,7 +1,7 @@
 {
   "id": "apricitus-4515427b-7fe2-4792-81cb-3258457e48ab",
-  "title": "Clips library loads every clip before rendering",
-  "description": "## Expected\nThe public Clips page displays a useful first batch promptly, then lazily loads later batches as the reader scrolls. The backing data access should use a bounded indexed query or another scalable paginated read.\n\n## Observed\nThe Clips page currently fetches all Clip records (in pages of 1,000) before it can create the list. The user reports that listing clips takes a long time and asks whether this is an unindexed scan or lack of pagination.\n\n## Definition of done\n- Trace the deployed page's request and data access path, including whether Clip.list resolves to a scan or an indexed query.\n- Identify other eager fetches that materially delay the first clip rows.\n- Make the Clips view return/render a first bounded page and fetch more on scroll, preserving URL filters, ranking, and visibility rules, or document a concrete blocker if the current API cannot support it.\n- Add behavior coverage for initial load and subsequent page loading.\n- Record verified findings and implementation progress here.",
+  "title": "Fast local clip search for score authoring",
+  "description": "## Intent\nAs a score-authoring agent working against a local Apricity library, I want to find usable clips quickly by my ratings, rating recency, and searchable clip/sample metadata, so I can shortlist sounds without loading the full catalog on every query.\n\n## Scope\n- Improve the local tools used by `.agents/skills/write-score` for rating-aware clip search.\n- Use existing signals only: local stars and ratedAt, clip/sample names and paths, tags, kind, and duration where available. Keep current defaults compatible.\n- Keep CLAP-based search outside this change.\n- The public Clips page scan/infinite-scroll issue is diagnosed separately in the progress log; this work targets local score-authoring tools.\n\n## Definition of done\n- The ratings-aware local clip listing avoids reading every Clip record when only a small set is rated.\n- Agents can sort by rating or rating recency and narrow results by text query and minimum stars.\n- Output remains ready to paste into a score and makes the available signals visible.\n- Add behavior coverage for default ordering, recency ordering, filtering, and missing records.\n- Update the score-authoring skill with the useful invocation.\n- Record verification and outcomes here.",
   "type": "bug",
   "status": "in_progress",
   "priority": 2,
@@ -25,7 +25,7 @@
     }
   ],
   "created_at": "2026-09-28T10:54:17.164096Z",
-  "updated_at": "2026-09-28T10:57:07.212879Z",
+  "updated_at": "2026-09-28T11:00:11.212716Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
