@@ -19,9 +19,19 @@ Map the first 16 bars before adding tracks. At minimum, specify the function of 
 
 Start around 100–128 BPM. The centre is a break-derived groove: a heavy downbeat, a decisive backbeat, and syncopated kicks or fills that make the bar feel like it is being pulled forward. Use straight sixteenths for tight sampled drums; add modest swing only when it helps the source's feel.
 
-Build a four- or eight-bar rhythm sketch before adding a hook. A Big Beat groove needs contrast between strong hits and space; do not fill every sixteenth. If the library has a suitable drum loop, slice it by beats or transients and resequence a few hits so the break has a recognisable identity rather than repeating untouched.
+Choose one rhythm family before placing a sample, and name it in the score comment:
+
+- **Stomping halftime:** wide kick spaces, one emphatic snare on beat 3, toms or crashes as the forward motion.
+- **Rolling break:** uneven kicks around a 2-and-4 snare, with ghost notes and changing hat figures.
+- **Dance-punk drive:** straight, dense hats or ride against a sparse rock kick/snare backbone.
+- **Stop-start funk:** a short clustered break followed by silence or a held hook; the gaps are part of the groove.
+- **Tom-led tribal break:** low tom and floor-tom figures are the primary rhythm, with snare as an answer rather than a metronome.
+
+Build and audition a four- or eight-bar **drum-only** sketch before adding the hook. Keep the chosen contour only if it has a recognisable shape without the sample. For another score in the same session, pick a different family and change the snare's role as well as the kick grid. A Big Beat groove needs contrast between strong hits and space; do not fill every sixteenth. If the library has a suitable drum loop, slice it by beats or transients and resequence a few hits so the break has a recognisable identity rather than repeating untouched.
 
 When a real drum kit is available, write it as a drummer rather than falling back to one kick/snare/hat template. Start with a kick/snare contour that belongs to this score, then write the hats, ghost notes, rim answers, and fills around it. Change at least two of kick placement, snare answer, hat density, cymbal voice, or tom activity between the main groove and the next section. Use tom or snare fills to hand off between four- or eight-bar phrases. Bring in open hats, ride, crashes, and cymbal chokes only where they make a section land. The chopped sample remains the Big Beat basis; the kit gives the record its evolving physical force.
+
+Before the final render, compare the drum-only stems for the intro, main groove, and return. If they reduce to the same kick/snare/hat contour with a different level or fill, rewrite one section rather than claiming an arrangement change.
 
 ## Cast one unmistakable hook
 
