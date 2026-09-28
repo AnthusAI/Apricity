@@ -1,0 +1,52 @@
+/* The "Your labs" page: plain, using the site's own tokens and classes (.btn, .badge, .empty) — no new visual
+   language. Scoped under .labs-page so nothing here leaks onto other views. */
+
+#labs { display: block; overflow: auto; }
+
+.labs-page { max-width: 760px; margin: 0 auto; padding: 40px 24px calc(100vh - 120px); }
+.labs-page h1 { font-size: 28px; margin: 0 0 12px; font-weight: 650; }
+.labs-page h2 { font-size: 17px; margin: 24px 0 10px; font-weight: 620; }
+.labs-intro,
+.labs-brief,
+.labs-scene-line { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+.labs-loading { color: var(--muted); padding: 20px 0; }
+
+.labs-signin { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 0; }
+
+.labs-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.labs-card { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); text-decoration: none; color: var(--fg); }
+.labs-card:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.labs-card-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.labs-card-title { font-weight: 600; }
+.labs-card-scene a { color: var(--accent); font-size: 13px; text-decoration: none; }
+.labs-card-brief { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.labs-card-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); flex: none; }
+
+.labs-back { margin-bottom: 16px; }
+.labs-back a { color: var(--muted); text-decoration: none; font-size: 13px; }
+.labs-back a:hover { color: var(--fg); }
+
+.labs-scene-link { color: var(--accent); }
+
+.labs-cycles,
+.labs-history { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.labs-cycle-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.labs-cycle-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.labs-cycle-title { font-weight: 600; }
+.labs-cycle-question { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.labs-cycle-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); flex: none; }
+.labs-cycle-link { color: var(--accent); text-decoration: none; }
+.badge.waiting { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.labs-cycle-meta .badge.saved { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+
+.labs-history-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13.5px; border-bottom: 1px solid var(--line); }
+.labs-history-title { font-weight: 600; }
+.labs-history-pick { color: var(--muted); }
+.labs-history-when { color: var(--muted); margin-left: auto; font-size: 12px; }
+
+@media (max-width: 600px) {
+  .labs-page { padding: 24px 16px calc(100vh - 120px); }
+  .labs-card,
+  .labs-cycle-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .labs-history-when { margin-left: 0; }
+}

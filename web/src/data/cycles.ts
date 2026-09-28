@@ -28,6 +28,8 @@ export interface CycleRecord {
   closedAt?: string | null;
   owner?: string | null;
   createdAt?: string | null;
+  /** The lab this cycle was published into, if any (older cycles, and ones published without --lab, have none). */
+  labId?: string | null;
 }
 
 export interface CycleNote {
