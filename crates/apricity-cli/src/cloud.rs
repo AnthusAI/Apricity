@@ -858,6 +858,191 @@ fn shuffled_letters(n: usize) -> Vec<char> {
     letters
 }
 
+struct PreparedCycleOption {
+    letter: char,
+    score_id: String,
+    score_input: Option<Value>,
+    key: String,
+    audio: Vec<u8>,
+    content_type: &'static str,
+    sha256: String,
+}
+
+trait CyclePublishOps {
+    fn create_score(&mut self, input: &Value) -> Result<(), String>;
+    fn upload_audio(&mut self, key: &str, bytes: Vec<u8>, content_type: &str)
+    -> Result<(), String>;
+    fn create_cycle(&mut self, input: &Value) -> Result<(), String>;
+    fn delete_score(&mut self, id: &str) -> Result<(), String>;
+    fn delete_audio(&mut self, key: &str) -> Result<(), String>;
+    fn delete_cycle(&mut self, id: &str) -> Result<(), String>;
+}
+
+fn rollback_cycle_publish(
+    ops: &mut impl CyclePublishOps,
+    cycle_id: &str,
+    scores: &[String],
+    keys: &[String],
+    cycle_attempted: bool,
+) -> Vec<String> {
+    let mut errors = Vec::new();
+    if cycle_attempted {
+        if let Err(e) = ops.delete_cycle(cycle_id) {
+            errors.push(format!("cycle {cycle_id}: {e}"));
+        }
+    }
+    for key in keys.iter().rev() {
+        if let Err(e) = ops.delete_audio(key) {
+            errors.push(format!("audio {key}: {e}"));
+        }
+    }
+    for id in scores.iter().rev() {
+        if let Err(e) = ops.delete_score(id) {
+            errors.push(format!("score {id}: {e}"));
+        }
+    }
+    errors
+}
+
+fn publish_prepared_cycle(
+    ops: &mut impl CyclePublishOps,
+    cycle_id: &str,
+    mut prepared: Vec<PreparedCycleOption>,
+    setup_scores: Vec<(String, Value)>,
+    mut cycle_input: Value,
+) -> Result<Vec<Value>, String> {
+    let mut created_scores = Vec::new();
+    let mut attempted_keys = Vec::new();
+    let mut cycle_attempted = false;
+    let result = (|| {
+        let mut options = Vec::with_capacity(prepared.len());
+        for (id, input) in setup_scores {
+            created_scores.push(id);
+            ops.create_score(&input)?;
+        }
+        for option in prepared.drain(..) {
+            if let Some(input) = &option.score_input {
+                created_scores.push(option.score_id.clone());
+                ops.create_score(input)?;
+            }
+            // Include the attempted key too: a failed response can follow a successful remote write.
+            attempted_keys.push(option.key.clone());
+            let size = option.audio.len();
+            ops.upload_audio(&option.key, option.audio, option.content_type)?;
+            options.push(json!({
+                "letter": option.letter.to_string(),
+                "scoreId": option.score_id,
+                "audio": {
+                    "key": option.key,
+                    "sha256": option.sha256,
+                    "size": size,
+                    "contentType": option.content_type
+                }
+            }));
+        }
+        options.sort_by(|a, b| a["letter"].as_str().cmp(&b["letter"].as_str()));
+        cycle_input["options"] = json!(options);
+        cycle_attempted = true;
+        ops.create_cycle(&cycle_input)?;
+        Ok(options)
+    })();
+    result.map_err(|error| {
+        let cleanup = rollback_cycle_publish(
+            ops,
+            cycle_id,
+            &created_scores,
+            &attempted_keys,
+            cycle_attempted,
+        );
+        if cleanup.is_empty() {
+            error
+        } else {
+            format!("{error}; cleanup also failed: {}", cleanup.join("; "))
+        }
+    })
+}
+
+struct LiveCyclePublishOps<'a> {
+    api: &'a mut Api,
+    s3: &'a aws_sdk_s3::Client,
+    runtime: &'a tokio::runtime::Runtime,
+    bucket: &'a str,
+}
+
+impl CyclePublishOps for LiveCyclePublishOps<'_> {
+    fn create_score(&mut self, input: &Value) -> Result<(), String> {
+        self.api.gql(
+            "mutation Create($input: CreateScoreInput!) { createScore(input: $input) { id } }",
+            json!({"input": input}),
+        )?;
+        Ok(())
+    }
+
+    fn upload_audio(
+        &mut self,
+        key: &str,
+        bytes: Vec<u8>,
+        content_type: &str,
+    ) -> Result<(), String> {
+        self.runtime
+            .block_on(
+                self.s3
+                    .put_object()
+                    .bucket(self.bucket)
+                    .key(format!("files/{key}"))
+                    .body(bytes.into())
+                    .content_type(content_type)
+                    .send(),
+            )
+            .map(|_| ())
+            .map_err(|e| {
+                let detail = e
+                    .as_service_error()
+                    .map(|service| {
+                        let meta = service.meta();
+                        format!(
+                            "{}: {}",
+                            meta.code().unwrap_or("unknown S3 error"),
+                            meta.message().unwrap_or("no service message")
+                        )
+                    })
+                    .unwrap_or_else(|| e.to_string());
+                format!("S3 upload failed for {key}: {detail}")
+            })
+    }
+
+    fn create_cycle(&mut self, input: &Value) -> Result<(), String> {
+        self.api.gql("mutation Create($input: CreateListeningCycleInput!) { createListeningCycle(input: $input) { id } }", json!({"input": input}))?;
+        Ok(())
+    }
+
+    fn delete_score(&mut self, id: &str) -> Result<(), String> {
+        self.api.gql(
+            "mutation Delete($input: DeleteScoreInput!) { deleteScore(input: $input) { id } }",
+            json!({"input": {"id": id}}),
+        )?;
+        Ok(())
+    }
+
+    fn delete_audio(&mut self, key: &str) -> Result<(), String> {
+        self.runtime
+            .block_on(
+                self.s3
+                    .delete_object()
+                    .bucket(self.bucket)
+                    .key(format!("files/{key}"))
+                    .send(),
+            )
+            .map(|_| ())
+            .map_err(|e| format!("S3 delete failed for {key}: {e}"))
+    }
+
+    fn delete_cycle(&mut self, id: &str) -> Result<(), String> {
+        self.api.gql("mutation Delete($input: DeleteListeningCycleInput!) { deleteListeningCycle(input: $input) { id } }", json!({"input": {"id": id}}))?;
+        Ok(())
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn publish_cycle(
     config: &Config,
@@ -881,15 +1066,18 @@ fn publish_cycle(
 
     // The incumbent must exist in the cloud to fork from; if it doesn't (published only locally so far),
     // create a hidden copy so the cycle still has something real to point at.
-    let existing = api.gql("query Get($id: ID!) { getScore(id: $id) { id forkRoot } }", json!({"id": incumbent_score_id}))?;
-    let fork_root = if existing["getScore"].is_null() {
-        let text = std::fs::read_to_string(&score).map_err(|e| format!("{}: {e}", score.display()))?;
-        let stem = score.file_stem().and_then(|s| s.to_str()).unwrap_or("incumbent").to_string();
-        let input = json!({"id": incumbent_score_id, "title": stem, "folder": "cycles/incumbents", "format": "apr", "text": text, "tags": ["candidate"]});
-        api.gql("mutation Create($input: CreateScoreInput!) { createScore(input: $input) { id } }", json!({"input": input}))?;
+    let existing = api.gql(
+        "query Get($id: ID!) { getScore(id: $id) { id forkRoot } }",
+        json!({"id": incumbent_score_id}),
+    )?;
+    let hidden_incumbent = existing["getScore"].is_null();
+    let fork_root = if hidden_incumbent {
         incumbent_score_id.clone()
     } else {
-        existing["getScore"]["forkRoot"].as_str().map(str::to_owned).unwrap_or_else(|| incumbent_score_id.clone())
+        existing["getScore"]["forkRoot"]
+            .as_str()
+            .map(str::to_owned)
+            .unwrap_or_else(|| incumbent_score_id.clone())
     };
 
     let cycle_id = random_id("cyc");
@@ -900,64 +1088,110 @@ fn publish_cycle(
     let (identity_id, credentials) = identity_credentials(config, &id_token)?;
     let runtime = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
     let s3 = s3_client(config, credentials, &runtime)?;
-    let bucket = config.bucket.as_deref().ok_or("Amplify outputs has no storage.bucket_name")?;
+    let bucket = config
+        .bucket
+        .as_deref()
+        .ok_or("Amplify outputs has no storage.bucket_name")?;
 
     struct Slot {
         existing_score_id: Option<String>,
         apr: PathBuf,
         audio: PathBuf,
     }
-    let mut slots = vec![Slot { existing_score_id: Some(incumbent_score_id.clone()), apr: score.clone(), audio: incumbent_audio }];
-    slots.extend(candidates.into_iter().map(|(apr, audio)| Slot { existing_score_id: None, apr, audio }));
+    let mut slots = vec![Slot {
+        existing_score_id: Some(incumbent_score_id.clone()),
+        apr: score.clone(),
+        audio: incumbent_audio,
+    }];
+    slots.extend(candidates.into_iter().map(|(apr, audio)| Slot {
+        existing_score_id: None,
+        apr,
+        audio,
+    }));
 
-    let mut options = Vec::with_capacity(slots.len());
+    // Read every local input before creating any cloud records or objects. Local file errors cannot leave
+    // a half-published cycle behind.
+    let mut prepared = Vec::with_capacity(slots.len());
+    let mut setup_scores = Vec::new();
+    if hidden_incumbent {
+        let text =
+            std::fs::read_to_string(&score).map_err(|e| format!("{}: {e}", score.display()))?;
+        let stem = score
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("incumbent")
+            .to_string();
+        setup_scores.push((incumbent_score_id.clone(), json!({"id": incumbent_score_id, "title": stem, "folder": "cycles/incumbents", "format": "apr", "text": text, "tags": ["candidate"]})));
+    }
     for (letter, slot) in letters.iter().zip(slots.into_iter()) {
-        let sid = if let Some(id) = slot.existing_score_id {
-            id
+        let (sid, score_input) = if let Some(id) = slot.existing_score_id {
+            (id, None)
         } else {
-            let candidate_title = slot.apr.file_stem().and_then(|s| s.to_str()).unwrap_or("candidate").to_string();
+            let candidate_title = slot
+                .apr
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("candidate")
+                .to_string();
             let sid = format!("scr_{}_{}_apr", folder.replace('/', "_"), candidate_title);
-            let text = std::fs::read_to_string(&slot.apr).map_err(|e| format!("{}: {e}", slot.apr.display()))?;
+            let text = std::fs::read_to_string(&slot.apr)
+                .map_err(|e| format!("{}: {e}", slot.apr.display()))?;
             let input = json!({"id": sid, "title": candidate_title, "folder": folder, "format": "apr", "text": text, "tags": ["candidate"], "forkOf": incumbent_score_id, "forkRoot": fork_root});
-            api.gql("mutation Create($input: CreateScoreInput!) { createScore(input: $input) { id } }", json!({"input": input}))?;
-            sid
+            (sid, Some(input))
         };
-        let audio_bytes = std::fs::read(&slot.audio).map_err(|e| format!("{}: {e}", slot.audio.display()))?;
-        let ext = slot.audio.extension().and_then(|e| e.to_str()).unwrap_or("m4a");
+        let audio_bytes =
+            std::fs::read(&slot.audio).map_err(|e| format!("{}: {e}", slot.audio.display()))?;
+        let ext = slot
+            .audio
+            .extension()
+            .and_then(|e| e.to_str())
+            .unwrap_or("m4a");
         let content_type = content_type_for(ext);
         let sha256 = format!("{:x}", Sha256::digest(&audio_bytes));
-        let size = audio_bytes.len();
         // library-relative, matching the web's expectation (files/<key>); the identity id in the path is
         // what makes `allow.entity("identity")` grant this upload (web/amplify/storage/resource.ts).
         let key = format!("cycles/{identity_id}/{cycle_id}/{letter}.{ext}");
-        runtime
-            .block_on(
-                s3.put_object()
-                    .bucket(bucket)
-                    .key(format!("files/{key}"))
-                    .body(audio_bytes.into())
-                    .content_type(content_type)
-                    .send(),
-            )
-            .map_err(|e| format!("could not upload {key}: {e}"))?;
-        options.push(json!({"letter": letter.to_string(), "scoreId": sid, "audio": {"key": key, "sha256": sha256, "size": size, "contentType": content_type}}));
+        prepared.push(PreparedCycleOption {
+            letter: *letter,
+            score_id: sid,
+            score_input,
+            key,
+            audio: audio_bytes,
+            content_type,
+            sha256,
+        });
     }
-    options.sort_by(|a, b| a["letter"].as_str().cmp(&b["letter"].as_str()));
 
     let cycle_title = title.unwrap_or_else(|| {
-        let stem = score.file_stem().and_then(|s| s.to_str()).unwrap_or("cycle");
-        format!("{stem}: {}", question.as_deref().unwrap_or("which is better?"))
+        let stem = score
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("cycle");
+        format!(
+            "{stem}: {}",
+            question.as_deref().unwrap_or("which is better?")
+        )
     });
-    let mut input = json!({"id": cycle_id, "title": cycle_title, "question": question, "incumbentScoreId": incumbent_score_id, "options": options, "status": "open"});
+    let mut input = json!({"id": cycle_id, "title": cycle_title, "question": question, "incumbentScoreId": incumbent_score_id, "status": "open"});
     if let Some(lab_id) = &lab {
         input["labId"] = json!(lab_id);
     }
-    api.gql("mutation Create($input: CreateListeningCycleInput!) { createListeningCycle(input: $input) { id } }", json!({"input": input}))?;
+    let mut ops = LiveCyclePublishOps {
+        api: &mut api,
+        s3: &s3,
+        runtime: &runtime,
+        bucket,
+    };
+    let options = publish_prepared_cycle(&mut ops, &cycle_id, prepared, setup_scores, input)?;
 
     let count = options.len();
-    emit(json_flag, &json!({"cycleId": cycle_id, "options": options}), |_| {
-        println!("published {cycle_id}: {count} options");
-    });
+    emit(
+        json_flag,
+        &json!({"cycleId": cycle_id, "options": options}),
+        |_| {
+            println!("published {cycle_id}: {count} options");
+        },
+    );
     Ok(())
 }
 
@@ -1362,6 +1596,132 @@ mod tests {
             let mut letters = shuffled_letters(n);
             letters.sort();
             assert_eq!(letters, ['A', 'B', 'C', 'D'][..n]);
+        }
+    }
+
+    #[derive(Default)]
+    struct FakeCyclePublishOps {
+        events: Vec<String>,
+        fail_upload: Option<String>,
+        fail_cycle: bool,
+        cycle: Option<Value>,
+    }
+
+    impl CyclePublishOps for FakeCyclePublishOps {
+        fn create_score(&mut self, input: &Value) -> Result<(), String> {
+            self.events
+                .push(format!("score+:{}", input["id"].as_str().unwrap()));
+            Ok(())
+        }
+        fn upload_audio(&mut self, key: &str, _: Vec<u8>, _: &str) -> Result<(), String> {
+            self.events.push(format!("audio+:{key}"));
+            if self.fail_upload.as_deref() == Some(key) {
+                Err("AccessDenied: test denial".into())
+            } else {
+                Ok(())
+            }
+        }
+        fn create_cycle(&mut self, input: &Value) -> Result<(), String> {
+            self.events.push("cycle+".into());
+            if self.fail_cycle {
+                return Err("cycle write failed".into());
+            }
+            self.cycle = Some(input.clone());
+            Ok(())
+        }
+        fn delete_score(&mut self, id: &str) -> Result<(), String> {
+            self.events.push(format!("score-:{id}"));
+            Ok(())
+        }
+        fn delete_audio(&mut self, key: &str) -> Result<(), String> {
+            self.events.push(format!("audio-:{key}"));
+            Ok(())
+        }
+        fn delete_cycle(&mut self, id: &str) -> Result<(), String> {
+            self.events.push(format!("cycle-:{id}"));
+            Ok(())
+        }
+    }
+
+    fn prepared_options() -> Vec<PreparedCycleOption> {
+        ['A', 'B', 'C']
+            .into_iter()
+            .map(|letter| PreparedCycleOption {
+                letter,
+                score_id: format!("scr_{letter}"),
+                score_input: Some(json!({"id": format!("scr_{letter}")})),
+                key: format!("cycles/identity/cyc_test/{letter}.m4a"),
+                audio: vec![1, 2, 3],
+                content_type: "audio/mp4",
+                sha256: "hash".into(),
+            })
+            .collect()
+    }
+
+    #[test]
+    fn cycle_publish_uploads_three_options_then_creates_cycle() {
+        let mut ops = FakeCyclePublishOps::default();
+        let options = publish_prepared_cycle(
+            &mut ops,
+            "cyc_test",
+            prepared_options(),
+            vec![],
+            json!({"id": "cyc_test"}),
+        )
+        .unwrap();
+        assert_eq!(options.len(), 3);
+        assert_eq!(ops.cycle.unwrap()["options"].as_array().unwrap().len(), 3);
+        assert_eq!(ops.events.last().unwrap(), "cycle+");
+    }
+
+    #[test]
+    fn third_upload_failure_cleans_partial_cycle_publish_and_keeps_service_error() {
+        let mut ops = FakeCyclePublishOps {
+            fail_upload: Some("cycles/identity/cyc_test/C.m4a".into()),
+            ..Default::default()
+        };
+        let err = publish_prepared_cycle(
+            &mut ops,
+            "cyc_test",
+            prepared_options(),
+            vec![],
+            json!({"id": "cyc_test"}),
+        )
+        .unwrap_err();
+        assert!(err.contains("AccessDenied: test denial"), "{err}");
+        assert!(
+            ops.events
+                .contains(&"audio-:cycles/identity/cyc_test/C.m4a".into())
+        );
+        for letter in ['A', 'B', 'C'] {
+            assert!(ops.events.contains(&format!("score-:scr_{letter}")));
+        }
+        assert!(!ops.events.contains(&"cycle-:cyc_test".into()));
+        assert!(!ops.events.contains(&"cycle+".into()));
+    }
+
+    #[test]
+    fn cycle_record_failure_removes_all_uploaded_objects_and_scores() {
+        let mut ops = FakeCyclePublishOps {
+            fail_cycle: true,
+            ..Default::default()
+        };
+        let err = publish_prepared_cycle(
+            &mut ops,
+            "cyc_test",
+            prepared_options(),
+            vec![],
+            json!({"id": "cyc_test"}),
+        )
+        .unwrap_err();
+        assert!(err.contains("cycle write failed"), "{err}");
+        assert!(ops.events.contains(&"cycle-:cyc_test".into()));
+        for letter in ['A', 'B', 'C'] {
+            assert!(
+                ops.events
+                    .contains(&format!("audio-:cycles/identity/cyc_test/{letter}.m4a"))
+            );
+            assert!(ops.events.contains(&format!("score-:scr_{letter}")));
         }
     }
 
