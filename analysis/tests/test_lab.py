@@ -22,8 +22,8 @@ BIN_CURRENT = BIN.exists() and context._binary_supports(BIN)
 
 # --------------------------------------------------------------------------- dispatcher help
 
-SUBCOMMANDS = ["measure", "try", "audition", "neighbors", "swap", "add", "cycle", "backtest",
-               "palette", "ratings", "features"]
+SUBCOMMANDS = ["measure", "try", "audition", "neighbors", "swap", "add", "cycle", "start", "list", "attach",
+               "backtest", "palette", "ratings", "features"]
 
 
 def test_top_level_help_lists_every_subcommand(capsys):

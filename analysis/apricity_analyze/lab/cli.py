@@ -14,6 +14,7 @@ from .commands import (
     backtest as backtest_cmd,
     cycle as cycle_cmd,
     features as features_cmd,
+    labs as labs_cmd,
     measure as measure_cmd,
     neighbors as neighbors_cmd,
     palette as palette_cmd,
@@ -30,6 +31,7 @@ SUBCOMMANDS = [
     swap_cmd,
     add_cmd,
     cycle_cmd,
+    labs_cmd,
     backtest_cmd,
     palette_cmd,
     ratings_cmd,
@@ -41,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         prog="lab",
         description="One front door for the Apricity music tools: measure, try, audition, "
-                     "neighbors, swap, add, cycle, backtest, palette, ratings, features.",
+                     "neighbors, swap, add, cycle, start, list, attach, backtest, palette, ratings, features.",
     )
     sub = ap.add_subparsers(dest="command", required=True)
     for mod in SUBCOMMANDS:
