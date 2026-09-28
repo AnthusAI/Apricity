@@ -46,7 +46,7 @@ Treat samples as playable material:
 
 ### Tease, then reveal a recognizable phrase
 
-When a source is iconic enough that pitch-shifting or continuous looping makes it feel wrong, use a **tease-and-reveal** phrase instead. Take a short opening region (often an eighth- or quarter-note chop), repeat it at its recorded pitch as a rhythmic hook, then stop the chops and play one complete, untransposed phrase. Let the drums carry the space after the reveal. This is a deliberate build of recognition, not a sparse-chop breakdown: the small cut should announce the same source that the longer pass resolves.
+When a source is iconic enough that pitch-shifting or continuous looping makes it feel wrong, use a **tease-and-reveal** phrase instead. Start with a few tiny fixed-pitch hits (often eighth notes), then reveal a longer fragment (a quarter, half-bar, or bar) before stopping the chops and playing one complete, untransposed phrase. Let the drums carry the space after the reveal. This is a deliberate build of recognition, not a sparse-chop breakdown: the small cut and its longer fragment should announce the same source that the full pass resolves. Do not hammer one identical chop for several bars; escalation in duration is the point.
 
 The main loop can carry chromatic notes. Choose the key and progression from its actual loud notes, test with `apricity explain`, and simplify the harmony rather than forcing it to follow a chord chart. A one-chord vamp is valid when the hook is the harmonic event.
 
