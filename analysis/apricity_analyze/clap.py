@@ -291,3 +291,66 @@ def read_sidecar_meta(path: pathlib.Path) -> tuple[str, str] | None:
 def is_up_to_date(path: pathlib.Path, manifest_sha: str, checkpoint: str = CHECKPOINT) -> bool:
     meta = read_sidecar_meta(path)
     return meta is not None and meta == (manifest_sha, checkpoint)
+
+
+def load_clip_embeddings(samples_dir: pathlib.Path) -> list[tuple[str, str, np.ndarray]]:
+    """Every saved clip's CLAP embedding (L2-normalized) from the `.clap.npz` sidecars under
+    `samples_dir` (written by `scripts/fit-features.py`): `(sample path relative to samples_dir,
+    clip name, embedding)`."""
+    rows = []
+    for f in samples_dir.rglob("*.clap.npz"):
+        z = np.load(f, allow_pickle=False)
+        if "clip_names" not in z.files or "clip_embeddings" not in z.files:
+            continue
+        rel = str(f.relative_to(samples_dir)).removesuffix(".clap.npz")
+        for name, e in zip(z["clip_names"], z["clip_embeddings"]):
+            rows.append((rel, str(name), e / (np.linalg.norm(e) + 1e-9)))
+    return rows
+
+
+def neighbors(samples_dir: pathlib.Path, *, ref: str | None = None, prompt: str | None = None,
+              kinds: str = "loop,sec,phrase", top: int = 12) -> list[dict]:
+    """Shortlist clips that sound like they belong with a scene: CLAP similarity to `ref` (a
+    `"<sample path> <saved clip>"` already in the score), optionally blended with `prompt` (a text
+    description of the style). One best clip per recording, best first. Raises `ValueError` if
+    neither `ref` nor `prompt` is given, or if the sidecars/the referenced clip aren't found."""
+    if not ref and not prompt:
+        raise ValueError("give ref, prompt, or both")
+    rows = load_clip_embeddings(samples_dir)
+    if not rows:
+        raise ValueError(f"no CLAP sidecars under {samples_dir}: run `lab features` first")
+
+    ref_embedding = None
+    ref_sample = None
+    if ref:
+        ref_sample, ref_clip = ref.split(None, 1)
+        ref_embedding = next((e for r, n, e in rows if r == ref_sample and n == ref_clip), None)
+        if ref_embedding is None:
+            raise ValueError(f"no CLAP embedding for {ref!r}")
+
+    text_embedding = None
+    if prompt:
+        text_embedding = embed_text(prompt)
+        text_embedding = text_embedding / np.linalg.norm(text_embedding)
+
+    kind_prefixes = tuple(k.strip() + "-" for k in kinds.split(","))
+    scored = []
+    for r, n, e in rows:
+        if not n.startswith(kind_prefixes) or r == ref_sample:
+            continue
+        s_ref = float(e @ ref_embedding) if ref_embedding is not None else None
+        s_txt = float(e @ text_embedding) if text_embedding is not None else None
+        parts = [s for s in (s_ref, s_txt) if s is not None]
+        scored.append((sum(parts) / len(parts), s_ref, s_txt, r, n))
+    scored.sort(key=lambda row: row[0], reverse=True)
+
+    seen: set[str] = set()
+    best = []
+    for score, s_ref, s_txt, r, n in scored:
+        if r in seen:
+            continue
+        seen.add(r)
+        best.append({"score": score, "scene_similarity": s_ref, "prompt_similarity": s_txt, "sample": r, "clip": n})
+        if len(best) == top:
+            break
+    return best
