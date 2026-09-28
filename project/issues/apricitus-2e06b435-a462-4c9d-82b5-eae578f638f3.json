@@ -1,0 +1,41 @@
+{
+  "id": "apricitus-2e06b435-a462-4c9d-82b5-eae578f638f3",
+  "title": "Implement Commons audio ingestion and production import",
+  "description": "Implement the Commons category importer and production-library integration described by the sibling behavior story.\n\n- Enumerate direct members for four configured category pages through MediaWiki API; deduplicate by page identity and preserve every category membership.\n- Fetch revisioned file-page content and extmetadata in small batches; normalize only supported license forms with required attribution, and report non-audio or incomplete/unsupported candidates.\n- Download eligible audio serially with a descriptive User-Agent, request delay, Retry-After-aware backoff, checksum verification, and resumable/idempotent state.\n- Preserve raw metadata/license statements and page revision in Recording sourceMetadata; keep original media source URL and checksum in the source catalog/sample.\n- Add Ogg/Vorbis and Opus decoding; analyze/import eligible samples and records into the production library.\n- Write Gherkin-backed tests for discovery, pagination, rights qualification, throttling/resume, formats, provenance, and idempotency.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ae5d40c8-280a-499a-af8c-0bba0cd85607",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "9e06c757-1817-4c8f-a33d-8a675e0cd209",
+      "author": "home",
+      "text": "Implementation started after fast-forwarding develop. Scope is the four direct Commons categories; eligible audio-only files must have complete supported rights metadata. Work includes API discovery, rate-limited resumable downloads, raw provenance snapshots, Ogg/Opus decode support, analysis, and production-library import.",
+      "created_at": "2026-09-28T01:53:25.135510Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Commons-import"
+      }
+    }
+  ],
+  "created_at": "2026-09-28T01:53:17.226719Z",
+  "updated_at": "2026-09-28T01:53:25.135537Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Commons-import"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

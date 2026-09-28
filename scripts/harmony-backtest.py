@@ -1,150 +1,24 @@
 #!/usr/bin/env python3
-"""Harmony v2 backtest harness (Kanbus `apricitus-85ebc7`, Task 7 of Harmony v2 Phase 1).
-
-Re-renders the windows behind a set of previously logged listening verdicts, runs `apricity
-check` (Rust: chord recognition, `Q`, `objective_v1`/`objective_v2`) on each candidate, and prints
-whether each objective's top pick agrees with what the listener actually preferred. Renders are
-written to a scratch directory, checked, and deleted immediately after -- at most one candidate's
-stems are ever on disk at a time (a 6-stem, 8-bar window is tens of MB; the ≤ 200 MB budget is
-generous).
+"""Thin wrapper: `lab backtest` now owns this (Kanbus apricitus-daebf8); the implementation moved
+to `analysis/apricity_analyze/harmony_backtest.py`. Kept only so old muscle memory keeps working;
+prefer `scripts/lab backtest`.
 
     scripts/harmony-backtest.py
-
-No audio is committed by this script or left behind: every render directory is removed as soon as
-`apricity check` has read it.
 """
 
 from __future__ import annotations
 
-import dataclasses
-import json
 import pathlib
-import shutil
-import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-BACKTEST_SCORES = ROOT / "analysis" / "tests" / "fixtures" / "harmony2" / "backtest_scores"
-BINARY = pathlib.Path("/Users/home/Projects/Apricity/target/debug/apricity")
-SCRATCH_ROOT = ROOT / ".harmony-backtest-scratch"
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "analysis"))
 
 
-@dataclasses.dataclass
-class Candidate:
-    name: str
-    score: pathlib.Path
-    stars: float | None = None  # the listener's rating, when logged as stars
-
-
-@dataclasses.dataclass
-class VerdictSet:
-    """One backtest case: a set of candidates rendered over the same window, and which one (or
-    more, tied) the listener actually preferred."""
-
-    name: str
-    bars: str
-    candidates: list[Candidate]
-    preferred: list[str]  # candidate name(s) the listener preferred (ties allowed)
-    source: str  # where the verdict itself lives (never restated here as prose evidence)
-
-
-# The two verdict sets the design's own validation identified as harmony-shaped (the others in
-# `renders/log.jsonl` are about arrangement or instrumentation, not chord/register fit, or have no
-# render on disk to re-check). See the Kanbus epic and `renders/log.jsonl` for the verdicts
-# themselves -- this file only names which candidate rendered from which score.
-def verdict_sets() -> list[VerdictSet]:
-    d = BACKTEST_SCORES
-    return [
-        VerdictSet(
-            name="lounge-bright-loop-swap",
-            bars="33-40",
-            candidates=[
-                Candidate("1-absolutely-clear", d / "lounge-1-absolutely-clear.apr"),
-                Candidate("2-come-up-for-air", d / "lounge-2-come-up-for-air.apr"),
-                Candidate("3-emerge", d / "lounge-3-emerge.apr"),
-                Candidate("4-stay-for-this-moment", d / "lounge-4-stay-for-this-moment.apr"),
-            ],
-            preferred=["3-emerge"],
-            source="renders/log.jsonl (listen-note)",
-        ),
-        VerdictSet(
-            name="c2-ave-bright",
-            bars="33-40",
-            candidates=[
-                Candidate("aveloop2", d / "cycle2-aveloop2.apr", stars=2),
-                Candidate("comeup", d / "cycle2-comeup.apr", stars=3),
-                Candidate("csoul", d / "cycle2-csoul.apr", stars=3),
-                Candidate("keep", d / "cycle2-keep.apr", stars=3),
-            ],
-            preferred=["keep"],
-            source="renders/log.jsonl (ab-pair, cycle c2-ave-bright)",
-        ),
-    ]
-
-
-def render_and_check(score: pathlib.Path, bars: str, scratch: pathlib.Path) -> dict:
-    """Renders `score --bars bars --stems scratch`, runs `apricity check --json` on it, and
-    deletes `scratch` before returning. Raises on any failure (a missing score, a failed render,
-    or a failed check) rather than silently skipping a candidate."""
-    if scratch.exists():
-        shutil.rmtree(scratch)
-    scratch.mkdir(parents=True)
-    try:
-        proc = subprocess.run(
-            [str(BINARY), "render", str(score), "--bars", bars, "--stems", str(scratch), "-o", str(scratch / "mix.wav")],
-            cwd=str(score.parent), capture_output=True, text=True,
-        )
-        if proc.returncode != 0:
-            raise RuntimeError(f"render failed for {score.name}: {proc.stderr[-2000:]}")
-        check = subprocess.run([str(BINARY), "check", str(scratch), "--json"], capture_output=True, text=True)
-        if check.returncode != 0:
-            raise RuntimeError(f"apricity check failed for {score.name}: {check.stderr[-2000:]}")
-        return json.loads(check.stdout)
-    finally:
-        shutil.rmtree(scratch, ignore_errors=True)
-
-
-def main() -> int:
-    if not BINARY.exists():
-        sys.exit(f"apricity binary not found: {BINARY} (build it once with `cargo build -p apricity-cli`, debug profile)")
-
-    SCRATCH_ROOT.mkdir(exist_ok=True)
-    rows = []
-    for vs in verdict_sets():
-        for cand in vs.candidates:
-            if not cand.score.exists():
-                print(f"  ! skipping {vs.name}/{cand.name}: {cand.score} not found", file=sys.stderr)
-                continue
-            report = render_and_check(cand.score, vs.bars, SCRATCH_ROOT / "current")
-            rows.append({
-                "verdict_set": vs.name, "candidate": cand.name, "stars": cand.stars,
-                "objective_v1": report["objective"], "objective_v2": report["objective_v2"],
-                "preferred": cand.name in vs.preferred, "source": vs.source,
-            })
-
-    shutil.rmtree(SCRATCH_ROOT, ignore_errors=True)
-
-    print(f"{'set':<24}{'candidate':<20}{'stars':>6}{'v1':>10}{'v2':>10}  preferred?")
-    agree_v1 = agree_v2 = total_sets = 0
-    for vs in verdict_sets():
-        set_rows = [r for r in rows if r["verdict_set"] == vs.name]
-        if not set_rows:
-            continue
-        total_sets += 1
-        for r in set_rows:
-            print(f"{r['verdict_set']:<24}{r['candidate']:<20}{(r['stars'] if r['stars'] is not None else ''):>6}{r['objective_v1']:>10.2f}{r['objective_v2']:>10.2f}  {'*' if r['preferred'] else ''}")
-        top_v1 = max(set_rows, key=lambda r: r["objective_v1"])["candidate"]
-        top_v2 = max(set_rows, key=lambda r: r["objective_v2"])["candidate"]
-        v1_agrees = top_v1 in vs.preferred
-        v2_agrees = top_v2 in vs.preferred
-        agree_v1 += int(v1_agrees)
-        agree_v2 += int(v2_agrees)
-        print(f"  -> v1 top pick: {top_v1} ({'agrees' if v1_agrees else 'disagrees'} with the listener)")
-        print(f"  -> v2 top pick: {top_v2} ({'agrees' if v2_agrees else 'disagrees'} with the listener)")
-        print()
-
-    print(f"Agreement with the logged verdicts: v1 {agree_v1}/{total_sets}, v2 {agree_v2}/{total_sets}")
-    return 0
+def main(argv: list[str] | None = None) -> int:
+    from apricity_analyze.lab.cli import main as lab_main
+    return lab_main(["backtest", *(argv if argv is not None else sys.argv[1:])])
 
 
 if __name__ == "__main__":
