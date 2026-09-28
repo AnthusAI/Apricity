@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-f2461e0a-7a63-4bd6-ab1d-b6b65ddad6f8",
+  "title": "Compose a second chant-driven Big Beat score",
+  "description": "Create, render, measure, and present a second Big Beat score with a distinct chant hook and break from Call the Floor.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T02:38:56.582914Z",
+  "updated_at": "2026-09-28T02:38:56.582987Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
