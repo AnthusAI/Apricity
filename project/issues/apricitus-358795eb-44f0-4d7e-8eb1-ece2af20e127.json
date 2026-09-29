@@ -22,10 +22,22 @@
         "model": "GPT-6 Luna",
         "name": "My Labs menu"
       }
+    },
+    {
+      "id": "09c231b4-4536-47f7-9319-532a282cddbe",
+      "author": "home",
+      "text": "Updated the Listening Room route so /labs is canonical and /listen remains an alias. The account menu now exposes authenticated “My Labs” at /labs; the global navigation, page title, and list headings use the same name. Added focused tests for authenticated visibility, destination URL, canonical lab URLs, and legacy /listen parsing. Focused route/menu tests and TypeScript checking pass.",
+      "created_at": "2026-09-28T23:52:59.012782Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6 Luna",
+        "name": "My Labs menu"
+      }
     }
   ],
   "created_at": "2026-09-28T23:49:11.901361Z",
-  "updated_at": "2026-09-28T23:51:29.393946Z",
+  "updated_at": "2026-09-28T23:52:59.012831Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
