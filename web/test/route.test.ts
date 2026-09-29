@@ -30,6 +30,9 @@ test("every page and item round-trips through its URL", () => {
     { page: "tags", tag: "techno", list: "kind=beat&window=month" },
     { page: "listen" },
     { page: "listen", listenCycle: "cyc_0123456789abcdef" },
+    { page: "listen", waiting: true },
+    { page: "labs" },
+    { page: "labs", lab: "lab_0123456789abcdef" },
   ];
   for (const r of routes) assert.deepEqual(url(r), r, href(r));
 });
@@ -40,11 +43,11 @@ test("the URLs read well", () => {
   assert.equal(href({ page: "samples", sample: sampleKey("samples/marine-band/Thunderer.mp3") }), "/samples/marine-band/Thunderer");
   assert.equal(href({ page: "help", help: { file: "language.md", anchor: "tracks" } }), "/help/language#tracks");
   assert.equal(href({ page: "melodies", score: "scores/u/my tune.apr" }), "/melodies/scores/u/my%20tune");
-  assert.equal(href({ page: "listen" }), "/labs");
-  assert.equal(href({ page: "listen", listenCycle: "cyc_abc" }), "/labs/cyc_abc");
-  assert.deepEqual(parse("/listen"), { page: "listen" });
-  assert.deepEqual(parse("/listen/cyc_abc"), { page: "listen", listenCycle: "cyc_abc" });
-  assert.deepEqual(parse("/labs/cyc_abc"), { page: "listen", listenCycle: "cyc_abc" });
+  assert.equal(href({ page: "listen" }), "/listen");
+  assert.equal(href({ page: "listen", listenCycle: "cyc_abc" }), "/listen/cyc_abc");
+  assert.equal(href({ page: "listen", waiting: true }), "/listen?waiting");
+  assert.equal(href({ page: "labs" }), "/labs");
+  assert.equal(href({ page: "labs", lab: "lab_abc" }), "/labs/lab_abc");
 });
 
 test("odd names survive; bad paths go to the page; unknown ones go home", () => {
@@ -57,8 +60,10 @@ test("odd names survive; bad paths go to the page; unknown ones go home", () => 
   assert.equal(titleOf({ page: "beats" }, "Salamander Beat"), "Salamander Beat · Beats · Apricity");
   assert.equal(titleOf({ page: "home" }), "Apricity");
   assert.equal(titleOf({ page: "how-it-works" }), "How it works · Apricity");
-  assert.equal(titleOf({ page: "listen" }), "My Labs · Apricity");
+  assert.equal(titleOf({ page: "listen" }), "Listen · Apricity");
   assert.deepEqual(parse("/listen/cyc_abc/extra"), { page: "listen" });
+  assert.equal(titleOf({ page: "labs" }), "Your labs · Apricity");
+  assert.deepEqual(parse("/labs/lab_abc/extra"), { page: "labs" });
 });
 
 test("search: its words in the query, and back", () => {

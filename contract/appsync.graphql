@@ -38,6 +38,11 @@ enum CycleStatus {
   closed
 }
 
+enum LabStatus {
+  open
+  closed
+}
+
 type Recording @aws_iam @aws_cognito_user_pools {
   id: ID!
   title: String!
@@ -53,6 +58,7 @@ type Recording @aws_iam @aws_cognito_user_pools {
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRef]
   samples(filter: ModelSampleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSampleConnection
   createdAt: AWSDateTime!
@@ -330,6 +336,18 @@ type Job @aws_iam @aws_cognito_user_pools {
   updatedAt: AWSDateTime!
 }
 
+type Lab {
+  id: ID!
+  title: String!
+  brief: String
+  sceneScoreId: ID!
+  status: LabStatus!
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  cycles(filter: ModelListeningCycleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelListeningCycleConnection
+}
+
 type ListeningCycle {
   id: ID!
   title: String!
@@ -339,6 +357,8 @@ type ListeningCycle {
   status: CycleStatus!
   closedAt: AWSDateTime
   owner: String
+  labId: ID
+  lab: Lab
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
 }
@@ -597,6 +617,7 @@ input ModelRecordingFilterInput {
   licenseUrl: ModelStringInput
   author: ModelStringInput
   attribution: ModelStringInput
+  sourceMetadata: ModelStringInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelRecordingFilterInput]
@@ -613,6 +634,8 @@ type Query {
   listCrateItems(id: ID, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCrateItemConnection
   getRating(id: ID!): Rating
   listRatings(id: ID, filter: ModelRatingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRatingConnection
+  getLab(id: ID!): Lab
+  listLabs(id: ID, filter: ModelLabFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelLabConnection
   getListeningCycle(id: ID!): ListeningCycle
   listListeningCycles(id: ID, filter: ModelListeningCycleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelListeningCycleConnection
   getCycleVerdict(cycleId: ID!, judge: String!): CycleVerdict
@@ -621,6 +644,8 @@ type Query {
   cratesByOwner(owner: String!, name: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateFilterInput, limit: Int, nextToken: String): ModelCrateConnection
   crateItemsByCrate(crateId: ID!, position: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
   crateItemsByCandidate(candidateId: ID!, sortDirection: ModelSortDirection, filter: ModelCrateItemFilterInput, limit: Int, nextToken: String): ModelCrateItemConnection
+  labsByOwner(owner: String!, createdAt: ModelStringKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelLabFilterInput, limit: Int, nextToken: String): ModelLabConnection
+  cyclesByLab(labId: ID!, sortDirection: ModelSortDirection, filter: ModelListeningCycleFilterInput, limit: Int, nextToken: String): ModelListeningCycleConnection
   verdictsByCycle(cycleId: ID!, sortDirection: ModelSortDirection, filter: ModelCycleVerdictFilterInput, limit: Int, nextToken: String): ModelCycleVerdictConnection
   getRecording(id: ID!): Recording @aws_iam @aws_cognito_user_pools
   listRecordings(id: ID, filter: ModelRecordingFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRecordingConnection @aws_iam @aws_cognito_user_pools
@@ -694,6 +719,7 @@ input ModelRecordingConditionInput {
   licenseUrl: ModelStringInput
   author: ModelStringInput
   attribution: ModelStringInput
+  sourceMetadata: ModelStringInput
   and: [ModelRecordingConditionInput]
   or: [ModelRecordingConditionInput]
   not: ModelRecordingConditionInput
@@ -716,6 +742,7 @@ input CreateRecordingInput {
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRefInput]
 }
 
@@ -734,6 +761,7 @@ input UpdateRecordingInput {
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRefInput]
 }
 
@@ -796,6 +824,9 @@ type Mutation {
   createJob(input: CreateJobInput!, condition: ModelJobConditionInput): Job
   updateJob(input: UpdateJobInput!, condition: ModelJobConditionInput): Job
   deleteJob(input: DeleteJobInput!, condition: ModelJobConditionInput): Job
+  createLab(input: CreateLabInput!, condition: ModelLabConditionInput): Lab
+  updateLab(input: UpdateLabInput!, condition: ModelLabConditionInput): Lab
+  deleteLab(input: DeleteLabInput!, condition: ModelLabConditionInput): Lab
   createListeningCycle(input: CreateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
   updateListeningCycle(input: UpdateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
   deleteListeningCycle(input: DeleteListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
@@ -819,6 +850,7 @@ input ModelSubscriptionRecordingFilterInput {
   licenseUrl: ModelSubscriptionStringInput
   author: ModelSubscriptionStringInput
   attribution: ModelSubscriptionStringInput
+  sourceMetadata: ModelSubscriptionStringInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionRecordingFilterInput]
@@ -838,6 +870,9 @@ type Subscription {
   onCreateRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["createRating"])
   onUpdateRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["updateRating"])
   onDeleteRating(filter: ModelSubscriptionRatingFilterInput, owner: String): Rating @aws_subscribe(mutations: ["deleteRating"])
+  onCreateLab(filter: ModelSubscriptionLabFilterInput, owner: String): Lab @aws_subscribe(mutations: ["createLab"])
+  onUpdateLab(filter: ModelSubscriptionLabFilterInput, owner: String): Lab @aws_subscribe(mutations: ["updateLab"])
+  onDeleteLab(filter: ModelSubscriptionLabFilterInput, owner: String): Lab @aws_subscribe(mutations: ["deleteLab"])
   onCreateListeningCycle(filter: ModelSubscriptionListeningCycleFilterInput, owner: String): ListeningCycle @aws_subscribe(mutations: ["createListeningCycle"])
   onUpdateListeningCycle(filter: ModelSubscriptionListeningCycleFilterInput, owner: String): ListeningCycle @aws_subscribe(mutations: ["updateListeningCycle"])
   onDeleteListeningCycle(filter: ModelSubscriptionListeningCycleFilterInput, owner: String): ListeningCycle @aws_subscribe(mutations: ["deleteListeningCycle"])
@@ -2436,6 +2471,82 @@ input ModelSubscriptionJobFilterInput {
   or: [ModelSubscriptionJobFilterInput]
 }
 
+type ModelLabConnection {
+  items: [Lab]!
+  nextToken: String
+}
+
+input ModelLabStatusInput {
+  eq: LabStatus
+  ne: LabStatus
+}
+
+input ModelLabFilterInput {
+  id: ModelIDInput
+  title: ModelStringInput
+  brief: ModelStringInput
+  sceneScoreId: ModelIDInput
+  status: ModelLabStatusInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelLabFilterInput]
+  or: [ModelLabFilterInput]
+  not: ModelLabFilterInput
+}
+
+input ModelLabConditionInput {
+  title: ModelStringInput
+  brief: ModelStringInput
+  sceneScoreId: ModelIDInput
+  status: ModelLabStatusInput
+  owner: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelLabConditionInput]
+  or: [ModelLabConditionInput]
+  not: ModelLabConditionInput
+}
+
+input CreateLabInput {
+  id: ID
+  title: String!
+  brief: String
+  sceneScoreId: ID!
+  status: LabStatus!
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateLabInput {
+  id: ID!
+  title: String
+  brief: String
+  sceneScoreId: ID
+  status: LabStatus
+  owner: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteLabInput {
+  id: ID!
+}
+
+input ModelSubscriptionLabFilterInput {
+  id: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  brief: ModelSubscriptionStringInput
+  sceneScoreId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionLabFilterInput]
+  or: [ModelSubscriptionLabFilterInput]
+  owner: ModelStringInput
+}
+
 input CycleOptionInput {
   letter: String!
   scoreId: ID!
@@ -2460,6 +2571,7 @@ input ModelListeningCycleFilterInput {
   status: ModelCycleStatusInput
   closedAt: ModelStringInput
   owner: ModelStringInput
+  labId: ModelIDInput
   createdAt: ModelStringInput
   updatedAt: ModelStringInput
   and: [ModelListeningCycleFilterInput]
@@ -2474,6 +2586,7 @@ input ModelListeningCycleConditionInput {
   status: ModelCycleStatusInput
   closedAt: ModelStringInput
   owner: ModelStringInput
+  labId: ModelIDInput
   and: [ModelListeningCycleConditionInput]
   or: [ModelListeningCycleConditionInput]
   not: ModelListeningCycleConditionInput
@@ -2490,6 +2603,7 @@ input CreateListeningCycleInput {
   status: CycleStatus!
   closedAt: AWSDateTime
   owner: String
+  labId: ID
 }
 
 input UpdateListeningCycleInput {
@@ -2501,6 +2615,7 @@ input UpdateListeningCycleInput {
   status: CycleStatus
   closedAt: AWSDateTime
   owner: String
+  labId: ID
 }
 
 input DeleteListeningCycleInput {
@@ -2514,6 +2629,7 @@ input ModelSubscriptionListeningCycleFilterInput {
   incumbentScoreId: ModelSubscriptionIDInput
   status: ModelSubscriptionStringInput
   closedAt: ModelSubscriptionStringInput
+  labId: ModelSubscriptionIDInput
   createdAt: ModelSubscriptionStringInput
   updatedAt: ModelSubscriptionStringInput
   and: [ModelSubscriptionListeningCycleFilterInput]

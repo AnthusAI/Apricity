@@ -4,7 +4,7 @@
 
 import "./listen.css";
 import { el } from "./dom";
-import { api, cycles, me, ratings } from "../apricity";
+import { api, cycles, labs, me, ratings } from "../apricity";
 import { getUrl } from "../data/files";
 import { StarRating, type StarState } from "./stars";
 import { href, PAGE_OF_KIND, type Route } from "../route";
@@ -45,19 +45,20 @@ export class ListenView {
     root.append(el("div", { className: "listen-page" }, this.listHost, this.detailHost));
   }
 
-  /** Show the list of open cycles, or one cycle by id. Called from main.ts's routing. */
-  async show(cycleId: string | null) {
+  /** Show the list of open cycles (optionally filtered to "waiting for you"), or one cycle by id. Called from
+   * main.ts's routing. */
+  async show(cycleId: string | null, waiting = false) {
     const seq = ++this.seq;
     this.shown = cycleId;
     this.detailHost.hidden = !cycleId;
     this.listHost.hidden = !!cycleId;
-    if (!cycleId) return this.showList(seq);
+    if (!cycleId) return this.showList(seq, waiting);
     return this.showDetail(cycleId, seq);
   }
 
   // ---------------------------------------------------------------- the list: every open cycle, newest first
 
-  private async showList(seq: number) {
+  private async showList(seq: number, waitingOnly: boolean) {
     this.listHost.replaceChildren(el("div", { className: "listen-loading" }, "Loading…"));
     const who = await me().catch(() => null);
     if (seq !== this.seq) return;
@@ -68,7 +69,23 @@ export class ListenView {
       if (seq !== this.seq) return;
       const verdicts = await Promise.all(open.map((c) => store.verdict(c.id).catch(() => null)));
       if (seq !== this.seq) return;
+      const labIds = [...new Set(open.map((c) => c.labId).filter((id): id is string => !!id))];
+      const labStore = await labs();
+      const labRecords = await Promise.all(labIds.map((id) => labStore.lab(id).catch(() => null)));
+      if (seq !== this.seq) return;
+      const labTitleById = new Map(labIds.map((id, i) => [id, labRecords[i]?.title ?? null]));
       opened({ page: "listen" }, "auto");
+      const shown = waitingOnly ? open.filter((_, i) => !verdicts[i]) : open;
+      const toggle = el(
+        "a",
+        { className: "listen-waiting-toggle" + (waitingOnly ? " on" : ""), href: href({ page: "listen", waiting: !waitingOnly }) },
+        waitingOnly ? "Showing: waiting for you" : "Show only: waiting for you",
+      );
+      toggle.addEventListener("click", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        go({ page: "listen", waiting: !waitingOnly });
+      });
       if (!open.length) {
         this.listHost.replaceChildren(el("h1", {}, "My Labs"), el("p", { className: "listen-intro" }, "Rate a blind round of candidates: a player, stars and a note per option, then say which you'd keep."), el("div", { className: "empty" }, "No open listening cycles right now."));
         return;
@@ -76,31 +93,42 @@ export class ListenView {
       this.listHost.replaceChildren(
         el("h1", {}, "My Labs"),
         el("p", { className: "listen-intro" }, "Rate a blind round of candidates: a player, stars and a note per option, then say which you'd keep."),
-        el(
-          "ul",
-          { className: "listen-cycles" },
-          ...open.map((c, i) => {
-            const saved = !!verdicts[i];
-            const row = el(
-              "a",
-              { className: "listen-cycle-row", href: href({ page: "listen", listenCycle: c.id }) },
-              el("div", { className: "listen-cycle-main" }, el("span", { className: "listen-cycle-title" }, c.title), el("span", { className: "listen-cycle-question" }, c.question || "")),
-              el(
-                "div",
-                { className: "listen-cycle-meta" },
-                el("span", {}, `${c.options.length} option${c.options.length === 1 ? "" : "s"}`),
-                el("span", {}, timeAgo(c.createdAt)),
-                saved ? el("span", { className: "badge saved" }, "saved") : el("span", { className: "badge" }, "not rated yet"),
-              ),
-            );
-            row.addEventListener("click", (e) => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-              e.preventDefault();
-              go({ page: "listen", listenCycle: c.id });
-            });
-            return el("li", {}, row);
-          }),
-        ),
+        el("div", { className: "listen-filter-row" }, toggle),
+        shown.length
+          ? el(
+              "ul",
+              { className: "listen-cycles" },
+              ...shown.map((c) => {
+                const i = open.indexOf(c);
+                const saved = !!verdicts[i];
+                const labTitle = c.labId ? labTitleById.get(c.labId) : null;
+                const row = el(
+                  "a",
+                  { className: "listen-cycle-row", href: href({ page: "listen", listenCycle: c.id }) },
+                  el(
+                    "div",
+                    { className: "listen-cycle-main" },
+                    el("span", { className: "listen-cycle-title" }, c.title),
+                    el("span", { className: "listen-cycle-question" }, c.question || ""),
+                    labTitle ? el("span", { className: "listen-cycle-lab" }, `Lab: ${labTitle}`) : "",
+                  ),
+                  el(
+                    "div",
+                    { className: "listen-cycle-meta" },
+                    el("span", {}, `${c.options.length} option${c.options.length === 1 ? "" : "s"}`),
+                    el("span", {}, timeAgo(c.createdAt)),
+                    saved ? el("span", { className: "badge saved" }, "saved") : el("span", { className: "badge waiting" }, "waiting for you"),
+                  ),
+                );
+                row.addEventListener("click", (e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                  e.preventDefault();
+                  go({ page: "listen", listenCycle: c.id });
+                });
+                return el("li", {}, row);
+              }),
+            )
+          : el("div", { className: "empty" }, "Nothing is waiting for your verdict right now."),
       );
     } catch (e) {
       if (seq === this.seq) this.listHost.replaceChildren(el("h1", {}, "My Labs"), el("div", { className: "empty" }, `Couldn't load listening cycles: ${(e as Error).message}`));
@@ -141,6 +169,8 @@ export class ListenView {
     const isRevealed = revealed(cycle, mine);
     const closed = cycle.status === "closed";
     const incLetter = incumbentLetter(cycle);
+    const lab = cycle.labId ? await (await labs()).lab(cycle.labId).catch(() => null) : null;
+    if (seq !== this.seq) return;
 
     // Blind: audio always plays (the letter is the only label); reveal is titles/links, gated separately.
     const [urls, myStars, scoreItems] = await Promise.all([
@@ -250,6 +280,7 @@ export class ListenView {
       el("div", { className: "listen-back" }, link({ page: "listen" }, "← All cycles")),
       el("h1", {}, cycle.title),
       ...(cycle.question ? [el("p", { className: "listen-question" }, cycle.question)] : []),
+      ...(lab ? [el("p", { className: "listen-question" }, "Lab: ", link({ page: "labs", lab: lab.id }, lab.title))] : []),
       ...(closed ? [el("p", { className: "badge" }, "This cycle is closed: read-only.")] : []),
       el("ul", { className: "listen-options" }, ...cycle.options.map((o, i) => optionCard(o, i))),
       el("div", { className: "listen-verdict" }, el("div", { className: "listen-best-label" }, "Which would you keep?"), bestGroup, el("label", { className: "listen-overall-label" }, "Overall note", overallArea), el("div", { className: "listen-save-row" }, saveBtn, statusEl)),

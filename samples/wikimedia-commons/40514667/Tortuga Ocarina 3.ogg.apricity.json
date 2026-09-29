@@ -1,0 +1,204 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "Tortuga Ocarina 3.ogg",
+  "sha256": "b3688dcd3c0d1bb0d9724e07dead78580f2f13dfb856b0bbec6057ad351832bd",
+  "sample_rate": 44100,
+  "channels": 2,
+  "duration": 1.384
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-28T04:47:54+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": 125.0,
+  "bpm_stability": 0.502,
+  "beats": [
+   0.06,
+   0.18,
+   0.88,
+   1.36
+  ],
+  "downbeats": [
+   0.06,
+   0.18
+  ],
+  "meter": 1,
+  "warp_markers": [
+   {
+    "seconds": 0.06,
+    "beat": 0.0
+   },
+   {
+    "seconds": 0.18,
+    "beat": 1.0
+   },
+   {
+    "seconds": 0.88,
+    "beat": 2.0
+   },
+   {
+    "seconds": 1.36,
+    "beat": 3.0
+   }
+  ],
+  "beat_loudness": [
+   -12.1,
+   -10.7,
+   -9.8
+  ],
+  "loudness": [
+   -12.2,
+   -9.9,
+   -10.0
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Eb",
+   "mode": "minor",
+   "strength": 0.5063,
+   "camelot": "2A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "Ab",
+    "mode": "minor",
+    "strength": 0.3872,
+    "camelot": "1A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Eb",
+    "mode": "major",
+    "strength": 0.3589,
+    "camelot": "5B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Gb",
+    "mode": "major",
+    "strength": 0.3173,
+    "camelot": "2B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 447.95,
+  "tuning_cents": 31.0,
+  "pitch_class_profile": [
+   0.0237,
+   0.0712,
+   0.0575,
+   0.2709,
+   0.2542,
+   0.0052,
+   0.0556,
+   0.0788,
+   0.1127,
+   0.1467,
+   1.0,
+   0.289
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 1.347,
+    "key": {
+     "tonic": "Eb",
+     "mode": "minor",
+     "strength": 0.4962,
+     "camelot": "2A",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.0242,
+     0.0654,
+     0.0595,
+     0.2721,
+     0.2617,
+     0.0054,
+     0.055,
+     0.0815,
+     0.0808,
+     0.1519,
+     1.0,
+     0.2991
+    ]
+   }
+  ],
+  "beat_chroma": [
+   [
+    0.0273,
+    0.1102,
+    0.1578,
+    0.2761,
+    0.4715,
+    0.0427,
+    0.0613,
+    0.118,
+    0.1382,
+    0.6826,
+    1.0,
+    0.0131
+   ],
+   [
+    0.0263,
+    0.0741,
+    0.072,
+    0.2902,
+    0.3686,
+    0.0041,
+    0.0598,
+    0.1028,
+    0.1077,
+    0.1188,
+    1.0,
+    0.2889
+   ],
+   [
+    0.0184,
+    0.0666,
+    0.0247,
+    0.2475,
+    0.0825,
+    0.0002,
+    0.0464,
+    0.046,
+    0.1221,
+    0.1002,
+    1.0,
+    0.3651
+   ]
+  ]
+ },
+ "annotations": {
+  "clips": [
+   {
+    "name": "shot-1",
+    "start": 0.123,
+    "end": 0.603,
+    "source": "ml",
+    "tags": [
+     "shot"
+    ],
+    "evidence": {
+     "standout": 33.0
+    }
+   }
+  ],
+  "markers": [
+   {
+    "name": "transient",
+    "seconds": 0.123,
+    "source": "ml"
+   }
+  ]
+ }
+}

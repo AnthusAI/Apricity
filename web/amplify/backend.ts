@@ -5,6 +5,7 @@ import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
+import { cycleUploadPolicy } from "./storage/cycle-upload-policy";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
 import { ranking } from "./functions/ranking/resource";
@@ -17,6 +18,23 @@ export const backend = defineBackend({
   activity,
   ranking,
 });
+
+// Cognito group users assume their group role instead of the authenticated identity-pool role. Put these policies in
+// the storage stack: attaching them directly to the auth-stack role makes auth depend on storage, while storage
+// already depends on auth, which prevents CloudFormation from deploying the backend.
+const cycleBucketArn = backend.storage.resources.bucket.bucketArn;
+const storageStack = Stack.of(backend.storage.resources.bucket);
+for (const group of ["members", "curators"] as const) {
+  new Policy(storageStack, `CycleUploadFor${group}`, {
+    roles: [backend.auth.resources.groups[group].role],
+    statements: [
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        ...cycleUploadPolicy(cycleBucketArn),
+      }),
+    ],
+  });
+}
 
 // Ratings are private; their public tallies are kept by the tally Lambda, fed by the Rating table's stream (Amplify
 // model tables stream new and old images). Only the Lambda writes the Tally table.

@@ -8,5 +8,5 @@ export interface AccountMenuDestination {
 
 /** Personal destinations are only available after the account menu is authenticated. */
 export function accountMenuDestinations(account: Account | null): AccountMenuDestination[] {
-  return account ? [{ label: "My Labs", route: { page: "listen" } }] : [];
+  return account ? [{ label: "My Labs", route: { page: "labs" } }] : [];
 }
