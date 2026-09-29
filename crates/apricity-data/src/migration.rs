@@ -248,6 +248,7 @@ fn recording_key(rel: &str) -> (String, String) {
             .map_or(file.to_string(), |(s, _)| s.to_string())
     };
     match parts.as_slice() {
+        ["wikimedia-commons", pageid, ..] => (format!("rec_commons_{pageid}"), "wikimedia-commons".into()),
         ["marine-band", "stems", piece, ..] => (format!("rec_{piece}"), "marine-band".into()),
         ["marine-band", "scores", file] | ["marine-band", file] => {
             (format!("rec_{}", stem_of(file)), "marine-band".into())
@@ -257,6 +258,16 @@ fn recording_key(rel: &str) -> (String, String) {
             let item = loc_item(file).unwrap_or_else(|| stem_of(file));
             (format!("rec_{coll}_{item}"), format!("citizen-dj/{coll}"))
         }
+        // `Title_<item id>.mp3` (Lomax `lomaxbib000283`, Jukebox `jukebox-651958`), or its `.clean.wav` copy.
+        ["loc", coll, file] => (
+            format!("rec_{coll}_{}", trailing_id(file)),
+            format!("loc/{coll}"),
+        ),
+        // `Title_<upload id>.mp3`, grouped by author.
+        ["ccmixter", author, file] => (
+            format!("rec_ccmixter_{}", trailing_id(file)),
+            format!("ccmixter/{author}"),
+        ),
         _ => (
             format!(
                 "rec_uploads_{}",
@@ -265,6 +276,25 @@ fn recording_key(rel: &str) -> (String, String) {
             "uploads".into(),
         ),
     }
+}
+
+/// The id after the last underscore of `Title_<id>.mp3` or `Title_<id>.clean.wav`.
+fn trailing_id(file: &str) -> String {
+    let stem = file.split_once('.').map_or(file, |(s, _)| s); // drop every extension, `.clean.wav` included
+    stem.rsplit('_').next().unwrap_or(stem).to_string()
+}
+
+/// The `sources.json` entry for a sample. A denoised copy (`X.clean.wav`) has none of its own: it takes
+/// the credits and excerpt start of the original it was made from, whatever that file's extension.
+fn source_entry<'a>(entries: &HashMap<&str, &'a Value>, rel: &str) -> Option<&'a Value> {
+    if let Some(e) = entries.get(rel) {
+        return Some(e);
+    }
+    let base = rel.strip_suffix(".clean.wav")?;
+    entries
+        .iter()
+        .find(|(path, _)| path.rsplit_once('.').is_some_and(|(stem, _)| stem == base))
+        .map(|(_, e)| *e)
 }
 
 /// The Library of Congress item id in a Citizen DJ excerpt name:
@@ -481,6 +511,9 @@ fn migrate_recordings(
             ),
         );
         if let Some(m) = meta {
+            if let Some(collection) = str_of(m, "collection") {
+                rec.insert("collection".into(), json!(collection));
+            }
             for (from, to) in [
                 ("performer", "performer"),
                 ("recorded", "recorded"),
@@ -490,6 +523,8 @@ fn migrate_recordings(
                 ("author", "author"),
                 ("source_page", "sourcePage"),
                 ("url", "url"),
+                ("license_url", "licenseUrl"),
+                ("attribution", "attribution"),
             ] {
                 if let Some(v) = str_of(m, from) {
                     rec.insert(to.into(), json!(v));
@@ -501,6 +536,9 @@ fn migrate_recordings(
             }
             if let Some(c) = m.get("composed").and_then(Value::as_i64) {
                 rec.insert("composed".into(), json!(c));
+            }
+            if let Some(snapshot) = m.get("source_metadata") {
+                rec.insert("sourceMetadata".into(), json!(snapshot.to_string()));
             }
         }
         let mut docs = Vec::new();
@@ -577,6 +615,10 @@ fn migrate_samples(
             .unwrap_or("audio");
         let ctype = if filename.ends_with(".mp3") {
             "audio/mpeg"
+        } else if filename.ends_with(".flac") {
+            "audio/flac"
+        } else if filename.ends_with(".ogg") || filename.ends_with(".oga") || filename.ends_with(".opus") {
+            "audio/ogg"
         } else {
             "audio/wav"
         };
@@ -599,7 +641,7 @@ fn migrate_samples(
         let analysis_ref = put_analysis(files, &p.id, &analysis_bytes, report)?;
 
         let (recording_id, collection) = recording_key(&p.rel);
-        let entry = entries.get(p.rel.as_str());
+        let entry = source_entry(&entries, p.rel.as_str());
         let role = if p.parent_id.is_some() {
             "stem"
         } else if entry.is_some_and(|e| e.get("excerpt_start").is_some()) {
@@ -612,7 +654,8 @@ fn migrate_samples(
         let m = &p.manifest;
         let mut sample = json!({
             "id": p.id, "recordingId": recording_id, "path": p.rel, "aliases": [format!("samples/{}", p.rel)],
-            "collection": collection, "title": filename, "role": role, "status": "ready",
+            "collection": entry.and_then(|e| str_of(e, "collection")).unwrap_or(&collection),
+            "title": entry.and_then(|e| str_of(e, "title")).unwrap_or(filename), "role": role, "status": "ready",
             "audio": file_ref_json(&audio), "analysis": file_ref_json(&analysis_ref),
             "duration": m["source"]["duration"], "sampleRate": m["source"]["sample_rate"], "channels": m["source"]["channels"],
             "analysisVersion": m["apricity_manifest"], "analyzedAt": m["analysis"]["analyzed_at"],
@@ -620,6 +663,9 @@ fn migrate_samples(
             "tuningCents": m["tonal"]["tuning_cents"],
             "nameCounters": name_counters(m).to_string(),
         });
+        if let Some(tags) = entry.and_then(|e| e.get("tags")).and_then(Value::as_array) {
+            sample["tags"] = Value::Array(tags.clone());
+        }
         if let Some(k) = m["tonal"]
             .get("key")
             .and_then(|k| Some(format!("{} {}", str_of(k, "tonic")?, str_of(k, "mode")?)))
@@ -1072,5 +1118,60 @@ mod recording_key_tests {
                 ("rec_salamander-drumkit".to_string(), "salamander-drumkit".to_string())
             );
         }
+    }
+
+    #[test]
+    fn commons_files_get_stable_individual_recording_ids() {
+        let expected = ("rec_commons_123".to_string(), "wikimedia-commons".to_string());
+        assert_eq!(key("wikimedia-commons/123/Solarity.ogg"), expected);
+        assert_eq!(key("wikimedia-commons/123/Renamed-Solarity.opus"), expected);
+    }
+
+    fn key(rel: &str) -> (String, String) {
+        recording_key(rel)
+    }
+
+    #[test]
+    fn library_of_congress_items_outside_citizen_dj_get_their_own_recordings() {
+        assert_eq!(
+            key("loc/lomax-1939/Steel-driving-song_lomaxbib000283.mp3"),
+            ("rec_lomax-1939_lomaxbib000283".to_string(), "loc/lomax-1939".to_string())
+        );
+        assert_eq!(
+            key("loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3"),
+            ("rec_national-jukebox_jukebox-651958".to_string(), "loc/national-jukebox".to_string())
+        );
+    }
+
+    #[test]
+    fn ccmixter_tracks_are_recordings_grouped_by_author() {
+        assert_eq!(
+            key("ccmixter/admiralbob77/The-Remixin-Blues_27917.mp3"),
+            ("rec_ccmixter_27917".to_string(), "ccmixter/admiralbob77".to_string())
+        );
+    }
+
+    #[test]
+    fn a_denoised_copy_belongs_to_its_originals_recording() {
+        for original in [
+            "loc/lomax-1939/Steel-driving-song_lomaxbib000283.mp3",
+            "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3",
+            "ccmixter/admiralbob77/The-Remixin-Blues_27917.mp3",
+            "citizen-dj/loc-edison/The-band-festival-at-Plum-Center_00694075_001_00-01-10.wav",
+        ] {
+            let clean = format!("{}.clean.wav", original.rsplit_once('.').unwrap().0);
+            assert_eq!(key(&clean), key(original), "{clean}");
+        }
+    }
+
+    #[test]
+    fn a_denoised_copy_finds_its_originals_source_entry() {
+        use serde_json::json;
+        use std::collections::HashMap;
+        let orig = json!({"path": "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3", "title": "A ragtime drummer"});
+        let entries: HashMap<&str, &serde_json::Value> = [("loc/national-jukebox/A-ragtime-drummer_jukebox-651958.mp3", &orig)].into();
+        let found = super::source_entry(&entries, "loc/national-jukebox/A-ragtime-drummer_jukebox-651958.clean.wav");
+        assert_eq!(found.unwrap()["title"], "A ragtime drummer");
+        assert!(super::source_entry(&entries, "loc/national-jukebox/Other_jukebox-1.clean.wav").is_none());
     }
 }

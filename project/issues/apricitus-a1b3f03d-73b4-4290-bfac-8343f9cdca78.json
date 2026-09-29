@@ -1,0 +1,51 @@
+{
+  "id": "apricitus-a1b3f03d-73b4-4290-bfac-8343f9cdca78",
+  "title": "Spike: hand-write a minimal .alc from Apricity's warp markers and test it in the DAW",
+  "description": "## Intent\nAnswer M0 questions 3, 4 and 5 for the `.alc`: the smallest document the DAW accepts, and how it references audio.\n\n## Steps\n1. Unzip the owner's reference `.alc` files; list every element the AudioClip needs (WarpMarkers, CurrentStart/End, Loop, WarpMode, IsWarped, PitchCoarse/PitchFine, Name, SampleRef/FileRef with its size/checksum/date fields).\n2. Hand-write a minimal `.alc` for `steady-120.wav` from Apricity's analysis (its warp markers); drag it from the DAW's browser into a track. Does it play on the grid? Does it need the checksum/size fields, or does it accept zeros?\n3. Try: a negative beat (pickup), markers only over part of the audio, a relative path after moving the folder, detune -70 cents.\n4. Note the warp-mode numbers and which Apricity modes they map to (Tones and Complex Pro have no Apricity peer).\n\n## Output\nThe `.alc` section of `design/daw-sidecars.md` §Formats with a minimal annotated example document (no audio).\n\n## Verify (manual)\nThe hand-written `.alc` opens in the DAW and plays on the grid; the result for each variation in step 3 is recorded with the DAW version.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9fb5fec4-4cf9-4f87-9db3-535b47e5a7ab",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2c3dfeff-8e27-42f6-9c4e-5fa4971d1f28",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "8e41bd6d-639b-42ad-afbd-0c1f405d196b",
+      "author": "home",
+      "text": "## Findings (provisional: public files, no local DAW)\n\n**Evidence.** 301 public .als/.alc (8.x to 12.4.5b10; 8,488 audio clips with warp markers) scanned in the scratchpad; the AudioClip element of an MIT 12.3.2 set (live-daw-tools/als-parser@94fe482, Michelle-12.3.als) is the reference layout; 12.2.6 .alc pair from elixirbeats/abletoolz@9b23618 (GPL, cited only): one saved by the DAW, one hand-edited (markers, CurrentStart/End, Loop only) that the tool's author reports the DAW accepted on drag-in.\n\n- An .alc is a whole set document (root element with MajorVersion 5 / MinorVersion 12.0_122xx / SchemaChangeCount / Creator / Revision) holding one AudioTrack; the clip sits at LiveSet/Tracks/AudioTrack/DeviceChain/MainSequencer/ClipSlotList/ClipSlot/ClipSlot/Value/AudioClip. Content cannot tell .als from .alc; only the extension.\n- WarpMarker has Id/SecTime/BeatTime attributes (Id from 10.x on). 8,486 of 8,488 clips end with a hidden marker exactly 1/32 beat after the last one (vendor API docs: the last marker is not visible); the two exceptions include the hand-edited 12.2.6 file the DAW accepted.\n- Negative BeatTime: 43 clips in two 9.0.1 sets pin beat -124 before beat 0; the accepted 12.2.6 hand edit uses CurrentStart/LoopStart -191.72 beats (audio before the first marker, extrapolated at the first segment's tempo). So pickups are representable; untested in 12.3.\n- FileRef (12.x): RelativePathType, RelativePath (string), Path (absolute), Type, OriginalFileSize, OriginalCrc (16-bit, algorithm unknown), then LastModDate, DefaultDuration (frames), DefaultSampleRate. 9.x/10.x used RelativePathElement lists, a UTF-16 hex Data blob, SearchHint FileSize/Crc/MaxCrcSize 16384.\n- WarpMode enum (vendor API docs): 0 Beats, 1 Tones, 2 Texture, 3 Re-Pitch, 4 Complex, 5 REX, 6 Complex Pro. PitchCoarse -48..48 semitones, PitchFine -50..49 cents (float; -22.58 seen).\n\n**Machine half done.** 9 hand-written candidate .alc files in crates/apricity-daw/tests/fixtures/reference/sidecars/candidates/ (throwaway generator: scratchpad work/make_alc.py), one per step-3 variation: full clip, bare clip (only mapped elements), zero size/CRC, relative path only, partial markers, no hidden tail marker, tempo change at 6.5, detune -70 as coarse -1 + fine +30, unwarped. Click-by-click test steps are in design/daw-sidecars.md. The drag-in results wait on the licensed install.",
+      "created_at": "2026-09-26T23:25:25.787415Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-26T21:59:44.073216Z",
+  "updated_at": "2026-09-26T23:25:25.787449Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

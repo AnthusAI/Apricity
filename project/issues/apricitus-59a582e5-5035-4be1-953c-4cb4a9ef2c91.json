@@ -1,0 +1,66 @@
+{
+  "id": "apricitus-59a582e5-5035-4be1-953c-4cb4a9ef2c91",
+  "title": "Spike: decode the current DAW's .asd (warp markers, mode, detune, loop) and test a hand-patched one",
+  "description": "## Intent\nAnswer M0 questions 1, 2 and 4 for the `.asd`: find where the current DAW version stores warp markers, warp on/off, warp mode, detune, start/end/loop, and the version marker; and check whether a hand-written `.asd` is honoured.\n\n## Steps\n1. Hex-diff the owner's reference files: same audio with different markers, modes and detune isolates each field.\n2. Compare with the publicly documented older layouts (versions read by existing open-source parsers); note what moved.\n3. Throwaway decoder in the scratchpad prints the markers of every reference `.asd`; they must equal the README table.\n4. Hand-patch one `.asd` (move one marker), put it beside a fresh copy of the WAV, drag the WAV into the DAW: is the patched marker used? Repeat after changing the WAV's modification time, and with a copied WAV of a different length.\n5. Record what triggers the DAW to rewrite the file.\n\n## Output\nA findings comment here and the `.asd` section of `design/daw-sidecars.md` §Formats (field, offset/encoding, versions, confidence).\n\n## Verify (manual)\nThe scratch decoder's printout matches the fixture README for every reference `.asd`; the drag-in test result is recorded with the DAW version.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9fb5fec4-4cf9-4f87-9db3-535b47e5a7ab",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2c3dfeff-8e27-42f6-9c4e-5fa4971d1f28",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "fe0284ba-305c-44d7-ac55-c26675608d30",
+      "author": "home",
+      "text": "Start (Spike Warp Sidecars): the DAW is not installed here and no owner reference files exist yet, so per the epic's 'Not blocked on the DAW' comment this pass decodes .asd files found in public repositories plus published community reverse-engineering, marks each finding provisional with the version it rests on, and leaves the hand-patch drag-in test for the licensed install.",
+      "created_at": "2026-09-26T22:59:59.823127Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "c824a8d4-25e1-44d9-9e13-3d65a4d09ee5",
+      "author": "home",
+      "text": "## Findings (provisional: public files, no local DAW)\n\n**Evidence set.** 4 MIT .asd from DBraun/AbletonParsing@26e8d4b (same audio, loop on/off, one pair from the 10.x generation, one pair labelled 12.x by its author); 365 more .asd surveyed in the scratchpad from public repos without a permissive licence (incl. producer-pal@4fa6b84 beside 12.3.x/12.4.x sets, and a 2026 repo that re-hosts library loops). Throwaway decoder: scratchpad sidecars/work/asd.py.\n\n**Layout (little-endian).** 0: `06 49` magic ('I' = LE; `06 4D` big-endian exists for PowerPC-era files); 2: u32 N; 6: u32 0; 10: u32[N-1] frame grid, last entry = exact frame count of the audio (181675, checked against the WAV). Then document(s): magic `AB 1E 56 78`, u8 version 5, u32 365, ascii-str root class `SampleData`, i32 class-def count (21 in the 10.x file, 19 in the 12.x file = 18 classes + WarpMarker), a self-describing type dictionary (UTF-16 field names, type tags 0x10 bool, 0x11 i32, 0x12 f32, 0x17 f64), then values in schema order.\n\n**SampleData value block (fixed 120 bytes).** 6 f64 LoopStart, LoopEnd, SampleOffset, HiddenLoopStart, HiddenLoopEnd, OutMarker (beats); 4 u8 Sync, HiQ, Fade, IsWarped; 4 f32 SampleVolume, VelocityAmount, PitchCoarse, PitchFine; u32 WarpMode; u32 TransientResolution; 3 f32 granularity; u32 TransientLoopMode; 3 f32; TimeSignature f32 num, f32 den, f64 time. Then [10.x only: Name as u32 len + UTF-16], i32 ColorIndex, u32 next marker id (NOT the count: 7 with ids 0 and 2), then per marker `00 0A 'WarpMarker'` u32 Id, f64 SecTime, f64 BeatTime, list end `00 00`, u8 MarkersGenerated, u32 LaunchMode, u8 LoopOn, u32 LaunchQuantisation, OnSets, AufTaktData, u32 OriginalFileSize, overview.\n\n**Verified by diff.** loop on vs off differs only in LoopStart/LoopEnd/SampleOffset and LoopOn (v12 file offsets 3596..3619 and 3795). Decoder output equals AbletonParsing's own test expectations (start 0, end 5, hidden loop 4..6, loop 4..6 when on) for both generations; OriginalFileSize = 726746 = WAV byte size.\n\n**No global version field** beyond the per-document byte 5; the generations differ by schema (Name dropped, BeatTrackState/PitchMarks dropped, AufTaktData added).\n\n**Rewrite triggers.** Written on first analysis (no markers: 329 of 365 files carry an empty marker list); clip data only after the clip view's Save (vendor manual: \"The clip data becomes part of the analysis file\"), and for recorded/frozen audio. Stale check: OriginalFileSize (acidcat measured 96% match on 1,200 files). A third-party tool (elixirbeats/abletoolz@9b23618, GPL) reports the DAW ignores externally written .asd files and regenerates them.\n\nHand-patch drag-in test (step 4) and the owner's reference files still wait on the licensed install.",
+      "created_at": "2026-09-26T23:25:10.122239Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-26T21:59:43.985597Z",
+  "updated_at": "2026-09-26T23:25:10.122269Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

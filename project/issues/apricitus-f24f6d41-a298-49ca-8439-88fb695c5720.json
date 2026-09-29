@@ -1,0 +1,32 @@
+{
+  "id": "apricitus-f24f6d41-a298-49ca-8439-88fb695c5720",
+  "title": "Set-writer templates are wasm-safe: no filesystem, no std::env, no time, deterministic output",
+  "description": "Audit apricity-daw for anything that will not build or behave under wasm32-wasip1 (file reads for templates, current time, env lookups, random ids). Templates must be include_bytes!, ids derived from content. Verification: the wasm build of apricity-web succeeds and the parity script passes.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:57.639258Z",
+  "updated_at": "2026-09-27T00:14:58.486571Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

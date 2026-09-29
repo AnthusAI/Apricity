@@ -1,0 +1,74 @@
+{
+  "id": "apricitus-4515427b-7fe2-4792-81cb-3258457e48ab",
+  "title": "Fast local clip search for score authoring",
+  "description": "## Intent\nAs a score-authoring agent working against a local Apricity library, I want to find usable clips quickly by my ratings, rating recency, and searchable clip/sample metadata, so I can shortlist sounds without loading the full catalog on every query.\n\n## Scope\n- Improve the local tools used by `.agents/skills/write-score` for rating-aware clip search.\n- Use existing signals only: local stars and ratedAt, clip/sample names and paths, tags, kind, and duration where available. Keep current defaults compatible.\n- Keep CLAP-based search outside this change.\n- The public Clips page scan/infinite-scroll issue is diagnosed separately in the progress log; this work targets local score-authoring tools.\n\n## Definition of done\n- The ratings-aware local clip listing avoids reading every Clip record when only a small set is rated.\n- Agents can sort by rating or rating recency and narrow results by text query and minimum stars.\n- Output remains ready to paste into a score and makes the available signals visible.\n- Add behavior coverage for default ordering, recency ordering, filtering, and missing records.\n- Update the score-authoring skill with the useful invocation.\n- Record verification and outcomes here.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-cdb61d3a-f702-4346-9fdf-48fb4c32f1cd",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "3e55dfb9-f533-427e-b2d2-6a68cfb595e2",
+      "author": "home",
+      "text": "Verified from the page code and schema: the UI already lazily constructs 24 cards through feedGrid/IntersectionObserver, but it first calls api.clips() and materializes the complete list. Clip has no library-wide GSI; its GSIs are sampleId/copyOf/candidateId. Amplify Clip.list therefore uses a table Scan, and listAll follows nextToken until the entire table is returned. Additionally, Catalog.clips() first awaits load(), whose library index performs a full Clip.list scan for counts, then performs a second full Clip.list scan for clip details. The broad design/scale.md explicitly deferred a Ranked-backed paginated Clips tab because top ranking, search, Mine, and clip filters currently depend on the full set. Current live page remained on Loading… while inspected. Next: decide and implement the paged ranked-list path (with visibility/filter semantics and backfill), or treat this as a diagnostic report.",
+      "created_at": "2026-09-28T10:57:07.073441Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
+    },
+    {
+      "id": "24957022-23ff-45a5-a41e-3ac74b7983d1",
+      "author": "home",
+      "text": "Implementation progress: refactored `.agents/skills/write-score/scripts/ratings.py` to enumerate/parse Rating records once and load only referenced Clip/Sample/Score JSON files. Added `--sort recent`, `--search`/`--query`/`--q`, retained stars-first and `--min`, and surfaced clip kind/tags/duration, sample key/BPM, clip added date, and rating date. Updated write-score guidance. On the local library (13,873 Clip, 169 Rating, including 95 clip ratings), a suppressed-output run went from 2.76s to 0.11s. Added behavior tests for default ranking, recent order, search/minimum, missing records and selective reads. The deployed web list remains a separate diagnosed issue (scan plus duplicate catalog scan); this task now focuses on local authoring as requested. CLAP neighbors already exists and is unchanged.",
+      "created_at": "2026-09-28T11:05:04.452243Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
+    },
+    {
+      "id": "3e7ac835-dfb0-4044-ae6e-42dcb96450a9",
+      "author": "home",
+      "text": "Clarification after finalizing the sort modes: `--sort recent` orders by the clip/sample/score creation timestamp (newest items); `--sort rated` orders by the rating timestamp. The prior progress note described `recent` as rating recency; that was superseded so both signals are explicit. Tests now cover both independent orders. CLAP neighbor search is present in `.agents/skills/write-score/scripts/clap-neighbors.py` and remains unchanged/out of scope.",
+      "created_at": "2026-09-28T11:09:07.413490Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
+    },
+    {
+      "id": "da17d5db-3abc-484e-a4af-ad2c5d421cf8",
+      "author": "home",
+      "text": "Verification complete: `python3 .agents/skills/write-score/scripts/test_ratings.py` passes 3 cases; `git diff --check` is clean. Repeated local run was 0.12s after the selective-read change (baseline 2.76s). Product change committed locally as 8c59d91d (`perf(apricitus-451542): query local rated clips selectively`). The branch is still 16 commits behind origin/develop and contains unrelated local commits, so the push attempt was rejected as non-fast-forward; I have not rebased or pushed unrelated history.",
+      "created_at": "2026-09-28T11:10:40.824415Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
+    }
+  ],
+  "created_at": "2026-09-28T10:54:17.164096Z",
+  "updated_at": "2026-09-28T11:10:40.824448Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6",
+    "name": "Codex desktop"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

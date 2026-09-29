@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-8b233918-702c-4969-b929-0a30e95905f7",
+  "title": "Split house-music score guidance into a focused skill",
+  "description": "Separate genre-specific house and deep-house composition guidance from the general write-score skill. Preserve the generic score-writing workflow, add a discoverable house-score skill, and validate both skill structures.",
+  "type": "chore",
+  "status": "closed",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "433f4295-ec4a-45a6-9598-9c556477a4bc",
+      "author": "home",
+      "text": "Reviewed the existing score skill and isolated the house-specific material: tempo/groove defaults, house arrangement, and smooth deep-house source and density guidance. I will move it into a dedicated discoverable skill while retaining score syntax, palette, audition, and mixing guidance in the general skill.",
+      "created_at": "2026-09-27T19:49:49.831396Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "6aa043c9-a83f-4aea-af20-c6ad0e43915d",
+      "author": "home",
+      "text": "Implemented the split. The general write-score skill now keeps genre-neutral score authoring, palette, audition, and mixing guidance; the new write-house-score skill contains house and deep-house tempo, groove, source casting, arrangement, harmony, and mix direction. The general skill's frontmatter description was also quoted to fix a pre-existing YAML validation error. Both skills pass the skill validator, and git diff --check passes.",
+      "created_at": "2026-09-27T19:50:57.025818Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T19:49:39.998691Z",
+  "updated_at": "2026-09-27T19:51:17.708773Z",
+  "closed_at": "2026-09-27T19:51:17.708741Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

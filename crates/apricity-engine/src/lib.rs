@@ -5,6 +5,7 @@
 //! new arrangements at the next bar line. `Mixer::process` is real-time safe.
 
 pub mod arrangement;
+pub mod automation;
 #[cfg(feature = "decode")]
 pub mod decode;
 pub mod master;

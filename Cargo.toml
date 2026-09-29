@@ -1,6 +1,8 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
+# crates/apricity-daw holds only a spike's test fixtures so far: not a crate until it has a Cargo.toml (then drop this).
+exclude = ["crates/apricity-daw"]
 
 [workspace.package]
 version = "0.1.0"
@@ -14,5 +16,13 @@ apricity-theory = { path = "crates/apricity-theory" }
 apricity-sources = { path = "crates/apricity-sources" }
 apricity-score = { path = "crates/apricity-score" }
 apricity-engine = { path = "crates/apricity-engine", default-features = false }
+apricity-harmony = { path = "crates/apricity-harmony" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# apricity-harmony's CQT/NNLS is expensive at debug opt-level (its own kernel-build and per-frame
+# NNLS loops); this project-specific dev override (not a release build, not touching any other
+# crate's dependencies/features) keeps `cargo test`/timing runs realistic without a full release
+# build of the whole workspace (spec-harmony-v2.md sec 2.7's timing target).
+[profile.dev.package.apricity-harmony]
+opt-level = 3

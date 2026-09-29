@@ -34,23 +34,33 @@ jobs:
     name: Web
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install system libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+        working-directory: web
+      # The beat, chords and melody tests load the real engine. Built as Amplify builds it (the rust-toolchain.toml
+      # channel and this platform's wasi-sdk), into target/ where the tests look.
+      - name: Build the wasm module
+        run: RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="$HOME/.cargo" CARGO_TARGET_DIR="$PWD/target" sh scripts/amplify-wasm.sh
       - name: Type-check
         run: npx tsc --noEmit
+        working-directory: web
       - name: Flow tests
         run: npm run test:flow
+        working-directory: web
       - name: Contract is up to date
         run: npm run contract:check
+        working-directory: web
 
   features:
     name: Gherkin step vocabulary

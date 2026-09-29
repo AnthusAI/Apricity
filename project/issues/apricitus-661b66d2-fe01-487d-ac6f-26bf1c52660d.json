@@ -1,0 +1,186 @@
+{
+  "id": "apricitus-661b66d2-fe01-487d-ac6f-26bf1c52660d",
+  "title": "Annotate the preset XML: pad notes, sampler fields, warp markers and file references",
+  "description": "## Intent\n\nTurn the reference files into answers: which XML elements and values a kit preset needs, one question at a time (see the M0 epic's list).\n\n## Steps\n\n- Unzip each reference file (`gunzip -c`) and diff the two presets that differ by one setting; record the element that changed and how its value is encoded.\n- Answer, with the element paths: pad receiving note encoding and pad 1's note; sampler root key, transpose, detune units; volume units (linear or dB); sample start/end units (frames at the file's rate?); playback mode values; how warp markers inside the sampler are stored (seconds/beats pairs as in a clip?); file reference fields (absolute, relative, relative-to what; are size or checksum fields required).\n- Try a hand-trimmed preset (remove optional elements) and load it in the DAW to find the minimal set; keep the trimmed file as `minimal-kit.adg` in the same fixture folder.\n- Velocity: find the sampler's velocity-to-volume setting that best matches Apricity's `velocity_db` curve (crates/apricity-score/src/compile.rs); write the comparison table.\n\n## Out of scope\n\nProduct code. The clip folder's naming scheme (drafted in the design note task).\n\n## Verification\n\nA comment per question with the element path, an excerpt of the XML (element names only where needed), and the reference file it came from. The trimmed preset loads in the DAW (owner confirms in a comment).\n\n## Release\n\n`chore(<this task id>): annotate the preset format` (fixture only). Not breaking.\n\n## Dependencies\n\nBlocked by the reference-files task in this epic.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-d577eed9-9713-4779-90a9-87105dea96b5",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "3611e49a-cbaa-4511-a137-fcb758f4fc7f",
+      "author": "home",
+      "text": "Started. Working without the DAW (not installed); the 'diff two presets that differ by one setting' step is replaced by statistics over 376 DAW-saved Simpler pads (12.x) plus 11.x/10.x/9.x files, and by the one natural diff available: the same set saved by 11.3.21 and 12.3.2 (Michelle.als vs Michelle-12.3.als, MIT). Everything below is provisional until re-checked on the owner's install.",
+      "created_at": "2026-09-26T23:14:23.374383Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "2f6fddf8-a3e6-4b43-aec9-0e25abd41388",
+      "author": "home",
+      "text": "Q2 pad note. Element: GroupDevicePreset/BranchPresets/DrumBranchPreset/ZoneSettings/ReceivingNote (in a set: DrumBranch/BranchInfo/ReceivingNote). Stored INVERTED: value = 128 - MIDI note. Pad 1 (C1 = 36) is 92. Evidence: crates/apricity-daw/tests/fixtures/reference/presets/daw-12.3-drum-sampler-kit.adg, the kick is on 92 (36), snare 90 (38), side stick 91 (37), clap 89 (39), closed hat 86 (42), the GM layout; crates/apricity-daw/tests/fixtures/reference/presets/daw-12.2-sliced-racks.als, 'Slice 1'..'Slice 18' from slicing one WAV sit on 92, 91, 90 ... (slice n on 128 - (35 + n)); the 64-pad kit covers 92..29 = notes 36..99. SendingNote is 60 on every pad in every file (the pad plays its sampler at C3). ChokeGroup 0 = none, 1..16 groups (hats on 1 in the drum sampler kit).",
+      "created_at": "2026-09-26T23:14:23.435697Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "2dadbe39-0726-4a4b-831e-cec0d6f95453",
+      "author": "home",
+      "text": "Q3 sampler per pad (OriginalSimpler, path under DrumBranchPreset/DevicePresets/{V}DevicePreset/Device/OriginalSimpler): Player/MultiSampleMap/SampleParts/MultiSamplePart/RootKey = 60 in all 376 12.x pads (never changed; pitch is set with Pitch/TransposeKey, semitones, range -48..48, and Pitch/TransposeFine = the Detune knob, cents, range -50..50; MultiSamplePart/Detune is always 0). Level: VolumeAndPan/Volume is dB, range -36..36, default -12; MultiSamplePart/Volume is the sample gain, LINEAR (1.58489585 = +4 dB, 1.25892544 = +2 dB). Region: MultiSamplePart/SampleStart, SampleEnd in frames at the file's own rate (SampleEnd = DefaultDuration - 1 for a whole file at 44.1, 48 and 96 kHz: 1583 of 1598 parts). Playback: Globals/PlaybackMode 0 classic, 1 one-shot, 2 slicing (LOM SimplerDevice.playback_mode). Release: VolumeAndPan/Envelope/ReleaseTime in ms (1..60000; 50 is the default; one-shot mode uses OneShotEnvelope/FadeOutTime ms 0..2000 and SustainMode 0 trigger / 1 gate). Loop off: Player/LoopModulators/LoopOn false; SustainLoop/Mode 0. Evidence: crates/apricity-daw/tests/fixtures/reference/presets/daw-12.3-simpler-kit-64.adg and MidiControllerRange Min/Max of each parameter.",
+      "created_at": "2026-09-26T23:14:23.494657Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "042ece04-5974-49f4-bfac-c74daac29389",
+      "author": "home",
+      "text": "Q4 warping in the sampler: MultiSamplePart/SampleWarpProperties/{IsWarped, WarpMode, WarpMarkers/WarpMarker Id SecTime BeatTime}. Same WarpMarker element and attributes as an audio clip's AudioClip/WarpMarkers (compare crates/apricity-daw/tests/fixtures/reference/presets/daw-12.2-sliced-racks.als clip and pads). SecTime = seconds into the file, BeatTime = beats. The DAW adds a hidden last marker 1/32 beat (0.03125) after the last real one to set the tempo of the last segment (LOM Clip.warp_markers docs say so; seen in every file). Markers cover the whole file even when SampleStart/SampleEnd narrow the region (all slices of one file share one marker list). WarpMode values 0 Beats, 1 Tones, 2 Texture, 3 Re-Pitch, 4 Complex, 6 Complex Pro (LOM Sample.warp_mode); seen in files: 0, 3, 4.",
+      "created_at": "2026-09-26T23:14:23.552902Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "365b529f-5867-4b79-a90d-54150ca30c23",
+      "author": "home",
+      "text": "Q5 file references: SampleRef/FileRef has RelativePathType, RelativePath, Path (absolute), Type, LivePackName, LivePackId, OriginalFileSize, OriginalCrc, SourceHint (12 only). RelativePathType seen: 0 none, 1 relative to the document's own folder, 3 relative to the set's project folder, 5 relative to a pack/Core Library root (pack name and id filled), 6 relative to the User Library, 7 relative to the app's built-in folder. DAW-saved sample refs always carry both Path and RelativePath and a real size and a 16-bit CRC (never 0 on a sample in 1234 parts). A script-edited preset in an unlicensed repository (12.1.5 header) carries only Path and RelativePath and its author reports it loads: weak evidence that size/CRC are optional. Relinking by RelativePath when Path is wrong: unknown (the manual is silent); candidate files test it. CRC algorithm: unknown, so write 0 and check.",
+      "created_at": "2026-09-26T23:14:23.614772Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "7efab1fb-6372-4116-b596-b1525f01d1a5",
+      "author": "home",
+      "text": "Q6 velocity: Simpler's VolumeAndPan/VolumeVelScale (0..1, shown as Vel %), defaults 0.35 on a fresh pad in 12, 0.45 in Core Library kits; Drum Sampler has Voice_VelocityToVolume (0..1, 0.23). The DAW's curve is not published. A forum report (Vel 50%, Volume -12 dB, velocity 127 = Vel 0%, Volume 0 dB) suggests about +-24 dB at 100% around the middle of the range; under that reading Vel of about 60% with Volume 8.2 dB lower keeps Apricity's curve within 2.3 dB from velocity 40 to 127. Provisional; measurement protocol in the design note.",
+      "created_at": "2026-09-26T23:14:23.678062Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "e443d532-2fc1-40a9-8b48-290ba3e519d0",
+      "author": "home",
+      "text": "Q1 minimal preset: which elements the DAW refuses to load without is unknown until it runs. Evidence that it fills defaults: the 11.3.21 -> 12.3.2 resave of the same set only ADDS elements (46 new paths under OriginalSimpler, none removed), so the 12 loader tolerates files that lack 12's elements. The trimmed candidates (v12 and v11 headers) and the full candidate are in the fixture folder for the owner's test; minimal-kit.adg is the one that loads, to be renamed after the test.",
+      "created_at": "2026-09-26T23:14:23.737701Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "81899a09-f6a5-4152-9875-9b82b9ae11ff",
+      "author": "home",
+      "text": "Q7 clip (confirm only): no public .alc was found. From AudioClip in the MIT sets: Name, Annotation (the info text), Loop/{LoopStart, LoopEnd, StartRelative, LoopOn, HiddenLoopStart, HiddenLoopEnd}, CurrentStart/CurrentEnd (beats), IsWarped, WarpMode, WarpMarkers, SampleRef/FileRef. That an .alc wraps the same AudioClip element is provisional; left to the sidecar spike (apricitus-9fb5fe) and the owner's saved clips.",
+      "created_at": "2026-09-26T23:14:23.797313Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "de4bd9c2-6db6-4093-a2de-f9c3ee7368e8",
+      "author": "home",
+      "text": "Correction to the counts in the Q3 and Q5 comments (recounted over every MultiSamplePart in all gathered files, Simpler and Sampler, 9.x to 12.4): 6077 parts. Of the 5765 that start at frame 0, 5749 end at DefaultDuration - 1 (files at 22.05, 44.1, 48 and 96 kHz), so SampleEnd is the last frame index at the file's own rate. 5840 parts carry OriginalFileSize and OriginalCrc, all non-zero, CRC at most 65532 (16 bits). The other 237 have no size/CRC elements at all: they are the script-edited presets in the unlicensed repository.",
+      "created_at": "2026-09-26T23:14:50.154641Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "e0c2e14a-c640-4c68-8d28-cd8ae4152967",
+      "author": "home",
+      "text": "Candidates regenerated against the real output of scripts/daw-fixture-audio.py (landed meanwhile): DefaultDuration 418950 / 374850 / 403515 frames, pad 4 markers (0.25 s, 0), (4.15 s, 6.5), (8.9 s, 16) from its --truth listing, hidden marker +0.03125 beat added. Deterministic (same sha256 over reruns).\nDone (machine side): every question answered in comments above and in design/daw-presets.md 'Answers'; candidates in crates/apricity-daw/tests/fixtures/reference/presets/. Verification: gzip -t + xmllint on all fixtures; statistics scripts over 6077 sample parts (scratchpad).\nRemains, needs the DAW, so this task stays in_progress: the owner loads the three candidates (design note 'Owner checklist' step 1) to settle Q1 (minimal set) and Q5 (relinking by RelativePath, size/CRC 0); the one that loads becomes minimal-kit.adg; the velocity measurement (step 4) settles Q6.",
+      "created_at": "2026-09-26T23:19:04.106286Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-26T21:59:39.038883Z",
+  "updated_at": "2026-09-26T23:19:04.106335Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

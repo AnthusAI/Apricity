@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f9a43621-129a-4293-9282-d73a0fbef3e9",
+  "title": "Export and restore ratings so curation survives a reseed",
+  "description": "Star ratings (Rating: sample/clip/score, 0-5, one per person, owner-only) live only in the cloud backend (web/amplify/data/resource.ts; import-library.ts CLOUD_ONLY). They are not in library folders, git or sync, so reseeding from git loses the user's curation; cloning production keeps it.\n\nAdd a tracked export the seed can restore: a command (or script) that signs in as a curator, reads the caller's Ratings and writes a deterministic file keyed by stable target ids (recording/path, not random ids), plus a restore that writes them back into a seeded backend. Same read path serves the one-star prune utility (apricitus-f26c20), so design them together: one Rating reader, two consumers. Decide the file format and location (tracked in git, small), and how targets map after a reseed (sample ids hash the audio bytes, so a .clean.wav has a different id than its original: map by catalog path).\nSpec first. Needs curator credentials; the user signs in, the agent does not handle passwords.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-c34224b7-0cc0-43b2-85f5-bf99784e0f06",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T19:10:59.193244Z",
+  "updated_at": "2026-09-26T19:10:59.193278Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Sonnet 5",
+    "name": "Library Expansion"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

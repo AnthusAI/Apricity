@@ -145,12 +145,17 @@ export interface MarkerRecord {
 export type ScoreKind = "song" | "beat" | "chords" | "melody";
 export const SCORE_KINDS: ScoreKind[] = ["song", "beat", "chords", "melody"];
 
+/** What the score lists read: everything but the text. */
+export const SCORE_LIST_FIELDS = ["id", "title", "folder", "format", "kind", "tags", "owner", "createdAt", "updatedAt", "forkOf", "forkRoot", "legacyPath"] as const;
+
 export interface ScoreRecord {
   id: string;
   title: string;
   folder: string;
   format?: "apr" | "yaml" | null;
   kind?: ScoreKind | null;
+  /** Its owner's tags (see ./tags.ts). */
+  tags?: (string | null)[] | null;
   text: string;
   legacyPath?: string | null;
   owner?: string | null;
@@ -183,6 +188,8 @@ export interface ScoreItem {
   path: string;
   title: string;
   kind: ScoreKind;
+  /** Its tags ("techno"), each a leaderboard at /tags/<tag>. */
+  tags: string[];
   owner: string | null;
   createdAt: string | null;
   modified: number;
@@ -201,6 +208,7 @@ export function toScoreItem(s: ScoreRecord): ScoreItem {
     path: scorePath(s),
     title: s.title,
     kind: s.kind ?? "song",
+    tags: (s.tags ?? []).filter((t): t is string => !!t),
     owner: s.owner ?? null,
     createdAt: s.createdAt ?? null,
     modified: s.updatedAt ? Date.parse(s.updatedAt) / 1000 : 0,
@@ -476,6 +484,11 @@ export interface CatalogDeps {
   me?: () => Promise<Me | null>;
   /** That person's public handle, which names their copies of other people's clips. */
   handle?: (me: Me) => Promise<string | undefined>;
+  /**
+   * What only curators see, as the ranking Lambda lists it (the `hidden` list: scores, and the samples and clips in the
+   * feed), so nobody lists every clip, reference and recording to work it out. Null (or absent): work it out here.
+   */
+  hidden?: () => Promise<Set<string> | null>;
 }
 
 interface Index {
@@ -498,6 +511,28 @@ export class Catalog {
     this.index = null;
     this.scoreList = null;
     this.refList = null;
+    this.undocList = null;
+  }
+
+  /**
+   * The samples whose recording's license isn't documented. From the library's index when it's loaded; else from just
+   * the samples' recording ids and the recordings, so hiding them doesn't load the whole library first (that held the
+   * Activity page for seconds).
+   */
+  private undocList: Promise<Set<string>> | null = null;
+  private undocumented(): Promise<Set<string>> {
+    if (this.index) return this.index.then((i) => i.undocumented);
+    this.undocList ??= (async () => {
+      const m = this.models;
+      const [samples, recordings] = await Promise.all([
+        listAll<{ id: string; recordingId: string }>((nextToken) => m.Sample.list({ limit: 1000, nextToken, selectionSet: ["id", "recordingId"] })),
+        listAll<RecordingRecord>((nextToken) => m.Recording.list({ limit: 1000, nextToken })),
+      ]);
+      const recs = new Map(recordings.map((r) => [r.id, r]));
+      return new Set(samples.filter((c) => !documented(recs.get(c.recordingId))).map((c) => c.id));
+    })();
+    this.undocList.catch(() => (this.undocList = null));
+    return this.undocList;
   }
 
   private get models() {
@@ -599,11 +634,17 @@ export class Catalog {
    */
   async hiddenIds(): Promise<Set<string>> {
     if (await this.seesAll()) return new Set();
-    const i = await this.load();
-    const [clips, refs] = await Promise.all([this.clips(true), this.scoreRefs()]);
-    const out = new Set(i.undocumented);
-    for (const c of clips) if (i.undocumented.has(c.sampleId)) out.add(c.id);
-    for (const r of refs) if (r.sampleId && i.undocumented.has(r.sampleId)) out.add(r.scoreId);
+    const listed = await this.deps.hidden?.();
+    if (listed) return listed;
+    const undoc = await this.undocumented();
+    if (!undoc.size) return new Set();
+    const [clips, refs] = await Promise.all([
+      listAll<{ id: string; sampleId: string }>((nextToken) => this.models.Clip.list({ limit: 1000, nextToken, selectionSet: ["id", "sampleId"] })),
+      this.scoreRefs(),
+    ]);
+    const out = new Set(undoc);
+    for (const c of clips) if (undoc.has(c.sampleId)) out.add(c.id);
+    for (const r of refs) if (r.sampleId && undoc.has(r.sampleId)) out.add(r.scoreId);
     return out;
   }
 
@@ -639,8 +680,9 @@ export class Catalog {
     return this.deps.url(c.audio.key);
   }
 
+  /** Every score as the lists show it: not its text (a score's text loads when it opens; see score()). */
   private listScores(): Promise<ScoreRecord[]> {
-    this.scoreList ??= listAll<ScoreRecord>((nextToken) => this.models.Score.list({ limit: 1000, nextToken }));
+    this.scoreList ??= listAll<ScoreRecord>((nextToken) => this.models.Score.list({ limit: 1000, nextToken, selectionSet: [...SCORE_LIST_FIELDS] }));
     this.scoreList.catch(() => (this.scoreList = null));
     return this.scoreList;
   }
@@ -659,8 +701,10 @@ export class Catalog {
 
   /** Scores that use an undocumented sample (to flag them for curators). */
   private async flaggedScores(): Promise<Set<string>> {
-    const [i, refs] = await Promise.all([this.load(), this.scoreRefs()]);
-    return new Set(refs.filter((r) => r.sampleId && i.undocumented.has(r.sampleId)).map((r) => r.scoreId));
+    const listed = await this.deps.hidden?.();
+    if (listed) return listed;
+    const [undoc, refs] = await Promise.all([this.undocumented(), this.scoreRefs()]);
+    return new Set(refs.filter((r) => r.sampleId && undoc.has(r.sampleId)).map((r) => r.scoreId));
   }
 
   /** Every clip saved with a sample (not retired), with its sample's path and title. `all`: undocumented ones too. */
@@ -692,10 +736,33 @@ export class Catalog {
     this.scoreList = null;
   }
 
+  /** One score as the lists show it, by id, without listing them all (a card on a page of them); null if it's gone. */
+  async scoreById(id: string): Promise<ScoreItem | null> {
+    const r = await this.models.Score.get({ id });
+    if (r.errors?.length) fail(r.errors);
+    return r.data ? toScoreItem(r.data as ScoreRecord) : null;
+  }
+
+  /** One sample's path and title, by id, without loading the library; null if it's gone. */
+  async sampleById(id: string): Promise<{ path: string; title: string } | null> {
+    const r = await this.models.Sample.get({ id });
+    if (r.errors?.length) fail(r.errors);
+    const smp = r.data as SampleRecord | null;
+    return smp ? { path: samplePath(smp), title: fileTitle(smp.path) } : null;
+  }
+
+  /** Set a score's tags (normalized by the caller; see ./tags.ts). Only its owner (or a curator) may. */
+  async setScoreTags(path: string, tags: string[]) {
+    const found = (await this.listScores()).find((s) => scorePath(s) === path);
+    if (!found) throw new Error(`${path}: no such score`);
+    const r = await this.models.Score.update({ id: found.id, tags });
+    if (r.errors?.length) fail(r.errors, true);
+    this.scoreList = null;
+  }
+
   async score(path: string): Promise<string> {
     const found = (await this.listScores()).find((s) => scorePath(s) === path);
-    if (found) return found.text;
-    const r = await this.models.Score.get({ id: scoreKey(path).id });
+    const r = await this.models.Score.get({ id: found?.id ?? scoreKey(path).id }, { selectionSet: ["id", "text"] });
     if (r.errors?.length) fail(r.errors);
     if (!r.data) throw new Error(`${path}: no such score`);
     return r.data.text;
@@ -713,7 +780,9 @@ export class Catalog {
       const got = await this.models.Score.get({ id });
       if (got.errors?.length) fail(got.errors);
       if (!got.data) {
-        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}), ...(fork ?? {}) });
+        // A fork starts with its original's tags.
+        const tags = fork ? (await this.listScores()).find((s) => s.id === fork.forkOf)?.tags?.filter((t): t is string => !!t) : undefined;
+        const r = await this.models.Score.create({ id, title: k.title, folder: k.folder, format: k.format, text, ...(kind ? { kind } : {}), ...(fork ?? {}), ...(tags?.length ? { tags } : {}) });
         if (r.errors?.length) fail(r.errors, true);
       }
     }

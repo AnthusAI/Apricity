@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-6c8c19dd-ccef-42e1-b6be-c1d62f2f2eab",
+  "title": "Automation units and curve approximation within a quarter tone / 0.5 dB of the engine",
+  "description": "## Intent\n\nUnits and curves: the envelope sounds like the engine's automation.\n\n## Steps\n\n- Convert values from engine units (`Lane.points` are already in engine units) to the set's stored units per parameter.\n- Curve shape: the engine ramps frequencies by octaves, dB/percent/pan linearly. Where the DAW interpolates in a different space, add intermediate breakpoints so the envelope stays within a quarter tone (frequencies) or 0.5 dB (levels) of the engine's curve; the fewest points that hold the tolerance.\n- Volume automation is a fader offset in Apricity: combine it with the track's fader value; beyond the fader's range use the Utility rule from M2.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw automation` (unit: tolerance holds for 20 Hz → 20 kHz sweeps) and the \"Automation becomes envelopes\" scenarios.\n\n## Release\n\n`feat(<this task's id>): automation curves that match the engine`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6f091cf7-753d-4580-9ea4-d17a89f48257",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-19936767-f032-4b4f-85f5-4d993aea0cfb",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-17990625-8a60-42af-a91d-cb052d5793cf",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:29.243689Z",
+  "updated_at": "2026-09-26T22:06:51.537121Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

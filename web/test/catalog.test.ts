@@ -252,7 +252,7 @@ test("signed out: the views get SignedOut (their empty state), and reload after 
   cat.reset();
   const { samples } = await cat.samples();
   assert.deepEqual(samples.map((s) => s.path), ["samples/marine-band/Thunderer.mp3", "samples/marine-band/stems/Thunderer/drums.wav"]);
-  assert.deepEqual((await cat.scores()).scores, [{ id: "scr_examples_a_apr", path: "examples/a.apr", title: "a", kind: "song", owner: null, createdAt: null, modified: 0 }]);
+  assert.deepEqual((await cat.scores()).scores, [{ id: "scr_examples_a_apr", path: "examples/a.apr", title: "a", kind: "song", tags: [], owner: null, createdAt: null, modified: 0 }]);
   assert.equal(await cat.score("examples/a.apr"), "tempo 90");
 });
 
@@ -318,6 +318,15 @@ test("undocumented samples, their clips and the scores using them: hidden from r
   assert.deepEqual(all.map((x) => [x.id, !!x.undocumented]), [["smp_src", false], ["smp_up", true]]);
   assert.deepEqual((await cat.scores()).scores.map((x) => [x.id, !!x.undocumented]), [["scr_a", true], ["scr_b", false]]);
   assert.equal((await cat.hiddenIds()).size, 0);
+  // In the cloud the ranking Lambda's list says what's hidden, and nothing is listed to work it out.
+  curator = false;
+  let listed = 0;
+  const cloud = new Catalog({ client: () => stubClient(state), readText: async () => analysisJson, url: async (k) => k, seesUndocumented: async () => curator, hidden: async () => (listed++, new Set(["scr_a"])) });
+  assert.deepEqual([...(await cloud.hiddenIds())], ["scr_a"]);
+  assert.deepEqual((await cloud.scores()).scores.map((x) => x.id), ["scr_b"]);
+  curator = true;
+  assert.deepEqual((await cloud.scores()).scores.map((x) => [x.id, !!x.undocumented]), [["scr_a", true], ["scr_b", false]]);
+  assert.ok(listed >= 3);
   const credits = await cat.creditsFor(["samples/marine-band/Thunderer.mp3", "uploads/announcer.wav", "marine-band/Thunderer.mp3"]);
   assert.deepEqual(credits.map((r) => r.id), ["rec_Thunderer", "rec_uploads_announcer"], "once per recording");
 });

@@ -14,6 +14,8 @@ import { api, compile, me, ratings, type Timeline } from "../apricity";
 import { byline, handles, type Handles } from "../data/handles";
 import { forkFrom, freeTitle, owns, SignedOut, SCORE_KINDS, type Me, type ScoreItem, type ScoreKind } from "../data/catalog";
 import { RankedList } from "./ranked-list";
+import { TagEditor } from "./tag-chips";
+import { tagCounts } from "../data/tags";
 import { CommentThread } from "./comments";
 import { columnSplitter } from "./splitter";
 import { scoreCredits } from "./credits";
@@ -63,6 +65,12 @@ export class ScoreView {
   private list: RankedList<ScoreItem>;
   private stars = new StarRating((n) => this.rate(n), signIn);
   private kindSel = el("select", { className: "kind", ariaLabel: "What this score is" });
+  /** Its tags, under the bar: chips linking to each tag's leaderboard; its author adds and removes them. */
+  private tagEditor = new TagEditor(async (tags) => {
+    if (!this.path) return;
+    await api.setScoreTags(this.path, tags);
+    await this.list.refresh();
+  });
   private nameEl = el("span", { className: "name" }, "—");
   private saveBtn = el("button", { className: "btn", type: "button", disabled: true }, "Save");
   private forkBtn = el("button", { className: "btn", type: "button", title: "Make your own copy of this score, linked back to it" }, "Fork");
@@ -143,9 +151,10 @@ export class ScoreView {
       tallies: async () => (await ratings()).tallies("score"),
       row: (x) => ({
         title: x.title,
-        sub: [x.undocumented ? "⚠ plays a sample with no license documented" : "", byline(this.names, x.owner, owns(this.who, x.owner)), x.forks ? `${x.forks} fork${x.forks > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · "),
+        sub: [x.undocumented ? "⚠ plays a sample with no license documented" : "", byline(this.names, x.owner, owns(this.who, x.owner)), x.forks ? `${x.forks} fork${x.forks > 1 ? "s" : ""}` : "", x.tags.map((t) => `#${t}`).join(" ")].filter(Boolean).join(" · "),
       }),
-      text: (x) => `${x.title} ${byline(this.names, x.owner, false)}`,
+      // "#techno" finds its tag; so does "techno".
+      text: (x) => `${x.title} ${byline(this.names, x.owner, false)} ${x.tags.map((t) => `#${t}`).join(" ")}`,
       owner: (x) => x.owner,
       me: async () => this.who,
       open: (x) => this.open(x.path, "user"),
@@ -158,18 +167,16 @@ export class ScoreView {
       const beat = ((e.clientX - r.left) / r.width) * this.timeline.length_beats;
       player.seekBeat(Math.floor(beat / this.timeline.meter) * this.timeline.meter);
     });
+    // An item's page is only that score: its list is the section's front page (ui/section.ts), not a sidebar.
     root.append(
-      this.list.el,
-      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.forkBtn, this.saveBtn), this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
+      el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.forkBtn, this.saveBtn), this.tagEditor.root, this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
       this.sideEl,
       ...this.dockPanels(),
     );
-    // The list and the side panel are as wide as you drag them.
-    // Neither may squeeze the editor below its minimum (--editor-min in style.css), so its buttons always fit.
+    // The side panel is as wide as you drag it, but never squeezes the editor below its minimum (--editor-min in
+    // style.css), so its buttons always fit.
     const editorMin = () => parseFloat(getComputedStyle(root).getPropertyValue("--editor-min")) || 440;
-    const widthOf = (e: HTMLElement) => e.getBoundingClientRect().width;
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: "score-list", min: 180, max: (w) => Math.min(480, w - widthOf(this.sideEl) - editorMin()) });
-    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 280, max: (w) => w - widthOf(this.list.el) - editorMin() });
+    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 280, max: (w) => w - editorMin() });
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     document.addEventListener("apricity:auth-changed", () => this.loadList());
     this.list.rename(KIND_LABEL[this.kind].many, `New ${KIND_LABEL[this.kind].one}`);
@@ -256,6 +263,12 @@ export class ScoreView {
   /** The list's top of the week (where signing in lands). */
   topOfWeek() {
     this.list.setWindow("week");
+  }
+
+  /** Start a new score of the kind on show (a section's "+ New beat"): its name is asked for, then it opens. */
+  async createNew() {
+    await this.loadList();
+    await this.create();
   }
 
   /** Show another kind of score (the Scores, Beats, Chords and Melodies tabs share this view). */
@@ -354,6 +367,8 @@ export class ScoreView {
     this.kindSel.disabled = !mine;
     this.kindSel.title = mine ? "What this score is: it decides the tab it is listed under" : "Only its author can change what it is";
     this.stars.el.hidden = !it;
+    this.tagEditor.show(it?.tags ?? [], mine, tagCounts(this.items).map((t) => t.tag));
+    this.tagEditor.root.hidden ||= !it;
     this.changedDirty();
     if (!it) return;
     const standing = this.list.standingOf(it.id);

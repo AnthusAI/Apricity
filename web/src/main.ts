@@ -6,12 +6,21 @@ import { Library } from "./ui/library";
 import { ScoreView } from "./ui/score";
 import { DocsView } from "./ui/docs";
 import { Landing } from "./ui/landing";
+import { HowItWorks } from "./ui/how-it-works";
+import { ListenView } from "./ui/listen";
+import { LabsView } from "./ui/labs";
 import { ActivityView } from "./ui/activity";
+import { TagsView } from "./ui/tags";
+import { mountSearch, SearchView } from "./ui/search";
+import { SectionView } from "./ui/section";
+import { SECTIONS, type Section } from "./data/sections";
+import { parseView } from "./data/list-view";
+import { mountNav } from "./ui/nav";
+import { stopFeed } from "./audio/feed-audio";
 import { bootstrap, bootstrapError, mode } from "./data/client";
 import { mountNotices, notify } from "./ui/notices";
 import { watchAuth } from "./data/auth";
 import { AccountControl, realDeps } from "./ui/account";
-import { currentAccount } from "./data/auth";
 import type { ScoreKind } from "./data/catalog";
 import { href, KIND_OF_PAGE, PAGE_OF_KIND, parse, tabOf, titleOf, type Page, type Route } from "./route";
 import type { At } from "./ui/at";
@@ -46,20 +55,41 @@ const score = new ScoreView(document.querySelector("#score")!);
 const clips = new Library(document.querySelector("#clips")!, "clips");
 const samples = new Library(document.querySelector("#samples")!, "samples");
 const docs = new DocsView(document.querySelector("#docs")!);
-const activity = new ActivityView(document.querySelector("#activity")!);
+// Home is the feed (ui/activity.ts): the best-rated first, or the newest.
+const activity = new ActivityView(document.querySelector("#home")!);
+const tagsView = new TagsView(document.querySelector("#tags")!);
+// A section's front page: its items as cards (ui/section.ts). "+ New beat" opens the score view on a new one.
+const section = new SectionView(document.querySelector("#section")!, {
+  create: (s) => {
+    front = null;
+    showTab(s);
+    void score.createNew();
+  },
+});
+// The top bar's search box narrows a section's front page as you type; anywhere else, Enter searches everything.
+const searchBox = mountSearch(document.querySelector("#top-search")!, () => (section.shown ? (q) => section.search(q) : null));
+const searchView = new SearchView(document.querySelector("#search")!, searchBox);
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
-// ---- tabs (remembered per browser)
+// ---- tabs
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB = KIND_OF_PAGE as Record<string, ScoreKind>;
 const TAB_OF_KIND = PAGE_OF_KIND as Record<ScoreKind, string>;
-const TABS = ["home", "activity", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "about", "how-it-works", "listen", "labs", "tags", "search", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
 const loaded = new Set<string>();
+let landing: Landing | null = null;
+let howItWorks: HowItWorks | null = null;
+let listen: ListenView | null = null;
+let labs: LabsView | null = null;
 /** The transport's play button follows the page shown (set up below). */
 let syncTransport = () => {};
+/** Home's view from its URL (?order=recent&mine=1), for the next showTab. */
+let homeList = "";
+/** The section whose front page (its cards, not an item) the next showTab shows, with its view; null: an item's page. */
+let front: { section: Section; list: string } | null = null;
 function showTab(name: string) {
   if (!TABS.includes(name)) name = "scores";
   // Leaving a page stops what it was playing: the score, or an audition in Clips or Samples.
@@ -67,25 +97,35 @@ function showTab(name: string) {
     if (player.transport.playing) player.pause();
     clips.silence();
     samples.silence();
+    stopFeed(); // a card on Activity or a tag's page
     document.dispatchEvent(new CustomEvent("apricity:page-changed")); // breakdowns fall silent
   }
   document.body.dataset.tab = name;
+  // The About page (the landing page: its player, its sounds) is made the first time it's shown, not on every start.
+  if (name === "about") landing ??= new Landing(document.querySelector("#about")!, { open: (path) => navigate({ page: "scores", score: path, play: true }) });
+  if (name === "how-it-works") howItWorks ??= new HowItWorks(document.querySelector("#how-it-works")!);
+  if (name === "listen") listen ??= new ListenView(document.querySelector("#listen")!);
+  if (name === "labs") labs ??= new LabsView(document.querySelector("#labs")!);
   const kind = KIND_OF_TAB[name];
-  const view = kind ? "score" : name;
+  const atFront = !!front && front.section === name;
+  const view = atFront ? "section" : kind ? "score" : name;
   for (const t of tabs) t.setAttribute("aria-selected", String(t.dataset.tab === name));
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
-  document.querySelector<HTMLElement>("#transport")!.hidden = name === "docs" || name === "home" || name === "activity";
-  activity.show(name === "activity");
+  // (Cards on Activity and the tag pages have their own play buttons.)
+  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "how-it-works", "listen", "labs", "tags", "search"].includes(name) || atFront;
+  activity.show(name === "home", homeList);
   syncTransport();
+  if (atFront) {
+    const f = front!;
+    void section.show(f.section, f.list);
+    return;
+  }
   if (kind) score.setKind(kind);
   else if ((name === "clips" || name === "samples") && !loaded.has(name)) {
     loaded.add(name);
     void (name === "clips" ? clips : samples).refresh();
-  }
-  try {
-    localStorage.setItem("apricity.tab", name);
-  } catch {} // storage can be blocked (private browsing): nothing to report
+  } else if (name === "clips" || name === "samples") (name === "clips" ? clips : samples).relist(); // stars rated since show
 }
 // ---- the address bar: every page and item has a URL (route.ts). A click on a tab or the brand goes there; the views
 // report what they open (ui/at.ts), and Back and Forward follow the URL.
@@ -96,13 +136,25 @@ async function follow(r: Route) {
   if (r.sample) loaded.add("samples");
   if (r.clip) loaded.add("clips");
   if (r.page === "clips") clips.setFilterQuery(r.list);
+  homeList = r.page === "home" ? (r.list ?? "") : "";
+  // A section with no item named: its front page.
+  front = SECTIONS.includes(r.page as Section) && !r.score && !r.sample && !r.clip ? { section: r.page as Section, list: r.list ?? "" } : null;
+  // The box shows what's searched for here (a section's words, the search page's), and nothing elsewhere.
+  searchBox.value = r.page === "search" ? (r.q ?? "") : front ? parseView(front.list).q : "";
   showTab(tabOf(r));
   if (r.score) await openScore(r.score, !!r.play, "route");
   else if (r.sample) await samples.openKey(r.sample, undefined, "route");
   else if (r.clip) await clips.openKey(r.clip.sample, r.clip.name, "route");
   else if (r.help) docs.open(r.help.file, r.help.anchor, "route");
   else if (r.page === "help") docs.report();
-  else if (r.page === "clips") clips.report();
+  else if (front) document.title = titleOf(r, parseView(front.list).q ? `“${parseView(front.list).q}”` : undefined);
+  else if (r.page === "tags") {
+    document.title = titleOf(r, r.tag ? `#${r.tag}` : undefined);
+    await tagsView.show(r.tag ?? null, r.list);
+  }
+  else if (r.page === "search") await searchView.show(r.q);
+  else if (r.page === "listen") await (listen ??= new ListenView(document.querySelector("#listen")!)).show(r.listenCycle ?? null, !!r.waiting);
+  else if (r.page === "labs") await (labs ??= new LabsView(document.querySelector("#labs")!)).show(r.lab ?? null);
   else document.title = titleOf(r); // an item's view titles the page with its name
 }
 /** Go somewhere: a new history entry (or, `replace`, this one), then show it. */
@@ -120,6 +172,9 @@ document.addEventListener("apricity:at", (e) => {
   const shown = document.body.dataset.tab ?? "";
   const same = tabOf(route) === shown || (!!KIND_OF_PAGE[route.page] && !!KIND_OF_TAB[shown]);
   if (!same) return;
+  // A section's cards are on show: an item view working behind them (the score view reloading its list after sign-in
+  // and opening the first score) doesn't take the address bar, or the page.
+  if (front && (route.score || route.sample || route.clip)) return;
   document.title = titleOf(route, title);
   const url = href(route);
   const now = location.pathname + location.search + location.hash;
@@ -127,6 +182,8 @@ document.addEventListener("apricity:at", (e) => {
   // From the address bar: only correct it (a beat asked for under /scores moves to /beats), keeping ?play off.
   history[how === "user" ? "pushState" : "replaceState"](null, "", url);
 });
+// Tabs that don't fit fold into a menu that fills the screen.
+mountNav(document.querySelector<HTMLElement>(".topbar")!, document.querySelector<HTMLElement>(".tabs")!, (page) => navigate({ page }));
 for (const t of tabs)
   t.addEventListener("click", (e) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // a new tab or window: the link does it
@@ -138,27 +195,6 @@ brand.addEventListener("click", (e) => {
   e.preventDefault();
   navigate({ page: "home" });
 });
-// First visit: the landing page (signed in: Activity). After that, wherever the URL says, or where you were.
-let saved: string | null = null;
-try {
-  saved = localStorage.getItem("apricity.tab");
-} catch {} // storage can be blocked (private browsing): nothing to report
-
-// Signing in takes you to Activity. Nothing here is awaited at the top level: the auth code is a
-// lazily loaded chunk that imports from this one, so awaiting it while this module is still evaluating deadlocks.
-let wasSignedIn = false;
-void currentAccount()
-  .catch(() => null)
-  .then((a) => {
-    wasSignedIn = !!a;
-    if (a && !saved && location.pathname === "/") navigate({ page: "activity" }, true);
-  });
-document.addEventListener("apricity:auth-changed", async () => {
-  const now = !!(await currentAccount().catch(() => null));
-  if (now && !wasSignedIn && location.pathname === "/") navigate({ page: "activity" });
-  wasSignedIn = now;
-});
-
 /** Open a score in the tab for its kind, and play it once it has compiled; nothing waits forever. */
 async function openScore(path: string, play: boolean, how: "user" | "route") {
   await score.open(path, how);
@@ -190,13 +226,11 @@ document.addEventListener("apricity:open-item", async (e) => {
   await (type === "clip" ? clips : samples).openId(id, "auto");
 });
 
-new Landing(document.querySelector("#home")!, {
-  open: (path) => navigate({ page: "scores", score: path, play: true }),
-});
-// Where to start: the URL, or (at "/" with a remembered tab) that tab.
+// Where to start: the URL (at "/", the home page). An address that names no page (an old /activity link) shows the home
+// page, and the address bar says so.
 const start = parse(location.pathname, location.search, location.hash);
-if (start.page === "home" && location.pathname === "/" && saved && saved !== "home") navigate({ page: pageOfTab(saved) }, true);
-else void follow(start);
+if (start.page === "home" && location.pathname !== "/") history.replaceState(null, "", "/");
+void follow(start);
 
 // ---- transport: one play button for every page. On a score's tab it plays the score (waiting for the score to open and
 // compile, then the engine, the sounds and the mix, and saying so on the button); on Clips and Samples it plays the

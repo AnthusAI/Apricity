@@ -1,4 +1,16 @@
-"""Analyze one audio file (a sample) into an Apricity manifest (see schema/sample-manifest.schema.json)."""
+"""Analyze one audio file (a sample) into an Apricity manifest (see schema/sample-manifest.schema.json).
+
+Tuning (tonal.tuning_hz / tonal.tuning_cents): estimated by cross-checking two independent
+estimators on the harmonic part of the signal — essentia's per-frame TuningFrequencyExtractor
+(median across frames) and librosa.estimate_tuning (piptrack over the spectrum). Essentia's
+estimator is documented to clamp its output to a fixed cents range and, on noisy or inharmonic
+material (drum/bass stems, dense mixes), tends to pin at that edge or a spurious quantized bin
+instead of failing; such a result is discarded before comparison. When the surviving estimators
+agree within `TUNING_AGREEMENT_CENTS` cents their mean is used, otherwise the estimate is stored
+as 0.0 (i.e. no retuning) and `tonal.tuning_uncertain` is set. See `estimate_tuning()`. Existing
+manifests can be re-estimated for tuning alone, without a full re-analysis, via
+`python -m apricity_analyze.analyze --tuning <paths...>`.
+"""
 
 from __future__ import annotations
 
@@ -50,11 +62,20 @@ _beat_tracker = None
 
 def rhythm(path: pathlib.Path) -> dict:
     global _beat_tracker
-    from beat_this.inference import File2Beats
+    from beat_this.inference import Audio2Beats, File2Beats
 
     if _beat_tracker is None:
         _beat_tracker = File2Beats(checkpoint_path="final0", device="cpu", dbn=False)
-    beats, downbeats = _beat_tracker(str(path))
+    try:
+        beats, downbeats = _beat_tracker(str(path))
+    except RuntimeError:
+        # File2Beats delegates to torchaudio/libsndfile, which do not read every
+        # container Essentia supports (notably Ogg-FLAC). Feed the decoded signal
+        # to the same beat model instead of rejecting otherwise valid audio.
+        import essentia.standard as es
+
+        signal, sr, *_ = es.AudioLoader(filename=str(path))()
+        beats, downbeats = Audio2Beats.__call__(_beat_tracker, signal, sr)
     beats, downbeats = np.asarray(beats, float), np.asarray(downbeats, float)
 
     bpm = stability = meter = None
@@ -108,6 +129,68 @@ def time_loudness(path: pathlib.Path) -> list[float]:
 
 # --------------------------------------------------------------------------- tonal
 
+# essentia's TuningFrequency algorithm documents its output as clamped to "-35 to 65 cents"; on
+# ccMixter mixes (lots of drums/noise even after HPSS) it often pins at one edge or a spurious
+# quantized bin instead of failing loudly. A value within this many cents of either documented
+# edge is treated as suspect and dropped rather than trusted.
+ESSENTIA_TUNING_RANGE = (-35.0, 65.0)
+ESSENTIA_EDGE_EPS = 1.0
+# How far apart (in cents) the two independent estimators may be and still be considered agreeing.
+TUNING_AGREEMENT_CENTS = 10.0
+
+
+def _essentia_tuning_cents(audio_harmonic: np.ndarray) -> float | None:
+    """Median of essentia's per-frame TuningFrequencyExtractor, in cents from A440."""
+    import essentia.standard as es
+
+    per_frame = np.asarray(es.TuningFrequencyExtractor(frameSize=FRAME, hopSize=HOP)(audio_harmonic))
+    per_frame = per_frame[per_frame > 0]
+    if not len(per_frame):
+        return None
+    return float(1200 * np.log2(float(np.median(per_frame)) / 440.0))
+
+
+def _librosa_tuning_cents(audio_harmonic: np.ndarray, sr: int) -> float | None:
+    """librosa.estimate_tuning (piptrack over the spectrum), in cents from A440."""
+    import librosa
+
+    semitones = librosa.estimate_tuning(y=np.asarray(audio_harmonic, dtype=np.float32), sr=sr)
+    if semitones is None or not np.isfinite(semitones):
+        return None
+    return float(semitones) * 100.0
+
+
+def estimate_tuning(audio_harmonic: np.ndarray, sr: int = SR) -> tuple[float, dict]:
+    """Robust tuning estimate (cents deviation of A from 440 Hz) for the harmonic part of a clip.
+
+    Cross-checks two independent estimators: essentia's per-frame TuningFrequencyExtractor
+    (median across frames) and librosa.estimate_tuning (piptrack over the spectrum). Essentia's
+    estimator is documented to clamp to a fixed range and, on inharmonic or noisy material
+    (drum/bass stems, dense ccMixter mixes), is prone to pinning at that edge or a spurious
+    quantized bin rather than failing; a result within ~1 cent of either documented edge is
+    discarded as suspect. If the surviving estimator(s) agree within `TUNING_AGREEMENT_CENTS`
+    cents, their mean is used; otherwise the estimate is untrustworthy and 0.0 is returned with
+    `flags["uncertain"] = True` so the caller can record `tonal.tuning_uncertain`.
+
+    Returns (cents, flags) where flags carries the raw per-estimator readings for diagnostics.
+    """
+    ess_cents = _essentia_tuning_cents(audio_harmonic)
+    ess_edge_pinned = ess_cents is not None and any(
+        abs(ess_cents - edge) <= ESSENTIA_EDGE_EPS for edge in ESSENTIA_TUNING_RANGE
+    )
+    if ess_edge_pinned:
+        ess_cents = None
+    lib_cents = _librosa_tuning_cents(audio_harmonic, sr)
+
+    flags = {"essentia_cents": ess_cents, "librosa_cents": lib_cents, "essentia_edge_pinned": ess_edge_pinned}
+
+    if ess_cents is None or lib_cents is None or abs(ess_cents - lib_cents) > TUNING_AGREEMENT_CENTS:
+        flags["uncertain"] = True
+        return 0.0, flags
+    flags["uncertain"] = False
+    return (ess_cents + lib_cents) / 2.0, flags
+
+
 def tonal(path: pathlib.Path, beats: list[float], downbeats: list[float], meter: int | None) -> dict:
     import essentia.standard as es
 
@@ -116,10 +199,10 @@ def tonal(path: pathlib.Path, beats: list[float], downbeats: list[float], meter:
     # pitch classes. librosa's median-filter HPSS; margin > 1 keeps only clearly-harmonic energy.
     audio = harmonic(audio)
 
-    # Tuning first: 78s were often cut or played off-speed, so A may be far from 440.
-    per_frame = np.asarray(es.TuningFrequencyExtractor(frameSize=FRAME, hopSize=HOP)(audio))
-    per_frame = per_frame[per_frame > 0]
-    tuning_hz = float(np.median(per_frame)) if len(per_frame) else 440.0
+    # Tuning first: 78s were often cut or played off-speed, so A may be far from 440. See
+    # estimate_tuning() for how disagreement between estimators is detected and handled.
+    tuning_cents, tuning_flags = estimate_tuning(audio, SR)
+    tuning_hz = 440.0 * 2 ** (tuning_cents / 1200.0)
 
     window = es.Windowing(type="blackmanharris62")
     spectrum = es.Spectrum()
@@ -165,9 +248,12 @@ def tonal(path: pathlib.Path, beats: list[float], downbeats: list[float], meter:
         sel = (times >= a) & (times < b)
         beat_chroma.append(_norm(chroma[sel].mean(axis=0)) if sel.any() else [0.0] * 12)
 
-    return {"key": ranked[0], "alternatives": ranked[1:4], "tuning_hz": _r(tuning_hz, 2),
-            "tuning_cents": _r(1200 * np.log2(tuning_hz / 440.0), 1),
-            "pitch_class_profile": _norm(global_pcp), "segments": segments, "beat_chroma": beat_chroma}
+    out = {"key": ranked[0], "alternatives": ranked[1:4], "tuning_hz": _r(tuning_hz, 2),
+           "tuning_cents": _r(tuning_cents, 1),
+           "pitch_class_profile": _norm(global_pcp), "segments": segments, "beat_chroma": beat_chroma}
+    if tuning_flags["uncertain"]:
+        out["tuning_uncertain"] = True
+    return out
 
 
 HPSS_MARGIN = 2.0
@@ -211,8 +297,13 @@ def manifest_path(audio: pathlib.Path) -> pathlib.Path:
 
 
 def analyze(path: pathlib.Path, with_notes: bool = True, rhythm_from: dict | None = None) -> dict:
-    """Analyze `path`. `rhythm_from` reuses another manifest's beat grid (for stems of a recording)."""
-    path = path.resolve()
+    """Analyze `path`. `rhythm_from` reuses another manifest's beat grid (for stems of a recording).
+
+    Deliberately does NOT resolve() `path`: library audio is sometimes a symlink (e.g. into
+    another checkout or worktree's copy), while the manifest is a real file that belongs next to
+    the symlink itself, not next to whatever it points at. Reading the audio through the symlink
+    is transparent, so there is no need to resolve it first.
+    """
     out = manifest_path(path)
     previous = json.loads(out.read_text()) if out.exists() else {}
 
@@ -257,6 +348,93 @@ def validate(m: dict) -> None:
 
 
 def write(m: dict, audio: pathlib.Path) -> pathlib.Path:
-    out = manifest_path(audio.resolve())
+    # See analyze()'s docstring: do NOT resolve() `audio` first, or a symlinked audio file's
+    # manifest gets written next to its target instead of next to the symlink.
+    out = manifest_path(audio)
     out.write_text(json.dumps(m, indent=1) + "\n")
     return out
+
+
+# --------------------------------------------------------------------------- tuning-only refresh
+
+def refresh_tuning(audio: pathlib.Path) -> tuple[float, float, bool] | None:
+    """Re-estimate only tonal.tuning_hz / tuning_cents / tuning_uncertain for an existing manifest
+    from `audio`, in place, leaving every other field (including the rest of `tonal`) untouched.
+    Used to roll out a tuning-estimator fix over the library without a full, slow re-analysis.
+
+    Returns (old_cents, new_cents, uncertain) or None if `audio` has no manifest yet.
+    """
+    import essentia.standard as es
+
+    # Deliberately do NOT resolve() `audio`: library audio is often a symlink (e.g. into another
+    # checkout or worktree's copy), while the manifest lives as a real file next to the symlink
+    # itself. Resolving first would compute manifest_path() against the symlink's target
+    # directory and silently edit a manifest outside this tree instead of the one we were asked
+    # to refresh.
+    mpath = manifest_path(audio)
+    if not mpath.exists():
+        return None
+    m = json.loads(mpath.read_text())
+    old_cents = float(m["tonal"]["tuning_cents"])
+
+    signal = es.MonoLoader(filename=str(audio), sampleRate=SR)()
+    signal = harmonic(signal)
+    cents, flags = estimate_tuning(signal, SR)
+    hz = 440.0 * 2 ** (cents / 1200.0)
+
+    m["tonal"]["tuning_hz"] = _r(hz, 2)
+    m["tonal"]["tuning_cents"] = _r(cents, 1)
+    if flags["uncertain"]:
+        m["tonal"]["tuning_uncertain"] = True
+    else:
+        m["tonal"].pop("tuning_uncertain", None)
+
+    validate(m)
+    mpath.write_text(json.dumps(m, indent=1) + "\n")
+    return old_cents, float(m["tonal"]["tuning_cents"]), bool(flags["uncertain"])
+
+
+AUDIO_EXTS = {".wav", ".mp3", ".flac", ".aif", ".aiff", ".ogg", ".m4a"}
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(prog="apricity_analyze.analyze")
+    ap.add_argument("--tuning", action="store_true",
+                     help="refresh only tonal.tuning_hz/tuning_cents/tuning_uncertain for existing "
+                          "manifests from the audio, without a full re-analysis")
+    ap.add_argument("paths", nargs="+", type=pathlib.Path, help="audio files or folders (searched recursively)")
+    args = ap.parse_args(argv)
+
+    if not args.tuning:
+        ap.error("only --tuning is supported here; use `apricity-analyze` (cli.py) for full analysis")
+
+    import sys
+
+    failed = 0
+    for root in args.paths:
+        files = sorted(f for f in root.rglob("*") if f.suffix.lower() in AUDIO_EXTS) if root.is_dir() else [root]
+        for f in files:
+            if not f.exists():  # a broken symlink (missing/moved target): skip, don't crash the run
+                print(f"  MISSING     {f}: symlink target does not exist", file=sys.stderr)
+                failed += 1
+                continue
+            try:
+                result = refresh_tuning(f)
+            except Exception as e:  # keep going over a folder; report at the end
+                print(f"  FAILED      {f}: {e}", file=sys.stderr)
+                failed += 1
+                continue
+            if result is None:
+                continue
+            old_cents, new_cents, uncertain = result
+            flag = "  UNCERTAIN" if uncertain else ""
+            print(f"  {f.name[:56]:56}  {old_cents:7.1f} -> {new_cents:7.1f} cents{flag}")
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main())

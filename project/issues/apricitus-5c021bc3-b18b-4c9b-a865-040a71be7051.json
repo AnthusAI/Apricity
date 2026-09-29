@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-5c021bc3-b18b-4c9b-a865-040a71be7051",
+  "title": "Spike: run a Link peer from Rust: binding, build targets, RT-safe capture, in-process peers, permission prompt",
+  "description": "## Intent\nAnswer M0 questions 1, 2, 4 and 7: can Apricity run a Link peer from Rust, safely, on our targets?\n\n## Steps (throwaway code in a temp folder outside the repo, or a scratch branch that is deleted)\n1. Try `rusty_link` (crates.io) first; if it doesn't fit, a bindgen over the SDK's C API `abl_link`. Record version, build needs (cmake, C++), build time.\n2. Build for `aarch64-apple-darwin`, `x86_64-apple-darwin`, `aarch64-apple-ios` with the rustup toolchain (`export PATH=$HOME/.cargo/bin:$PATH`). Never change the workspace's `Cargo.toml`/`Cargo.lock` or add `rustup override`.\n3. In a cpal output callback, capture the audio session state and read beat and phase at the buffer's time with a counting allocator armed (as in `crates/apricity-engine/tests/realtime.rs`): must be zero allocations.\n4. Start two peers in one process with Wi-Fi off: do they see each other (`num_peers == 1`)? How long does discovery take? When a lone peer and an existing session meet, whose tempo and timeline win (this decides whether a lone `apricity link` or `apricity play --link` can impose its tempo on a DAW that joins later)?\n5. Run from Terminal on macOS 15+: is there a Local Network prompt? What happens when it is denied (peers stay 0? an error?).\n6. License: record the SDK's license terms for a GPL-2.0-or-later desktop app and for iOS; comment the finding on apricitus-874f56.\n\n## Leaves\nA comment on this task with the numbers, and the Findings text for `design/link.md` (written by the design-note task).\n\n## Verify\nThe comment holds: the build matrix (target: ok/fail + reason), the allocation count, discovery time in-process, the permission behavior, the license summary.\n\nLabel `daw`. Commit: none (spike). Log every attempt with `kbs comment`.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0229888f-19da-4ad6-b9d3-1e7420afdfe3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-874f56a6-764e-4f22-b694-f7faff703d4f",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:05.869735Z",
+  "updated_at": "2026-09-26T22:07:50.800890Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

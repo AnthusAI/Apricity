@@ -71,6 +71,11 @@ fn run(yaml: &str) -> Result<apricity_score::Timeline, Vec<String>> {
     compile(&score, &dir)
 }
 
+fn run_apr(text: &str) -> Result<apricity_score::Timeline, Vec<String>> {
+    let dir = tmp();
+    apricity_score::compile_text(text, &dir.join("t.apr"), &mut |p: &std::path::Path| apricity_score::Clip::load(p))
+}
+
 #[test]
 fn loops_tile_and_split_at_chord_changes() {
     let tl = run(r#"
@@ -91,6 +96,48 @@ tracks: [ { clip: horn, role: root } ]
     assert!((e.src_start - 5.0).abs() < 1e-9 && (e.src_end - 9.0).abs() < 1e-9, "{e:?}");
     assert_eq!(e.warp.len(), 5);
     assert!(e.warp.windows(2).all(|w| w[1].0 > w[0].0 && w[1].1 > w[0].1));
+}
+
+#[test]
+fn harmonic_effect_gets_the_resolved_harmony_embedded_at_compile_time() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+progression: [ { chord: I, bars: 1 }, { chord: V, bars: 1 } ]
+tracks: [ { clip: horn, role: root, effects: [ { harmonic: { mode: cut } } ] } ]
+"#)
+    .unwrap();
+    let apricity_score::score::Effect::Harmonic(h) = &tl.tracks[0].effects[0] else { panic!("expected a harmonic effect") };
+    assert_eq!(h.spans.len(), 2, "one span per chord");
+    assert_eq!((h.spans[0].start_beat, h.spans[0].end_beat), (0.0, 4.0));
+    assert_eq!((h.spans[1].start_beat, h.spans[1].end_beat), (4.0, 8.0));
+    // I (C major): C, E, G -> pitch classes 0, 4, 7; bass C -> 0.
+    assert_eq!(h.spans[0].bass_pc, 0);
+    let mut tones0 = h.spans[0].tones_pc.clone();
+    tones0.sort();
+    assert_eq!(tones0, vec![0, 4, 7]);
+    // V (G major): G, B, D -> 7, 11, 2; bass G -> 7.
+    assert_eq!(h.spans[1].bass_pc, 7);
+    let mut tones1 = h.spans[1].tones_pc.clone();
+    tones1.sort();
+    assert_eq!(tones1, vec![2, 7, 11]);
+}
+
+#[test]
+fn harmonic_effect_with_no_chords_compiles_to_an_empty_no_op() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+bars: 4
+clips: { horn: { source: horn.wav, beats: [0, 8] } }
+tracks: [ { clip: horn, effects: [ { harmonic: { mode: cut } } ] } ]
+"#)
+    .unwrap();
+    let apricity_score::score::Effect::Harmonic(h) = &tl.tracks[0].effects[0] else { panic!("expected a harmonic effect") };
+    assert!(h.spans.is_empty(), "no chords line: the effect embeds no spans (a documented no-op)");
 }
 
 #[test]
@@ -390,6 +437,60 @@ tracks:
     // Half-time: the 4-beat slice k.2 (clip beats 4–8) now lasts 8 beats, so one bar holds half of it.
     assert_eq!(hits_of(&tl, "slow"), vec![(0.0, 4.0, 5.0)]);
     assert_eq!(tl.tracks[1].beat_ratio, 0.5);
+}
+
+#[test]
+fn attack_and_release_carry_onto_events_and_yaml_round_trips() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips: { horn: { source: horn.wav, beats: [0, 16] } }
+tracks:
+  - { clip: horn, name: env, attack: 30, release: 400 }
+  - { clip: horn, name: plain }
+"#)
+    .unwrap();
+    let e = tl.events.iter().find(|e| e.track == "env").unwrap();
+    assert_eq!((e.attack_s, e.release_s), (Some(0.03), Some(0.4)));
+    let p = tl.events.iter().find(|e| e.track == "plain").unwrap();
+    assert_eq!((p.attack_s, p.release_s), (None, None));
+
+    let score: Score = serde_yaml::from_str(&format!(
+        "{GROOVE}tracks: [ {{ clip: horn, name: env, attack: 30, release: 400 }} ]\n"
+    ))
+    .unwrap();
+    assert_eq!((score.tracks[0].attack, score.tracks[0].release), (Some(30.0), Some(400.0)));
+    let back = serde_yaml::to_string(&score).unwrap();
+    assert!(back.contains("attack: 30") && back.contains("release: 400"), "{back}");
+    assert_eq!(serde_yaml::from_str::<Score>(&back).unwrap(), score);
+}
+
+#[test]
+fn attack_and_release_range_errors() {
+    let errs = run(&format!(
+        "{GROOVE}tracks: [ {{ clip: horn, attack: 3000 }}, {{ clip: horn, name: b, release: 6000 }} ]\n"
+    ))
+    .unwrap_err();
+    assert!(errs.iter().any(|e| e.contains("tracks[0].attack: 3000ms is outside 0ms to 2000ms")), "{errs:?}");
+    assert!(errs.iter().any(|e| e.contains("tracks[1].release: 6000ms is outside 0ms to 5000ms")), "{errs:?}");
+}
+
+#[test]
+fn no_attack_or_release_renders_the_old_path_bit_identical() {
+    // Compile-level check that omitting attack/release leaves the event untouched (engine bit-identity is
+    // covered separately in apricity-engine, but the Event fields feeding it must be None here).
+    let tl = run(r#"
+apricity: 0.1
+tempo: 60
+key: C
+bars: 1
+clips: { horn: { source: horn.wav, beats: [0, 16] } }
+tracks: [ { clip: horn } ]
+"#)
+    .unwrap();
+    assert!(tl.events.iter().all(|e| e.attack_s.is_none() && e.release_s.is_none()));
 }
 
 #[test]
@@ -985,4 +1086,253 @@ tracks:
     let loose = tl.tracks.iter().find(|t| t.name == "loose").unwrap();
     assert!(loose.level_groups.is_empty());
     assert!(loose.level_db > -10.0 && loose.level_db < 0.0, "average matching: {}", loose.level_db);
+}
+
+#[test]
+fn automation_lanes_compile_from_spec_to_timeline() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+bars: 4
+tracks:
+  - { clip: horn, effects: [ { eq: { highcut: 20000 } } ], automate: [ { target: eq.highcut, points: [["1", 20000], ["3", 6000], ["5", 5000]] } ] }
+"#)
+    .unwrap();
+    let track = &tl.tracks[0];
+    assert_eq!(track.automation.len(), 1);
+    let lane = &track.automation[0];
+    assert_eq!(lane.target, "eq.highcut");
+    assert!(!lane.step);
+    assert_eq!(lane.points.len(), 3);
+    assert_eq!(lane.points[0], [0.0, 20000.0]);
+    assert_eq!(lane.points[1], [8.0, 6000.0]);
+    assert_eq!(lane.points[2], [16.0, 5000.0]);
+}
+
+#[test]
+fn automation_step_mode_is_preserved() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+bars: 2
+tracks:
+  - { clip: horn, effects: [ { comp: { ratio: 2, threshold: -10 } } ], automate: [ { target: comp.mix, step: true, points: [["1", 0], ["2", 0.5]] } ] }
+"#)
+    .unwrap();
+    let lane = &tl.tracks[0].automation[0];
+    assert!(lane.step);
+    assert_eq!(lane.points[0], [0.0, 0.0]);
+    assert_eq!(lane.points[1], [4.0, 0.5]);
+}
+
+#[test]
+fn automation_send_and_pan_values_convert_to_engine_units() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+bars: 2
+returns: { plate: { effects: [] } }
+tracks:
+  - { clip: horn, pan: 50, sends: { plate: 0.25 }, automate: [ { target: pan, points: [["1", -30], ["2", 30]] } ] }
+"#)
+    .unwrap();
+    let track = &tl.tracks[0];
+    assert_eq!(track.automation.len(), 1);
+    let pan_lane = &track.automation[0];
+    assert_eq!(pan_lane.target, "pan");
+    assert_eq!(pan_lane.points[0], [0.0, -0.3]);
+    assert_eq!(pan_lane.points[1], [4.0, 0.3]);
+}
+
+#[test]
+fn automation_on_groups_and_returns() {
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+bars: 2
+groups:
+  strings: { effects: [ { eq: { low: [2, 100] } } ], automate: [ { target: eq.low, points: [["1", 2], ["2", 4]] } ] }
+returns:
+  plate: { effects: [ { reverb: {} } ], automate: [ { target: reverb.mix, points: [["1", 0], ["2", 0.5]] } ] }
+tracks:
+  - { clip: horn, group: strings, sends: { plate: 0.5 } }
+"#)
+    .unwrap();
+    let group_bus = tl.buses.iter().find(|b| b.name == "strings").unwrap();
+    assert_eq!(group_bus.automation.len(), 1);
+    assert_eq!(group_bus.automation[0].target, "eq.low");
+    assert_eq!(group_bus.automation[0].points[0], [0.0, 2.0]);
+    assert_eq!(group_bus.automation[0].points[1], [4.0, 4.0]);
+
+    let return_bus = tl.buses.iter().find(|b| b.name == "plate").unwrap();
+    assert_eq!(return_bus.automation.len(), 1);
+    assert_eq!(return_bus.automation[0].target, "reverb.mix");
+    assert_eq!(return_bus.automation[0].points[0], [0.0, 0.0]);
+    assert_eq!(return_bus.automation[0].points[1], [4.0, 0.5]);
+}
+
+#[test]
+fn automation_error_unknown_target_with_error_propagation() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n  eq highcut 20k\n  automate eq.hicut 1=20k 3=6k\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("unknown automation target `eq.hicut` (did you mean `eq.highcut`?)"), "{errs}");
+}
+
+
+#[test]
+fn automation_error_missing_eq_band() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n  eq\n  automate eq.highcut 1=20k\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("this track's eq has no highcut"), "{errs}");
+}
+
+#[test]
+fn automation_error_missing_comp() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate comp.threshold 1=-20dB\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("this track has no comp"), "{errs}");
+}
+
+#[test]
+fn automation_error_missing_send() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate send plate 1=50%\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("doesn't send to `plate`"), "{errs}");
+}
+
+#[test]
+fn automation_error_missing_filter() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate filter 1=1000Hz\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("this track has no filter"), "{errs}");
+}
+
+#[test]
+fn automation_error_filter_cutoff_without_a_filter_effect() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate filter.cutoff 1=1000\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("this track has no filter"), "{errs}");
+}
+
+#[test]
+fn automation_filter_res_targets_the_header_when_the_track_has_one() {
+    // A track with a header filter but no filter effect: `filter.res` automates the header.
+    let tl = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn  filter lp 800\n  automate filter.res 1=0% 2=80%\n").unwrap();
+    let lane = tl.tracks[0].automation.iter().find(|l| l.target == "filter.res").expect("filter.res lane");
+    assert_eq!(lane.points[0], [0.0, 0.0]);
+    assert_eq!(lane.points[1], [4.0, 0.8]);
+}
+
+#[test]
+fn automation_filter_res_targets_the_effect_on_a_group() {
+    // A group has no header filter, so `filter.res` there always targets the filter effect.
+    let tl = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 8], beat_ratio: 1 } }
+bars: 2
+groups:
+  strings: { effects: [ { filter: { kind: lp, hz: 800 } } ], automate: [ { target: filter.res, points: [["1", 0], ["2", 0.8]] } ] }
+tracks:
+  - { clip: horn, group: strings }
+"#)
+    .unwrap();
+    let bus = tl.buses.iter().find(|b| b.name == "strings").unwrap();
+    assert_eq!(bus.automation[0].target, "filter.res");
+    assert_eq!(bus.automation[0].points[1], [4.0, 0.8]);
+}
+
+#[test]
+fn automation_error_pan_out_of_range() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate pan 1=150\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("pan 150 is outside -100 to 100"), "{errs}");
+}
+
+#[test]
+fn automation_error_points_out_of_order() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate pan 3=0 1=50\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("comes before"), "{errs}");
+}
+
+#[test]
+fn automation_error_past_the_end() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate pan 1=0 10=50\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("past the end"), "{errs}");
+}
+
+#[test]
+fn automation_error_out_of_range_hz() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n  eq highcut 20k\n  automate eq.highcut 1=100k\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("100k is outside 20Hz to 20000Hz"), "{errs}");
+}
+
+#[test]
+fn automation_error_out_of_range_send_level() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n  send plate 50%\n  automate send plate 1=150%\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("150% is outside 0% to 100%"), "{errs}");
+}
+
+#[test]
+fn automation_error_out_of_range_db() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate volume 1=50dB\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("50dB is outside -60dB to 12dB"), "{errs}");
+}
+
+#[test]
+fn automation_error_duplicate_target() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n  automate pan 1=0\n  automate pan 2=50\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("pan is already automated"), "{errs}");
+}
+
+#[test]
+fn automation_error_line_number_points_to_automate_not_track() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate pan 10=50\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(!errs.contains("line 5"), "{errs}");
+}
+
+#[test]
+fn automation_error_two_tracks_different_line_numbers() {
+    let errs = run_apr("tempo 120\nkey C\nbars 2\nclip horn = horn.wav beats 0..8\ntrack horn\n\n  automate pan 1=150\ntrack horn\n\n  automate pan 1=150\n").unwrap_err().join("\n");
+    assert!(errs.contains("line 7 column"), "{errs}");
+    assert!(errs.contains("line 10 column"), "{errs}");
+}
+
+#[test]
+fn automation_explain_mix_prints_lanes() {
+    let timeline = run(r#"
+apricity: 0.1
+tempo: 120
+key: C
+clips: { horn: { source: horn.wav, beats: [0, 16], beat_ratio: 1 } }
+bars: 4
+tracks:
+  - clip: horn
+    effects: [{ eq: { highcut: 20000 } }]
+    automate:
+      - target: eq.highcut
+        points: [["1", 20000], ["3", 6000]]
+      - target: pan
+        step: true
+        points: [["1", 0], ["2", 50], ["3", -50]]
+"#).unwrap();
+    let explain = timeline.explain();
+    assert!(explain.contains("automate eq.highcut  1=20k  3=6k"), "{}", explain);
+    assert!(explain.contains("automate pan step  1=0  2=50  3=-50"), "{}", explain);
 }

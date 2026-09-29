@@ -1,0 +1,53 @@
+{
+  "id": "apricitus-2831a67d-90b5-4b29-b709-65d2e8513c14",
+  "title": "Deterministic generator for tiny test WAVs used by the sidecar fixtures",
+  "description": "## Intent\nThe reference sidecars (next chore) must point at audio we can regenerate byte for byte in tests, because audio never goes in git. Write a deterministic generator for tiny test WAVs.\n\n## Scope\n- `scripts/daw-fixture-audio.py` (stdlib only: `wave`, `struct`, `math`): writes 44.1 kHz 16-bit mono WAVs of clicks (accented downbeats) to a given folder:\n  - `steady-120.wav`: one pickup beat + 4 bars of 4/4 at 120 BPM (~8.5 s);\n  - `tempo-change.wav`: 100 BPM changing to 120 BPM at beat 6.5 (mid-bar);\n  - `detuned.wav`: a sustained tone pitched 30 cents flat at 120 BPM, for detune;\n  - `free-time.wav`: clicks at random but seeded intervals (no beat grid).\n- Same bytes every run (fixed seed, no timestamps); each file under 1 MB; sha256 printed.\n- A `--check` flag compares the sha256 of generated files with `crates/apricity-daw/tests/fixtures/audio.sha256` (added in M1).\n\n## Out of scope\nCommitting any audio. The WAVs stay in the scratchpad (spike) and in temp dirs (tests).\n\n## Verify\n`python3 scripts/daw-fixture-audio.py --out /tmp/daw-fx && python3 scripts/daw-fixture-audio.py --out /tmp/daw-fx2 && diff -r /tmp/daw-fx /tmp/daw-fx2` (identical), and `git status` shows no `.wav`.\n\nCommit: `chore(<this id>): deterministic test audio for DAW sidecar fixtures`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "chore",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9fb5fec4-4cf9-4f87-9db3-535b47e5a7ab",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "fc9d4ea3-6f20-4930-834c-46714069a6ae",
+      "author": "home",
+      "text": "Done: scripts/daw-fixture-audio.py (stdlib only: wave, struct, math, random, hashlib, argparse). Writes steady-120.wav (pickup + 4 bars at 120, 9.5 s), tempo-change.wav (100 -> 120 BPM at beat 6.5), detuned.wav (A4 30 cents flat under clicks at 120), free-time.wav (seeded random gaps, seed 0x9FB5FE); 44.1 kHz 16-bit mono, each under 1 MB (largest 837,944 bytes). Prints sha256; --truth prints every click as (seconds, beat) in Apricity numbering (beat 0 = first downbeat, pickup -1), which is the ground truth the owner's DAW table gets compared with; --check compares with crates/apricity-daw/tests/fixtures/audio.sha256 and says clearly that the file does not exist until M1. Decision: 0.25 s lead silence so no click sits on sample 0. Caveat: float sin/exp could in theory differ by one ulp across libm builds; samples are rounded to int16 so identical output is expected, but M1's --check will be the proof on CI. Verification: python3 scripts/daw-fixture-audio.py --out <scratch>/wav1 && --out <scratch>/wav2 && diff -r -> IDENTICAL; git status shows no .wav. sha256: steady-120 6e0b85a7..., tempo-change e67709e7..., detuned 76d16996..., free-time 690931b2....",
+      "created_at": "2026-09-26T23:14:01.526873Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "e319ba7d-43a4-4b40-9a40-92510180f92b",
+      "author": "home",
+      "text": "scripts/daw-fixture-audio.py landed in 0e258d0; verified byte-identical across two runs.",
+      "created_at": "2026-09-26T23:33:32.862995Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-26T21:59:43.789816Z",
+  "updated_at": "2026-09-26T23:33:32.925534Z",
+  "closed_at": "2026-09-26T23:33:32.925502Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

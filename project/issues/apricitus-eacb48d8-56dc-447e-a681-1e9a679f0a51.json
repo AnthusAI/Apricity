@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-eacb48d8-56dc-447e-a681-1e9a679f0a51",
+  "title": "Library mode for sidecar export; sync and git ignore sidecars",
+  "description": "## Intent\nLibrary mode and keeping sidecars out of sync and git.\n\n## Scope\n- `--library DIR`: resolve each path through the library (`samplesByPath`, aliases) as `apricity_data::loader::make` does; write beside `files/audio/<sampleId>/<file>`.\n- `crates/apricity-data/src/sync.rs`: `*.asd` and `*.alc` under `files/` are machine-local (never uploaded, downloaded, listed or deleted), next to the existing `.DS_Store` rule; the new `features/sync/sync.feature` scenario green.\n- `.gitignore`: `/samples/**/*.asd`, `/samples/**/*.alc`.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-data sync` and `safe-run.sh -- cargo test -p apricity-cli --test daw_cli` (library scenarios green); `scripts/sync-smoke.sh` still passes.\n\nCommit: `feat(<this id>): sidecars in a library, excluded from sync`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-2910651b-d34c-4680-b170-26ab9167ccb0",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:43.899625Z",
+  "updated_at": "2026-09-26T22:06:36.114914Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

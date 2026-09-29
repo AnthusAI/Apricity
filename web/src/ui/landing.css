@@ -1,6 +1,6 @@
 /* Landing page: Apricity, the mashup machine. Warm light, apricot and plum. */
 
-#home { display: block; overflow: auto; }
+#about { display: block; overflow: auto; }
 
 .landing {
   --sun: #f59e5b;

@@ -110,6 +110,13 @@ export class RankedList<T extends Rankable> {
       add.addEventListener("click", () => src.create!.run());
       searchRow.push(add);
     }
+    // A rating anywhere (this list's rows, an open item, another tab) changes the standings: re-read them, now and once
+    // the tally Lambda has caught up. Not redrawn here, so rows don't jump while you rate down a list; the next filter,
+    // sort, window or visit to the tab shows them.
+    document.addEventListener("apricity:rated", () => {
+      void this.rereadTallies();
+      setTimeout(() => void this.rereadTallies(), 3000);
+    });
     const kids: HTMLElement[] = [el("div", { className: "search" }, ...searchRow), tools, ...(src.tools ? [src.tools] : []), this.noteEl, this.listEl];
     this.el = el("aside", { className: "sidebar ranked" }, ...kids);
   }
@@ -143,6 +150,12 @@ export class RankedList<T extends Rankable> {
     }
     this.render();
     return this.items;
+  }
+
+  private async rereadTallies() {
+    try {
+      this.tallies = await this.src.tallies();
+    } catch {} // the list keeps the standings it had; the next refresh reports a failure
   }
 
   /** The item's standing in the window shown, for an open item's header. */

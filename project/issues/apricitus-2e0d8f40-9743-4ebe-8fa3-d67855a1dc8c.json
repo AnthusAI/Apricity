@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-2e0d8f40-9743-4ebe-8fa3-d67855a1dc8c",
+  "title": "Stored warp markers are checked, with their location in the manifest",
+  "description": "## Behavior\n```gherkin\nFeature: Stored warp markers are checked, with their location\n\n  Scenario: Out of order\n    Given a manifest whose markers[3] (warp, beat 6) is earlier in seconds than markers[2] (warp, beat 5)\n    When I compile a score that uses the sample\n    Then compiling fails with \"steady-120.wav.apricity.json: annotations.markers[3]: warp marker at beat 6 (2.90 s) is before the one at beat 5 (3.00 s)\"\n\n  Scenario: Only one warp marker of yours\n    Given a manifest with exactly one marker named \"warp\" with a beat\n    When I compile a score that uses the sample\n    Then compiling fails with a message naming annotations.markers and \"needs at least two warp markers, or none\"\n\n  Scenario: A warp marker outside the audio\n    Given a manifest with a warp marker at 99 s on a 9 s sample\n    When the manifest is validated\n    Then validation fails naming annotations.markers and the sample's length\n\n  Scenario: A marker with a beat must be named warp\n    Given a manifest with a marker named \"cue\" that has a beat\n    When the manifest is validated\n    Then validation fails with \"annotations.markers[0]: only warp markers have a beat\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0297cb89-801b-4961-bc6b-a7e1fb8bedb6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:55.265219Z",
+  "updated_at": "2026-09-26T22:04:55.265245Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

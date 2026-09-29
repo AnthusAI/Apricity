@@ -31,16 +31,30 @@ const readAll = (allow: any) => [allow.guest.to(["read"]), ...readSignedIn(allow
 
 // One record folder per model in the data contract (Recording/, Sample/, Clip/, ...). Private ones need sign-in.
 const recordFolders = Object.keys((contract as { models: Record<string, unknown> }).models);
-const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating"]);
+const PRIVATE = new Set(["Verdict", "Crate", "CrateItem", "Rating", "ListeningCycle", "CycleVerdict", "Lab"]);
+
+// Every top-level folder under `files/` that the library writes. Amplify refuses a rule with an {entity_id} token under
+// a broader path (a blanket "files/*" above "files/cycles/{entity_id}/*" fails the deploy), so `files/` is granted
+// folder by folder; a new folder needs its own line here or the browser can't read it.
+export const PUBLIC_FILE_FOLDERS = ["audio", "analysis", "documents", "breakdowns"];
+
+// The access rules, as a function of Amplify's `allow` builder, so a test can check the paths with Amplify's own
+// validator (test/storage-paths.test.ts); `tsc` and the unit tests don't run it, only the deploy does.
+export const storageAccess = (allow: any) => ({
+  // Audio, analysis, documents and the breakdowns' sound. (A more specific path REPLACES the broader grant, with an
+  // explicit deny for every role it does not list.)
+  ...Object.fromEntries(PUBLIC_FILE_FOLDERS.map((folder) => [`files/${folder}/*`, readAll(allow)])),
+  // Listening-cycle renders (files/cycles/<identityId>/<cycleId>/<letter>.m4a): the lab CLI's cloud target uploads
+  // these as the signed-in person's own identity-pool credentials (`apricity login`), so the key needs their entity
+  // id in it for `allow.entity("identity")` to grant the write. Their blindness comes from the ListeningCycle
+  // records, which only signed-in people can read (the keys hold random cycle ids), not from the bucket.
+  "files/cycles/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"]), ...readSignedIn(allow)],
+  ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, PRIVATE.has(model) ? readSignedIn(allow) : readAll(allow)])),
+  "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
+});
 
 export const storage = defineStorage({
   name: "apricityFiles",
   isDefault: true,
-  access: (allow) => ({
-    // Audio, analysis, documents and the breakdowns' sound. (No narrower `files/...` path: a more specific path
-    // REPLACES the broader grant, with an explicit deny for every role it does not list.)
-    "files/*": readAll(allow),
-    ...Object.fromEntries(recordFolders.map((model) => [`${model}/*`, PRIVATE.has(model) ? readSignedIn(allow) : readAll(allow)])),
-    "uploads/{entity_id}/*": [allow.entity("identity").to(["read", "write", "delete"])],
-  }),
+  access: storageAccess,
 });

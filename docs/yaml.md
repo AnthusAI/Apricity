@@ -167,9 +167,11 @@ tracks:
 | `seed` | whole number | Which take of the humanize variation. | `seed 3` |
 | `speed` | number, 0.125–8 | Playback speed against the beat. | `half` (0.5), `double` (2), `speed 0.75` |
 | `reverse` | `true` · `false` | Each note plays backwards. | `reverse` |
-| `filter` | `{lowpass: Hz}` · `{highpass: Hz}` | 12 dB/octave filter, 20–20000 Hz. | `filter lp 800` |
+| `filter` | `{lowpass: Hz}` · `{highpass: Hz}`, plus optional `res` (0–1, default 0) and `slope` (12 or 24, default 12) | Filter, 20–20000 Hz. `res` adds resonance (0 = today's gentle response, 1 ≈ a strong, stable peak); `slope` is dB/octave (24 cascades two biquads). At `res: 0` and `slope: 12` this is exactly the plain filter. | `filter lp 800`, `filter hp 300 res 20% 24dB` |
 | `gate` | number, above 0 and up to 1 | Cut each note to this fraction. | `gate 50%` |
 | `stutter` | whole number, 1–64 | Replay each note's start this many times. | `stutter 4` |
+| `attack` | number (ms), 0–2000 | Fade each note in from silence over this time. | `attack 30ms` |
+| `release` | number (ms), 0–5000 | Keep each note sounding past its written end, fading out; the extra audio is the source's own continuation, at the note's own speed and pitch. With `gate`, the release starts at the gated end. | `release 400ms` |
 | `bars` | `"a-b"` or a bar number | Only in these bars (1-based, inclusive). | `bars 13-24` |
 | `volume` | number (dB) | Level relative to the other tracks: the track's fader. Default `0`. | `volume -2` |
 | `effects` | list of [effects](#mixing) | The track's effects, in order. | indented `eq`, `comp`, … lines |
@@ -209,15 +211,49 @@ shares from 0 to 1 (so `35%` is `0.35`). For what each does and its ranges, see
 | Effect | Fields |
 |---|---|
 | `eq` | `lowcut`, `highcut` (Hz); `low`, `high` (`[dB, Hz]` shelves); `peaks` (list of `[dB, Hz, q]`) |
-| `comp` | `ratio` and `threshold` (dB), both required; `attack_ms`, `release_ms`, `knee`, `makeup` |
+| `comp` | `ratio` and `threshold` (dB), both required; `attack_ms`, `release_ms`, `knee`, `makeup`, `mix` (0–1, default 1) |
 | `limit` | `ceiling` (dB), required; `release_ms` |
 | `reverb` | `type` (`room` · `hall` · `plate`, default `hall`); `decay_s`, `predelay_ms`, `damp`, `mix` |
 | `delay` | `beats` (a quarter note is 1, so a dotted eighth is 0.75) or `ms`; `feedback`, `highpass`, `lowpass`, `pingpong`, `mix` |
+| `filter` | `kind` (`lp` · `hp` · `bp`) and `hz`, both required; `res` (0–1, default 0); `slope` (12 or 24, default 12); e.g. `{ kind: lp, hz: 800, res: 0.4, slope: 24 }`. Not allowed on the master yet. |
 
 A **group track** has `effects`, `volume` (dB, default 0) and `group` (the group it sits in; default
 the master). A **return track** has `effects` and `volume`, and always plays into the master. The
 **master** has `effects` and `loudness` (LUFS, default −16). `reverb` and `delay` aren't allowed on
 the master, and `pan` is a track field, not an effect.
+
+## Automation
+
+Change a parameter over time with `automate` blocks on a track, group or return:
+
+```yaml
+tracks:
+  - clip: horns
+    automate:
+      - target: volume
+        points: [["1", -60], ["2", 0]]    # fade in from -60dB to 0dB
+      - target: eq.highcut
+        step: true
+        points: [["1", 20000], ["3", 6000], ["5", 5000]]  # step mode
+      - target: comp.mix
+        points: [["1", 0], ["5", 1]]      # compression fades in
+groups:
+  beat:
+    automate:
+      - target: volume
+        points: [["1", 0], ["8", -6], ["16", 0]]  # swell and fall
+```
+
+Positions are strings: bars (`"3"`) or beats (`"2:3"` = bar 2, beat 3). Values are numbers, in the
+same units as on the effect line (0–1 for shares, Hz for frequencies, dB for levels, −100…100 for pan).
+
+`filter` targets a track's header filter cutoff (Hz), and `filter.res` its resonance (0–1). A
+`filter` chain effect (on a track, group or return) is automated the same way an `eq` is:
+`filter.cutoff` and `filter.res` (`filter2.cutoff` for a second one). On a track that has both a
+header filter and a filter effect, `filter.res` targets the header (it already owns bare `filter`).
+
+Before the first point the value holds at that point; after the last, it holds at that point. Between points
+it ramps linearly (or steps, if `step: true`). Two points at the same position jump instantly.
 
 ## Converting
 

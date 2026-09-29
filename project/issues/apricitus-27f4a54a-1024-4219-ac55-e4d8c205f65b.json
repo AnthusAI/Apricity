@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-27f4a54a-1024-4219-ac55-e4d8c205f65b",
+  "title": "Final docs pass: tools, concepts, README status, design note status",
+  "description": "## Intent\n\nFinal docs pass for the initiative.\n\n## Steps\n\n- `docs/tools.md`: the export command complete (all flags), the server route, the examples smoke script.\n- `docs/concepts.md` \"Taking a score into a DAW\": final; and the \"Where it's going\" list no longer lists anything this initiative built.\n- README.md: the status line mentions DAW set export; the Layout table row for `crates/apricity-daw` (from M1) still correct.\n- `design/daw-set.md`: status \"built\", open questions answered or moved to issues.\n- Semantic Release writes CHANGELOG.md from the commits; no hand edits.\n\n## Verification\n\nThe diff adds no mention of the vendor's name or the DAW's product name; `npm --prefix web run build` shows the pages in the Docs tab.\n\n## Release\n\n`docs(<this task's id>): DAW set export, complete`.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-3e535c11-3d31-4864-ae05-ee20ecfb622a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:29.914866Z",
+  "updated_at": "2026-09-26T22:06:29.914904Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

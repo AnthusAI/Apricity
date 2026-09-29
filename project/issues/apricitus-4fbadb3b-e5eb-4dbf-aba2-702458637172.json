@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-4fbadb3b-e5eb-4dbf-aba2-702458637172",
+  "title": "Fixture folder: DAW-saved reference sidecars, broken variants, audio digests",
+  "description": "## Intent\nReal-format fixtures, checked into git, with no audio.\n\n## Scope\n- `crates/apricity-daw/tests/fixtures/`: the owner's DAW-saved `.asd`/`.alc` files from M0, plus hand-made broken variants (truncated, out-of-order markers, unknown version, not gzip) each produced by a documented one-line command.\n- `fixtures/README.md`: DAW version; for each file, how it was made and the markers the DAW showed (the expectations the specs read).\n- `fixtures/audio.sha256`: sha256 of each WAV from `scripts/daw-fixture-audio.py`; a test helper `fixture_audio(dir)` generates them into a temp dir and checks the digests (fails loudly if the generator drifted).\n- `.gitignore` guard test: `git ls-files crates/apricity-daw/tests/fixtures | grep -E '\\\\.(wav|mp3|aif)$'` is empty (in the runner).\n- `fixtures/manifests/`: analysis manifests for each WAV (`*.wav.apricity.json`), produced once with `apricity_analyze.cli` and trimmed, validated against `schema/sample-manifest.schema.json`.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-daw fixtures` and `python3 scripts/daw-fixture-audio.py --out $(mktemp -d) --check`.\n\nCommit: `chore(<this id>): real-format DAW sidecar fixtures`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-57dc3f15-ad0d-42e2-b41d-5fb64407c9d5",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:27.599273Z",
+  "updated_at": "2026-09-26T22:06:35.526729Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

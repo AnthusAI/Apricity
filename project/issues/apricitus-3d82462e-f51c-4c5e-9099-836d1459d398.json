@@ -1,0 +1,43 @@
+{
+  "id": "apricitus-3d82462e-f51c-4c5e-9099-836d1459d398",
+  "title": "apricity-daw clip_folder.rs: shared names and .alc writer, atomic per sample, files or library",
+  "description": "## Intent\n\nWrite the folder: one clip file per ML clip, named by the shared rule and written by the shared `.alc` writer.\n\n## Scope\n\n- `crates/apricity-daw/src/clip_folder.rs`: for each sample, the ML clips `layout::kind_folder` keeps; file name from `names::clip_file_name` (apricitus-998976); contents from the `.alc` writer (apricitus-007386): region, loop on for loops only, warp markers inside the region (warp off with no beat grid), audio referenced in place.\n- Whole-sample atomicity: write into `<out>/.<sample>.partial`, then rename; with `--force` the old sample folder is replaced (so files for markup that is gone disappear). Empty kind folders are not created.\n- Folder input: walk for `*.apricity.json`; audio without a manifest is skipped with a message; every error collected, other samples still written.\n- Library input: resolve samples through `apricity_data::loader` (the path `apricity render --library` uses); the whole library when no path is given.\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test conformance\n```\nThe clip-folder scenarios for layout, regions, loops, edge cases and library input pass.\n\n## Release\n\n`feat(<this task id>): write automatic markup as a browsable clip folder`. Not breaking.\n\n## Dependencies\n\nBlocked by the layout task, by `names::clip_file_name` (apricitus-998976) and by the `.alc` writer (apricitus-007386).",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-786bd28e-cd35-475a-92c2-c2fb6f1a3b94",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-99897614-47ef-46cb-96b7-19edb00f4856",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-00738618-0fb2-4483-8430-e60f33e0296e",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:07:30.980752Z",
+  "updated_at": "2026-09-26T22:11:55.525722Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

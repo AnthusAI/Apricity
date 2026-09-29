@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-a82e91be-d920-481a-b4c8-c3e1d28ea11c",
+  "title": "Resonant filters: res and 24 dB slope, a filter effect on groups, automatable",
+  "description": "## Why\nA classic house breakdown and drop lives on a **resonant** filter sweep: the whole mix low-passed, with a peak at the cutoff that sings as it opens into the drop. Apricity's filters are gentle 12 dB/oct RBJ biquads with a fixed Q of 0.707: no resonance, no steeper slope, and no filter effect on a group track. The `filter` lane only works on a track's own header filter. Found while planning a buildup, breakdown and drop for the demo `examples/ave-house.apr`.\n\n## The feature\n1. **Resonance and slope on the track's header filter:** `filter lp 800 res 40%` and `filter hp 300 res 20% 24dB`.\n   - `res` is 0–100%, default 0%. It maps to Q = 0.707 · 20^(res), so 0% → 0.707 (exactly today's response) and 100% → about 14.1 (a strong, singing peak that stays stable and doesn't self-oscillate).\n   - `24dB` means two cascaded biquads; the default is `12dB`, as now.\n   - With `res` 0 and 12 dB, output must be **bit-identical** to today.\n2. **A filter effect line** under a track, group or return (not the master yet): `filter lp 800 res 40% 24dB` on an indented line, processed in chain order like eq/comp.\n   - A new `Effect::Filter(FilterFxSpec { kind: lp|hp, hz, res, slope })`. Add a `bp` (band-pass) kind too if it's cheap.\n   - In `master::process_chain` it runs per sample with `Biquad` (two in series for 24 dB), and coefficients are recomputed every 32 frames when automated, with `Biquad::set`, which keeps filter memory.\n3. **Automation targets:**\n   - Header filter: `filter` (cutoff, already exists) and a new `filter.res`.\n   - Filter effect: `filter.cutoff` and `filter.res` (and `filter2.cutoff` for a second one, like `eq2`).\n   - Cutoff ramps on the log scale (scale_for); `res` is linear.\n   - Reuse the existing automation plumbing (compile.rs `lanes()`/validate_target, master.rs `chain_curves`/`automated_effect`, render.rs `filter_sweep`).\n   - `filter.res` and `filter.cutoff` must be validated like other targets: the effect must exist, \"did you mean\", range errors on the automate line.\n4. **Explain, format, YAML and docs:**\n   - `dsl::effect_text` and `format()` round-trip the new syntax.\n   - YAML carries `res` and `slope`.\n   - docs/language.md: Track options (`filter`), Effects table (the new `filter` line), the Automation targets list, the grammar, and a short \"classic filter breakdown\" example on a group track.\n   - docs/yaml.md.\n\n## Tests (exact, on real functions)\n- Response: feed a sine at the cutoff frequency through the filter (steady state) and measure its gain. With `res 0%` it's about −3 dB; with `res 80%` it's at least +10 dB above the `res 0%` gain. An octave above the cutoff, 24 dB/oct attenuates at least 20 dB, and 12 dB/oct about 12 dB (±2).\n- Bit-identity: a header filter with no `res`/slope renders byte-identically to before (compare against the old `biquad` path). Existing examples keep passing the round-trip test.\n- A filter effect on a group, with `automate filter.cutoff 1=200 5=20k`: the energy above 5 kHz in the first half-beat is at least 20 dB below the last half-beat (use a band_db-style helper like render.rs tests).\n- `automate filter.res step 1=0% 3=80%`: the gain at the cutoff frequency rises at bar 3.\n- Parser and compile errors, each asserting \"line N\" and the exact text: res out of range, unknown slope, `filter.cutoff` automated without a filter effect, a filter line under master.\n- `cargo test --workspace --exclude apricity-web` all green.\n\n## Out of scope\n- Master automation.\n- Automation curve shapes.\n- Any UI.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "900b6535-6fa6-4ef1-9d31-63faac59a8b2",
+      "author": "home",
+      "text": "Merged in PR #10 with CI green. Sonnet agent; the reviewer re-ran the tests and bit-compared 12 scores (identical). Follow-up bug: apricitus-756370.",
+      "created_at": "2026-09-27T02:03:18.566948Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T01:10:32.640694Z",
+  "updated_at": "2026-09-27T02:03:18.684385Z",
+  "closed_at": "2026-09-27T02:03:18.684333Z",
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

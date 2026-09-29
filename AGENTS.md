@@ -24,6 +24,5 @@ Kanbus board commits are **project management, not product**. After `kbs` create
 
 ## Other working areas
 
-- The web UI (`web/src/ui/*`, `web/src/style.css`), `docs/` and branding belong to a separate web/docs session. Storage work may change how the UI fetches data, but coordinate visual/UX changes through the Kanbus issue rather than making them directly.
 - Virtuus (`~/Projects/Virtuus`, Kanbus key `virt`) is upgraded upstream for the storage engine; follow its own AGENTS.md there (specs first, 100% coverage, Python/Rust parity, feature branches off `develop`).
 

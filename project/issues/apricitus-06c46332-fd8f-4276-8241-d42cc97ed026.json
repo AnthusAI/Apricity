@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-06c46332-fd8f-4276-8241-d42cc97ed026",
+  "title": "Every saved clip becomes an .alc in a folder beside its sample",
+  "description": "## Behavior\n```gherkin\nFeature: Saved clips as .alc files\n\n  Background:\n    Given the analyzed fixture sample \"steady-120.wav\" in Bb major with sections A and B\n    And its saved clips:\n      | name   | start | end  | source | retired |\n      | sec-A1 | 0.50  | 4.50 | ml     | no      |\n      | loop-1 | 0.50  | 2.50 | ml     | no      |\n      | shot-3 | 5.00  | 5.50 | ml     | no      |\n      | riff   | 1.00  | 3.00 | user   | no      |\n      | loop-9 | 2.50  | 4.50 | ml     | yes     |\n\n  Scenario: Every saved clip becomes an .alc in a folder beside the sample\n    When I run \"apricity export --sidecars steady-120.wav\"\n    Then the folder \"steady-120.wav clips\" holds exactly:\n      | file                      |\n      | A-2bars-Bb sec-A1.alc     |\n      | A-1bar-Bb loop-1.alc      |\n      | B-1beat-Bb shot-3.alc     |\n      | A-1bar-Bb riff.alc        |\n    And the output says \"4 clips written\"\n\n  Scenario: A clip file plays its region, warped\n    When I export the sidecars and read \"A-1bar-Bb loop-1.alc\"\n    Then its region is 0.50 s to 2.50 s with the loop on\n    And its warp markers are the sample's markers inside that region\n    And it refers to the audio \"steady-120.wav\"\n\n  Scenario: Retired clips are not exported\n    When I export the sidecars\n    Then no file in \"steady-120.wav clips\" names \"loop-9\"\n\n  Scenario: A sample with no saved clips gets no folder\n    Given the analyzed fixture sample \"tempo-change.wav\" with no saved clips\n    When I export its sidecars\n    Then there is no folder \"tempo-change.wav clips\"\n    And the output says \"tempo-change.wav: no saved clips\"\n\n  Scenario: --no-clips writes only the sample's sidecar\n    When I run \"apricity export --sidecars steady-120.wav --no-clips\"\n    Then there is no folder \"steady-120.wav clips\"\n```\n\nManual check (DAW): open the folder in the DAW's browser; names sort by section; dragging `A-1bar-Bb loop-1.alc` into a track plays one bar in time, looped.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f5b805c2-0fb0-4c8e-ae4b-7629ad968c6a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:34.005398Z",
+  "updated_at": "2026-09-26T22:03:47.718325Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

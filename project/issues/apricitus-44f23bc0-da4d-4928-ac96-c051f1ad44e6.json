@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-44f23bc0-da4d-4928-ac96-c051f1ad44e6",
+  "title": "apricity-data: read a collection's items in order from a library (Crate until the Collection rename)",
+  "description": "## Intent\n\nRead a collection, in order, from a library.\n\n## Scope\n\n- `crates/apricity-data/src/library.rs`: a facade `collections()` with `by_name(name) -> Option<Collection>` and `items(collection) -> Vec<(position, sample Value, clip Value)>` ordered by the fractional-index `position`, over the `Crate`/`CrateItem` models (`crateItemsByCrate`); names listed for \"did you mean\".\n- Follows the rename to `Collection`/`CollectionItem` when it lands (a clean break, no alias).\n- Unit tests in `crates/apricity-data/tests/` with a temp library: order after a move, an item removed, an empty collection, an item whose clip was deleted (reported, not skipped silently).\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-data\n```\n\n## Release\n\n`feat(<this task id>): read a collection's items in order`. Not breaking (no contract change).\n\n## Dependencies\n\nBlocked by the specs task. Coordinate with the storage session (epic apricitus-9433e6) since it owns `apricity-data`.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-85e6726d-b69f-4141-9684-61dfb88c6661",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:26.447783Z",
+  "updated_at": "2026-09-26T22:11:56.194887Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,28 @@
+{
+  "id": "apricitus-4092b585-789e-4f65-9f9b-80cfc5748633",
+  "title": "Lean reads: score lists without text; handles on demand",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-91d34a67-5133-4b66-88a4-a4ab22b88b6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "c498390d-dfdf-4223-945a-06af01a83c5b",
+      "author": "home",
+      "text": "Handles on demand moved to phase 2: every name label reads handles synchronously, and one Handle list is cheap until thousands of people.",
+      "created_at": "2026-09-27T01:49:40.295701Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-27T01:34:30.951791Z",
+  "updated_at": "2026-09-27T01:49:40.353903Z",
+  "closed_at": "2026-09-27T01:49:40.353858Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

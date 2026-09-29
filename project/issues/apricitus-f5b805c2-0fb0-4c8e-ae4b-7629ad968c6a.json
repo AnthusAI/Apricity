@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-f5b805c2-0fb0-4c8e-ae4b-7629ad968c6a",
+  "title": "M3: every saved clip exported as an .alc named with its section letter, length and key",
+  "description": "## Purpose\nEvery clip saved with a sample (yours, automatic markup's `sec-A1`, `loop-1`, `shot-3`, `hold-2`, curated ones) is exported as an `.alc` in a folder beside the sample, named so the DAW's browser reads like a crate: section letter, length and key first, then the clip's name. Dragging one in gives exactly that region, warped and in tune.\n\n```mermaid\nflowchart LR\n  S[\"Thunderer.mp3 + manifest\nclips: sec-A1, loop-1, shot-3, riff\"] -->|apricity export --sidecars| F[\"Thunderer.mp3 clips/\"]\n  F --> a[\"A-16bars-Bb sec-A1.alc\"]\n  F --> b[\"A-1bar-Bb loop-1.alc\"]\n  F --> c[\"B-1beat-Eb shot-3.alc\"]\n  F --> d[\"A-2bars-Bb riff.alc\"]\n```\n\n## Naming (decided here, recorded in design/daw-sidecars.md §Naming)\n`<section letter>-<length>-<key> <clip name>.alc`: the section the clip starts in (omitted when the sample has no sections, e.g. drum stems); length in bars when whole bars, else beats (`1bar`, `4bars`, `1beat`, `6beats`), omitted for unwarped samples; key from key over time where most of the clip lies, chord-style (`Bb`, `Fm`), omitted when the sample is unpitched or its key is weak. apricitus-5562e0 (browsable clip folder, kits) reuses this rule and the `.alc` writer instead of defining its own.\n\n## Scope\nFolder layout, naming, region and warp settings per clip, retired clips skipped, stale Apricity-written files removed, edited ones kept; `--no-clips` to skip.\n\n## Out of scope\nKits as `.adg` and crate folders (apricitus-5562e0); importing clips back from `.alc` as saved clips.\n\n## Definition of Done\n1. `features/daw/export_clips.feature` in the M2 CLI runner; green.\n2. Rust (`apricity-daw::names`, `export`, `apricity-cli`). No Python.\n3. No schema change (warp mode is derived, not stored).\n4. `--no-clips`; report lines per clip; errors located.\n6. `design/daw-sidecars.md` §Naming.\n7. `docs/tools.md` and `docs/concepts.md` (Automatic markup) updated.\n8. Web need filed (label `web`).\n9. `safe-run.sh -- cargo test -p apricity-daw -p apricity-cli`; manual check in the DAW's browser.\n10, 11. Log; `feat(<task id>)`; nothing breaking.\n\n## Dependencies\nBlocked by M2 (the command) and M1 (`.alc` writer). Relates to apricitus-5562e0.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-5562e0b7-e89c-43d6-a973-304c3fcc2461",
+      "type": "relates-to"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:33.911475Z",
+  "updated_at": "2026-09-26T22:06:34.840267Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

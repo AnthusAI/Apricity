@@ -16,11 +16,10 @@ import { opened, type Opened } from "./at";
 import { sampleKey } from "../route";
 import { applyClipFilter, CHOICES, CLIP_KINDS, DEFAULT_FILTER, filterQuery, kindOf, KIND_LABEL, parseFilter, type ClipFilter } from "../data/clip-filter";
 import { totals, type Standing } from "../data/rank-window";
-import { columnSplitter } from "./splitter";
 import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
-import { computePeaks, Waveform } from "./waveform";
+import { computePeaks, roughPeaks, Waveform } from "./waveform";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
 const keyLabel = (k: string) => k.replace(/b/g, "♭");
@@ -40,7 +39,6 @@ export class Library {
   /** In the Clips tab: the clip that is open (selected on its sample's waveform). */
   private currentClip: ClipItem | null = null;
   private detailEl = el("div", { className: "detail" });
-  private jobsEl = el("div", { className: "jobs" });
   private decoded = new Map<string, Promise<AudioBuffer>>();
   private audition: AudioBufferSourceNode | null = null;
   /** What the top bar's play button plays here: the shown sample (a selection or a clip of it, else all of it). */
@@ -72,7 +70,6 @@ export class Library {
       this.names = names;
       this.samples = r.samples;
       this.jobs = r.jobs;
-      this.renderJobs();
       return r.samples;
     };
     if (mode === "samples") {
@@ -115,9 +112,12 @@ export class Library {
       } catch {} // storage can be blocked (private browsing): nothing to report
       this.renderFilters();
     }
-    this.list.el.append(this.jobsEl);
-    root.append(this.list.el, this.detailEl);
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w - 420) });
+    // An item's page is only that sample or clip: its list is the section's front page (ui/section.ts), not a sidebar.
+    root.append(this.detailEl);
+    // Your stars on clips, wherever you rated them (the other tab, a list row), for rows and "Not rated by me".
+    document.addEventListener("apricity:rated", (e) => {
+      if ((e as CustomEvent<{ type: string }>).detail.type === "clip") void this.loadMyStars().then((m) => (this.myStars = m));
+    });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
   }
 
@@ -149,6 +149,11 @@ export class Library {
     if (query === undefined || this.mode !== "clips") return;
     this.filter = parseFilter(query);
     this.renderFilters();
+    this.list.render();
+  }
+
+  /** Draw the list again with what it knows now (its tab came back into view). */
+  relist() {
     this.list.render();
   }
 
@@ -308,15 +313,6 @@ export class Library {
   }
   private jobs: { path: string; state: string; error?: string }[] = [];
 
-  /** Samples being analyzed (local uploads). */
-  private renderJobs() {
-    this.jobsEl.replaceChildren(
-      ...this.jobs
-        .filter((j) => j.state !== "done")
-        .map((job) => el("div", { className: "row" }, el("span", { className: "t" }, job.path.split("/").pop()!), el("span", { className: `pill ${job.state === "failed" ? "bad" : ""}` }, job.state === "failed" ? "failed" : "analyzing…"), el("span", { className: "sub" }, job.error ?? "beats, key, notes — about a minute"))),
-    );
-  }
-
   /** What the stars in the detail header rate: the open clip in the Clips tab, the sample otherwise. */
   private target(): { type: "sample" | "clip"; id: string } | null {
     if (this.mode === "clips") return this.currentClip ? { type: "clip", id: this.currentClip.id } : null;
@@ -344,13 +340,18 @@ export class Library {
     this.stars.set({ mine, average: standing?.average ?? null, count: standing?.count ?? 0, signedIn: !!this.who });
   }
 
+  /** How far each recording's download has got (0–1), for the waveform's progress bar. */
+  private loading = new Map<string, number>();
+  private onLoading: ((path: string, done: number) => void) | null = null;
+
   private decode(path: string) {
     if (!this.decoded.has(path)) {
+      const got = (done: number) => (this.loading.set(path, done), this.onLoading?.(path, done));
       this.decoded.set(
         path,
         audioUrl(path)
           .then((url) => fetch(url))
-          .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${path}: ${r.status}`))))
+          .then((r) => (r.ok ? readAll(r, got) : Promise.reject(new Error(`${path}: ${r.status}`))))
           .then((b) => new OfflineAudioContext(2, 1, 48000).decodeAudioData(b)),
       );
     }
@@ -373,7 +374,7 @@ export class Library {
     this.playable = null;
     this.setPlay({ kind: "loading", label: "Loading the sample" });
     const c = this.samples.find((x) => x.path === path);
-    let m: Awaited<ReturnType<typeof manifest>>, buf: AudioBuffer;
+    let m: Awaited<ReturnType<typeof manifest>>;
     // Everyone's stars and yours on this sample's clips, for their rows (a failure leaves them unrated).
     const clipStars = Promise.all([
       ratings()
@@ -382,20 +383,22 @@ export class Library {
         .catch(() => new Map<string, { count: number; sum: number }>()),
       this.loadMyStars(),
     ]);
+    // Until the analysis is in, the page's shape (a skeleton); after it, everything but the waveform's detail and the
+    // sound, which follow the recording's download (a stem can be tens of megabytes).
+    if (this.detailEl.dataset.path !== path) this.detailEl.replaceChildren(skeleton());
+    this.detailEl.dataset.path = path;
     try {
       m = await manifest(path, true);
       if (!c || !m || this.current !== path) return;
-      this.detailEl.replaceChildren(el("div", { className: "empty" }, "Loading audio…"));
-      buf = await this.decode(path);
     } catch (e) {
-      this.decoded.delete(path);
       if (this.current !== path) return;
       const msg = e instanceof SignedOut ? "Sign in to see this sample." : `Couldn't load ${path}: ${(e as Error).message}`;
       this.detailEl.replaceChildren(el("div", { className: "empty" }, msg));
       this.setPlay({ kind: "unavailable", why: msg });
       return;
     }
-    if (this.current !== path) return;
+    const audio = this.decode(path);
+    audio.catch(() => this.decoded.delete(path));
     const [clipTotals, mine] = await clipStars;
     this.myStars = mine;
     if (this.current !== path) return;
@@ -404,13 +407,13 @@ export class Library {
       return { average: t && t.count ? t.sum / t.count : null, count: t?.count ?? 0 };
     };
 
-    const channels = Array.from({ length: buf.numberOfChannels }, (_, i) => buf.getChannelData(i));
+
     const clips = structuredClone((m.annotations?.clips ?? []).filter((x) => !x.retired));
     // In the Clips tab, the open clip is selected.
     const picked = this.mode === "clips" && this.currentClip ? clips.findIndex((x) => x.id === this.currentClip!.id) : -1;
     const wave = new Waveform({
-      duration: buf.duration,
-      peaks: computePeaks(channels),
+      duration: m.source.duration,
+      peaks: roughPeaks(m as never),
       manifest: m,
       clips,
       selected: picked >= 0 ? picked : null,
@@ -431,8 +434,35 @@ export class Library {
       if (s.selected !== null) return [s.clips[s.selected].start, s.clips[s.selected].end];
       return null;
     };
-    this.playable = { buf, wave, range: selectionOrClip };
-    this.setPlay({ kind: "idle" });
+    // The recording: a bar while it downloads, then the real waveform and the sound.
+    const bar = el("i", {});
+    const loadingNote = el("span", {}, "Loading the recording…");
+    const loadingEl = el("div", { className: "wave-loading" }, el("div", { className: "wave-bar" }, bar), loadingNote);
+    const showLoading = (done: number) => {
+      bar.style.width = `${Math.round(done * 100)}%`;
+      loadingNote.textContent = `Loading the recording… ${Math.round(done * 100)}%`;
+      if (this.playState.kind === "loading") this.setPlay({ kind: "loading", label: `Loading the recording (${Math.round(done * 100)}%)` });
+    };
+    showLoading(this.loading.get(path) ?? 0);
+    this.onLoading = (p, done) => p === path && this.current === path && showLoading(done);
+    void audio.then(
+      (buf) => {
+        if (this.current !== path) return;
+        wave.state.peaks = computePeaks(Array.from({ length: buf.numberOfChannels }, (_, i) => buf.getChannelData(i)));
+        wave.state.duration = buf.duration;
+        wave.draw();
+        loadingEl.remove();
+        waveCard.classList.remove("rough");
+        this.playable = { buf, wave, range: selectionOrClip };
+        this.setPlay({ kind: "idle" });
+      },
+      (e) => {
+        if (this.current !== path) return;
+        const msg = `Couldn't load the recording: ${(e as Error).message}`;
+        loadingEl.replaceChildren(el("span", { className: "bad" }, msg));
+        this.setPlay({ kind: "unavailable", why: msg });
+      },
+    );
     const markDirty = () => {
       dirty = true;
       save.disabled = false;
@@ -505,7 +535,7 @@ export class Library {
           wave.draw();
           for (const r of table.querySelectorAll("tbody tr")) r.setAttribute("aria-selected", String(r === tr));
           engage();
-          return this.startAudition(buf, sl.start, sl.end, wave);
+          return audio.then((buf) => this.startAudition(buf, sl.start, sl.end, wave));
         });
         const id = sl.id;
         /** Working on this clip: its comments open under it. */
@@ -572,7 +602,7 @@ export class Library {
       if (why === "clips") markDirty();
       renderTable();
     };
-    wave.onSeek = (t) => this.startAudition(buf, t, null, wave);
+    wave.onSeek = (t) => void audio.then((buf) => this.startAudition(buf, t, null, wave));
     makeClip.addEventListener("click", () => {
       const s = wave.state;
       if (!s.selection) return;
@@ -611,6 +641,7 @@ export class Library {
       setTimeout(() => (snippet.textContent = "Copy for score"), 1500);
     });
 
+    const waveCard = el("div", { className: "card wave-card rough" }, wave.canvas, loadingEl);
     const k = m.tonal.key;
     const stat = (label: string, value: string) => el("div", { className: "stat" }, el("b", {}, label), el("span", {}, value));
     const keysOverTime = c.keys_over_time.map(keyLabel).join(" → ");
@@ -651,11 +682,11 @@ export class Library {
         stat("Key", `${keyLabel(k.tonic)} ${k.mode} · ${k.camelot ?? ""}`),
         stat("Over time", keysOverTime || "—"),
         stat("Tuning", `A = ${m.tonal.tuning_hz} Hz (${(m.tonal.tuning_cents ?? 0) > 0 ? "+" : ""}${m.tonal.tuning_cents ?? 0}¢)`),
-        stat("Length", fmt(buf.duration)),
+        stat("Length", fmt(m.source.duration)),
         stat("Notes found", String(c.notes)),
       ),
       license,
-      el("div", { className: "card" }, wave.canvas),
+      waveCard,
       el("p", { className: "hint" }, "Play (top right, or space) plays the selection or the selected clip, else the whole sample. Drag to select (snaps to beats; hold ⌥ for free), double-click to play from a point. Drag a clip's edges or body in the lower lane; Delete removes the selected clip."),
       el("div", { className: "toolbar" }, makeClip, save, snippet),
       errors,
@@ -738,4 +769,43 @@ export class Library {
     this.playState = s;
     for (const f of this.playListeners) f(s);
   }
+}
+
+/** Read a response's body, saying how much of it has come (0–1; unknown sizes report only when done). */
+async function readAll(r: Response, got: (done: number) => void): Promise<ArrayBuffer> {
+  const total = Number(r.headers.get("content-length")) || 0;
+  if (!r.body || !total) {
+    const b = await r.arrayBuffer();
+    got(1);
+    return b;
+  }
+  const out = new Uint8Array(total);
+  const reader = r.body.getReader();
+  let at = 0;
+  let last = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (at + value.length > out.length) throw new Error("the recording is longer than it said");
+    out.set(value, at);
+    at += value.length;
+    if (at / total - last >= 0.01) got((last = at / total));
+  }
+  got(1);
+  return out.buffer.slice(0, at);
+}
+
+/** The page's shape while its analysis loads: a title, stats and the waveform, shimmering. */
+function skeleton(): HTMLElement {
+  const bone = (cls: string) => el("div", { className: `bone ${cls}` });
+  return el(
+    "div",
+    { className: "skeleton", ariaBusy: "true", ariaLabel: "Loading" },
+    bone("bone-title"),
+    bone("bone-line"),
+    el("div", { className: "bone-stats" }, ...Array.from({ length: 6 }, () => bone("bone-stat"))),
+    bone("bone-wave"),
+    bone("bone-line"),
+    bone("bone-line short"),
+  );
 }

@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-17990625-8a60-42af-a91d-cb052d5793cf",
+  "title": "Envelopes from TrackInfo and BusInfo automation lanes, resolved to controls (automation.rs)",
+  "description": "## Intent\n\nEnvelopes pointing at mixer controls and device parameters.\n\n## Steps\n\n- `crates/apricity-daw/src/automation.rs`: for each `Lane` in `TrackInfo.automation` and `BusInfo.automation` (`crates/apricity-score/src/compile.rs`), resolve the target to a control: mixer volume/pan/send, or the n-th device of its kind's parameter (the ids of the device templates from M3); write the envelope with its breakpoints, per the format in `design/daw-set.md`.\n- Step lanes: each value held, a jump at the next point (two breakpoints at one beat). Before the first point and after the last: held.\n- On a track spread over several audio tracks, lanes go on its group.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — \"Automation lands on the right control\" passes.\n\n## Release\n\n`feat(<this task's id>): automation envelopes in DAW sets`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6f091cf7-753d-4580-9ea4-d17a89f48257",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-19936767-f032-4b4f-85f5-4d993aea0cfb",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-de4d5ebd-b4a8-4493-abee-a4521a7c070b",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:29.175613Z",
+  "updated_at": "2026-09-26T22:06:51.478357Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

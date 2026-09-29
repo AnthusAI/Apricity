@@ -1,0 +1,94 @@
+{
+  "id": "apricitus-9fb5fec4-4cf9-4f87-9db3-535b47e5a7ab",
+  "title": "M0: Spike: what the DAW's .asd and .alc hold, and whether it accepts ours",
+  "description": "## Purpose\nFind out, with real files and throwaway code, what the DAW's two sidecar formats hold and whether the DAW accepts files we write, before any spec is written. The `.alc` is gzipped XML close to the set format; the `.asd` is a proprietary binary whose layout changed between DAW versions (public reverse-engineered parsers read only older versions, none the current one).\n\n## Questions the spike answers\n1. **.asd layout** in the current DAW version: where warp markers (seconds, beat), warp on/off, warp mode, transpose/detune, gain and start/end/loop are stored; the version marker; which older versions matter.\n2. **Writing .asd**: does the DAW honour an `.asd` we write (markers used on drag-in), or discard/regenerate it? What ties an `.asd` to its audio (size, modification time, checksum, nothing)? When does the DAW rewrite it (the clip view's Save button, first load)?\n3. **.alc**: the minimal valid document (root element and version attributes, AudioClip, SampleRef/FileRef, WarpMarkers, start/end/loop markers, WarpMode, detune, name); relative vs absolute file references; what happens when the audio has moved.\n4. **Beat numbering**: may a warp marker's beat be negative (a pickup before 1.1.1)? What does the DAW do before the first and after the last marker?\n5. **Ranges**: detune range (±50 cents?), warp mode names and numbers (Beats, Tones, Texture, Re-Pitch, Complex, Complex Pro) against Apricity's `beats|complex|texture|repitch`.\n\n## Artifact (never product code)\n- `design/daw-sidecars.md` §Formats: element and byte tables, the DAW version tested, evidence per answer, and a **go / no-go on writing `.asd`**.\n- The fixture recipe M1 reuses (how each reference file was made).\nSpike code stays in the scratchpad and is thrown away.\n\n## Decision gate\n- **go**: M2 writes `.asd` beside each sample.\n- **no-go**: M2 writes the same warp map as an `.alc` beside the sample (the DAW's browser shows it next to the audio); import still *reads* `.asd` for the versions we can decode, and `.alc`. The owner decides at the end of M0.\n\n## Definition of Done\n- Every question answered, or marked unknown with the evidence; the owner has signed off the go/no-go in a comment here.\n- Checklist items that apply: 6 (design note), 9 (manual checks in the DAW), 10 (running log), 11 (`chore(<id>)` for the note). Not applicable: specs, Rust/Python code, schema, CLI, docs, web.\n\n## Dependencies\nNone. Blocks M1 and everything after it.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d7746d81-2bea-4623-a62b-c21f63564a62",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "3fc84f75-eaf9-4852-9629-fb32263d406c",
+      "author": "home",
+      "text": "## Where reference files come from (decided 2026-09-26, corrected)\n\nChecked: the DAW is not installed on the owner's development Mac, and neither the persistent library (~5,500 files) nor the production bucket holds any `.als`, `.alc`, `.adg` or `.asd`. The owner does hold a paid Studio licence, installed on the studio machine. So:\n\n1. **Reference files come from the owner's licensed install.** Its bundled Core Library ships thousands of `.adg`/`.alc` files and `.asd` sidecars beside its sample WAVs, and the owner's own sets supply `.als`. The spike's first task is a short list of exact paths and files to copy from the studio machine into a fixtures folder here (record each file's origin; never commit audio). Public git repositories are a supplement for older-version examples only.\n2. **Test material.** Every test and conformance check runs against samples and manifests from the production library (sync it down read-only; never push). Pick a fixed, named handful for determinism.\n3. **Acceptance.** Opening an export in the DAW happens on the studio machine, or on this Mac if the owner installs the licensed copy here. Acceptance tasks stay blocked, not skipped, until then; the machine-checkable conformance tests are the gate.",
+      "created_at": "2026-09-26T22:26:29.685145Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "f041ab24-5c21-426d-8137-d9db376e109f",
+      "author": "home",
+      "text": "**Not blocked on the DAW (owner, 2026-09-26).** The owner will install the licensed copy on this Mac, but said not to wait for it. Start now: gather reference files from public git repositories and the vendor's published format documentation, write the design note and conformance tests against them, and mark every finding that rests on a public file as *provisional*. When the local install appears, re-run the spike's checks against files from its library and the owner's sets, and update the note. Only the final acceptance tasks (opening an export in the DAW) wait on the install.",
+      "created_at": "2026-09-26T22:55:06.738020Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "820d5c1e-9bb8-4e45-9845-335170b8e3bc",
+      "author": "home",
+      "text": "## Spike summary (Spike Warp Sidecars, 2026-09-26)\n\n**Recommendation for the owner's sign-off: no-go on writing .asd.** M2 writes an .alc beside each sample. M1 builds an .asd *reader* (both generations) and a template-patching .alc writer. The reasoning and evidence are in design/daw-sidecars.md §Decision.\n\n**Answered (provisional: public files plus vendor docs, no local DAW):**\n- Q1: the full .asd layout. A byte table with offsets for 12.x, the same 120-byte clip block in 10.x and 12.x, and the marker record. There is no DAW version field, only the schema. Markers exist only after the clip view's Save (329 of 365 files have none).\n- Q2: the .asd is tied to its audio by file name, OriginalFileSize and the frame grid. The DAW rewrites it on first analysis, on Save, and on a size change. A third party (abletoolz) reports that the DAW regenerates .asd files it did not write.\n- Q3: an .alc is a whole set document with one AudioTrack and the clip in slot 0. The .alc element and FileRef tables are in the note. The only acceptance evidence is a third party's patched DAW template (12.2.6).\n- Q4: negative BeatTime exists in files the DAW saved (9.0.1). A clip starting at -191.72 beats was accepted (12.2.6, third party). Before the first marker the DAW extrapolates the first segment's tempo; after the last it uses the hidden 1/32-beat marker's tempo.\n- Q5: WarpMode 0 Beats, 1 Tones, 2 Texture, 3 Re-Pitch, 4 Complex, 5 REX, 6 Complex Pro (vendor docs). Transpose -48..48 st; detune -50..49 ct, a float. Export maps complex to 6, aligned with design/daw-set.md.\n\n**Unknown or waiting on the DAW:** the minimal accepted .alc; whether a hand-patched .asd is honoured; the OriginalCrc algorithm; the relative path after a move; which generation 11.x writes; mtime checks. Tasks 59a582, a1b3f0 and 2c3dfe stay in_progress for the owner test. 1f725f awaits sign-off. 2831a6 is done.\n\n**Files created:** design/daw-sidecars.md; scripts/daw-fixture-audio.py; crates/apricity-daw/tests/fixtures/reference/sidecars/asd/ (4 .asd, MIT, from DBraun's parser repository); crates/apricity-daw/tests/fixtures/reference/sidecars/candidates/ (9 hand-written .alc). No audio in the repo.\n\n**Flag:** the XML root element and Creator attribute are the vendor's name. The gzipped candidates therefore contain it, because the format requires it. M1 needs an owner ruling on how its writer spells that element.",
+      "created_at": "2026-09-26T23:30:21.108459Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Warp Sidecars",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "7413d4f6-dc39-40b2-874e-8fc7f255d032",
+      "author": "home",
+      "text": "## Go/no-go decision (orchestrator, on the owner's behalf, 2026-09-26)\n\n**No-go on writing `.asd`**, provisionally accepted as the spike recommends: M1 builds an `.asd` reader for both generations and an `.alc` writer; M2 writes an `.alc` beside each sample. If the licensed install later shows the DAW honours a hand-patched `.asd` (task apricitus-59a582), file a follow-up story under M2 rather than reopening this gate. Landed as commit 0e258d0 on develop.",
+      "created_at": "2026-09-26T23:33:32.178729Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "052f74f9-8c40-4b9f-aef3-e9e818bf58f1",
+      "author": "home",
+      "text": "Heads-up from the demo-scores session: develop's Rust workspace fails to load because crates/apricity-daw/ was committed (tests/fixtures only) with no Cargo.toml, and the workspace includes crates/*. Every cargo command on develop fails with 'failed to load manifest for workspace member crates/apricity-daw', and CI's Rust job is red. The fix is small: add a Cargo.toml for the crate, or move the fixtures out of crates/ until the crate exists.",
+      "created_at": "2026-09-27T01:42:07.511921Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-26T21:59:43.708001Z",
+  "updated_at": "2026-09-27T01:42:07.511964Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

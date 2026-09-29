@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-681eab8e-aed2-431d-b0a6-030a2009250b",
+  "title": "Bound CLI cloud HTTP requests with timeouts",
+  "description": "The authenticated CLI can hang indefinitely while fetching outputs, refreshing Cognito tokens, or calling AppSync because its blocking HTTP clients lack timeouts. Apply a shared bounded timeout and return actionable transport errors.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "23bc30a4-60b8-46e9-8655-c68072074d0a",
+      "author": "home",
+      "text": "Fixed and pushed; `apricity whoami` now returns ryan@anth.us instead of hanging.",
+      "created_at": "2026-09-27T22:48:59.157782Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T22:45:31.262257Z",
+  "updated_at": "2026-09-27T22:48:59.157813Z",
+  "closed_at": "2026-09-27T22:48:59.096479Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-652cdee7-081a-4694-b754-058c4c259d20",
+  "title": "Sidecars saved by the DAW read as exactly what the DAW showed",
+  "description": "## Behavior\nSidecars saved by the DAW itself read as exactly what the DAW showed (the owner's reference files, M0).\n\n```gherkin\nFeature: Reading the DAW's own sidecars\n\n  Scenario: An .asd saved by the DAW gives the markers the DAW showed\n    Given the reference file \"steady-120.wav.asd\" saved by the DAW\n    When I read it\n    Then its warp markers are the ones listed for it in the fixtures README\n    And warping is on with mode \"complex\"\n\n  Scenario: An .alc saved by the DAW gives its region and settings\n    Given the reference file \"detuned.alc\" saved by the DAW\n    When I read it\n    Then warping is on with mode \"beats\"\n    And the detune is -30 cents\n    And the loop is 2 bars long\n    And it refers to the audio file \"detuned.wav\"\n\n  Scenario: A clip saved with warping off reads as unwarped\n    Given the reference file \"free-time.alc\" saved by the DAW\n    When I read it\n    Then warping is off and there are no warp markers\n\n  Scenario: A warp mode Apricity does not have is named, not guessed\n    Given a reference .alc saved with the DAW's \"Tones\" mode\n    When I read it\n    Then the warp mode is reported as \"tones (no Apricity equivalent)\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:27.294070Z",
+  "updated_at": "2026-09-26T22:01:27.294121Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-f106c006-9b36-487f-9ea9-8f23fcc02396",
+  "title": "Sidecar export edge cases: unwarped sample, far-off tuning, stale analysis, empty folder",
+  "description": "## Behavior\n```gherkin\nFeature: Sidecar edge cases\n\n  Scenario: A sample without a beat grid is exported unwarped\n    Given the analyzed fixture sample \"free-time.wav\" with no beat grid\n    When I export its sidecar\n    Then its sidecar has warping off and no warp markers\n    And the output says \"free-time.wav: unwarped (no beat grid)\"\n\n  Scenario: A recording far out of tune is transposed as well as detuned\n    Given an analyzed sample whose tuning is 70 cents flat\n    When I export its sidecar\n    Then the sidecar transposes it 1 semitone up and detunes it -30 cents\n\n  Scenario: Audio changed since analysis\n    Given the analyzed fixture sample \"steady-120.wav\" whose audio no longer matches its manifest's sha256\n    When I export its sidecar\n    Then nothing is written\n    And the command fails with \"steady-120.wav changed since it was analyzed; run apricity-analyze --force steady-120.wav\"\n\n  Scenario: A path that does not exist\n    When I run \"apricity export --sidecars nowhere.wav\"\n    Then the command fails with \"nowhere.wav: no such file\"\n\n  Scenario: Nothing to export\n    Given an empty folder\n    When I run \"apricity export --sidecars\" on the folder\n    Then the output says \"no analyzed samples found\" and the command succeeds\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:43.371772Z",
+  "updated_at": "2026-09-26T22:02:43.371808Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

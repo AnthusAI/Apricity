@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-e8241d2b-9636-4bed-bc57-71541979f663",
+  "title": "Export writes a set with the score's tempo, time signature and length",
+  "description": "As a producer, I want an exported set to open with the score's tempo, time signature and length, so that the DAW's grid is the score's grid.\n\n```gherkin\nFeature: Export a score as a DAW set\n  Background:\n    Given the sample \"horn.wav\" with a steady beat at 100 BPM\n    And the score \"tune.apr\":\n      \"\"\"\n      tempo 99.5\n      time 3/4\n      key F\n      clip horn = horn.wav beats 0..3\n      chords I IV . V\n      track horn\n      \"\"\"\n\n  Scenario: The set folder holds a set named after the score\n    When I export \"tune.apr\" as a DAW set\n    Then the export succeeds\n    And the folder \"tune Project\" holds the set \"tune.als\"\n    And the set is gzipped XML the DAW's format expects\n\n  Scenario: Tempo and time signature\n    When I export \"tune.apr\" as a DAW set\n    Then the set's tempo is 99.5\n    And the set's time signature is 3/4\n\n  Scenario: The loop brace spans the piece\n    When I export \"tune.apr\" as a DAW set\n    Then the loop brace runs from bar 1 to the end of bar 4\n    And looping is on\n\n  Scenario: Exporting twice gives the same file\n    When I export \"tune.apr\" as a DAW set twice\n    Then both sets are byte-identical\n\n  Scenario: The output can be named\n    When I export \"tune.apr\" as a DAW set to \"out/Mix.als\"\n    Then the folder \"out\" holds the set \"Mix.als\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.243171Z",
+  "updated_at": "2026-09-26T22:06:25.243203Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

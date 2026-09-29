@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-0901e33b-3054-433e-b5d2-403dcb69e15d",
+  "title": "A library sample opens in the DAW already on the grid",
+  "description": "## Behavior\n```gherkin\nFeature: Sample sidecars\n  `apricity export --sidecars` writes, beside each analyzed sample, an .asd the DAW reads on drag-in.\n\n  Scenario: Export one sample\n    Given the analyzed fixture sample \"steady-120.wav\"\n    When I run \"apricity export --sidecars steady-120.wav\"\n    Then \"steady-120.wav.asd\" exists beside the audio\n    And reading it gives the sample's warp markers, warp mode \"complex\" and its tuning correction as detune\n    And the output says \"1 sidecar written\"\n\n  Scenario: Export a folder\n    Given a folder with the analyzed samples \"steady-120.wav\" and \"tempo-change.wav\" and an unanalyzed \"new.wav\"\n    When I run \"apricity export --sidecars\" on the folder\n    Then each analyzed sample has an .asd beside it\n    And the output lists \"new.wav\" as skipped: \"no analysis yet; run apricity-analyze new.wav\"\n\n  Scenario: A drum stem is warped in Beats mode\n    Given an analyzed drum stem \"stems/steady-120/drums.wav\"\n    When I export its sidecar\n    Then the sidecar's warp mode is \"beats\"\n\n  Scenario: Export from a library\n    Given a library holding the sample \"fixtures/steady-120.wav\"\n    When I run \"apricity export --sidecars fixtures/steady-120.wav --library L\"\n    Then an .asd is written beside the library's copy of the audio\n    And the output names that path\n\n  Scenario: Sidecars never sync and never go in git\n    Given a library with an exported sidecar\n    When I push the library\n    Then the sidecar is not uploaded and is not listed as a difference\n```\n\nManual check (DAW): drag `steady-120.wav` from the folder into an audio track: warp is on, the markers sit on the beats, the clip plays in time at a different set tempo with no re-warping.",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:43.265786Z",
+  "updated_at": "2026-09-26T22:02:43.265815Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-ae14606d-46d3-4ea3-88bd-a04ac3da627f",
+  "title": "MIDI export warns about flips a rack cannot play and refuses the wrong track",
+  "description": "As a beatmaker, I want to be told what the rack and MIDI cannot reproduce, and why a track cannot be exported, so that I know where the rack will sound different from Apricity.\n\n```gherkin\nFeature: MIDI export reports what cannot travel and every mistake\n  Background:\n    Given a sample \"brk.wav\" of 2 bars in 4/4 at 120 BPM, analyzed\n    And the score \"flip.apr\" with \"clip brk = brk.wav\", \"kit b = slice brk by beats 1\" and \"track b steps \\\"1 2 3 4\\\"\" on line 6\n\n  Scenario Outline: Flips a rack cannot play are warned about, with the line\n    Given the track line adds \"<flip>\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then the export succeeds\n    And it warns \"flip.apr:6: <what> is not in the preset or the MIDI; the rack plays the pads without it\"\n\n    Examples:\n      | flip           | what                       |\n      | reverse        | reverse                    |\n      | filter lp 800  | the filter                 |\n      | half           | the speed change           |\n      | transpose follow | following the chords     |\n\n  Scenario: A track that plays another kit is refused\n    Given the score also has \"kit c = slice brk into 4\" and \"track c steps \\\"1 2\\\"\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps c\"\n    Then the export fails with \"flip.apr: track `c` plays kit `c`, not `b`\"\n    And no file is written\n\n  Scenario: An unknown track suggests the nearest one\n    When I export kit \"b\" from \"flip.apr\" with \"--steps bb\"\n    Then the export fails with \"no track named \\\"bb\\\"; did you mean \\\"b\\\"?\"\n\n  Scenario: A track that plays a clip, not the kit, is refused\n    Given the score also has \"track loop = brk\"\n    When I export kit \"b\" from \"flip.apr\" with \"--steps loop\"\n    Then the export fails with \"track `loop` plays the clip `brk`, not kit `b`\"\n\n  Scenario: An existing MIDI file is not overwritten without --force\n    Given the file \"b.mid\" exists\n    When I export kit \"b\" from \"flip.apr\" with \"--steps b\"\n    Then the export fails with \"b.mid exists; use --force to replace it\"\n    And no file is written\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4ea4fd2b-ec25-445d-865b-fc36dc4c0ac7",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:46.477059Z",
+  "updated_at": "2026-09-26T22:04:46.477098Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

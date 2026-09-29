@@ -5,6 +5,8 @@
 import * as auth from "../data/auth";
 import type { Account, AuthStep } from "../data/auth";
 import { el } from "./dom";
+import { go } from "./at";
+import { accountMenuDestinations } from "./account-menu";
 import { displayName, initial } from "./account-state";
 import type { ImportProgress, ImportSummary } from "../data/import-library";
 import { HANDLE_MAX, handleProblem, normalizeHandle, suggestHandle } from "../data/handles";
@@ -134,6 +136,8 @@ export class AccountControl {
     const item = (label: string, fn: () => void) => el("button", { className: "acct-item", type: "button", role: "menuitem", onclick: () => (close(), fn()) }, label);
     menu.append(
       el("div", { className: "acct-who" }, name, ...(this.handle ? [el("small", {}, displayName(a))] : [])),
+      item("My stuff", () => go({ page: "home", list: "mine=1" })),
+      ...accountMenuDestinations(a).map(({ label, route }) => item(label, () => go(route))),
       item(this.handle ? "Change handle" : "Choose your handle", () => this.open("handle")),
       item("Account settings", () => this.open("account")),
       ...(a.admin ? [item("Import library from bucket", () => this.open("import"))] : []),

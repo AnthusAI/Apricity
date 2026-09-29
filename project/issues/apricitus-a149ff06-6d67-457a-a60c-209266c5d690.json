@@ -22,10 +22,46 @@
         "model": "Sonnet 5",
         "name": "Library Expansion"
       }
+    },
+    {
+      "id": "606becaf-b891-445f-8a4c-45471ee23628",
+      "author": "home",
+      "text": "Production (2026-09-26, user-approved): migrated repo into ~/Apricity-Library, sync push to the production bucket (2,404 files, ~278 MB new; final sync status 0 to push, 87 Recordings), then deleted the 26 mis-filed rec_uploads_* Recording objects from the bucket individually (aws s3 rm; not sync --delete, which would also have removed the unrelated remote Score/scr_examples_hero.breakdown_yaml). REMAINING: (1) the user runs 'Import library from bucket' in the app (admin, signed in) to load the new records into DynamoDB; (2) the DynamoDB tables already hold an earlier import (35 Recordings, 59 Samples) including 15 rec_uploads_* rows, so stale mis-filed rows from the pre-fix sync may exist there; reading/cleaning production DynamoDB was blocked by the auto-mode classifier and needs the user's go-ahead. Not done: 1 local deletion still unsynced (scr_examples_hero.breakdown_yaml, not mine).",
+      "created_at": "2026-09-26T22:09:34.551466Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
+    },
+    {
+      "id": "7f6aac8d-4dbd-4709-b384-5948a7bbff07",
+      "author": "home",
+      "text": "Production check 2026-09-26: all commits for this work (incl. licence block 984fd5d, ccMixter import 2166f0d, path mapping 7322bb2) are on main via release 0.10.0; Amplify job 65 SUCCEED; scripts/prod-smoke.sh passes; 'Computed license' present in the live bundle. Bucket in sync (87 Recordings). DynamoDB: deleted 14 orphan drum-hit Recording rows (rec_uploads_<salamander file>, no samples; backup in session scratchpad) with user approval; now 21 Recordings, only rec_uploads_announcer left under uploads. STILL NEEDED: the user runs 'Import library from bucket' (admin) so the new 66 recordings/93 samples appear in the app. Nine unrelated develop commits (automation lanes etc., other session) are not on main.",
+      "created_at": "2026-09-26T22:17:44.813642Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
+    },
+    {
+      "id": "0bc8c076-2b09-4bf1-be6a-6bca29e48f53",
+      "author": "home",
+      "text": "Import done 2026-09-26 via the app (Import library from bucket, signed in as @techjunkie in the user's Chrome): DynamoDB now 87 Recordings (= library) and 153 Samples (library 152 + voice/announcer.wav, hero, expected). New content present: 53 ccmixter, 13 loc/, 54 citizen-dj samples. prod-smoke.sh passes. Content and logic are live; curation in production can start.",
+      "created_at": "2026-09-26T22:45:17.787531Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Sonnet 5",
+        "name": "Library Expansion"
+      }
     }
   ],
   "created_at": "2026-09-26T16:54:27.272422Z",
-  "updated_at": "2026-09-26T18:21:04.225448Z",
+  "updated_at": "2026-09-26T22:45:17.787564Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

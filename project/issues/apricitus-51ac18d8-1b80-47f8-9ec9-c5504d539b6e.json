@@ -1,0 +1,42 @@
+{
+  "id": "apricitus-51ac18d8-1b80-47f8-9ec9-c5504d539b6e",
+  "title": "Map timeline events to warped audio clips: warp markers, mode, transpose, detune, gain",
+  "description": "## Intent\n\nMap every `Event` of the timeline to an arrangement audio clip on its track's audio track.\n\n## Steps\n\n- `crates/apricity-daw/src/clips.rs`: for each `TrackInfo` an audio track (name, order as in the score); for each `Event` (`crates/apricity-score/src/compile.rs`) a clip at `start_beat` for `dur_beats`, its sample from `sources[event.source]`, warp markers from `event.warp` (source seconds → beats from the event's start) offset by the clip's start, warp mode from `event.mode` per `design/daw-set.md`.\n- Pitch: `semitones` plus `tuning_cents` combined, then split into whole semitones and a detune inside the DAW's range (round to the nearest semitone).\n- Level: read in compile.rs exactly which of level match, velocity and track `volume` are already in `Event.gain_db`; put the per-note part on the clip gain and the fader on the track volume, never counting anything twice. Record the finding in `design/daw-set.md`.\n- Sample reference: duration and sample rate from the sample's manifest (`crates/apricity-score/src/manifest.rs`), no audio decoding.\n- A track with no events: an empty track and a warning.\n\n## Verification\n\n`CARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw --test daw` — the \"Notes become arrangement clips\" scenarios pass.\n\n## Release\n\n`feat(<this task's id>): notes become warped arrangement clips`. Not breaking.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-74c11a12-78c2-4312-b2b1-cf2bb2f5096a",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-1c555bb1-1eab-42da-b749-0b7ce2e6133e",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-2850b560-4fa1-4407-9d9a-ffa6837fced5",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:25.775725Z",
+  "updated_at": "2026-09-26T22:06:49.704620Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

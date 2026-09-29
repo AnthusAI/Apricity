@@ -62,6 +62,19 @@ pub struct MasterSpec {
     pub loudness: Option<f64>,
 }
 
+/// Automation: a parameter changing over time on a track, group, or return.
+#[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AutomationSpec {
+    /// The parameter being automated, e.g. `eq.highcut`, `volume`, `pan`, `send.plate`.
+    pub target: String,
+    /// Step mode: hold each value until the next point instead of ramping.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub step: bool,
+    /// Breakpoints: (bar or "bar:beat", value in the parameter's natural units).
+    pub points: Vec<(String, f64)>,
+}
+
 /// A group track: its tracks (and groups) sum into it, run through its effects, and go on to its
 /// own `group` or the master.
 #[derive(Debug, Clone, Default, PartialEq, Deserialize, serde::Serialize)]
@@ -75,6 +88,9 @@ pub struct GroupSpec {
     /// The group it sits in, if any (otherwise it plays into the master).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub group: Option<String>,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automate: Vec<AutomationSpec>,
 }
 
 /// A return track: what tracks and groups send to it runs through its effects into the master.
@@ -86,6 +102,9 @@ pub struct ReturnSpec {
     /// The return's fader, dB.
     #[serde(default, skip_serializing_if = "is_zero")]
     pub volume: f64,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automate: Vec<AutomationSpec>,
 }
 
 /// `time: 4/4` ⇄ beats per bar.
@@ -131,6 +150,10 @@ pub enum Effect {
     NoiseGate(GateSpec),
     /// Stereo width, 0 (mono) … 2 (twice as wide); 1 = unchanged.
     Width(f64),
+    /// A resonant filter as a chain effect (track, group or return; not the master yet).
+    Filter(FilterFxSpec),
+    /// The chord-following EQ (track, group or return; not the master). See `HarmonicSpec`.
+    Harmonic(HarmonicSpec),
 }
 
 impl Effect {
@@ -145,8 +168,104 @@ impl Effect {
             Effect::Lofi(_) => "lofi",
             Effect::NoiseGate(_) => "noisegate",
             Effect::Width(_) => "width",
+            Effect::Filter(_) => "filter",
+            Effect::Harmonic(_) => "harmonic",
         }
     }
+}
+
+/// `filter lp 800 res 40% 24dB`: lowpass, highpass or (cheap to add) bandpass, with resonance and slope.
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FilterKind {
+    Lp,
+    Hp,
+    Bp,
+}
+
+/// A resonant filter effect: cutoff (Hz), resonance (0–1, 0 = today's gentle response), and slope
+/// (12 or 24 dB/octave; 24 cascades two biquads).
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct FilterFxSpec {
+    pub kind: FilterKind,
+    pub hz: f64,
+    /// 0–1: maps to Q = 0.707 · 20^res (0% = today's Q of 0.707, 100% ≈ 14.1).
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub res: f64,
+    /// dB/octave: 12 (default, one biquad) or 24 (two cascaded biquads).
+    #[serde(default = "twelve", skip_serializing_if = "is_twelve")]
+    pub slope: u16,
+}
+
+fn twelve() -> u16 {
+    12
+}
+
+fn is_twelve(v: &u16) -> bool {
+    *v == 12
+}
+
+/// Which side of the chord `harmonic` shapes: `cut` non-chord tones, `boost` chord tones, or
+/// `both` (spec-harmony-v2.md sec 4.4).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum HarmonicFxMode {
+    #[default]
+    Cut,
+    Boost,
+    Both,
+}
+
+/// One chord span the compiler embeds in a `harmonic` effect at compile time (sec 4.3): the
+/// resolved harmony, not anything the score text writes directly. `tones_pc`/`bass_pc` are
+/// pitch classes 0 (C) .. 11 (B).
+#[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
+pub struct HarmonicSpanSpec {
+    pub start_beat: f64,
+    pub end_beat: f64,
+    pub tones_pc: Vec<u8>,
+    pub bass_pc: u8,
+}
+
+/// The chord-following EQ: `harmonic cut 9dB tolerance 30c harmonics 6 range 80..4k glide 40ms
+/// mix 100%` (docs/language.md). Every field but `mode` is optional in the score text; unset
+/// values take the defaults in sec 4.4 (applied where the engine builds `apricity_dsp::fx::
+/// HarmonicParams`, mirroring how `LofiSpec`/`GateSpec` are resolved). `spans` is filled by the
+/// compiler from the resolved harmony (`ChordSpan`), never written directly: a score with no
+/// `chords` line compiles `spans` empty, which is a compile-time no-op warning, not an error.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct HarmonicSpec {
+    #[serde(default)]
+    pub mode: HarmonicFxMode,
+    /// Cut depth in dB, 0–24 (default 9).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub depth_db: Option<f64>,
+    /// Boost amount in dB, 0–18 (default 6), used by `boost`/`both`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub boost_db: Option<f64>,
+    /// Half-width of every band in cents, 5–100 (default 30).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tolerance_cents: Option<f64>,
+    /// Chord-tone partials protected from cutting, 0–8 (default 6).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub harmonics: Option<u8>,
+    /// `[lo_hz, hi_hz]` (default 80..4000).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub range: Option<[f64; 2]>,
+    /// Chord-change ramp, ms, 0–500 (default 40).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub glide_ms: Option<f64>,
+    /// Wet share, 0–1 (default 1).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mix: Option<f64>,
+    /// A4 reference, Hz (default 440).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tune_hz: Option<f64>,
+    /// Filled by the compiler from the resolved harmony; never written in score text.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub spans: Vec<HarmonicSpanSpec>,
 }
 
 /// Saturation: `db` of gain into a soft clipper (level is matched afterwards).
@@ -279,6 +398,9 @@ pub struct CompSpec {
     /// Key the compressor from another track (ducking): it listens to that track, not its input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sidechain: Option<String>,
+    /// Parallel compression mix, 0–1 (default: 1.0 = fully compressed).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mix: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, serde::Serialize)]
@@ -304,6 +426,8 @@ impl serde::Serialize for Effect {
             Effect::Lofi(l) => m.serialize_entry("lofi", l)?,
             Effect::NoiseGate(g) => m.serialize_entry("noisegate", g)?,
             Effect::Width(w) => m.serialize_entry("width", w)?,
+            Effect::Filter(f) => m.serialize_entry("filter", f)?,
+            Effect::Harmonic(h) => m.serialize_entry("harmonic", h)?,
         }
         m.end()
     }
@@ -332,8 +456,12 @@ impl<'de> Deserialize<'de> for Effect {
             noisegate: Option<GateSpec>,
             #[serde(default)]
             width: Option<f64>,
+            #[serde(default)]
+            filter: Option<FilterFxSpec>,
+            #[serde(default)]
+            harmonic: Option<HarmonicSpec>,
         }
-        const KINDS: &str = "{eq: …}, {comp: …}, {limit: …}, {reverb: …}, {delay: …}, {drive: …}, {lofi: …}, {noisegate: …} or {width: 1.5}";
+        const KINDS: &str = "{eq: …}, {comp: …}, {limit: …}, {reverb: …}, {delay: …}, {drive: …}, {lofi: …}, {noisegate: …}, {width: 1.5}, {filter: …} or {harmonic: …}";
         let raw = Raw::deserialize(d).map_err(|e| serde::de::Error::custom(format!("an effect is {KINDS} ({e})")))?;
         let mut found: Vec<Effect> = Vec::new();
         found.extend(raw.eq.map(Effect::Eq));
@@ -345,6 +473,8 @@ impl<'de> Deserialize<'de> for Effect {
         found.extend(raw.lofi.map(Effect::Lofi));
         found.extend(raw.noisegate.map(Effect::NoiseGate));
         found.extend(raw.width.map(Effect::Width));
+        found.extend(raw.filter.map(Effect::Filter));
+        found.extend(raw.harmonic.map(Effect::Harmonic));
         match found.len() {
             1 => Ok(found.pop().unwrap()),
             _ => Err(serde::de::Error::custom(format!("each effect is one of {KINDS}; put several in the list, one per item"))),
@@ -581,6 +711,15 @@ pub struct TrackSpec {
     /// The octave a pitched track plays in: where the chord root (or degree 1) sits; default nearest the clip's own pitch.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub octave: Option<i32>,
+    /// Fade each note in from silence over this time (ms), raised-cosine, capped at the note's length. 0–2000.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack: Option<f64>,
+    /// Keep each note sounding past its written end for this time (ms), fading to silence, raised-cosine. 0–5000.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub release: Option<f64>,
+    /// Automation lanes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub automate: Vec<AutomationSpec>,
 }
 
 impl TrackSpec {
@@ -590,22 +729,61 @@ impl TrackSpec {
     }
 }
 
-/// A simple filter on a track: `{lowpass: 800}` or `{highpass: 200}` (Hz).
+/// A track's header filter: `{lowpass: 800}` or `{highpass: 200}` (Hz), with optional resonance
+/// (0–1, default 0 = today's gentle Q of 0.707) and slope (12 or 24 dB/octave, default 12). With
+/// `res` 0 and slope 12, this is exactly today's filter (bit-identical rendering).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FilterSpec {
-    Lowpass(f64),
-    Highpass(f64),
+    Lowpass { hz: f64, res: f64, slope: u16 },
+    Highpass { hz: f64, res: f64, slope: u16 },
+}
+
+impl FilterSpec {
+    pub fn hz(&self) -> f64 {
+        match *self {
+            FilterSpec::Lowpass { hz, .. } | FilterSpec::Highpass { hz, .. } => hz,
+        }
+    }
+    pub fn res(&self) -> f64 {
+        match *self {
+            FilterSpec::Lowpass { res, .. } | FilterSpec::Highpass { res, .. } => res,
+        }
+    }
+    pub fn slope(&self) -> u16 {
+        match *self {
+            FilterSpec::Lowpass { slope, .. } | FilterSpec::Highpass { slope, .. } => slope,
+        }
+    }
+    pub fn with_hz(&self, hz: f64) -> Self {
+        match *self {
+            FilterSpec::Lowpass { res, slope, .. } => FilterSpec::Lowpass { hz, res, slope },
+            FilterSpec::Highpass { res, slope, .. } => FilterSpec::Highpass { hz, res, slope },
+        }
+    }
+    pub fn with_res(&self, res: f64) -> Self {
+        match *self {
+            FilterSpec::Lowpass { hz, slope, .. } => FilterSpec::Lowpass { hz, res, slope },
+            FilterSpec::Highpass { hz, slope, .. } => FilterSpec::Highpass { hz, res, slope },
+        }
+    }
 }
 
 impl serde::Serialize for FilterSpec {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
-        let (k, v) = match self {
-            FilterSpec::Lowpass(h) => ("lowpass", h),
-            FilterSpec::Highpass(h) => ("highpass", h),
+        let k = match self {
+            FilterSpec::Lowpass { .. } => "lowpass",
+            FilterSpec::Highpass { .. } => "highpass",
         };
-        let mut m = s.serialize_map(Some(1))?;
-        m.serialize_entry(k, v)?;
+        let n = 1 + (self.res() != 0.0) as usize + (self.slope() != 12) as usize;
+        let mut m = s.serialize_map(Some(n))?;
+        m.serialize_entry(k, &self.hz())?;
+        if self.res() != 0.0 {
+            m.serialize_entry("res", &self.res())?;
+        }
+        if self.slope() != 12 {
+            m.serialize_entry("slope", &self.slope())?;
+        }
         m.end()
     }
 }
@@ -619,11 +797,15 @@ impl<'de> Deserialize<'de> for FilterSpec {
             lowpass: Option<f64>,
             #[serde(default)]
             highpass: Option<f64>,
+            #[serde(default)]
+            res: f64,
+            #[serde(default = "twelve")]
+            slope: u16,
         }
-        let bad = || serde::de::Error::custom("filter must be {lowpass: <Hz>} or {highpass: <Hz>}");
+        let bad = || serde::de::Error::custom("filter must be {lowpass: <Hz>} or {highpass: <Hz>} (plus optional res, slope)");
         match Raw::deserialize(d).map_err(|_| bad())? {
-            Raw { lowpass: Some(h), highpass: None } => Ok(FilterSpec::Lowpass(h)),
-            Raw { lowpass: None, highpass: Some(h) } => Ok(FilterSpec::Highpass(h)),
+            Raw { lowpass: Some(hz), highpass: None, res, slope } => Ok(FilterSpec::Lowpass { hz, res, slope }),
+            Raw { lowpass: None, highpass: Some(hz), res, slope } => Ok(FilterSpec::Highpass { hz, res, slope }),
             _ => Err(bad()),
         }
     }
@@ -1133,7 +1315,7 @@ mod tests {
         assert_eq!(s.kits["h"].slice, Some(SliceBy::Transients));
         let t = &s.tracks[0];
         assert_eq!(t.pattern, Pattern::Steps("1 . 3 .".into()));
-        assert_eq!((t.swing, t.reverse, t.filter, t.gate, t.stutter, t.speed, t.grid), (Some(58.0), true, Some(FilterSpec::Lowpass(800.0)), Some(0.5), Some(2), Some(0.5), Some(8)));
+        assert_eq!((t.swing, t.reverse, t.filter, t.gate, t.stutter, t.speed, t.grid), (Some(58.0), true, Some(FilterSpec::Lowpass { hz: 800.0, res: 0.0, slope: 12 }), Some(0.5), Some(2), Some(0.5), Some(8)));
         let back: Score = serde_yaml::from_str(&serde_yaml::to_string(&s).unwrap()).unwrap();
         assert_eq!(back, s);
         let bad = serde_yaml::from_str::<Score>(&y.replace("{beats: 1}", "{beats: 1, into: 2}")).unwrap_err().to_string();

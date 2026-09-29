@@ -938,8 +938,8 @@
     "profile": "temperley"
    }
   ],
-  "tuning_hz": 449.76,
-  "tuning_cents": 38.0,
+  "tuning_hz": 449.38,
+  "tuning_cents": 36.5,
   "pitch_class_profile": [
    0.721,
    0.7018,
@@ -3935,6 +3935,22 @@
      "steady": 0.976,
      "static": 0.894,
      "level_db": -3.0
+    }
+   },
+   {
+    "name": "hold-1",
+    "start": 8.263,
+    "end": 9.269,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "B3",
+     "0.84s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 59,
+     "velocity": 0.685
     }
    }
   ],

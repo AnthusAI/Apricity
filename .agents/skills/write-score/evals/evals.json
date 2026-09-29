@@ -1,0 +1,8 @@
+{
+  "skill_name": "write-score",
+  "evals": [
+    {"id": 1, "prompt": "Make me a smooth deep house groove, about 16 bars, from clips I've rated highly. Send me something to listen to.", "expected_output": "A new .apr score built around the user's top-rated clips, rendered to audio, with a short by-bars description; smooth and sparse, harmonically fitted.", "files": []},
+    {"id": 2, "prompt": "Write a sparse 12-bar blues shuffle around 90 bpm with the marine band stems.", "expected_output": "A 12-bar blues .apr (I7 IV7 V7 form) using marine-band stems, swung, sparse, rendered to audio.", "files": []},
+    {"id": 3, "prompt": "Make a 16-bar radio edit of examples/ave-house.apr with the drop coming in much earlier.", "expected_output": "A forked .apr (new file, original untouched) of 16 bars with the drop early, keeping credits and automation working, rendered to audio.", "files": ["examples/ave-house.apr"]}
+  ]
+}

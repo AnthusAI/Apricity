@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-627e1102-91c9-484e-b265-9de30353bade",
+  "title": "apricity link shows the session's peers, tempo, playing state and phase",
+  "description": "As a performer, I want to see the Link session from the terminal, so that I can check Apricity and the DAW see each other before I play.\n\nSpec file: `features/link/play.feature`.\n\n```gherkin\nFeature: apricity link shows the Link session\n\n  Scenario: Looking at a session\n    Given a Link session at 124 BPM with 2 other peers, playing\n    When I run \"apricity link --seconds 2\"\n    Then it prints \"2 peers · 124 BPM · playing\" and the bar and beat of the session, updated in place\n    And the session's tempo and start/stop are unchanged afterwards\n\n  Scenario: Nobody else is there\n    Given no other Link peers\n    When I run \"apricity link --seconds 2\"\n    Then it prints \"no other Link peers found\"\n    And a hint that Link needs the DAW's Link switch on, the same network, and local network access for the terminal\n    And it exits with status 0\n\n  Scenario: A bad duration\n    When I run \"apricity link --seconds -1\"\n    Then it exits with status 2 and prints \"--seconds: must be more than 0 (got -1)\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-97a1dd55-c246-47a9-8821-bea1a9475f14",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:04:24.123221Z",
+  "updated_at": "2026-09-26T22:04:24.123259Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

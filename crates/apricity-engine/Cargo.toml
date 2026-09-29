@@ -8,10 +8,11 @@ description = "Apricity's playback engine: render timelines ahead into arrangeme
 [features]
 default = ["decode"]
 # Decode audio files with symphonia (native). The browser decodes with Web Audio instead.
-decode = ["dep:symphonia"]
+decode = ["dep:symphonia", "dep:symphonia-adapter-libopus"]
 
 [dependencies]
 apricity-dsp.workspace = true
 apricity-score.workspace = true
 rtrb = "0.4"
-symphonia = { version = "0.5", default-features = false, features = ["mp3", "wav", "pcm", "flac"], optional = true }
+symphonia = { version = "0.5", default-features = false, features = ["mp3", "wav", "pcm", "flac", "ogg", "vorbis"], optional = true }
+symphonia-adapter-libopus = { version = "0.2.7", optional = true }

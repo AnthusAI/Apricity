@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-8adf7fec-da1a-4642-937d-6ae39f4897b2",
+  "title": "Home feed and tag pages read Ranked a page at a time (local: computed)",
+  "description": "",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-91d34a67-5133-4b66-88a4-a4ab22b88b6c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-27T01:34:30.900545Z",
+  "updated_at": "2026-09-27T01:47:55.639Z",
+  "closed_at": "2026-09-27T01:47:55.638963Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

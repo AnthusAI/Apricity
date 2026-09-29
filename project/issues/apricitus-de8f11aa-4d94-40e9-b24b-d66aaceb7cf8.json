@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-de8f11aa-4d94-40e9-b24b-d66aaceb7cf8",
+  "title": "Group and return tracks, sends, volume and pan carry over to the set",
+  "description": "As a producer, I want group and return tracks, sends, volume and pan in the set, so that the routing and balance match the score.\n\n```gherkin\nFeature: The mixer in the set\n  Background:\n    Given the score \"mix.apr\":\n      \"\"\"\n      tempo 100\n      key C\n      clip a = a.wav\n      clip b = b.wav\n      bars 2\n      track a  group beat  volume -2\n        pan -30\n        send plate 25%\n      track b  group beat\n        send plate -12dB\n      group beat  volume -1  group band\n      group band\n      return plate  volume -4\n        reverb plate 1.8s\n      \"\"\"\n\n  Scenario: Group tracks, nested\n    When I export \"mix.apr\" as a DAW set\n    Then the tracks \"a\" and \"b\" are inside the group track \"beat\"\n    And the group track \"beat\" is inside the group track \"band\"\n\n  Scenario: Return tracks and sends\n    When I export \"mix.apr\" as a DAW set\n    Then the set has a return track \"plate\" with volume -4 dB\n    And the track \"a\" sends to \"plate\" at 25%\n    And the track \"b\" sends to \"plate\" at -12 dB\n    And every other send is off\n\n  Scenario: Volume and pan\n    When I export \"mix.apr\" as a DAW set\n    Then the track \"a\" has volume -2 dB and pan 30% left\n    And the group track \"beat\" has volume -1 dB\n\n  Scenario: A track spread over several audio tracks keeps its mix on its group\n    Given the track \"a\" plays notes that overlap\n    When I export \"mix.apr\" as a DAW set\n    Then the group track \"a\" has volume -2 dB, pan 30% left and sends to \"plate\" at 25%\n    And its audio tracks are at 0 dB, centered, with no sends\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0fc5a828-afab-4b7d-acfa-efca1e5a4595",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:27.640238Z",
+  "updated_at": "2026-09-26T22:06:27.640302Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

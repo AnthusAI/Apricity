@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-0c0eda4c-6598-4b9a-afdb-e257f2993030",
+  "title": "Manual check in the DAW: exported samples land on the grid",
+  "description": "## Intent\nThe one check a machine cannot do: the DAW actually uses what we wrote.\n\n## Steps (manual, owner)\n1. `apricity export --sidecars` on `samples/marine-band/stems/WashingtonPost/` (real stems from the library, not in git).\n2. In the DAW, set the tempo to 100, drag `bass.wav` and `drums.wav` into two tracks.\n3. Expect: warp on, markers on the beats, both play in time with each other and the metronome, no re-warp prompt; drums in Beats mode; the bass sounds at A440 (detune applied).\n4. Record the DAW version and any deviation in a comment; file a bug under M2 for each deviation.\n\n## Done when\nThe comment records a pass for at least three samples (a stem, a full recording, an unwarped sample).",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-6ef93529-bedc-45ea-b2ad-a238f88c3bc8",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-eacb48d8-56dc-447e-a681-1e9a679f0a51",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:44.216827Z",
+  "updated_at": "2026-09-26T22:06:36.252403Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

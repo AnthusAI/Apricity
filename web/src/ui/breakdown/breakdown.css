@@ -78,3 +78,14 @@
   .breakdown .bd-open { font-size: 11px; padding: 4px 8px; }
 }
 .breakdown [hidden] { display: none !important; }
+
+/* The hero's play button: bigger, labelled, and pulsing gently until it has played once. */
+.breakdown.bd-hero .playctl .play { width: 44px; height: 44px; }
+.breakdown.bd-hero .playctl .play svg { width: 44px; height: 44px; }
+.breakdown.bd-hero .playctl .play[data-state="idle"] { animation: bd-hear 2.2s ease-in-out infinite; }
+.breakdown.bd-hero .bd-hear { font-size: 14px; font-weight: 600; color: var(--sun, var(--ember)); letter-spacing: .01em; }
+.breakdown.bd-hero:has(.play[data-state="playing"]) .bd-hear,
+.breakdown.bd-hero.bd-heard .bd-hear { display: none; }
+.breakdown.bd-hero.bd-heard .playctl .play { animation: none; }
+@keyframes bd-hear { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ember) 45%, transparent); } 50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--ember) 0%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .breakdown.bd-hero .playctl .play[data-state="idle"] { animation: none; } }

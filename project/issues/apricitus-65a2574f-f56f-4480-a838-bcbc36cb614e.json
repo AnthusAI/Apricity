@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-65a2574f-f56f-4480-a838-bcbc36cb614e",
+  "title": "Compose a chant-driven Big Beat score",
+  "description": "Use chant-like library recordings as a chopped hook in a new Big Beat Apricity score. Render and measure a short audition before presenting it.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "7322f53c-3caa-4f34-8a7c-54559c823b67",
+      "author": "home",
+      "text": "Built Call the Floor: a 116 BPM chant-driven Big Beat sketch using Black Betty both as an intact hook and a four-pad chopped kit. Main 5–14-bar window measured objective_v2 103.46. The steering notch lacked a predicted +2 gain, so it was not applied. Final local render is in renders/call-the-floor-final.",
+      "created_at": "2026-09-28T02:33:05.811783Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "34dc3b0c-6ec0-49f4-9718-29a5d3a7e1b1",
+      "author": "home",
+      "text": "Published the validated chant-driven Big Beat score to production through the authenticated CLI after strict asset preflight: scr_scores_big-beat-call-the-floor_apr.",
+      "created_at": "2026-09-28T02:37:42.542088Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-28T02:31:40.238435Z",
+  "updated_at": "2026-09-28T02:37:42.748981Z",
+  "closed_at": "2026-09-28T02:37:42.748928Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

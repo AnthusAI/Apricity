@@ -34,17 +34,6 @@ export interface Line {
   otherTitle?: string | null;
 }
 
-/** The filter chips, and the `kind` each one lists. */
-export const FILTERS: { label: string; kind: string | null }[] = [
-  { label: "All", kind: null },
-  { label: "Scores", kind: "song" },
-  { label: "Beats", kind: "beat" },
-  { label: "Chords", kind: "chords" },
-  { label: "Melodies", kind: "melody" },
-  { label: "Samples", kind: "sample" },
-  { label: "Clips", kind: "clip" },
-];
-
 /** What a card is, as its label says: Score, Beat, Chords, Melody, Sample, Clip. */
 export function kindName(card: Pick<Card, "targetType" | "kind">): string {
   const k = card.kind ?? card.targetType;
@@ -77,7 +66,7 @@ export function lineText(line: Pick<Line, "what" | "stars"> & Partial<Pick<Line,
   }
 }
 
-/** A page of cards, newest activity first (`kind`: one of FILTERS). */
+/** A page of cards, newest activity first (`kind`: only cards of that kind). */
 export async function cards(kind: string | null, nextToken?: string | null): Promise<{ items: Card[]; nextToken: string | null }> {
   const r = await client().models.Activity.activityByFeed(
     { feed: "all" },
@@ -87,21 +76,3 @@ export async function cards(kind: string | null, nextToken?: string | null): Pro
   return { items: (r.data ?? []) as Card[], nextToken: r.nextToken ?? null };
 }
 
-/** A card's latest lines, newest first. */
-export async function linesOf(key: string, limit = 3): Promise<Line[]> {
-  const r = await client().models.ActivityEvent.eventsByTarget({ targetKey: key }, { sortDirection: "DESC", limit });
-  return (r.data ?? []) as Line[];
-}
-
-/** An item's all-time stars: average and count. */
-export async function starsOf(type: ItemType, id: string): Promise<{ average: number | null; count: number }> {
-  const r = await client().models.Tally.get({ id: `${type}#${id}#all` });
-  const t = r.data as { count?: number; sum?: number } | null;
-  return t?.count ? { average: (t.sum ?? 0) / t.count, count: t.count } : { average: null, count: 0 };
-}
-
-/** An item's newest comment still there (for the card's preview). */
-export async function newestComment(targetId: string): Promise<CommentRow | null> {
-  const r = await client().models.Comment.commentsByTarget({ targetId }, { sortDirection: "DESC", limit: 5 });
-  return ((r.data ?? []) as CommentRow[]).find((c) => !c.deleted) ?? null;
-}

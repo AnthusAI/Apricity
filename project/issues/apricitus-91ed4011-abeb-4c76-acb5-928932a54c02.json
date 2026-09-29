@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-91ed4011-abeb-4c76-acb5-928932a54c02",
+  "title": "A tempo change, even mid-bar, keeps the beat and re-warps at the next bar line",
+  "description": "As a performer, I want Apricity to keep the beat when the DAW's tempo changes, even in the middle of a bar, so that I can ride the tempo and Apricity stays with me.\n\nSpec file: `features/link/clock.feature`. The bridge behavior below is the plan from M0 (apricitus-7e32cb); if M0 decides otherwise, this story is updated before any code.\n\n```gherkin\nFeature: Tempo changes while following a beat clock\n\n  Background:\n    Given the click score\n    And playback is following a clock at 120 BPM with a quantum of 4\n\n  Scenario: Tempo change in the middle of a bar\n    When the clock changes to 90 BPM at beat 2.5 of a bar\n    Then every click still sounds on a whole beat of the clock within the tolerance\n    And until the next bar line the arrangement plays slower to stay on the beat\n    And from a bar line after the change the clips are warped for 90 BPM and sound at their scored pitch\n\n  Scenario: A tempo ramp re-warps once it settles\n    When the clock moves from 120 to 128 BPM in 16 small steps over two bars and then holds\n    Then every click sounds on the beat within the tolerance throughout\n    And the arrangement is re-warped once, after the tempo holds\n\n  Scenario: Returning to an earlier tempo reuses what was rendered\n    Given the clock went from 120 to 90 BPM and the 90 BPM arrangement landed\n    When the clock returns to 120 BPM\n    Then the 120 BPM arrangement lands at the next bar line\n    And no event is rendered again\n\n  Scenario: A re-pitched clip keeps its speed and pitch\n    Given a track plays a clip with warp repitch\n    When the clock changes to 90 BPM\n    Then each of that track's notes starts on its beat at 90 BPM\n    And plays at its scored speed and pitch\n\n  Scenario: Positions written in seconds stay where the score put them in beats\n    Given a track plays at \"12.5s\", which is beat 20.83 at the score's 100 BPM\n    When the clock plays at 120 BPM\n    Then that note starts at beat 20.83 of the score\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e661ebf4-0379-4220-98a3-f98ab66831ef",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:02:42.944804Z",
+  "updated_at": "2026-09-26T22:02:42.944835Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

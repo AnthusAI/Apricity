@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-066fc4d3-95af-4a89-b072-e559cb38bcc8",
+  "title": "Web need: export a collection for the DAW from the curation views",
+  "description": "## Intent\n\nDescribe what the web app would need; the web/docs session designs it.\n\n## The need\n\n- Wherever collections are shown (the curation loop's keep flow and a collection's page): \"Export for the DAW\", producing the folder the CLI writes (a zip: numbered clip files and the drum rack).\n- Source of the bytes: `apricity serve` over the local library (e.g. `GET /export/collection?name=...`) or the wasm engine; as with kits and clip folders, the files reference audio on this machine, so cloud mode must say so or include audio (owner decision from M0).\n\n## Verification\n\nDone when the web session has accepted the need in its own issue (comment with its id).\n\n## Release\n\nNo product commit here.\n\n## Dependencies\n\nBlocked by the CLI task in this epic.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5e369e0f-c0ce-47eb-92e4-fe63f36c7dd3",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-17016618-6a03-48f3-a348-21c1cd62ad49",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:11:26.972923Z",
+  "updated_at": "2026-09-26T22:11:56.663782Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

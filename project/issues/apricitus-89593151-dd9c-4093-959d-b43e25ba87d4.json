@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-89593151-dd9c-4093-959d-b43e25ba87d4",
+  "title": "Import edge cases: beat numbering offset, mid-bar tempo change, partial coverage, stems",
+  "description": "## Behavior\n```gherkin\nFeature: Beat numbering and edge cases on import\n\n  Scenario: The DAW numbered the beats from a different downbeat\n    Given a DAW-saved .asd whose beat 0 lies one beat before the analysis's first downbeat\n    When I import its markers\n    Then the markers are imported with the DAW's numbering\n    And the output warns \"beat 0 is 1 beat before the analysis's first downbeat; pass --beat-offset 1 to line them up\"\n\n  Scenario: --beat-offset lines them up\n    Given the same .asd\n    When I import its markers with --beat-offset 1\n    Then my beat 0 is at the analysis's first downbeat\n\n  Scenario: A tempo change in the middle of a bar\n    Given \"tempo-change.wav.asd\" saved by the DAW with a marker at beat 6.5\n    When I import its markers and compile a score playing beats 4..8\n    Then the event's warp map has a point at beat 6.5 of the clip\n\n  Scenario: Markers covering only part of the sample\n    Given an .asd whose markers cover beats 0 to 8 of a 16-beat sample\n    When I import its markers\n    Then the import succeeds and says \"markers cover 0:00.50–0:04.50; the rest follows the nearest tempo\"\n\n  Scenario: Importing into a stem\n    Given the analyzed drum stem \"stems/steady-120/drums.wav\" whose siblings share its parent's grid\n    When I import warp markers for the drum stem\n    Then only the drum stem gets them\n    And the output notes \"bass.wav and other.wav still use the shared grid\"\n```\nOpen question for the owner: should importing into a stem offer to apply the same markers to its siblings and parent (they share one grid)?",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.221036Z",
+  "updated_at": "2026-09-26T22:06:13.221070Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

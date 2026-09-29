@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-f3ea5520-23bf-4a9c-93d3-33caf799e844",
+  "title": "apricity-daw rack.rs: pad layout and one sampler per pad from a resolved kit",
+  "description": "## Intent\n\nWrite the drum rack preset from a resolved kit.\n\n## Scope\n\n- `crates/apricity-daw/src/rack.rs`: `pub fn kit_preset(kit: &KitInfo, timeline: &Timeline, clips: &ClipSet, out: &Path) -> Result<Vec<u8>, DawError>`.\n- Pad layout (`crates/apricity-daw/src/pads.rs`): sliced pad n on note 35 + n; drum words on the table in `design/daw-presets.md`; other names on free notes from C1 upward, alphabetically; more than 92 pads is an error naming the kit.\n- Per pad: a branch named after the pad, receiving its note; a sampler with the sample file reference, start/end in frames at the file's own rate, volume from the pad's level gain, detune from `tuning_cents`, root key from the pad's root, transpose 0, classic mode, loop off, the velocity setting chosen in M0.\n- Element names and encodings exactly as the M0 reference files show; a unit test compares our minimal preset's element tree with `tests/fixtures/reference/minimal-kit.adg` (structure, not values).\n\n## Out of scope\n\nWarp markers (next task), MIDI (M2), CLI (later task).\n\n## Verification\n\n```sh\nCARGO_BUILD_JOBS=2 safe-run.sh -- cargo test -p apricity-daw\n```\nThe pad layout, region and level scenarios of `features/daw/kit-preset.feature` pass.\n\n## Release\n\n`feat(<this task id>): write a kit as a drum rack preset`. Not breaking.\n\n## Dependencies\n\nBlocked by the specs task and the resolved-kits task.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-109615b0-9f66-4996-a662-2d79180701a9",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-8aa875e4-80bd-4af5-83da-0b99a8c2abf2",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-c7456598-11e6-4189-8eec-55457c61feea",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:03:19.421937Z",
+  "updated_at": "2026-09-26T22:11:54.290489Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

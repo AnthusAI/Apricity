@@ -3,7 +3,7 @@
 // say a sample comes from another recording (single drum hits uploaded one by one, from a kit).
 
 import { el } from "./dom";
-import { citation, creditsOf, documented, LICENSES, licenseOf, type LicenseCode, type Provenance } from "../data/licenses";
+import { citation, creditsOf, documented, explainCombined, NOT_LEGAL_ADVICE, LICENSES, licenseOf, type LicenseCode, type Provenance } from "../data/licenses";
 
 /** Copy text, and say so on the button for a moment. */
 function copyButton(label: string, text: () => string): HTMLButtonElement {
@@ -126,12 +126,22 @@ function editor(rec: Provenance, d: EditDeps): HTMLElement {
 export function scoreCredits(recs: Provenance[], curator: boolean, based: string | null = null): HTMLElement {
   const c = creditsOf(recs);
   const lines = c.lines.filter((l) => l.documented || curator);
-  const all = () => [...(based ? [based] : []), ...lines.filter((l) => l.documented).map((l) => l.text), ...(c.shareAlike ? [`This work is shared under ${c.shareAlike.name} (${c.shareAlike.url}).`] : [])].join("\n");
+  const all = () => [...(based ? [based] : []), ...lines.filter((l) => l.documented).map((l) => l.text), ...(c.shareAlike ? [`This work is shared under ${c.shareAlike.name} (${c.shareAlike.url}).`] : []), `License: ${c.combined.title}${c.combined.license?.url ? ` (${c.combined.license.url})` : ""}.`].join("\n");
+  const cb = c.combined;
+  const licenseBlock = el(
+    "div",
+    { className: cb.kind === "share-alike" ? "lic-combined sa" : "lic-combined" },
+    el("strong", {}, "Computed license: "),
+    cb.license?.url ? link(cb.license.url, cb.title) : cb.title,
+    el("p", {}, explainCombined(cb, c.lines.length)),
+    el("p", { className: "hint" }, NOT_LEGAL_ADVICE),
+  );
   return el(
     "section",
     { className: "credits" },
     el("h3", {}, "Credits"),
     ...(based ? [el("p", { className: "lic-based" }, based)] : []),
+    licenseBlock,
     ...(c.shareAlike ? [el("p", { className: "lic-sa" }, `Share-alike: this uses sounds under ${c.shareAlike.name}, so what you make with it must be shared under ${c.shareAlike.name} too.`)] : []),
     el("ol", { className: "credit-list" }, ...lines.map((l) => el("li", { className: l.documented ? "" : "missing" }, l.documented ? l.text : `${l.title}: no license documented (only curators see this).`))),
     ...(lines.some((l) => l.documented) ? [el("div", { className: "lic-actions" }, copyButton("Copy credits", all))] : []),

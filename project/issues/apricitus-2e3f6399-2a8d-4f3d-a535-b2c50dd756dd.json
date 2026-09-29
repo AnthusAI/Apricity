@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-2e3f6399-2a8d-4f3d-a535-b2c50dd756dd",
+  "title": "Clip export reports every mistake with the file and clip it concerns",
+  "description": "As a beatmaker, I want every mistake in a clip export reported with the file and the clip it concerns, so that I can fix the manifest or the command instead of guessing.\n\nNothing is written for a sample that has an error; other samples in a folder export still export, and the command exits non-zero listing every problem.\n\n```gherkin\nFeature: Clip export reports every mistake with its location\n  Scenario: A sample that was never analyzed\n    Given the audio \"new.wav\" with no manifest\n    When I export the clips of \"new.wav\"\n    Then the export fails with \"new.wav is not analyzed (no new.wav.apricity.json); run: python -m apricity_analyze.cli new.wav\"\n\n  Scenario: A manifest that breaks the schema names the place\n    Given the manifest of \"bad.wav\" has \"annotations.clips[2].end\" set to \"soon\"\n    When I export the clips of \"bad.wav\"\n    Then the export fails with \"bad.wav.apricity.json: /annotations/clips/2/end\"\n\n  Scenario: A clip past the end of the sample names the clip\n    Given the ML clip \"loop-3\" of \"short.wav\" ends after the sample ends\n    When I export the clips of \"short.wav\"\n    Then the export fails with \"short.wav.apricity.json: clip `loop-3` ends at 12.00 s, after the sample's end (10.00 s)\"\n\n  Scenario: Missing audio\n    Given the manifest of \"gone.wav\" remains but the audio does not\n    When I export the clips of \"gone.wav\"\n    Then the export fails with \"gone.wav: audio file not found\"\n\n  Scenario: An existing folder is not overwritten without --force\n    Given the folder \"Thunderer\" exists\n    When I export the clips of \"Thunderer.wav\"\n    Then the export fails with \"Thunderer exists; use --force to replace it\"\n    And the folder is unchanged\n\n  Scenario: --force replaces the sample's folder, including clip files for markup that is gone\n    Given the folder \"Thunderer\" holds \"loops/A-4bars-Bb.alc\" from an earlier export\n    And the markup no longer has that loop\n    When I export the clips of \"Thunderer.wav\" with \"--force\"\n    Then \"Thunderer/loops/A-4bars-Bb.alc\" no longer exists\n\n  Scenario: One bad sample does not stop the others\n    Given the folder \"marches\" holds \"a.wav\" (analyzed) and \"bad.wav\" (whose manifest breaks the schema)\n    When I export the clips of \"marches\"\n    Then the folder \"a\" is written\n    And the export fails listing \"bad.wav.apricity.json\"\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f7e8f529-7713-4f59-9f97-8b4833881fa1",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:36.354075Z",
+  "updated_at": "2026-09-26T22:06:50.242792Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -1,5 +1,5 @@
 {
-  "version": "9bcb4878674102ce",
+  "version": "d03b627d6d412a77",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -98,6 +98,13 @@
         "attribution": {
           "name": "attribution",
           "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sourceMetadata": {
+          "name": "sourceMetadata",
+          "type": "AWSJSON",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"
@@ -245,6 +252,13 @@
           "isRequired": false,
           "isArray": false,
           "kind": "enum"
+        },
+        "generator": {
+          "name": "generator",
+          "type": "AWSJSON",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
         },
         "stem": {
           "name": "stem",
@@ -1492,6 +1506,13 @@
           "isArray": false,
           "kind": "enum"
         },
+        "tags": {
+          "name": "tags",
+          "type": "String",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "scalar"
+        },
         "text": {
           "name": "text",
           "type": "String",
@@ -2448,6 +2469,205 @@
             "day"
           ],
           "sortArgument": "day"
+        },
+        {
+          "name": "talliesByTarget",
+          "queryField": "talliesByTarget",
+          "partitionField": "targetId",
+          "sortFields": [
+            "day"
+          ],
+          "sortArgument": "day"
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "iam",
+          "allow": "public",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": []
+    },
+    "Ranked": {
+      "name": "Ranked",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "list": {
+          "name": "list",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sort": {
+          "name": "sort",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "targetType": {
+          "name": "targetType",
+          "type": "RatingTarget",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "targetId": {
+          "name": "targetId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "kind": {
+          "name": "kind",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "path": {
+          "name": "path",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "samplePath": {
+          "name": "samplePath",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "clipStart": {
+          "name": "clipStart",
+          "type": "Float",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "clipEnd": {
+          "name": "clipEnd",
+          "type": "Float",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "String",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "scalar"
+        },
+        "stars": {
+          "name": "stars",
+          "type": "Float",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "ratings": {
+          "name": "ratings",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "comments": {
+          "name": "comments",
+          "type": "Int",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastAt": {
+          "name": "lastAt",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastWhat": {
+          "name": "lastWhat",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lastBy": {
+          "name": "lastBy",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "rankedByList",
+          "queryField": "rankedByList",
+          "partitionField": "list",
+          "sortFields": [
+            "sort"
+          ],
+          "sortArgument": "sort"
+        },
+        {
+          "name": "rankedByTarget",
+          "queryField": "rankedByTarget",
+          "partitionField": "targetId",
+          "sortFields": []
         }
       ],
       "relationships": [],
@@ -2483,6 +2703,13 @@
           "name": "kind",
           "type": "String",
           "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "input": {
+          "name": "input",
+          "type": "AWSJSON",
+          "isRequired": false,
           "isArray": false,
           "kind": "scalar"
         },
@@ -2565,6 +2792,384 @@
         }
       ],
       "ownerFields": []
+    },
+    "Lab": {
+      "name": "Lab",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "brief": {
+          "name": "brief",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sceneScoreId": {
+          "name": "sceneScoreId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "status": {
+          "name": "status",
+          "type": "LabStatus",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "cycles": {
+          "name": "cycles",
+          "type": "ListeningCycle",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "model"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "labsByOwnerAndCreatedAt",
+          "queryField": "labsByOwner",
+          "partitionField": "owner",
+          "sortFields": [
+            "createdAt"
+          ],
+          "sortArgument": "createdAt"
+        }
+      ],
+      "relationships": [
+        {
+          "field": "cycles",
+          "kind": "hasMany",
+          "target": "ListeningCycle",
+          "references": "labId",
+          "childIndex": "cyclesByLab",
+          "implicit": false
+        }
+      ],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "identityClaim": "cognito:username",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "groups": [
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
+    "ListeningCycle": {
+      "name": "ListeningCycle",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "question": {
+          "name": "question",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "incumbentScoreId": {
+          "name": "incumbentScoreId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "options": {
+          "name": "options",
+          "type": "CycleOption",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "customType"
+        },
+        "status": {
+          "name": "status",
+          "type": "CycleStatus",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "closedAt": {
+          "name": "closedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "labId": {
+          "name": "labId",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lab": {
+          "name": "lab",
+          "type": "Lab",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "model"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "listeningCyclesByLabId",
+          "queryField": "cyclesByLab",
+          "partitionField": "labId",
+          "sortFields": []
+        }
+      ],
+      "relationships": [
+        {
+          "field": "lab",
+          "kind": "belongsTo",
+          "target": "Lab",
+          "references": "labId"
+        }
+      ],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "identityClaim": "cognito:username",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "groups": [
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
+    "CycleVerdict": {
+      "name": "CycleVerdict",
+      "fields": {
+        "cycleId": {
+          "name": "cycleId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "judge": {
+          "name": "judge",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "best": {
+          "name": "best",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "notes": {
+          "name": "notes",
+          "type": "CycleNote",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "customType"
+        },
+        "note": {
+          "name": "note",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "savedAt": {
+          "name": "savedAt",
+          "type": "AWSDateTime",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        }
+      },
+      "primaryKey": [
+        "cycleId",
+        "judge"
+      ],
+      "indexes": [
+        {
+          "name": "cycleVerdictsByCycleId",
+          "queryField": "verdictsByCycle",
+          "partitionField": "cycleId",
+          "sortFields": []
+        }
+      ],
+      "relationships": [],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "judge",
+          "allow": "owner",
+          "identityClaim": "sub",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "operations": [
+            "read"
+          ],
+          "groups": [
+            "admins"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "judge"
+      ]
     }
   },
   "enums": {
@@ -2598,11 +3203,20 @@
       "clip",
       "score"
     ],
+    "CycleStatus": [
+      "open",
+      "closed"
+    ],
+    "LabStatus": [
+      "open",
+      "closed"
+    ],
     "SampleRole": [
       "source",
       "stem",
       "excerpt",
-      "upload"
+      "upload",
+      "generated"
     ],
     "SampleStatus": [
       "pending",
@@ -2722,6 +3336,45 @@
         "name": "stem",
         "type": "String",
         "isRequired": false,
+        "isArray": false,
+        "kind": "scalar"
+      }
+    },
+    "CycleOption": {
+      "letter": {
+        "name": "letter",
+        "type": "String",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "scalar"
+      },
+      "scoreId": {
+        "name": "scoreId",
+        "type": "ID",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "scalar"
+      },
+      "audio": {
+        "name": "audio",
+        "type": "FileRef",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "customType"
+      }
+    },
+    "CycleNote": {
+      "letter": {
+        "name": "letter",
+        "type": "String",
+        "isRequired": true,
+        "isArray": false,
+        "kind": "scalar"
+      },
+      "note": {
+        "name": "note",
+        "type": "String",
+        "isRequired": true,
         "isArray": false,
         "kind": "scalar"
       }
@@ -3206,6 +3859,22 @@
         ]
       }
     ],
+    "Ranked": [
+      {
+        "provider": "iam",
+        "allow": "public",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      }
+    ],
     "Job": [
       {
         "provider": "iam",
@@ -3235,10 +3904,119 @@
           "read"
         ]
       }
+    ],
+    "Lab": [
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "identityClaim": "cognito:username",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "groups": [
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
+    "ListeningCycle": [
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "identityClaim": "cognito:username",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "groups": [
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
+    "CycleVerdict": [
+      {
+        "provider": "userPools",
+        "ownerField": "judge",
+        "allow": "owner",
+        "identityClaim": "sub",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "operations": [
+          "read"
+        ],
+        "groups": [
+          "admins"
+        ]
+      }
     ]
   },
   "storage": {
     "paths": [
+      {
+        "path": "files/cycles/{entity_id}/*",
+        "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins",
+          "owner"
+        ],
+        "writable": [
+          "admins",
+          "owner"
+        ]
+      },
       {
         "path": "uploads/{entity_id}/*",
         "readable": [
@@ -3246,19 +4024,6 @@
         ],
         "writable": [
           "owner"
-        ]
-      },
-      {
-        "path": "files/*",
-        "readable": [
-          "guest",
-          "authenticated",
-          "members",
-          "curators",
-          "admins"
-        ],
-        "writable": [
-          "admins"
         ]
       },
       {
@@ -3466,9 +4231,58 @@
         ]
       },
       {
+        "path": "Ranked/*",
+        "readable": [
+          "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
         "path": "Job/*",
         "readable": [
           "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Lab/*",
+        "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "ListeningCycle/*",
+        "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "CycleVerdict/*",
+        "readable": [
           "authenticated",
           "members",
           "curators",

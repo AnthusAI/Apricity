@@ -1,0 +1,52 @@
+{
+  "id": "apricitus-cfd8118c-176d-4be7-a261-b1ceb12b9a30",
+  "title": "(web) Score view needs an Export DAW set action using the serve route",
+  "description": "## Intent\n\n(web) The Score view needs a way to export the open score as a DAW set. Filed for the web/docs session; this task states the need only, not the visuals.\n\n## The need\n\n- An action on a saved score that calls `GET /export/daw-set/{scoreId}` on the local server with the library's API key and saves the zip.\n- Show the located problems from a `422` the way compile problems are shown (line and column), and the warnings header's items after a successful export.\n- Only when the app runs against a local library (`custom.apricity.mode == \"local\"` in `amplify_outputs.json`); in cloud mode, hide or explain it (see the open question on the initiative).\n- Unsaved edits: export what is saved, or ask to save first (web session decides).\n\n## Verification\n\n`npm --prefix web run build`; the web session's own browser test for the action; manual: export from the app, open in the DAW.\n\n## Release\n\n`feat(<this task's id>): export a DAW set from the Score view` (web session).\n\n## Depends on\n\nThe export route task in this epic.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-3e535c11-3d31-4864-ae05-ee20ecfb622a",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-1410ff84-870f-41f4-b8bf-5a3466735c87",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [
+    {
+      "id": "92774448-09b7-4551-a69d-81d1d8061830",
+      "author": "home",
+      "text": "Superseded in approach by M6 (apricitus-0656bd): the Score view's action should call the browser-side export, not the serve route. Keep this task for the local-mode fallback only if M6's page path cannot ship first; otherwise close it when M6's web task lands.",
+      "created_at": "2026-09-27T00:14:58.686402Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    }
+  ],
+  "created_at": "2026-09-26T22:06:29.711102Z",
+  "updated_at": "2026-09-27T00:14:58.686446Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan DAW Set Export",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

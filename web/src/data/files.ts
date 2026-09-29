@@ -10,6 +10,16 @@ import { mode } from "./client.js";
 const CLOUD_PREFIX = "files/";
 const cloudPath = (path: string): string => CLOUD_PREFIX + path;
 
+/** One credentials fetch for everyone waiting on it; again after a sign-in or sign-out (Amplify caches the result). */
+let credentials: Promise<unknown> | null = null;
+function credentialsOnce(): Promise<unknown> {
+  credentials ??= import("aws-amplify/auth")
+    .then((a) => a.fetchAuthSession())
+    .catch(() => (credentials = null)); // let the signing report it; the next call tries again
+  return credentials;
+}
+if (typeof document !== "undefined") document.addEventListener("apricity:auth-changed", () => (credentials = null));
+
 interface UploadDataOptions {
   contentType?: string;
 }
@@ -82,8 +92,10 @@ export async function getUrl({
       url: new URL(`/files/${encodeURIComponent(path)}`, location.origin).href,
     };
   } else {
-    // Cloud mode: use aws-amplify/storage
+    // Cloud mode: use aws-amplify/storage. Signing needs credentials; the first call fetches them and the rest wait for
+    // it (called together before any are cached, each would fetch its own: a page of sounds took seconds of Cognito).
     const { getUrl: amplifyGetUrl } = await import("aws-amplify/storage");
+    await credentialsOnce();
     const result = await amplifyGetUrl({ path: cloudPath(path) });
     return { url: result.url.href };
   }

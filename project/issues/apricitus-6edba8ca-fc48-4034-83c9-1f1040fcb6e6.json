@@ -1,0 +1,94 @@
+{
+  "id": "apricitus-6edba8ca-fc48-4034-83c9-1f1040fcb6e6",
+  "title": "DAW integration: export a score as a DAW set (.als)",
+  "description": "## Intent\n\nAs a producer, I want to export a compiled Apricity score as a DAW set file, so that I can finish a piece with the DAW's instruments and plugins after Apricity has done the digging, warping and harmony.\n\n## Why this first\n\nThe set format is gzipped XML, so this needs no vendor SDK, only a file writer. It is the point where Apricity stops being a demo and becomes part of a real session.\n\n## Mapping\n\n| Apricity | In the set |\n|---|---|\n| track | audio track |\n| note (each time a clip sounds) | arrangement clip with warp markers, transpose and gain set |\n| chord per bar | a locator per bar named with the chord |\n| group / return track, sends, volume, pan | the same |\n| effects (EQ, compressor + sidechain, drive, lo-fi, gate, width, reverb, delay) | the DAW's stock devices where one matches |\n| master loudness target | master chain (Utility/Limiter) |\n\n## Not included\n\n- Real-time sync or playback with the DAW (see the transport-sync initiative).\n- Round-tripping a set back into a score.\n\n## Definition of done\n\n- `apricity export --daw-set score.apr` writes a set that opens in the DAW and plays the same arrangement the engine renders.\n- Every mapped feature above has a Gherkin story and a test that inspects the written XML.\nComments:\n  [22d674] home (Plan DAW Set Export / claude_code / Claude Opus 5.5): ## Plan: export a score as a DAW set\n\nEpics, in delivery order:\n\n1. **M0 apricitus-f838a3** Spike: ground truth for the set format from sets the DAW saved (design note `design/daw-set.md` + reference `.als` fixtures; no product code). 4 tasks.\n2. **M1 apricitus-74c11a** A set that plays the arrangement: new crate `crates/apricity-daw`, `apricity export --daw-set`, tracks, warped clips (markers, mode, transpose, detune, gain), tempo, time signature, loop brace, chord locators, collected samples, located errors. 5 stories, 8 tasks, 2 chores.\n3. **M2 apricitus-a1d8df** Every note, faithfully: kit hits as named clips, overlapping notes on extra audio tracks inside a group, reverse, re-pitch and speed flips, out-of-range levels. 5 stories, 7 tasks, 1 chore.\n4. **M3 apricitus-0fc5a8** The mix: group/return tracks, sends, volume, pan, effects as stock devices in order, sidechain, master chain and loudness make-up. 5 stories, 7 tasks, 1 chore.\n5. **M4 apricitus-6f091c** Automation lanes as envelopes (ramps, steps, jumps, octave sweeps). 3 stories, 4 tasks, 1 chore.\n6. **M5 apricitus-3e535c** Export from the app (`GET /export/daw-set/{scoreId}` on `apricity serve`, a `web` task for the Score view), every example exporting (smoke script), owner acceptance. 2 stories, 4 tasks, 1 chore.\n\n## Key decisions and assumptions\n\n- Export works from the compiled `Timeline` (not the score), so swing, humanize, velocity, gate, stutter and speed come for free as compiled events.\n- One crate writes DAW files (`apricity-daw`), and one `apricity export` command; apricitus-5562e0 (`--kit`, `--clips`, `.adg`) and apricitus-d7746d (`.alc`) should build on them.\n- Template-and-patch: the skeleton and device XML are captured from sets the DAW saved (M0), then patched; confirmed or replaced by M0's proof set.\n- A DAW audio track plays one clip at a time, so a track whose notes overlap (voiced chords, `at` notes) becomes a group track holding as few audio tracks as needed; its mix goes on the group.\n- Locators at each chord change, named with the compiler's chord label (`I7 (F7)`).\n- Samples are collected into `<Name> Project/Samples/Imported/` by default (`--no-collect` references them in place); output is byte-deterministic.\n- Loudness target: the CLI measures the make-up gain with the engine (as `apricity render` does) and puts it on a Utility on the main track; `--no-measure` skips it.\n- No manifest or language change, so no schema change and no breaking change; Python parity not needed (server.py's data endpoints are being retired, apricitus-8cecf2).\n- The language has one tempo and x/4 time signatures only, so there are no tempo changes to export.\n\n## Open questions for the owner\n\n1. Which DAW version(s) must open the set (sets the version header and whether a set-level scale exists)?\n2. Is the overlapping-notes rule (a group with numbered audio tracks) the shape you want, and what should they be called?\n3. Locators at each chord change (proposed) or one per bar?\n4. Which warp mode should `complex` map to?\n5. Reverse: the DAW's own reverse or a pre-reversed copy of the audio in the set folder?\n6. Should the export measure loudness by default (it renders the score once)?\n7. Export from the cloud web app (no local server there): wanted, and if so, later as its own initiative?\n8. M0 needs you with the DAW to save the reference sets; the manual checks in M1 to M5 do too.\n\n## Dependencies\n\n```mermaid\nflowchart LR\n  M0[M0 Spike f838a3] --> M1[M1 Tracks and clips 74c11a]\n  M1 --> M2[M2 Every note a1d8df]\n  M1 --> M3[M3 The mix 0fc5a8]\n  M2 -. overlap groups .-> M3\n  M3 --> M4[M4 Automation 6f091c]\n  M1 --> M5[M5 App and acceptance 3e535c]\n  M2 --> ACC((acceptance task in M5))\n  M3 --> ACC\n  M4 --> ACC\n  M1 -. shared crate and export command .-> K[apricitus-5562e0 kits .adg]\n  M1 -. shared crate .-> D[apricitus-d7746d .asd/.alc]\n```\n    settings: thinking_level=high",
+  "type": "initiative",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "22d6748f-197d-44ee-8caf-6a99949350c6",
+      "author": "home",
+      "text": "## Plan: export a score as a DAW set\n\nEpics, in delivery order:\n\n1. **M0 apricitus-f838a3** Spike: ground truth for the set format from sets the DAW saved (design note `design/daw-set.md` + reference `.als` fixtures; no product code). 4 tasks.\n2. **M1 apricitus-74c11a** A set that plays the arrangement: new crate `crates/apricity-daw`, `apricity export --daw-set`, tracks, warped clips (markers, mode, transpose, detune, gain), tempo, time signature, loop brace, chord locators, collected samples, located errors. 5 stories, 8 tasks, 2 chores.\n3. **M2 apricitus-a1d8df** Every note, faithfully: kit hits as named clips, overlapping notes on extra audio tracks inside a group, reverse, re-pitch and speed flips, out-of-range levels. 5 stories, 7 tasks, 1 chore.\n4. **M3 apricitus-0fc5a8** The mix: group/return tracks, sends, volume, pan, effects as stock devices in order, sidechain, master chain and loudness make-up. 5 stories, 7 tasks, 1 chore.\n5. **M4 apricitus-6f091c** Automation lanes as envelopes (ramps, steps, jumps, octave sweeps). 3 stories, 4 tasks, 1 chore.\n6. **M5 apricitus-3e535c** Export from the app (`GET /export/daw-set/{scoreId}` on `apricity serve`, a `web` task for the Score view), every example exporting (smoke script), owner acceptance. 2 stories, 4 tasks, 1 chore.\n\n## Key decisions and assumptions\n\n- Export works from the compiled `Timeline` (not the score), so swing, humanize, velocity, gate, stutter and speed come for free as compiled events.\n- One crate writes DAW files (`apricity-daw`), and one `apricity export` command; apricitus-5562e0 (`--kit`, `--clips`, `.adg`) and apricitus-d7746d (`.alc`) should build on them.\n- Template-and-patch: the skeleton and device XML are captured from sets the DAW saved (M0), then patched; confirmed or replaced by M0's proof set.\n- A DAW audio track plays one clip at a time, so a track whose notes overlap (voiced chords, `at` notes) becomes a group track holding as few audio tracks as needed; its mix goes on the group.\n- Locators at each chord change, named with the compiler's chord label (`I7 (F7)`).\n- Samples are collected into `<Name> Project/Samples/Imported/` by default (`--no-collect` references them in place); output is byte-deterministic.\n- Loudness target: the CLI measures the make-up gain with the engine (as `apricity render` does) and puts it on a Utility on the main track; `--no-measure` skips it.\n- No manifest or language change, so no schema change and no breaking change; Python parity not needed (server.py's data endpoints are being retired, apricitus-8cecf2).\n- The language has one tempo and x/4 time signatures only, so there are no tempo changes to export.\n\n## Open questions for the owner\n\n1. Which DAW version(s) must open the set (sets the version header and whether a set-level scale exists)?\n2. Is the overlapping-notes rule (a group with numbered audio tracks) the shape you want, and what should they be called?\n3. Locators at each chord change (proposed) or one per bar?\n4. Which warp mode should `complex` map to?\n5. Reverse: the DAW's own reverse or a pre-reversed copy of the audio in the set folder?\n6. Should the export measure loudness by default (it renders the score once)?\n7. Export from the cloud web app (no local server there): wanted, and if so, later as its own initiative?\n8. M0 needs you with the DAW to save the reference sets; the manual checks in M1 to M5 do too.\n\n## Dependencies\n\n```mermaid\nflowchart LR\n  M0[M0 Spike f838a3] --> M1[M1 Tracks and clips 74c11a]\n  M1 --> M2[M2 Every note a1d8df]\n  M1 --> M3[M3 The mix 0fc5a8]\n  M2 -. overlap groups .-> M3\n  M3 --> M4[M4 Automation 6f091c]\n  M1 --> M5[M5 App and acceptance 3e535c]\n  M2 --> ACC((acceptance task in M5))\n  M3 --> ACC\n  M4 --> ACC\n  M1 -. shared crate and export command .-> K[apricitus-5562e0 kits .adg]\n  M1 -. shared crate .-> D[apricitus-d7746d .asd/.alc]\n```\n",
+      "created_at": "2026-09-26T22:07:19.850375Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Plan DAW Set Export",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "7938d19b-8fa4-4b19-a53f-aff293ad43b5",
+      "author": "home",
+      "text": "## Decisions on the open questions (2026-09-26, orchestrator, on the owner's behalf)\n\nThe owner asked me to decide. These are binding for the plan unless M0 proves one impossible; in that case revise it in the spike's design note and comment here.\n\n1. **DAW version:** target the current major version installed on the owner's machine. M0 captures reference sets from that install and its header sets the version we write. No support for older versions.\n2. **Overlapping notes:** yes, a group track named after the Apricity track, holding numbered audio tracks named `<track> 1`, `<track> 2`, … The mix goes on the group.\n3. **Locators:** at each chord change, named with the compiler's chord label.\n4. **Warp mode:** `beats` → Beats, `texture` → Texture, `repitch` → Re-Pitch, `complex` → Complex Pro (the higher-quality mode, matching the Rubber Band quality Apricity renders with).\n5. **Reverse:** a pre-reversed copy of the audio in the set folder. It matches `apricity render` exactly and doesn't depend on the DAW's reverse semantics.\n6. **Loudness:** measured by default (export is a one-off and fidelity to the render is the point); `--no-measure` skips it.\n7. **Cloud export:** out of scope for this initiative. M5's endpoint on `apricity serve` covers local. Cloud export becomes its own epic once the storage backend lands.\n8. **Manual checks:** the owner will save reference files when a spike asks. Every M0 task and every manual check must include exact step-by-step instructions (menu, click, filename, where to put it) so no DAW knowledge is assumed.",
+      "created_at": "2026-09-26T22:19:46.661094Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "b34f978f-0444-499e-97d0-1f930e55bbc2",
+      "author": "home",
+      "text": "Reference files (corrected): the DAW is not installed on this Mac and production holds no DAW-written files, but the owner has a licensed Studio install on the studio machine. Spikes list exact files to copy from that install's library and the owner's sets, and test against production audio; acceptance happens in the licensed install. Details on each M0 spike epic.",
+      "created_at": "2026-09-26T22:26:29.785758Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    },
+    {
+      "id": "97b730c5-4738-4d4d-ac62-86fb103f39c9",
+      "author": "home",
+      "text": "## M0 set-format spike: open questions for the owner (design/daw-set.md, 2026-09-26)\n\nThe initiative's eight decisions hold; nothing in the evidence makes one impossible. Writing one file for both 12 and 11 is impossible (11 to 12 is a structural break), which decision 1 already rules out. Still open:\n\n1. Which exact DAW version is installed? The export copies its header and templates from that install's default set.\n2. Pan law: the DAW's pan on stereo tracks may differ from Apricity's balance law. Accept the difference, or compensate with Utility Balance?\n3. Track volume: keep it inside each clip's gain (exact, current decision) or move the static part to the fader (easier to mix)?\n4. Per-note filters (Event.filter) and note attack/release: approximate them with clip envelopes or fades, or leave them out and report them?",
+      "created_at": "2026-09-26T23:22:01.186347Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike DAW Set Format",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "bea8e89f-6535-4d1e-8b37-8785883aeeb3",
+      "author": "home",
+      "text": "**M6 filed (2026-09-26):** apricitus-0656bd, Download for your DAW from the web app, browser-side and cloud included. Supersedes the earlier decision to defer cloud export: the compiler and renderer already run as wasm in the page, so the export needs no server. M5's serve route stays for scripts and the CLI; the web task apricitus-cfd811 should target the browser export instead of the route. Blocked by M5; the wasm wrapper and audit can start once M1 lands.",
+      "created_at": "2026-09-27T00:14:58.639218Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Fable 5.1",
+        "name": "DAW Integration Decisions"
+      }
+    }
+  ],
+  "created_at": "2026-09-26T20:14:35.579925Z",
+  "updated_at": "2026-09-27T00:14:58.639266Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Ideas"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

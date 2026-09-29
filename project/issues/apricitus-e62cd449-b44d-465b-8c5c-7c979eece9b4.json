@@ -1,0 +1,33 @@
+{
+  "id": "apricitus-e62cd449-b44d-465b-8c5c-7c979eece9b4",
+  "title": "(web) Score view: Download for your DAW button, progress, errors, skip-loudness option",
+  "description": "Need, not visuals: an action on the Score view (web/src/ui/score.ts) that runs the browser export, shows render and fetch progress, offers a skip-loudness option, surfaces located errors the way the editor already does, and triggers the download. Works signed out on the public site. The web session designs it.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-0656bdd0-cf6f-4e6b-b1c8-564e3421b6d2",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-d291bf63-2a70-4c03-bf0c-fe35ec148cab",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-27T00:14:57.465518Z",
+  "updated_at": "2026-09-27T00:14:58.308515Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Fable 5.1",
+    "name": "DAW Integration Decisions"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

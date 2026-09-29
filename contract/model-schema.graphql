@@ -33,6 +33,16 @@ enum RatingTarget {
   score
 }
 
+enum CycleStatus {
+  open
+  closed
+}
+
+enum LabStatus {
+  open
+  closed
+}
+
 type Recording @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
   {allow: private, operations: [read]},
   {allow: groups, groups: ["curators"]}])
@@ -51,6 +61,7 @@ type Recording @model @auth(rules: [{allow: public, provider: identityPool, oper
   licenseUrl: AWSURL
   author: String
   attribution: String
+  sourceMetadata: AWSJSON
   documents: [FileRef]
   samples: [Sample] @hasMany(references: ["recordingId"])
 }
@@ -67,6 +78,7 @@ type Sample @model @auth(rules: [{allow: public, provider: identityPool, operati
   collection: String! @index(sortKeyFields: ["path"], queryField: "samplesByCollection")
   title: String!
   role: SampleRole
+  generator: AWSJSON
   stem: String
   stemModel: String
   parentSampleId: ID @index(queryField: "samplesByParent")
@@ -198,6 +210,7 @@ type Score @model @auth(rules: [{allow: public, provider: identityPool, operatio
   folder: String! @index(sortKeyFields: ["title"], queryField: "scoresByFolder")
   format: ScoreFormat
   kind: ScoreKind @index(queryField: "scoresByKind")
+  tags: [String]
   text: String!
   lastErrors: [String]
   legacyPath: String
@@ -297,10 +310,34 @@ type Tally @model @auth(rules: [{allow: public, provider: identityPool, operatio
 {
   id: ID! @primaryKey
   targetType: RatingTarget! @index(sortKeyFields: ["day"], queryField: "talliesByTypeAndDay")
-  targetId: ID!
+  targetId: ID! @index(name: "talliesByTarget", sortKeyFields: ["day"], queryField: "talliesByTarget")
   day: String!
   count: Int!
   sum: Int!
+}
+
+type Ranked @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
+  {allow: private, operations: [read]}])
+{
+  id: ID! @primaryKey
+  list: String! @index(name: "rankedByList", sortKeyFields: ["sort"], queryField: "rankedByList")
+  sort: String!
+  targetType: RatingTarget!
+  targetId: ID! @index(name: "rankedByTarget", queryField: "rankedByTarget")
+  kind: String!
+  title: String
+  owner: String
+  path: String
+  samplePath: String
+  clipStart: Float
+  clipEnd: Float
+  tags: [String]
+  stars: Float
+  ratings: Int
+  comments: Int
+  lastAt: AWSDateTime!
+  lastWhat: String
+  lastBy: String
 }
 
 type Job @model @auth(rules: [{allow: public, provider: identityPool, operations: [read]},
@@ -309,9 +346,52 @@ type Job @model @auth(rules: [{allow: public, provider: identityPool, operations
 {
   id: ID! @primaryKey
   kind: String!
+  input: AWSJSON
   sampleId: ID
   state: JobState @index(queryField: "jobsByState")
   error: String
+}
+
+type Lab @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  brief: String
+  sceneScoreId: ID!
+  status: LabStatus!
+  owner: String @index(sortKeyFields: ["createdAt"], queryField: "labsByOwner")
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  cycles: [ListeningCycle] @hasMany(references: ["labId"])
+}
+
+type ListeningCycle @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read]},
+  {allow: groups, groups: ["curators"]}])
+{
+  id: ID! @primaryKey
+  title: String!
+  question: String
+  incumbentScoreId: ID!
+  options: [CycleOption]!
+  status: CycleStatus!
+  closedAt: AWSDateTime
+  owner: String
+  labId: ID @index(queryField: "cyclesByLab")
+  lab: Lab @belongsTo(references: ["labId"])
+}
+
+type CycleVerdict @model @auth(rules: [{allow: owner, ownerField: "judge", identityClaim: "sub"},
+  {allow: groups, operations: [read], groups: ["admins"]}])
+{
+  cycleId: ID! @primaryKey(sortKeyFields: ["judge"]) @index(queryField: "verdictsByCycle")
+  judge: String!
+  best: String!
+  notes: [CycleNote]
+  note: String
+  savedAt: AWSDateTime!
 }
 
 type FileRef 
@@ -340,11 +420,25 @@ type CandidateContext
   stem: String
 }
 
+type CycleOption 
+{
+  letter: String!
+  scoreId: ID!
+  audio: FileRef!
+}
+
+type CycleNote 
+{
+  letter: String!
+  note: String!
+}
+
 enum SampleRole {
   source
   stem
   excerpt
   upload
+  generated
 }
 
 enum SampleStatus {

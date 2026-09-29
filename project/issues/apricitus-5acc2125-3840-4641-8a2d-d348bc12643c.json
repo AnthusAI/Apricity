@@ -1,0 +1,41 @@
+{
+  "id": "apricitus-5acc2125-3840-4641-8a2d-d348bc12643c",
+  "title": "voice-ingest Lambda: finished render becomes a generated Sample with phrase clips",
+  "description": "Runs on EventBridge SUCCEEDED/FAILED events from the renderer's state machine.\n- Reads speech.wav and speech.json, and sets smp_ = sha256(audio)[:20].\n- Copies the audio to `files/audio/<smp>/<name>.wav`.\n- Builds a minimal speech manifest like the `compile.rs` speech fixture (empty beats, 0.5 s loudness from the PCM, placeholder key and flat PCP) and writes it to `files/analysis/<smp>/<sha>.json`.\n- Detects phrases with a TypeScript port of `markup.phrases()`.\n- Raw-writes Recording (collection generated, cc0-1.0, credit 'Generated with Auritus (Kokoro-82M, Apache-2.0)' plus the requester), Sample (role generated, alias samples/voice/<name>.wav) and phrase-N Clips, and mirrors the record JSON to the bucket.\n- Marks the Job done with its sampleId, or failed with the error.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5a367ce3-8dab-441c-84b2-0bfadecc59f6",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "7011f6e7-7a33-434c-9d9c-5bf77cfd6005",
+      "author": "home",
+      "text": "PR #8 covers B2 request, B4 renderer and B5 ingest. Verified:\n- 19 unit tests.\n- Parity with the Python analyzer on the real announcer: 8/8 phrases within 5 ms, loudness within 0.2 dB.\n- The TypeScript manifest compiles and renders voice-layer.apr.\n- Full Amplify CDK synth with no cycles.\n- Rust serve and data tests: 145 passed.\nDecisions:\n- Duplicate names are refused at request time rather than moving the alias. The story's 'alias moves' scenario needs revising.\n- Job is not CLOUD_ONLY, because local libraries use Job too; voice Jobs just aren't mirrored.\n- The construct is installed from the Auritus release tarball (0.27.1): GitHub Packages would need a token for every npm ci.\nPending: sandbox end-to-end (needs the user's OK) and activating the auritus:renderer cost-allocation tag.",
+      "created_at": "2026-09-26T23:24:23.802743Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Opus 5.5",
+        "name": "auritus-voice-integration"
+      }
+    }
+  ],
+  "created_at": "2026-09-26T18:58:54.418627Z",
+  "updated_at": "2026-09-26T23:24:23.802764Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "auritus-voice-integration"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

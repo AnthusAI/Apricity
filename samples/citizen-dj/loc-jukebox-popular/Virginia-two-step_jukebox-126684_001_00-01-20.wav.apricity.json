@@ -490,8 +490,8 @@
     "profile": "temperley"
    }
   ],
-  "tuning_hz": 452.11,
-  "tuning_cents": 47.0,
+  "tuning_hz": 440.0,
+  "tuning_cents": 0.0,
   "pitch_class_profile": [
    0.7566,
    0.1384,
@@ -1511,7 +1511,8 @@
     1.0,
     0.0153
    ]
-  ]
+  ],
+  "tuning_uncertain": true
  },
  "notes": [
   {
@@ -2053,6 +2054,54 @@
     "tags": [
      "hit"
     ]
+   },
+   {
+    "name": "hold-1",
+    "start": 2.594,
+    "end": 3.832,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A4",
+     "1.07s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 69,
+     "velocity": 0.496
+    }
+   },
+   {
+    "name": "hold-2",
+    "start": 17.22,
+    "end": 18.482,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "D4",
+     "1.09s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 62,
+     "velocity": 0.363
+    }
+   },
+   {
+    "name": "hold-3",
+    "start": 23.9,
+    "end": 24.929,
+    "source": "ml",
+    "tags": [
+     "hold",
+     "A4",
+     "0.86s",
+     "clean"
+    ],
+    "evidence": {
+     "held": 69,
+     "velocity": 0.501
+    }
    }
   ]
  }

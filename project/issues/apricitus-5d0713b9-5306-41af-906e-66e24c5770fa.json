@@ -1,0 +1,30 @@
+{
+  "id": "apricitus-5d0713b9-5306-41af-906e-66e24c5770fa",
+  "title": "Import mistakes stop the import and are reported with their location",
+  "description": "## Behavior\nNothing half-imported: any problem stops the import, and says where.\n\n```gherkin\nFeature: Import mistakes are reported with their location\n\n  Scenario: The file does not exist\n    When I run \"apricity import --markers nowhere.asd\"\n    Then the command fails with \"nowhere.asd: no such file\"\n\n  Scenario: The sample was never analyzed\n    Given \"new.wav.asd\" beside the unanalyzed \"new.wav\"\n    When I import its markers\n    Then the command fails with \"new.wav has no analysis yet; run apricity-analyze new.wav\"\n\n  Scenario: The sidecar belongs to different audio\n    Given a sidecar whose audio length is 12.0 s beside \"steady-120.wav\" (8.5 s)\n    When I import its markers\n    Then the command fails with \"steady-120.wav.asd describes 12.0 s of audio but steady-120.wav is 8.5 s; is it the right file?\"\n\n  Scenario: Markers out of order\n    Given an .asd whose 4th warp marker is before its 3rd\n    When I import its markers\n    Then the command fails with the file, the byte offset and \"warp marker 4 (12.40 s, beat 7) is before marker 3 (12.52 s, beat 6)\"\n    And the sample's warp markers are unchanged\n\n  Scenario: A marker beyond the end of the audio\n    Given an .alc with a warp marker at 30.0 s for an 8.5 s sample\n    When I import its markers\n    Then the command fails naming the line, the marker and the sample's length\n\n  Scenario: Warping is off in the DAW\n    Given \"free-time.alc\" saved with warping off\n    When I import its markers\n    Then the command fails with \"free-time.alc: warping is off in this clip; there are no warp markers to import\"\n\n  Scenario: An .asd version Apricity cannot read\n    Given an .asd with an unknown version marker\n    When I import its markers\n    Then the command fails naming the version and suggesting to save the clip as an .alc and import that\n```",
+  "type": "story",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-14a19c08-e087-4b36-907a-cb6bbd6fa640",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:13.112740Z",
+  "updated_at": "2026-09-26T22:06:13.112768Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

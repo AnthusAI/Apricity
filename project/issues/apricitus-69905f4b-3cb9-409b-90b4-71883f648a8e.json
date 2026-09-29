@@ -1,0 +1,39 @@
+{
+  "id": "apricitus-69905f4b-3cb9-409b-90b4-71883f648a8e",
+  "title": ".asd writer for the current DAW version (only if M0 says go)",
+  "description": "## Intent\nWrite `.asd` files. **Only if M0's decision is go**; otherwise close as not needed (the reviewer does) and M2 uses the `.alc` carrier.\n\n## Scope\n- `asd::write(&WarpMap, audio: &Path) -> Vec<u8>` for the current DAW version, filling whatever ties the file to its audio (size, time, checksum) as §Formats found.\n- Round-trip scenarios tagged `@asd-write` turn green.\n\n## Verify\n`safe-run.sh -- cargo test -p apricity-daw` all green including `@asd-write`. Manual: put a written `.asd` beside a fresh copy of `steady-120.wav`, drag the WAV into the DAW: it lands on the grid with the markers Apricity wrote (record the DAW version).\n\nCommit: `feat(<this id>): write .asd warp markers`.\n\n---\n**Toolchain:** every Bash call starts with `export PATH=$HOME/.cargo/bin:$PATH CARGO_BUILD_JOBS=2`; run builds and tests under the watchdog: `safe-run.sh -- <command>` (6 GB / 20 min cap; do not edit it). At most two Rust-building agents at once.\n**Protocol:** specs first (write the scenario, watch it fail, then code); keep a running log with `kbs comment` (decisions, problems, attempts, outcomes); paste the tail of **Verify** before asking for review; never commit, push or close (the reviewer does, after re-running Verify). Never write the DAW's brand name anywhere.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-02645276-9f4a-4dc7-8df8-3c63ce1513f6",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-697c7d36-f368-4f46-af07-c28a573910ec",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-1f725f45-3660-459a-85a8-d5a6b7468b80",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:01:28.125515Z",
+  "updated_at": "2026-09-26T22:06:35.911238Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Warp Sidecars",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

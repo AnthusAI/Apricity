@@ -1,0 +1,76 @@
+{
+  "id": "apricitus-d577eed9-9713-4779-90a9-87105dea96b5",
+  "title": "Save reference drum rack presets and clips from the DAW into a fixture folder",
+  "description": "## Intent\n\nGet ground truth: reference files saved by the DAW itself, so every later spec compares Apricity's output with what the DAW writes, not with guesses.\n\n## Steps (the owner does the DAW part; an agent annotates)\n\n1. In the DAW, build a drum rack with four pads, each a sampler holding a short WAV from the library:\n   - pad 1 untouched (C1);\n   - pad 2 with root key moved, transpose +3 st and detune -20 cents;\n   - pad 3 with sample start/end narrowed and volume -6 dB;\n   - pad 4 warped (warp on, two warp markers moved), playback in classic mode with a short release.\n2. Save it as a preset: `kit-reference.adg`. Save a second copy after changing only pad 2's receiving note (to isolate the note encoding).\n3. Save two clips: `clip-warped.alc` (a loop, named, with an info text) and `clip-unwarped.alc` (warp off).\n4. Use the tiny test WAVs from the sidecar initiative's generator (apricitus-2831a6) as the audio, so both spikes share one recipe. Copy the files into `crates/apricity-daw/tests/fixtures/reference/` with a `README.md` listing what each one holds and the DAW version that wrote it. No audio: the files only reference audio paths.\n\n## Out of scope\n\nWriting any product code; the `.alc` anatomy in depth (sidecar initiative apricitus-d7746d).\n\n## Verification\n\n```sh\nfor f in crates/apricity-daw/tests/fixtures/reference/*.{adg,alc}; do gzip -t \"$f\" && gunzip -c \"$f\" | xmllint --noout - ; done\ngit check-ignore -q crates/apricity-daw/tests/fixtures/reference/*.wav && echo \"no audio tracked\"\n```\n\nManual: the owner reopens each file in the DAW and it loads as saved.\n\n## Release\n\n`chore(<this task id>): reference presets and clips saved by the DAW`. Not breaking.\n\n## Log\n\nRecord in comments: the DAW version, anything the DAW changed on save, any file that would not load.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fcd30933-9673-4b83-8716-b06c626ffe4e",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "32ba2189-be58-4ad6-a20f-c4f281c7cd28",
+      "author": "home",
+      "text": "Started (Spike Drum Rack Presets). The DAW is not installed here; per the epic's 'Not blocked on the DAW' comment I am gathering public .adg/.alc files from permissively licensed git repositories as provisional ground truth, and writing the exact list of files the owner saves in the licensed install. Scratch work in the session scratchpad; fixtures go under crates/apricity-daw/tests/fixtures/reference/presets/. (Status set without agent flags: kbs refuses to overwrite the issue's existing agent metadata.)",
+      "created_at": "2026-09-26T23:00:26.894847Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "58b750da-88ff-4ebb-a59a-f8e1c9173060",
+      "author": "home",
+      "text": "Sources found (all parsed as data, nothing executed). {V} stands for the vendor's seven-letter name, which appears in several repository names and paths and is masked here on purpose.\n- g-lok/chirashi @538a860 (MIT): tests/testdata/{v}_kit/{drum kit.adg, rack kit.adg, ABAHAMBI - Abahambi.adv}, header MinorVersion 12.0_12300, creator 12.3.2. Real DAW-saved drum rack presets (Drum Sampler pads; Simpler pads, 64 pads). COPYABLE.\n- owenbush/{v}-inspector @2ff369a (MIT): packages/core/test/fixtures/Broom Bap.als (12.2) holds 5 drum racks incl. 'Slice to New Drum Rack' output (slices of one WAV by SampleStart/SampleEnd frames). COPYABLE.\n- live-daw-tools/als-parser @94fe482 (MIT): Michelle.als (11.3.21) and Michelle-12.3.als (12.3.2), the same set resaved: a natural upgrade diff (12 only adds elements).\n- andrewcb/alsd (Apache-2.0, 9.1.1) old drum rack; cite only.\n- ben-juodvalkis/{V}-Device-Creator @e702589 (NO licence): 20 .adg/.adv 12.1 to 12.4.5b7; cite only, kept in scratchpad.\n- ununu-p2p/als-parser, craffel/live-sets, radiogoddess/{v}-presets, eristoy/{V}-Drum-Racks (NO licence): cite only.\nNo public .alc was found (GitHub code search for extension alc returns only unrelated languages); Q7 is answered from AudioClip elements inside MIT sets, provisional.\nDecision: fixtures = the MIT DAW-saved files above (renamed, with licence notices in README.md) plus spike-written candidate presets for the owner's load test (clearly marked not DAW-saved).",
+      "created_at": "2026-09-26T23:10:52.670797Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    },
+    {
+      "id": "a200a13b-f739-4f7b-87da-0258a3be8c09",
+      "author": "home",
+      "text": "Machine-side half done: crates/apricity-daw/tests/fixtures/reference/presets/ holds 4 DAW-saved files from MIT repositories (daw-12.3-drum-sampler-kit.adg, daw-12.3-simpler-kit-64.adg, daw-12.3-simpler-warped.adv, daw-12.2-sliced-racks.als) and 3 spike-written candidates (candidate-full-kit.adg, candidate-trimmed-kit-v12.adg, candidate-trimmed-kit-v11.adg) that follow this task's 4-pad recipe, plus README.md with origin, header version, commit and licence notice for each file. Verification: gzip -t and xmllint --noout pass on all 7; the candidates regenerate byte for byte (md5 identical over two runs). No audio: the files only reference paths.\nRemains (needs the licensed install, so this task stays in_progress): the owner saves kit-reference.adg, the pad-2-note variant, clip-warped.alc and clip-unwarped.alc in the DAW (steps in design/daw-presets.md, 'Owner checklist'), and reopens the candidates. The sidecar generator (apricitus-2831a6) has not landed yet, so the candidates name its planned WAVs (steady-120, detuned, tempo-change) with durations taken from its spec.",
+      "created_at": "2026-09-26T23:13:56.079122Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "Claude Opus 5.5",
+        "name": "Spike Drum Rack Presets",
+        "settings": {
+          "thinking_level": "high"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-09-26T21:59:38.976131Z",
+  "updated_at": "2026-09-26T23:13:56.079157Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Kit Presets",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

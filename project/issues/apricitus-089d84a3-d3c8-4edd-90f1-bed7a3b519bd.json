@@ -1,0 +1,35 @@
+{
+  "id": "apricitus-089d84a3-d3c8-4edd-90f1-bed7a3b519bd",
+  "title": "Document the phase harnesses in docs/tools.md; keep reports out of git; propose a scheduled CI run",
+  "description": "## Intent\nMake the harnesses findable and keep them out of the everyday test run.\n\n## Steps\n1. `docs/tools.md` \"Tests\": both harness commands, how long they take, where the reports go, and that `cargo test --workspace` skips them (`#[ignore]`).\n2. Make sure `renders/` stays ignored for the reports (no report files in git).\n3. Comment on apricitus-1f0e91 (CI) proposing a scheduled weekly run rather than per push; the owner decides.\n\n## Verify\n`git check-ignore renders/link-drift-native.json` prints the path; `grep -n \"link-drift\" docs/tools.md`.\n\nCommit: `chore(<this task id>)`.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4e9cee0e-d168-40fe-b2e5-77b6660d6c38",
+  "labels": [
+    "daw"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-f8768c2b-4d39-4540-ac9f-4439fe2be4be",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:07:27.636717Z",
+  "updated_at": "2026-09-26T22:07:50.511094Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

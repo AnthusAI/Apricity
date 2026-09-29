@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-e5cb097c-f8fd-49d9-b790-a5da926ea08a",
+  "title": "Harmony v2 2/7: Python reference (sparse-kernel CQT, NNLS notes, cents) and fixtures",
+  "description": "See the design in the epic's comment (spec-harmony-v2.md, Phase 1).",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-445cae83-c49a-472f-a6fc-4fec0685d03f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "d22360a3-a26a-46c4-a572-8cd4d00cd951",
+      "author": "home",
+      "text": "Merged in PR #25 (squash into develop). See the PR for test counts and parity numbers.",
+      "created_at": "2026-09-27T18:27:46.206645Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-opus-5-5",
+        "name": "Claude Code"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T17:27:08.643483Z",
+  "updated_at": "2026-09-27T18:27:46.247540Z",
+  "closed_at": "2026-09-27T18:27:46.247510Z",
+  "agent": {
+    "platform": "claude-code",
+    "model": "claude-opus-5-5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

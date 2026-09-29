@@ -1,0 +1,230 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "Tortuga Ocarina 8.ogg",
+  "sha256": "f67bfa335bb94451009d88a20509876a35e5a158aa0a0fb6ff20678f5fd9c8b2",
+  "sample_rate": 44100,
+  "channels": 2,
+  "duration": 3.004
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-28T04:52:45+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": 98.36,
+  "bpm_stability": 0.973,
+  "beats": [
+   0.02,
+   0.64,
+   1.24,
+   1.86,
+   2.44
+  ],
+  "downbeats": [
+   0.02,
+   0.64,
+   1.86,
+   2.44
+  ],
+  "meter": 1,
+  "warp_markers": [
+   {
+    "seconds": 0.02,
+    "beat": 0.0
+   },
+   {
+    "seconds": 0.64,
+    "beat": 1.0
+   },
+   {
+    "seconds": 1.24,
+    "beat": 2.0
+   },
+   {
+    "seconds": 1.86,
+    "beat": 3.0
+   },
+   {
+    "seconds": 2.44,
+    "beat": 4.0
+   }
+  ],
+  "beat_loudness": [
+   -12.4,
+   -13.3,
+   -12.8,
+   -12.7
+  ],
+  "loudness": [
+   -12.4,
+   -12.3,
+   -13.5,
+   -13.3,
+   -12.9,
+   -12.2,
+   -104.5
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "C",
+   "mode": "major",
+   "strength": 0.9075,
+   "camelot": "8B",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "G",
+    "mode": "major",
+    "strength": 0.7766,
+    "camelot": "9B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "A",
+    "mode": "minor",
+    "strength": 0.7224,
+    "camelot": "8A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "F",
+    "mode": "major",
+    "strength": 0.5628,
+    "camelot": "7B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 438.73,
+  "tuning_cents": -5.0,
+  "pitch_class_profile": [
+   1.0,
+   0.0172,
+   0.9001,
+   0.0976,
+   0.8091,
+   0.2378,
+   0.0203,
+   0.8202,
+   0.0598,
+   0.7325,
+   0.067,
+   0.5515
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 2.972,
+    "key": {
+     "tonic": "C",
+     "mode": "major",
+     "strength": 0.9131,
+     "camelot": "8B",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     1.0,
+     0.0172,
+     0.8418,
+     0.0978,
+     0.8099,
+     0.2383,
+     0.0203,
+     0.8075,
+     0.0599,
+     0.7338,
+     0.0644,
+     0.5525
+    ]
+   }
+  ],
+  "beat_chroma": [
+   [
+    1.0,
+    0.0,
+    0.0176,
+    0.0002,
+    0.001,
+    0.2352,
+    0.0002,
+    0.0008,
+    0.0476,
+    0.0003,
+    0.0303,
+    0.0001
+   ],
+   [
+    0.0992,
+    0.0041,
+    0.05,
+    0.0617,
+    1.0,
+    0.0143,
+    0.0166,
+    0.0991,
+    0.0143,
+    0.2384,
+    0.0034,
+    0.0927
+   ],
+   [
+    0.0062,
+    0.0279,
+    0.1848,
+    0.0627,
+    0.2488,
+    0.0407,
+    0.0156,
+    0.0785,
+    0.0259,
+    0.7867,
+    0.0138,
+    1.0
+   ],
+   [
+    0.2359,
+    0.0006,
+    0.0797,
+    0.0466,
+    0.0011,
+    0.0457,
+    0.001,
+    1.0,
+    0.0006,
+    0.3465,
+    0.0003,
+    0.006
+   ]
+  ]
+ },
+ "annotations": {
+  "clips": [
+   {
+    "name": "shot-1",
+    "start": 1.226,
+    "end": 1.836,
+    "source": "ml",
+    "tags": [
+     "shot"
+    ],
+    "evidence": {
+     "standout": 8.2
+    }
+   }
+  ],
+  "markers": [
+   {
+    "name": "transient",
+    "seconds": 1.226,
+    "source": "ml"
+   }
+  ]
+ }
+}

@@ -119,5 +119,7 @@ export class Ratings {
     }
     // The tallies change a moment later (the Lambda); locally they are sums of the ratings, so drop them now.
     this.tallyCache.delete(type);
+    // Lists and pages holding stars re-read them (ui/ranked-list.ts, ui/library.ts). No page in tests: nothing to tell.
+    globalThis.document?.dispatchEvent(new CustomEvent("apricity:rated", { detail: { type, targetId, stars } }));
   }
 }

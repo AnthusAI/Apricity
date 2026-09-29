@@ -1,0 +1,20 @@
+{
+  "id": "apricitus-8feec9b7-e791-460b-85a0-a109d77621ba",
+  "title": "Require rhythmic variety in the Big Beat score skill",
+  "description": "Strengthen the Big Beat skill with an explicit rhythm palette, a drum-first audition gate, and anti-template checks so future scores do not reuse the same kick/snare/hat contour or sample-first introduction.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T02:51:01.460015Z",
+  "updated_at": "2026-09-28T02:51:23.813432Z",
+  "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

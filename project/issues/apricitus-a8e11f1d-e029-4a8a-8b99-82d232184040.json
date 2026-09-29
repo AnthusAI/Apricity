@@ -1,0 +1,40 @@
+{
+  "id": "apricitus-a8e11f1d-e029-4a8a-8b99-82d232184040",
+  "title": "Web player in a Link session: clock lines to the worklet, render at session tempo, start/stop, re-align",
+  "description": "## Intent\nThe player follows the session: clock lines into the worklet, arranging at the session's tempo, start and stop from the session. Makes apricitus-1ba752 green and the re-align scenarios of apricitus-0afc13.\n\n## Steps\n1. `web/src/audio/engine-worklet.ts`: a `clock` message calling `rw_engine_follow` (M1's export); `free-run` calling `rw_engine_free_run`; status adds the clock tempo and waiting state.\n2. `web/src/audio/player.ts`: a Link mode using `link-clock.ts`; `arrange` renders at the session's tempo (override the timeline's tempo before posting to `render-worker.ts`); session start/stop drives play/pause; re-align at the next bar line after a loss or a suspended context; turning Link off keeps playing free at the last tempo.\n3. The `Transport` interface gains what the UI will need: linked state, peers, session tempo, waiting, lost.\n4. Extend `web/test/wasm.test.mjs` for the audible checks.\n\n## Verify\n`node web/test/wasm.test.mjs`, `cd web && npx tsx --test test/link-clock.test.ts`, `npm --prefix web run build`.\n\nCommit: `feat(<this task id>): the web player in a Link session`.\n\n## Protocol\nSpecs first, watched red; log decisions, problems and outcomes with `kbs comment`; run Verify and paste the tail. Every Bash call starts `export PATH=$HOME/.cargo/bin:$PATH && cd /Users/home/Projects/Apricity`; cargo with `CARGO_BUILD_JOBS=2 RUST_TEST_THREADS=2` under `safe-run.sh --`. Never change dependencies to make a build pass. Sub-agents never commit, push or close.",
+  "type": "task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-75c47360-9cdc-4131-9610-f97795a02f69",
+  "labels": [
+    "daw",
+    "web"
+  ],
+  "dependencies": [
+    {
+      "target": "apricitus-291ad5a0-a97a-4601-ae17-8c3ba30c7d35",
+      "type": "blocked-by"
+    },
+    {
+      "target": "apricitus-024bbc21-e5f9-4a2b-bbcf-5312fed02710",
+      "type": "blocked-by"
+    }
+  ],
+  "comments": [],
+  "created_at": "2026-09-26T22:06:49.877150Z",
+  "updated_at": "2026-09-26T22:07:49.496043Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Claude Opus 5.5",
+    "name": "Plan Link Sync",
+    "settings": {
+      "thinking_level": "high"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

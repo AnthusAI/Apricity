@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-ae5d40c8-280a-499a-af8c-0bba0cd85607",
+  "title": "Wikimedia Commons sample ingestion",
+  "description": "Purpose: Add verifiably licensed audio from four Wikimedia Commons categories to Apricity's production library with complete, auditable provenance.\n\nDefinition of Done:\n- Direct members of the electronic music, techno samples, house music, and funk carioca categories are discovered and deduplicated.\n- Audio-only, rights-verified files are imported, analyzed, and immediately usable as samples.\n- Every production Recording retains normalized attribution plus the Commons page revision and raw metadata/license snapshot.\n- Unsupported or incomplete licenses and non-audio files are excluded and listed in a review report.\n- Repeated runs are resumable and do not duplicate library records.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-e706624b-0a90-41c1-aed4-ecfb9130394f",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T01:53:01.020883Z",
+  "updated_at": "2026-09-28T01:53:01.020921Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Commons-import"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

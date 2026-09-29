@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-e3c75b58-e91a-49c1-b926-4ae0eaf94f88",
+  "title": "Synchronize production assets and preflight cloud score publishing",
+  "description": "As a curator, I want Apricity to synchronize tracked sample manifests and media to production and reject unresolved score assets before publication, so every cloud score can compile and play.\n\nDefinition of done:\n- `apricity sample import --from <repository>` performs an additive production asset sync with upload/reporting.\n- Cloud score create/update resolves every sample and clip before mutation.\n- Mushroom Jazz score references resolve and play in production.\n- Automated tests cover import planning and preflight failure/success behavior.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "5b4bc5c6-f6ba-4c06-97a4-2a6092249115",
+      "author": "home",
+      "text": "Targeted production repair: synchronized samples/voice/announcer.wav.apricity.json using the repository sample-import command for voice/announcer.wav (10 Clip/Marker records created, 2 updated). Reloaded the hosted Voice Layer score and verified its former three missing-pad compiler errors are gone; it now compiles as a 16-bar, 88 BPM timeline.",
+      "created_at": "2026-09-28T00:02:53.405514Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T23:41:39.295846Z",
+  "updated_at": "2026-09-28T00:03:02.808296Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
