@@ -2,6 +2,276 @@
 
 <!-- version list -->
 
+## v0.33.2 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-af4eba**: Allow scoped cycle uploads for members
+  ([`4439ea7`](https://github.com/AnthusAI/Apricity/commit/4439ea789a28da6703e608ca06f19fe5fd2dd1f9))
+
+- **apricitus-af4eba**: Deploy cycle upload group policy
+  ([`b8c24d8`](https://github.com/AnthusAI/Apricity/commit/b8c24d851687a8a84184b4944378a3c1f31b0f4a))
+
+
+## v0.33.1 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-af4eba**: Allow scoped cycle uploads for members
+  ([`037e28e`](https://github.com/AnthusAI/Apricity/commit/037e28ead77893f5ea985a552b926b5b6d6bd2aa))
+
+
+## v0.33.0 (2026-09-28)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`b2ef531`](https://github.com/AnthusAI/Apricity/commit/b2ef531690571d1a50db510c418595f775c016a5))
+
+- **kanbus**: Commit board state (issues)
+  ([`6e466d3`](https://github.com/AnthusAI/Apricity/commit/6e466d30fb86384259c43e3e3751928de25f7a17))
+
+- **kanbus**: Commit board state (issues)
+  ([`e302a54`](https://github.com/AnthusAI/Apricity/commit/e302a54c6bf6afe0894c036e60c5893e99b9e509))
+
+### Features
+
+- **apricitus-2e06b4**: Import provenance-first Commons audio
+  ([#55](https://github.com/AnthusAI/Apricity/pull/55),
+  [`6478280`](https://github.com/AnthusAI/Apricity/commit/6478280b0e9dee1511b7e48a37dd53c2158b2a46))
+
+
+## v0.32.1 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-798cd0**: Grant files/ per folder so the cycle rule deploys
+  ([`2c07a23`](https://github.com/AnthusAI/Apricity/commit/2c07a230a855a222b1424fa26c270aa962e523b3))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`36eabb5`](https://github.com/AnthusAI/Apricity/commit/36eabb56e027029d3d55331a9f52b48736c7b220))
+
+- **kanbus**: Commit board state (issues)
+  ([`3eeec19`](https://github.com/AnthusAI/Apricity/commit/3eeec1901705e1964eaed47a4d4bf50f87085582))
+
+### Documentation
+
+- **apricitus-e3a622**: Teach the write-score skill to work in a lab
+  ([`949f61b`](https://github.com/AnthusAI/Apricity/commit/949f61bdba29baaed492f9581a91ad5a56a08a99))
+
+
+## v0.32.0 (2026-09-28)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`2e9a91e`](https://github.com/AnthusAI/Apricity/commit/2e9a91ebef22b5682c7999ea65d1ebee0ba70489))
+
+- **kanbus**: Commit board state (issues)
+  ([`0d8ded7`](https://github.com/AnthusAI/Apricity/commit/0d8ded744655e9232d3c50af1a7cdeacdbd20f83))
+
+### Features
+
+- **apricitus-e59a0b**: Your labs: a Lab record, the /labs pages, and lab and cycle commands through
+  apricity login ([#49](https://github.com/AnthusAI/Apricity/pull/49),
+  [`a53cd5a`](https://github.com/AnthusAI/Apricity/commit/a53cd5a689d4c398f46ceab81ff009f0b9fe884b))
+
+- **examples**: Ave & Emerge with a pulse, the optimizer's first picked layer
+  ([#50](https://github.com/AnthusAI/Apricity/pull/50),
+  [`9d1f582`](https://github.com/AnthusAI/Apricity/commit/9d1f582bc5287861788be73ceac408fc0d8213e4))
+
+### Testing
+
+- **apricitus-e59a0b**: A Lab fixture for the record-conversion test
+  ([#49](https://github.com/AnthusAI/Apricity/pull/49),
+  [`a53cd5a`](https://github.com/AnthusAI/Apricity/commit/a53cd5a689d4c398f46ceab81ff009f0b9fe884b))
+
+
+## v0.31.0 (2026-09-28)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`4e2f1f2`](https://github.com/AnthusAI/Apricity/commit/4e2f1f222c69788af113568cc6cc0a616131633a))
+
+- **kanbus**: Commit board state (issues)
+  ([`104b54e`](https://github.com/AnthusAI/Apricity/commit/104b54e876848a308ae36ef1a110eae9d288bc11))
+
+### Features
+
+- **apricitus-daebf8**: `scripts/lab`, one front door for the music tools
+  ([#47](https://github.com/AnthusAI/Apricity/pull/47),
+  [`f40f5d9`](https://github.com/AnthusAI/Apricity/commit/f40f5d90e15ff372b51181e8dce8c2efe6a040db))
+
+
+## v0.30.2 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-2101dd**: The Listen page's players request audio with CORS
+  ([#45](https://github.com/AnthusAI/Apricity/pull/45),
+  [`e22c6ca`](https://github.com/AnthusAI/Apricity/commit/e22c6ca38cc6cb6ffd7396eddf311bf7301876dd))
+
+
+## v0.30.1 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-2101dd**: Regenerate the contract after the storage rule change
+  ([#44](https://github.com/AnthusAI/Apricity/pull/44),
+  [`9c057fd`](https://github.com/AnthusAI/Apricity/commit/9c057fd4112e4c84de2333b4db5f480f94c578ea))
+
+- **apricitus-2101dd**: The Listen page can play cycle audio
+  ([#42](https://github.com/AnthusAI/Apricity/pull/42),
+  [`013d2bd`](https://github.com/AnthusAI/Apricity/commit/013d2bdba1d6df3f5edfae617cd1e3fa8e20ce24))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`9b1ed8f`](https://github.com/AnthusAI/Apricity/commit/9b1ed8f2cb76a85f6e7232be969b7fbd0fc7c229))
+
+- **kanbus**: Commit board state (issues)
+  ([`0fd791d`](https://github.com/AnthusAI/Apricity/commit/0fd791d7b1ad1ce756ca689f8eac44e5b4b9adc8))
+
+- **kanbus**: Commit board state (issues)
+  ([`30f4b69`](https://github.com/AnthusAI/Apricity/commit/30f4b69eb548895872ac169761342d0f1256f68a))
+
+
+## v0.30.0 (2026-09-28)
+
+### Bug Fixes
+
+- **apricitus-e3c75b**: Preflight cloud score assets
+  ([`c870f4c`](https://github.com/AnthusAI/Apricity/commit/c870f4cd9ded799ef0c4fbff97c1baca9333a82d))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`8e13081`](https://github.com/AnthusAI/Apricity/commit/8e130818c708fb164d402dbc66b91ae85160511e))
+
+- **kanbus**: Commit board state (issues)
+  ([`bc85097`](https://github.com/AnthusAI/Apricity/commit/bc85097ecee9051305e73faaec3c98e0228896ee))
+
+- **kanbus**: Commit board state (issues)
+  ([`bf5a90d`](https://github.com/AnthusAI/Apricity/commit/bf5a90d026cd7de625100661c5aa7d9cea289798))
+
+- **kanbus**: Commit board state (issues)
+  ([`5ca1aa4`](https://github.com/AnthusAI/Apricity/commit/5ca1aa4150f0b920b690a07cbeda792c3b72886b))
+
+### Features
+
+- **examples**: Ave & Emerge's last chord is Em7 over G, the chord its loop plays
+  ([#40](https://github.com/AnthusAI/Apricity/pull/40),
+  [`95a590c`](https://github.com/AnthusAI/Apricity/commit/95a590c1a84784d0b6d9926a972570e4f8da4ee8))
+
+
+## v0.29.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-55297e**: Respond to oauth callback promptly
+  ([`9c4f583`](https://github.com/AnthusAI/Apricity/commit/9c4f5833e792fc049f82d515b4b7a96bc879c530))
+
+- **apricitus-681eab**: Bound cloud requests
+  ([`bbeb6a8`](https://github.com/AnthusAI/Apricity/commit/bbeb6a842193797b64eb400a4878c07edb60cdd6))
+
+- **apricitus-cca592**: Match score ref schema
+  ([`b913c50`](https://github.com/AnthusAI/Apricity/commit/b913c505fc75c971009afc644b04716eaabc566e))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`d6da466`](https://github.com/AnthusAI/Apricity/commit/d6da466e3da1afcd3bf38cbccca4814dbb459231))
+
+- **kanbus**: Commit board state (issues)
+  ([`d2b0e0e`](https://github.com/AnthusAI/Apricity/commit/d2b0e0e6c573951cb72d2e8ac483c1da97029b75))
+
+- **kanbus**: Commit board state (issues)
+  ([`477c8cc`](https://github.com/AnthusAI/Apricity/commit/477c8ccd5d2b10393a8e098624f8d3204a3bbc24))
+
+- **kanbus**: Commit board state (issues)
+  ([`fa1a3a3`](https://github.com/AnthusAI/Apricity/commit/fa1a3a37a43be5e69183b1dba51b425b4c5c98ac))
+
+- **kanbus**: Commit board state (issues)
+  ([`0b2028b`](https://github.com/AnthusAI/Apricity/commit/0b2028be3477558ce05330fa63ed559427c9b462))
+
+- **kanbus**: Commit board state (issues)
+  ([`d4109fd`](https://github.com/AnthusAI/Apricity/commit/d4109fd0d75265b93592169b1117f1b71e59a919))
+
+- **kanbus**: Commit board state (issues)
+  ([`b28c139`](https://github.com/AnthusAI/Apricity/commit/b28c139c1caa447f93057331a2765e35c7b5ecd1))
+
+- **kanbus**: Commit board state (issues)
+  ([`0f19abb`](https://github.com/AnthusAI/Apricity/commit/0f19abb68b2cf8532bcac6a8169b3a6e538e9b5e))
+
+### Documentation
+
+- **write-score**: Teach the skill apricity check and the chord-following EQ
+  ([#36](https://github.com/AnthusAI/Apricity/pull/36),
+  [`73b9d77`](https://github.com/AnthusAI/Apricity/commit/73b9d77af649f880da3ed455f65bce94f65c07be))
+
+- **write-score**: Teach the skill apricity steer
+  ([#38](https://github.com/AnthusAI/Apricity/pull/38),
+  [`55d886a`](https://github.com/AnthusAI/Apricity/commit/55d886a0c04bb0903b1728ac1d74bb67158ad809))
+
+### Features
+
+- **apricitus-c46688**: Apricity steer: the steering report, its schema, the wasm export and span
+  ops ([#37](https://github.com/AnthusAI/Apricity/pull/37),
+  [`393096b`](https://github.com/AnthusAI/Apricity/commit/393096b52513511477192d22a60b1a49e581c9e6))
+
+
+## v0.28.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`8ac0844`](https://github.com/AnthusAI/Apricity/commit/8ac0844c245a6ec3bfc03c999b6bb2b33cb8a431))
+
+- **kanbus**: Commit board state (issues)
+  ([`7f78a90`](https://github.com/AnthusAI/Apricity/commit/7f78a90c33dbc98c1a9e488605d3379285420572))
+
+- **kanbus**: Commit board state (issues)
+  ([`601a5f8`](https://github.com/AnthusAI/Apricity/commit/601a5f884311d43fd87cc9f994a8ead392d1e4e2))
+
+- **kanbus**: Commit board state (issues)
+  ([`ac3015e`](https://github.com/AnthusAI/Apricity/commit/ac3015e01da72349a14a71a0fcbe5d80e896a0fe))
+
+- **kanbus**: Commit board state (issues)
+  ([`3abaa45`](https://github.com/AnthusAI/Apricity/commit/3abaa45bba94be128917fd9ec0727fc2a503a004))
+
+- **kanbus**: Commit board state (issues)
+  ([`725dee0`](https://github.com/AnthusAI/Apricity/commit/725dee042caf1892f6e279cd1ce910abe285a350))
+
+### Features
+
+- **apricitus-445cae**: The chord-following EQ, `harmonic`, in the engine and the score language
+  ([#34](https://github.com/AnthusAI/Apricity/pull/34),
+  [`e6a49ba`](https://github.com/AnthusAI/Apricity/commit/e6a49babcd6f4f7a5ea9c9f427de688863ae3f02))
+
+- **apricitus-bf97b4**: Add authenticated cloud cli
+  ([`ef7ca6e`](https://github.com/AnthusAI/Apricity/commit/ef7ca6e66c2ae8e1cedf5df81d2d267b83b1a6c2))
+
+
+## v0.27.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`88bd9ce`](https://github.com/AnthusAI/Apricity/commit/88bd9ce6b626fcd93e4e00bae019e8b71e1acfea))
+
+### Features
+
+- **apricitus-d401a2**: Harmony v2 in Rust: chord recognition, chord quality, objective_v2, and
+  `apricity check` ([#32](https://github.com/AnthusAI/Apricity/pull/32),
+  [`c8a8ed9`](https://github.com/AnthusAI/Apricity/commit/c8a8ed9dec3533eea8a58e28423460f67a4ac29a))
+
+
+## v0.26.1 (2026-09-27)
+
+
 ## v0.26.0 (2026-09-27)
 
 ### Documentation
