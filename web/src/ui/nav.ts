@@ -26,7 +26,7 @@ export const NAV: NavItem[] = [
   { page: "help", tab: "docs", label: "Help", sub: "The language, the tools, and how it all works", href: "/help" },
   { page: "about", tab: "about", label: "About", sub: "What Apricity is, and where its sounds come from", href: "/about" },
   { page: "how-it-works", tab: "how-it-works", label: "How it works", sub: "The ML and audio analysis behind every sound", href: "/how-it-works" },
-  { page: "listen", tab: "listen", label: "Listen", sub: "Rate blind candidates from a listening cycle", href: "/listen" },
+  { page: "listen", tab: "listen", label: "My Labs", sub: "Rate blind candidates from a listening cycle", href: "/labs" },
 ];
 
 /** How much more room than they need the tabs must have to come back out of the menu (a scrollbar coming and going,

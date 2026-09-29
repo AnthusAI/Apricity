@@ -40,8 +40,11 @@ test("the URLs read well", () => {
   assert.equal(href({ page: "samples", sample: sampleKey("samples/marine-band/Thunderer.mp3") }), "/samples/marine-band/Thunderer");
   assert.equal(href({ page: "help", help: { file: "language.md", anchor: "tracks" } }), "/help/language#tracks");
   assert.equal(href({ page: "melodies", score: "scores/u/my tune.apr" }), "/melodies/scores/u/my%20tune");
-  assert.equal(href({ page: "listen" }), "/listen");
-  assert.equal(href({ page: "listen", listenCycle: "cyc_abc" }), "/listen/cyc_abc");
+  assert.equal(href({ page: "listen" }), "/labs");
+  assert.equal(href({ page: "listen", listenCycle: "cyc_abc" }), "/labs/cyc_abc");
+  assert.deepEqual(parse("/listen"), { page: "listen" });
+  assert.deepEqual(parse("/listen/cyc_abc"), { page: "listen", listenCycle: "cyc_abc" });
+  assert.deepEqual(parse("/labs/cyc_abc"), { page: "listen", listenCycle: "cyc_abc" });
 });
 
 test("odd names survive; bad paths go to the page; unknown ones go home", () => {
@@ -54,7 +57,7 @@ test("odd names survive; bad paths go to the page; unknown ones go home", () => 
   assert.equal(titleOf({ page: "beats" }, "Salamander Beat"), "Salamander Beat · Beats · Apricity");
   assert.equal(titleOf({ page: "home" }), "Apricity");
   assert.equal(titleOf({ page: "how-it-works" }), "How it works · Apricity");
-  assert.equal(titleOf({ page: "listen" }), "Listen · Apricity");
+  assert.equal(titleOf({ page: "listen" }), "My Labs · Apricity");
   assert.deepEqual(parse("/listen/cyc_abc/extra"), { page: "listen" });
 });
 

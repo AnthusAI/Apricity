@@ -9,6 +9,7 @@
 //   /samples  /samples/<sample>             a sample, by its path without its extension
 //   /help  /help/<page>#<section>           a Help page ("language" for language.md), and a heading on it
 //   /tags  /tags/<tag>                      every tag, and one tag's leaderboard (?kind=beat&window=month)
+//   /labs  /labs/<cycle>                     My Labs, and one listening cycle (the old /listen path remains an alias)
 //   /search?q=house                         what matches, every kind
 //
 // Pure: parse and href are inverses (tested in test/route.test.ts). main.ts follows them; the views report what
@@ -20,7 +21,7 @@ export type Page = "home" | "about" | "how-it-works" | "listen" | "scores" | "be
 
 export interface Route {
   page: Page;
-  /** A listening cycle's id ("cyc_..."), on /listen/<id>; absent for the list of open cycles. */
+  /** A listening cycle's id ("cyc_..."), on /labs/<id>; absent for the list of open cycles. */
   listenCycle?: string;
   /** A score's library path ("examples/salamander-beat.apr"). */
   score?: string;
@@ -57,7 +58,8 @@ export const sampleKey = (path: string) => path.replace(/^samples\//, "").replac
 /** Where a URL goes. Anything unknown is the home page. */
 export function parse(pathname: string, search = "", hash = ""): Route {
   const parts = pathname.split("/").filter(Boolean);
-  const page = (parts[0] ?? "home") as Page;
+  const first = parts[0] ?? "home";
+  const page = (first === "labs" || first === "listen" ? "listen" : first) as Page;
   if (!PAGES.includes(page)) return { page: "home" };
   if (page === "home") {
     const list = parts.length ? "" : search.replace(/^\?/, "");
@@ -102,13 +104,13 @@ export function href(r: Route): string {
     return `/${r.page}/${enc(parts)}${r.play ? "?play" : ""}`;
   }
   if (r.page === "search") return r.q ? `/search?${new URLSearchParams({ q: r.q })}` : "/search";
-  if (r.page === "listen" && r.listenCycle) return `/listen/${enc([r.listenCycle])}`;
+  if (r.page === "listen" && r.listenCycle) return `/labs/${enc([r.listenCycle])}`;
   if (r.page === "samples" && r.sample) return `/samples/${enc(r.sample.split("/"))}`;
   const list = LISTED.includes(r.page) && r.list && !r.score && !r.sample ? `?${r.list}` : "";
   if (r.page === "tags" && r.tag) return `/tags/${enc([r.tag])}${list}`;
   if (r.page === "clips" && r.clip) return `/clips/${enc([...r.clip.sample.split("/"), r.clip.name])}${list}`;
   if (r.page === "help" && r.help) return `/help/${enc(r.help.file.replace(/\.md$/, "").split("/"))}${r.help.anchor ? `#${encodeURIComponent(r.help.anchor)}` : ""}`;
-  return `/${r.page}${list}`;
+  return `${r.page === "listen" ? "/labs" : `/${r.page}`}${list}`;
 }
 
 /** The tab a route shows (Help is the "docs" view). */
@@ -116,6 +118,6 @@ export const tabOf = (r: Route) => (r.page === "help" ? "docs" : r.page);
 
 /** The page title for a route and the name of what's open ("Salamander Beat · Beats · Apricity"). */
 export function titleOf(r: Route, name?: string): string {
-  const label: Record<Page, string> = { home: "", about: "About", "how-it-works": "How it works", listen: "Listen", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags", search: "Search" };
+  const label: Record<Page, string> = { home: "", about: "About", "how-it-works": "How it works", listen: "My Labs", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags", search: "Search" };
   return [name, label[r.page], "Apricity"].filter(Boolean).join(" · ");
 }

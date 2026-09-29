@@ -70,11 +70,11 @@ export class ListenView {
       if (seq !== this.seq) return;
       opened({ page: "listen" }, "auto");
       if (!open.length) {
-        this.listHost.replaceChildren(el("h1", {}, "Listen"), el("p", { className: "listen-intro" }, "Rate a blind round of candidates: a player, stars and a note per option, then say which you'd keep."), el("div", { className: "empty" }, "No open listening cycles right now."));
+        this.listHost.replaceChildren(el("h1", {}, "My Labs"), el("p", { className: "listen-intro" }, "Rate a blind round of candidates: a player, stars and a note per option, then say which you'd keep."), el("div", { className: "empty" }, "No open listening cycles right now."));
         return;
       }
       this.listHost.replaceChildren(
-        el("h1", {}, "Listen"),
+        el("h1", {}, "My Labs"),
         el("p", { className: "listen-intro" }, "Rate a blind round of candidates: a player, stars and a note per option, then say which you'd keep."),
         el(
           "ul",
@@ -103,14 +103,14 @@ export class ListenView {
         ),
       );
     } catch (e) {
-      if (seq === this.seq) this.listHost.replaceChildren(el("h1", {}, "Listen"), el("div", { className: "empty" }, `Couldn't load listening cycles: ${(e as Error).message}`));
+      if (seq === this.seq) this.listHost.replaceChildren(el("h1", {}, "My Labs"), el("div", { className: "empty" }, `Couldn't load listening cycles: ${(e as Error).message}`));
     }
   }
 
   private showSignInPrompt(host: HTMLElement, text: string) {
     const btn = el("button", { type: "button", className: "btn primary" }, "Sign in");
     btn.addEventListener("click", signIn);
-    host.replaceChildren(el("h1", {}, "Listen"), el("div", { className: "listen-signin" }, el("p", {}, text), btn));
+    host.replaceChildren(el("h1", {}, "My Labs"), el("div", { className: "listen-signin" }, el("p", {}, text), btn));
   }
 
   // ---------------------------------------------------------------- one cycle: options, best pick, notes, save
@@ -125,7 +125,7 @@ export class ListenView {
       const [cycle, mine] = await Promise.all([store.cycle(cycleId), store.verdict(cycleId)]);
       if (seq !== this.seq) return;
       if (!cycle) {
-        this.detailHost.replaceChildren(el("div", { className: "listen-back" }, link({ page: "listen" }, "← All cycles")), el("div", { className: "empty" }, "That listening cycle doesn't exist, or you can't see it."));
+        this.detailHost.replaceChildren(el("div", { className: "listen-back" }, link({ page: "listen" }, "← All labs")), el("div", { className: "empty" }, "That listening cycle doesn't exist, or you can't see it."));
         return;
       }
       opened({ page: "listen", listenCycle: cycleId }, "auto", cycle.title);
