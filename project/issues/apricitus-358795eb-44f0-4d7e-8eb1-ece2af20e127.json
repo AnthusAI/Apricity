@@ -3,7 +3,7 @@
   "title": "Show My Labs in the signed-in account menu",
   "description": "Add a signed-in account-menu destination labeled **My Labs** that navigates to `/labs`, alongside the existing personal destinations such as logout and the user’s tracks. Move the current Listening Room route from `/listen` to `/labs`, updating internal navigation, route tests, and any user-facing references. The destination should be visible only when authenticated and use existing menu/link conventions. This does not change ListeningCycle or Lab behavior.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -34,11 +34,23 @@
         "model": "GPT-6 Luna",
         "name": "My Labs menu"
       }
+    },
+    {
+      "id": "8f22392d-6e55-4f91-9540-c57dc2d7384b",
+      "author": "home",
+      "text": "Landed on develop as `feat(apricitus-358795): add My Labs account destination` and reconciled it with the new Labs model: authenticated account menu **My Labs** targets the canonical `/labs` page; `/listen` remains the Listening Cycle route. Verified 12 focused account-menu, route, and Labs tests plus `npx tsc --noEmit`.",
+      "created_at": "2026-09-29T00:44:47.020855Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
     }
   ],
   "created_at": "2026-09-28T23:49:11.901361Z",
-  "updated_at": "2026-09-28T23:52:59.012831Z",
-  "closed_at": null,
+  "updated_at": "2026-09-29T00:44:47.216171Z",
+  "closed_at": "2026-09-29T00:44:47.216099Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
