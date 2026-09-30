@@ -46,10 +46,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "d03be52f-cd68-417f-b454-c75dd5c6fb82",
+      "author": "home",
+      "text": "Supervisor review: validate malformed hydration and bounded search-response counts and safe playback metadata. Register and rerun BDD. No board writes from Terra; supervisor owns comments/landing. Sample diversification and local/UI integration follow separately.",
+      "created_at": "2026-09-30T23:00:13.173019Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.542643Z",
-  "updated_at": "2026-09-30T22:53:26.967482Z",
+  "updated_at": "2026-09-30T23:00:13.173055Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

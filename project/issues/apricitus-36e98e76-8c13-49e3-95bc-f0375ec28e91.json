@@ -10,9 +10,22 @@
   "parent": "apricitus-9b0c9344-057f-44bd-a69a-7d2a760243d8",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c46d055b-0ca5-46f1-9fb7-c5d69075a6f1",
+      "author": "home",
+      "text": "Supervisor review requires corrections before acceptance: ancestor-symlink escape, POSIX rename no-clobber race and ENOTEMPTY handling, quadratic alias lookup, duplicate clusters and unit-centroid validation. Register and rerun BDD after handoff. Ground draft only, no publication/listening approval. Terra must not use Kanbus or git; supervisor owns board/landing.",
+      "created_at": "2026-09-30T23:00:12.934564Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T22:47:55.088998Z",
-  "updated_at": "2026-09-30T22:52:59.293495Z",
+  "updated_at": "2026-09-30T23:00:12.934894Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
