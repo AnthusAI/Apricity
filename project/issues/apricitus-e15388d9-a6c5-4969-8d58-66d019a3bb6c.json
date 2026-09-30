@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "ac11f4e2-711e-44ec-8f7d-aa872b3a719f",
+      "author": "home",
+      "text": "Supervisor review passes10Python cases and1Gherkin/3steps, but packet not accepted yet: window metadata is incorrectly required to have a saved-clip name, unsafe playback keys are accepted, unsupported snapshot spaces/provenance omissions are insufficiently rejected, and generated vocabulary invents tokenizer roberta-base/main metadata not present in its source. Ground ClapProcessor actually loads tokenizer assets from the pinned laion checkpoint8fa0f1c6d0433df6e97c127f64b2a1d6c0dcda8a; provenance must reflect that pinned source without fabrication. Bounded RED correction requested; no listening/publication claim.",
+      "created_at": "2026-09-30T22:39:29.563019Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.117613Z",
-  "updated_at": "2026-09-30T22:29:16.986131Z",
+  "updated_at": "2026-09-30T22:39:29.563051Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
