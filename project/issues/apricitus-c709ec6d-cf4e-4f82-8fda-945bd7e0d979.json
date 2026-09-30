@@ -82,10 +82,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "65b83c24-5e44-4863-aeec-78591a81352e",
+      "author": "home",
+      "text": "Supervisor evidence after corrections: real Apricity Samples drum-beat query renders21sound parents with matched time ranges; Clips renders100saved-clip matches with canonical parent links, progressively displayed by existing grid. Audition actually starts WebAudio at0.167seconds for19.073seconds, matching the first range0.167–19.24, no playback error. Clearing removes cards. Browser-aborted retrieval for drums leaves4lexical sample matches and visible Retry. Rerun18UI/controller tests,5Gherkin scenarios15steps,270flow tests passing with1explicit pre-existing unset live-server skip, build successful. Full browser/mobile acceptance remains e711eb; cloud/related/clusters are not claimed complete.",
+      "created_at": "2026-09-30T22:02:13.122544Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T21:57:35.096427Z",
+  "updated_at": "2026-09-30T22:02:13.122586Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
