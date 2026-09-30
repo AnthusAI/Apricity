@@ -3,7 +3,7 @@
   "title": "M0 — Reliable embeddings and browser compatibility",
   "description": "Reliable, versioned 512-dimensional CLAP vectors from saved clips and four-bar windows; deterministic preprocessing and freshness; pinned browser text-only feasibility harness and evaluation corpus. Completion: boundary invalidation, repeatability, invalid-vector reports, browser/Python cosine >=0.98 per prompt and average top-20 retention >=90%; proposed warm p95 desktop <=2s/mobile <=5s measured separately. No model substitution or cloud inference.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T18:40:00.366530Z",
-  "updated_at": "2026-09-30T18:40:00.366576Z",
+  "updated_at": "2026-09-30T18:46:26.727810Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

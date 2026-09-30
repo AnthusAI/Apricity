@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-d957404e-e56f-4726-bee4-24e24ee9275e",
+  "title": "M1 Semantic publication and retrieval",
+  "description": "As an Apricity visitor or curator, I want the specified semantic audio behavior so that I can find and explore playable sound safely.\n\n```gherkin\nFeature: M1 Semantic publication and retrieval\n\n  Scenario: Idempotent resumable publication\n    Given current records and an interrupted publication checkpoint\n    When publication is repeated after interruption\n    Then the current corpus contains each semantic identity once and coverage reports omissions\n\n  Scenario: Retire obsolete source regions\n    Given published records for a deleted clip and an edited sample\n    When publication reconciles the affected samples\n    Then obsolete identities are retired without modifying unrelated samples\n\n  Scenario: Exact local search contract\n    Given a unit query and fixed vectors in one embedding space\n    When searchAudio is called without a limit\n    Then up to 24 current hits are ordered by descending dot product with stable identity ties\n\n  Scenario: Validate requests and isolate versions\n    Given invalid vectors limits and incompatible embedding versions\n    When searchAudio is called\n    Then invalid requests are rejected and versions never mix\n\n  Scenario: Bounded native cloud retrieval\n    Given a configured DynamoDB vector index\n    When cloud search retrieves up to 100 candidates\n    Then SearchVectors is used without scanning the catalog or promising deep pagination\n\n  Scenario: Current canonical guards\n    Given indexed hits for retired hidden deleted or boundary-edited content\n    When those hits are returned by the vector index\n    Then the endpoint omits stale or inaccessible hits and refreshes display metadata\n\n  Scenario: Approximate recall evidence\n    Given an exact local baseline and an available or unavailable cloud sandbox\n    When cloud recall evaluation runs\n    Then measured recall is reported or missing sandbox fails the evaluation gate explicitly\n```\n\nSpecifications and implementation ownership: design/semantic-audio.md. All model-backed gates require real evidence; no skipped gate is green.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T18:46:25.813285Z",
+  "updated_at": "2026-09-30T18:46:25.813317Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
