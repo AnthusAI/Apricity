@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "225e5238-f8ec-4b9e-8c3d-b96673f11ccd",
+      "author": "home",
+      "text": "Supervisor review confirms ordinary controller lifecycle coverage but finds a retry defect: rejected encoderLoading Promise stays cached, so a failed lazy module/client creation cannot recover. Bounded Terra correction must reset failed loader promises, test first creation failure then retry success, suppress disposal progress, and rerun focused matrix. UI may rely on frozen public API after this review; no gate or task closure yet.",
+      "created_at": "2026-09-30T21:22:38.387970Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.308443Z",
-  "updated_at": "2026-09-30T21:11:15.333090Z",
+  "updated_at": "2026-09-30T21:22:38.388017Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

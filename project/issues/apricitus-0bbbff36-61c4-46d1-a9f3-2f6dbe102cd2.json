@@ -70,10 +70,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "d5132345-3795-4068-a0d9-69a7386c80fb",
+      "author": "home",
+      "text": "Supervisor reran 5 Rust semantic route tests, 13 serve tests, 4 web client tests and native build successfully. Final bounded matrix must add genuinely different exact scores/default24/max100 corpus, parent recording and clip removal, current window grid/manifest mutations and cross-language canonical identity vectors. Vite /semantic proxy is already declared supervisor integration scope. Real-corpus POST checks will follow publication. Do not claim exhaustive acceptance before these checks.",
+      "created_at": "2026-09-30T21:22:38.472743Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T20:45:13.751870Z",
-  "updated_at": "2026-09-30T21:06:12.958378Z",
+  "updated_at": "2026-09-30T21:22:38.472775Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

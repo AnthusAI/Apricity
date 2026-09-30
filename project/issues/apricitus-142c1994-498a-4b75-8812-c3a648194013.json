@@ -58,10 +58,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "3a20804c-8052-4a65-8e45-7dac0671aeb1",
+      "author": "home",
+      "text": "Supervisor final verification: all 91 semantic Python tests passed; registered publication Gherkin 2 scenarios/6 steps passed (no skipped tests). Accepting bounded atomic publisher/export packet. Repeated canonical keys are idempotent; metadataUpdatedAt denotes publication refresh, not a no-op content timestamp. Cloud adapter was only injected-fixture tested, no live AWS publication. Ground corpus coverage and sandbox retrieval gates remain open under initiative.",
+      "created_at": "2026-09-30T21:22:38.571958Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.872485Z",
-  "updated_at": "2026-09-30T21:17:20.582342Z",
+  "updated_at": "2026-09-30T21:22:38.572Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
