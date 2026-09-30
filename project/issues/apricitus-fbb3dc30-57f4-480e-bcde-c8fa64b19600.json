@@ -10,9 +10,22 @@
   "parent": "apricitus-3754342f-27ba-41ba-a5d1-5de26eca00d6",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "86576a3b-16b7-48f8-83de-0649cec04bc1",
+      "author": "home",
+      "text": "Dispatch typed related sample service and deterministic representative/diversity ranking, separate from native92e454 and detailUIf2e17d. Frozen up-to-four farthest-point seed/distance/tie, maxscore merge/sample bestpassage, strongest recording first then remaining. All source and candidate canonical guards retained, processing versions never mix. BackendreadSampleSources injected no Scan. Same deterministic fixtures/expected order as native; supervisor owns sharedrunner/script integration.",
+      "created_at": "2026-09-30T23:11:42.274745Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:43:41.694543Z",
-  "updated_at": "2026-09-30T23:05:39.794308Z",
+  "updated_at": "2026-09-30T23:11:42.274770Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
