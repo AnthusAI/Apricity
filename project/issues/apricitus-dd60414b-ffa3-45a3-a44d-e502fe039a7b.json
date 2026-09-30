@@ -10,9 +10,22 @@
   "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "cc50aa03-5f09-4199-97fc-bf33b837d02f",
+      "author": "home",
+      "text": "Supervisor RED canonical test reproduced legitimate [4,4] meter rejected:10passed1failed. Fix preserves typed Python JSON digest for scalar or numerator/denominator pair;21cloudcore+guard tests now pass, plainAmplifytsc and contractcheck pass. Real rawanalysis window integration483distinct samples still483/483 accepted. Edited/malformed meter fails existing revision, no staleness/visibility/hash weakening. Landing reviewed bug only; local user runtime unchanged.",
+      "created_at": "2026-09-30T22:50:56.121733Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T22:44:28.726888Z",
-  "updated_at": "2026-09-30T22:47:53.973967Z",
+  "updated_at": "2026-09-30T22:50:56.121766Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
