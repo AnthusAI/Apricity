@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "d1197633-2570-4fe4-959c-847888fdd7b4",
+      "author": "home",
+      "text": "Goal resumed: complete the requested semantic audio initiative, not the harness. User should test real Apricity search with the existing library; supervisor handles all engineering fixtures/evaluations. Same-model fp32 WASM compatibility investigation is authorized as precision correction, thresholds unchanged. Canonical record/publication preparation runs in parallel read-only. Production release/deployment and mobile/listening/cloud sandbox acceptance remain explicit, not silently assumed.",
+      "created_at": "2026-09-30T20:27:38.746700Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:38:52.978632Z",
-  "updated_at": "2026-09-30T20:00:09.902959Z",
+  "updated_at": "2026-09-30T20:27:38.746744Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
