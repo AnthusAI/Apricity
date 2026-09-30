@@ -3,7 +3,7 @@
   "title": "Implement exact local semantic retrieval against current canonical models",
   "description": "Purpose: actual local POST /semantic/search over published vectors, used by Apricity search not a separate harness. Prereq stable semantic record contract; draft local implementation allowed while mobile/cloud gates remain unaccepted. Own new crates/apricity-cli/src/semantic.rs, integration serve.rs/main.rs and necessary Cargo dependencies/lock; web/src/data/semantic.ts and client.ts configuration; focused tests only. Corpus <library>/semantic/corpus.json {schemaVersion:apricity.semantic-corpus/1,embeddingSpace,processingFingerprint,records:[SemanticRecord]}; atomic reload on each request, missing/corrupt corpus structured503retryable not falseempty. Request queryVector normalized512,embeddingSpace optional kind/sampleId,limit24max100, unknownfield/invalidvector400 and wrongspace409. Sort exactdotdescending IDties, nativeengine Get current Sample/Clip/Recording before hits, hydrate currentdisplay/playback, deny missing/retired/audio/boundary/grid/revision mismatch; currentgrid from canonical analysis file underFiles and reject unsafekeys. SavedrevisionSHA[semanticId,empty]; windowrevisionSHA[semanticId,currentgridhash]. Local mode follows existing trusted local-reader policy (undocumented visible locally); cloud public policy belongs next packet. Configure custom.apricity.semanticUrl local /semantic and Viteproxy supervisor integration; cloud not silently localfallback. Fixtures beforecode multipleclips/recordings/windows stale changes and limits/version/unitvectors, root reruns Rust/TS. Excludes cloudLambda/infra/UI/publisher/migration/vectorinference/siblingrepo/board/git/release by Terra.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -109,8 +109,8 @@
     }
   ],
   "created_at": "2026-09-30T20:45:13.751870Z",
-  "updated_at": "2026-09-30T21:33:42.511062Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T21:35:14.340581Z",
+  "closed_at": "2026-09-30T21:35:14.340514Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
