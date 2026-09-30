@@ -2,6 +2,55 @@
 
 <!-- version list -->
 
+## v0.34.1 (2026-09-30)
+
+### Bug Fixes
+
+- **apricitus-0a62c0**: Restore Amplify-owned deployment
+  ([`53d7aef`](https://github.com/AnthusAI/Apricity/commit/53d7aefcb362380aec55e29f3ce20d34351a40b8))
+
+### Chores
+
+- **apricitus-73d411**: Move frontend build to GitHub
+  ([`d1e7a2d`](https://github.com/AnthusAI/Apricity/commit/d1e7a2d7f59b332ca68b2ad870da07c37d225677))
+
+- **kanbus**: Commit board state (issues)
+  ([`5d956d3`](https://github.com/AnthusAI/Apricity/commit/5d956d36ab94ece99b04b7c9912809adc7649ae7))
+
+- **kanbus**: Commit board state (issues)
+  ([`591a0d2`](https://github.com/AnthusAI/Apricity/commit/591a0d293eca28a0395b1657e7f33d17f58c4f12))
+
+- **kanbus**: Commit board state (issues)
+  ([`77bceff`](https://github.com/AnthusAI/Apricity/commit/77bceffc5d0fa6073f3fa0c973dd752558888eab))
+
+- **kanbus**: Commit board state (issues)
+  ([`f4be643`](https://github.com/AnthusAI/Apricity/commit/f4be6436092d8f4f06ff0383e991cfaca56ff699))
+
+- **kanbus**: Commit board state (issues)
+  ([`ef05fc8`](https://github.com/AnthusAI/Apricity/commit/ef05fc897b3cfd817c227fc6b80e8a3b1f435a6f))
+
+- **kanbus**: Commit board state (issues)
+  ([`199678b`](https://github.com/AnthusAI/Apricity/commit/199678bfee3ac8f7ac827ebdcd1abe10fcdd5465))
+
+- **kanbus**: Commit board state (issues)
+  ([`7252f13`](https://github.com/AnthusAI/Apricity/commit/7252f13bf39938aa702e120651ea3e0bf3542d9b))
+
+- **kanbus**: Commit board state (issues)
+  ([`a6960a1`](https://github.com/AnthusAI/Apricity/commit/a6960a17c43834a3aa8e2b43c8d6466d10cc72c8))
+
+- **kanbus**: Commit board state (issues)
+  ([`c4cf061`](https://github.com/AnthusAI/Apricity/commit/c4cf061076828f1e36dd9f015392dae4a332563f))
+
+- **kanbus**: Commit board state (issues)
+  ([`4e175d7`](https://github.com/AnthusAI/Apricity/commit/4e175d7c28249e9d725babfba90164609078b362))
+
+- **kanbus**: Commit board state (issues)
+  ([`27116c5`](https://github.com/AnthusAI/Apricity/commit/27116c587ce6b1d149805250ce2b6ed5d9d81211))
+
+- **kanbus**: Commit board state (issues)
+  ([`e8c3ce3`](https://github.com/AnthusAI/Apricity/commit/e8c3ce33f4b03d390db967f849c266d47f1618e8))
+
+
 ## v0.34.0 (2026-09-29)
 
 
