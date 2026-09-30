@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "e99c6d0e-06da-4853-9e0f-857efe05a49e",
+      "author": "home",
+      "text": "Supervisor reran18semantic tests and13serve tests plus optimized build. Added deterministic RED test: four parallel cold requests each parsed the corpus (observed4 versus required1), then single-flight load fix passed. Real27714-vector corpus: cold endpoint723ms, warm30/30/28ms versus previous6119ms baseline, all200/24hits with same first ranked real sample. Cache keeps current canonical reads perquery and corrupt replacement failsclosed. Second preview browser renders real536sample catalog, no errors/overlay, isolationheaders active, home navigation passes; testing actual semantic results before local server switch.",
+      "created_at": "2026-09-30T22:33:20.452871Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T22:14:15.228195Z",
-  "updated_at": "2026-09-30T22:17:45.207440Z",
+  "updated_at": "2026-09-30T22:33:20.452908Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
