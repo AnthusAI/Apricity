@@ -53,6 +53,7 @@ export function createEncoderService(options: { post: (event: EncoderEvent) => v
   const activeSubscriptions = new Set<string>();
   const cache = new Map<string, number[]>();
   let runtime: Promise<TextEncoderRuntime> | undefined;
+  const post = (event: EncoderEvent) => { try { options.post(event); } catch { /* A worker post failure must not strand service state. */ } };
 
   const remember = (key: string, vector: number[]) => {
     cache.delete(key);
@@ -72,7 +73,7 @@ export function createEncoderService(options: { post: (event: EncoderEvent) => v
 
       const text = request.text.trim();
       if (!text) {
-        options.post({ type: "error", requestId: request.requestId, code: "empty_text", message: "Text is required", retryable: false });
+        post({ type: "error", requestId: request.requestId, code: "empty_text", message: "Text is required", retryable: false });
         return;
       }
       cancelled.delete(request.requestId);
@@ -83,7 +84,7 @@ export function createEncoderService(options: { post: (event: EncoderEvent) => v
         if (vector) remember(key, vector);
         if (!vector) {
           runtime ??= loadRuntime((progress) => {
-            for (const requestId of activeSubscriptions) options.post({ type: "progress", requestId, ...progress });
+            for (const requestId of activeSubscriptions) post({ type: "progress", requestId, ...progress });
           });
           let loaded: TextEncoderRuntime;
           try {
@@ -96,12 +97,12 @@ export function createEncoderService(options: { post: (event: EncoderEvent) => v
           if (!request.bypassCache) remember(key, vector);
         }
         if (!cancelled.has(request.requestId)) {
-          options.post({ type: "result", requestId: request.requestId, embeddingSpace: CLAP_BROWSER_MANIFEST.embeddingSpace, vector: [...vector] });
+          post({ type: "result", requestId: request.requestId, embeddingSpace: CLAP_BROWSER_MANIFEST.embeddingSpace, vector: [...vector] });
         }
       } catch (error) {
         if (cancelled.has(request.requestId)) return;
         const detail = error instanceof Error ? error : new Error(String(error));
-        options.post({
+        post({
           type: "error",
           requestId: request.requestId,
           code: typeof (detail as Error & { code?: unknown }).code === "string" ? (detail as Error & { code: string }).code : "inference_failed",
@@ -123,17 +124,23 @@ export function createEncoderService(options: { post: (event: EncoderEvent) => v
  */
 export const loadPinnedClapTextRuntime: RuntimeLoader = async (progress) => {
   const transformers: any = await import("@huggingface/transformers");
+  const { createModelCache } = await import("./model-cache");
   transformers.env.backends.onnx.wasm.proxy = false;
   transformers.env.backends.onnx.wasm.numThreads = 1;
+  // Transformers.js documents this Cache API-shaped hook. It lets blocked
+  // persistent storage degrade to downloads/memory rather than inference failure.
+  transformers.env.useBrowserCache = false;
+  transformers.env.useCustomCache = true;
+  transformers.env.customCache = createModelCache({ onProgress: progress });
   const options = {
     revision: CLAP_BROWSER_MANIFEST.revision,
     dtype: CLAP_BROWSER_MANIFEST.dtype,
     device: CLAP_BROWSER_MANIFEST.device,
-    progress_callback: (event: { loaded?: number; total?: number; status?: string; file?: string }) => progress({
-      loaded: event.loaded ?? 0,
-      total: event.total,
-      phase: event.status ?? event.file ?? "loading",
-    }),
+    progress_callback: (event: { loaded?: number; total?: number; status?: string; file?: string }) => {
+      const loaded = Number.isFinite(event.loaded) ? event.loaded! : 0;
+      const total = Number.isFinite(event.total) ? event.total : undefined;
+      try { progress({ loaded, total, phase: typeof event.status === "string" ? event.status : typeof event.file === "string" ? event.file : "loading" }); } catch { /* Progress observers cannot interrupt model loading. */ }
+    },
   };
   const [tokenizer, model] = await Promise.all([
     transformers.AutoTokenizer.from_pretrained(CLAP_BROWSER_MANIFEST.modelId, options),

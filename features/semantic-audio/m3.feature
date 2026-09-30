@@ -13,7 +13,7 @@ Feature: M3 Automatic browser hybrid search
   Scenario: Lazy text-only model download
     Given no previous audio query
     When a nonempty audio query is made
-    Then only the pinned quantized WASM text model loads with visible progress
+    Then only the pinned parity-approved fp32 WASM text model loads with visible progress
 
   Scenario: Cache and storage failure
     Given a completed model download and a repeated query
@@ -36,6 +36,6 @@ Feature: M3 Automatic browser hybrid search
     Then text results remain usable with a visible semantic retry state
 
   Scenario: First-use browser acceptance
-    Given a fresh cache and the pinned approximately 127 MB text weights
+    Given a fresh cache and the pinned approximately 502 MB text weights
     When browser acceptance runs
     Then download progress caching cold and warm timings are reported with no skipped gate counted as success
