@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-4c8a862c-1cfd-4288-9597-f81c1d4eedf1",
+  "title": "Evaluate and adopt compatible same-model browser precision",
+  "description": "Purpose: resolve measured q8 incompatibility without changing CLAP embedding space, ground model, inference location or numerical gates. Supervisor authorizes pinned same-export fp32 WASM as candidate (larger static download). Own encoder manifest/runtime, browser evaluator and related tests only. Excludes app search, backend, cloud inference, board/git/release writes. Tests first: exact manifest fp32/text_model.onnx, same512 normalization/progress/cancel/cache contracts, measured missing/failure gates. Supervisor captures six real browser vectors against pinned Python and48 audio candidates and desktop warm timing, reruns tests/build. Missing mobile/listening remains explicit, never fabricated. Handoff: file inventory/red-green/evidence/blockers. No commit/push/close.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5bb1f371-f22c-4f04-bb9f-61453183836c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T20:25:38.380413Z",
+  "updated_at": "2026-09-30T20:26:21.859648Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
