@@ -3,7 +3,7 @@
   "title": "M0 Reliable embeddings and browser compatibility",
   "description": "As an Apricity visitor or curator, I want the specified semantic audio behavior so that I can find and explore playable sound safely.\n\n```gherkin\nFeature: M0 Reliable embeddings and browser compatibility\n\n  Scenario: Valid region identity\n    Given a saved clip and a four-bar window from the same sample\n    When their semantic records are prepared\n    Then saved clips and windows have distinct stable identities with canonical parents and source boundaries\n\n  Scenario: Freshness distinguishes rename from boundary edit\n    Given current clip vectors and unchanged source audio\n    When one clip is renamed and another clip boundary is changed\n    Then only the boundary-edited vector is recomputed and display metadata is refreshed\n\n  Scenario: Deterministic long input\n    Given synthetic mono audio longer than ten seconds\n    When ground analysis embeds the same region twice\n    Then preprocessing is reproducible and valid normalized vectors are equivalent\n\n  Scenario: Invalid vectors are reported\n    Given missing zero nonfinite and incompatible embedding fixtures\n    When analysis validates the corpus\n    Then invalid records are excluded with explicit reasons\n\n  Scenario: Browser parity gate\n    Given pinned browser and Python encoders with fixed prompts and reference vectors\n    When the model-backed evaluation is requested\n    Then each cosine is at least 0.98 and average top-20 retention is at least 0.90\n\n  Scenario: Performance evidence is not fabricated\n    Given a desktop and designated mobile device or an unavailable device\n    When warm encoding is evaluated\n    Then measured p95 meets two and five seconds respectively or the gate reports not evaluated and fails\n```\n\nSpecifications and implementation ownership: design/semantic-audio.md. All model-backed gates require real evidence; no skipped gate is green.",
   "type": "story",
-  "status": "blocked",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T18:46:25.646911Z",
-  "updated_at": "2026-09-30T19:59:38.884095Z",
+  "updated_at": "2026-09-30T20:24:45.245540Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
