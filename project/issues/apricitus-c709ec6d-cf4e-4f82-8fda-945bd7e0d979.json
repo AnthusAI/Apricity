@@ -94,10 +94,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "db90e31c-dfc2-4a4c-8693-0ce7b5f412ca",
+      "author": "home",
+      "text": "Final integration evidence: global actual query renders54Sound clips and46Sound passages; scrolling expands the bounded grid beyond24cards (46passages observed), so all returned matches stay reachable. Retrieval Retry recovers to30sound parents while4text matches remain. Cold concurrent catalog/retrieval observed18.4second endpoint time; this is a functional local preview, not cloud/performance/mobile approval. Empty lexical copy now explicitly says No text matches to avoid contradicting sound hits. Supervisor accepts this bounded UI packet after rerunning tests/build and real route/audition verification.",
+      "created_at": "2026-09-30T22:05:10.207073Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T22:02:13.122586Z",
+  "updated_at": "2026-09-30T22:05:10.207133Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
