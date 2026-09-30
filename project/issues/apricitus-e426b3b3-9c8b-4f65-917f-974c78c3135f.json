@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e426b3b3-9c8b-4f65-917f-974c78c3135f",
+  "title": "Run semantic audio regression checks in CI",
+  "description": "Purpose: landed semantic behavior must be checked by normal CI, not only supervisor local commands. Allowed .github/workflows/ci.yml, web/package.json scripts, minimal analysis semantic-test dependency manifest, deterministic CI regression test. Preserve existing Rust/Wasm/flow/release jobs and workflow triggers. Add complete existing semantic TS unit/cloudsynth tests and plain Amplifytsc; targeted ground semantic contract/freshness/records/publisher/backfill/catalog/evaluation/snapshot/algorithms/summaries tests with pinned clustering libs in isolatedPython3.12 venv. Ordinary tests use fixed vectors/stubs; no HF weights/network inference. Actual UMAP/HDBSCAN test runs twice, missingdeps fails notskip. Model browser/mobile/listening/cloudANN gates remain separate explicit not_evaluated, never labelled passed byCI. Specs before change and RED evidence; supervisor rerun scripts/pytest/CIconfig checks. No server restart/dist clean, AWS/release or board actions byTerra.",
+  "type": "chore",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T22:43:03.807522Z",
+  "updated_at": "2026-09-30T22:43:03.807556Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
