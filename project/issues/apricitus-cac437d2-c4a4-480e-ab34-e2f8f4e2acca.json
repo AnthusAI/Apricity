@@ -3,16 +3,29 @@
   "title": "Harmony checker misranks single-voice timbre auditions",
   "description": "When comparing isolated single-note sample voices, the harmony objective can rank a perceptually noisy source above cleaner alternatives. The consonance implementation only accumulates pairwise clash across different stems; a one-stem audition therefore has no within-stem spectral-noise penalty. The first A/B/C experiment also revealed that comparisons across different absolute keys/chord maps are not metrically comparable. Define and test a timbre-aware, same-context audition measure before using objective_v2 to recommend a sample voice.",
   "type": "bug",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-ad7a1178-aaa6-4113-9a90-860433320571",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7888cd67-a288-4bc3-9008-c63d19736279",
+      "author": "home",
+      "text": "Investigate with a controlled same-key/register/rhythm/effects comparison, measure actual source pitch/noise, and attribute score components before proposing analyzer changes. Prior diagnosis is a hypothesis rather than an established cause.",
+      "created_at": "2026-09-30T21:45:55.082977Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Sol"
+      }
+    }
+  ],
   "created_at": "2026-09-30T13:13:20.879697Z",
-  "updated_at": "2026-09-30T13:13:20.879747Z",
+  "updated_at": "2026-09-30T21:45:55.083008Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
