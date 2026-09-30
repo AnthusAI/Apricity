@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "47146b43-d75e-40de-af8b-a87c5c4829cc",
+      "author": "home",
+      "text": "Supervisor accepted snapshot after sourcehash/duplicate correction. Direct review confirmed deterministic all-collision exclusions, currentwindowgrid+analysis-sourceSHA, stable sortedalias/float32digest withsignedzero canonicalization, metadata rename no corpus drift and injected canonical visibility. Reran98 Python tests incl7corpus and1M4scenario3steps. Registering binding in shared runner. One initial root-CWD commandmatched0scenarios is not verification; properweb-CWD rerun passed. This is corpus only, notclustering/listening/productexploration acceptance.",
+      "created_at": "2026-09-30T21:42:22.576135Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.785631Z",
-  "updated_at": "2026-09-30T21:36:33.630385Z",
+  "updated_at": "2026-09-30T21:42:22.576185Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
