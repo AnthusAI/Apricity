@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "a88c5168-5b06-4dcc-a113-af8fce193af8",
+      "author": "home",
+      "text": "Implementation started. Scope is limited to the new related stored-vector service, its focused tests, and the stored-vector Gherkin binding; no text encoder or UI/endpoint work.",
+      "created_at": "2026-09-30T22:49:31.994856Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.542643Z",
-  "updated_at": "2026-09-30T22:47:54.762979Z",
+  "updated_at": "2026-09-30T22:49:31.994892Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
