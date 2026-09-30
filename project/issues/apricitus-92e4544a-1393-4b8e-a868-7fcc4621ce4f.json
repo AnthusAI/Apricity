@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "5ea4517b-f0be-47e4-a10e-464e66066e61",
+      "author": "home",
+      "text": "Supervisor review rejects current response contract: native implementation removed raw score although hits must match SemanticSearchHit consumed by browser client; scores stay hidden in cards, not removed from typed response. Clip suggestions were incorrectly grouped by parent sample, suppressing multiple clips. Also strict optional limit must reject explicit JSON null. Add RED regressions before correction; reverify native and real HTTP before preview integration.",
+      "created_at": "2026-09-30T23:13:44.066627Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T23:01:22.547335Z",
-  "updated_at": "2026-09-30T23:05:39.955748Z",
+  "updated_at": "2026-09-30T23:13:44.066658Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
