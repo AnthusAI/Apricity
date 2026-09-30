@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "04cd14a0-1db7-46a5-8c8b-5b183a189f31",
+      "author": "home",
+      "text": "Supervisor reran six client/cache tests, all pass. Review found concurrent lifecycle gap: one model error terminates the worker without settling other active requests; wrong-space/malformed worker events can be accepted or hang; IndexedDB blocked/open and transaction abort paths can stall cache fallback. Bounded corrective tests/fixes required before task acceptance, while runtimepins remain unchanged.",
+      "created_at": "2026-09-30T21:03:51.123991Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.030301Z",
-  "updated_at": "2026-09-30T20:57:06.676013Z",
+  "updated_at": "2026-09-30T21:03:51.124034Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
