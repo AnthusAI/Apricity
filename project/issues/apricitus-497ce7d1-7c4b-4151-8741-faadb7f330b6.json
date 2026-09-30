@@ -3,7 +3,7 @@
   "title": "Create and evaluate the shared relevance corpus",
   "description": "Purpose: fixed prompts/reference vectors/audio fixtures/judgments/evaluation output. Prerequisite: deterministic ground and browser harness. Allowed: analysis semantic evaluation exporter, web/scripts evaluator, fixtures/semantic-audio/evaluation*, analysis/test eval. Fixed prompts drums/rain/bass/vocal/ambient/metal sounds; synthaudio fixture provenance; judgment records unreviewed until supervisor listening. Gates cosine>=.98 each, mean top20 overlap>=.90, warm p95 desktop2s/mobile5s. Missing device/reference/judgments must report not evaluated, nonzero gate command.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "blocked",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,10 +34,34 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "40ff4b58-7c01-4017-a214-c31083447e89",
+      "author": "home",
+      "text": "Supervising review reran 36 evaluation/contract/freshness tests: all passed, zero skipped. Scaffold now enforces canonical region IDs, strict audio repeatability, reviewed judgment provenance, and nonzero unavailable/failed gates. Actual q8 preflight fails M0 (bass 0.9776231; metal 0.9740588); top-20 corpus run, listening judgments and designated-mobile measurements are still unaccepted. Record measured blocker and reproduction commands in design document; land diagnostic scaffolding only, leave task blocked and M1–M5 undispatched.",
+      "created_at": "2026-09-30T19:55:08.494033Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "f3f992d0-10a2-4afb-b06b-3c09e03883f6",
+      "author": "home",
+      "text": "Final supervisor review found Python parity evaluation needs the same unique canonical audio-candidate guarantee as the browser gate: duplicate IDs can otherwise make the forty-entry requirement trivial. Require >=40 unique canonical hashes and identical stored audio corpus vectors across Python/browser interchange; add deterministic rejection tests before landing. No real gate/model/runtime change authorized.",
+      "created_at": "2026-09-30T19:56:43.011974Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.525314Z",
-  "updated_at": "2026-09-30T19:36:32.071959Z",
+  "updated_at": "2026-09-30T19:56:43.012008Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

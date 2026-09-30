@@ -58,10 +58,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "6c348fc3-b68d-4206-9bed-cc3e1e7bb438",
+      "author": "home",
+      "text": "Supervisor reran final browser correction: 18 tests passed, zero skipped; production build and contract check passed. Raw desktop browser inference verified pinned q8 WASM download (126603263 bytes), normalized 512D vectors and matched tokenization. Actual parity gate FAILED for bass 0.9776231031 and metal 0.9740587759 vs 0.98. Twenty uncached warm encodings p95 51.775 ms; mobile/top20 still not evaluated. Diagnostic-only harness is reviewed for landing; task remains blocked, with no app search integration and no altered model/runtime/gates. Terra handoff browser-cleanup-handoff.md records red/green regression evidence.",
+      "created_at": "2026-09-30T19:57:10.792187Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.349303Z",
-  "updated_at": "2026-09-30T19:48:12.169721Z",
+  "updated_at": "2026-09-30T19:57:10.792220Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
