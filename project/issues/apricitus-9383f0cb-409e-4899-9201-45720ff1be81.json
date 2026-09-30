@@ -46,10 +46,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "e3b20b23-d07c-406e-a1c7-7304aec8dd9c",
+      "author": "home",
+      "text": "Accepted cloud prerequisites landed separately: canonical guard0abc106e and native SearchVectors service6619ffed,20focused tests+plainAmplifytsc+contractcheck passed. Parent remains in_progress: must add real serverless HTTP runtime (current canonical strong reads/analysisbytes, trusted verified curator auth or public documented policy), narrowly wire IAM/API/outputs and runtime processing fingerprint configuration; sandboxANN recall still explicitly not_evaluated. Local preview confirmed noerrors, real27parent sound matches and exactbounded audition; no test-harness handoff.",
+      "created_at": "2026-09-30T22:40:56.403784Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.185927Z",
-  "updated_at": "2026-09-30T22:35:27.083745Z",
+  "updated_at": "2026-09-30T22:40:56.403823Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
