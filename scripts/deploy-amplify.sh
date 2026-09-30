@@ -6,14 +6,25 @@ set -euo pipefail
 : "${VERIFIED_COMMIT:?VERIFIED_COMMIT is required}"
 
 LATEST="$(gh api "repos/$GITHUB_REPOSITORY/commits/$AMPLIFY_BRANCH" --jq .sha)"
-if [[ "$LATEST" != "$VERIFIED_COMMIT" ]]; then
+verified_revision() {
+  [[ "$1" == "$VERIFIED_COMMIT" ]] && return 0
+  # Semantic Release only updates CHANGELOG.md after CI in this repository.
+  gh api "repos/$GITHUB_REPOSITORY/compare/$VERIFIED_COMMIT...$1" |
+    jq -e --arg verified "$VERIFIED_COMMIT" '
+      .status == "ahead" and .total_commits == 1 and
+      .commits[0].parents[0].sha == $verified and
+      (.commits[0].commit.message | startswith("chore(release): ")) and
+      (.files | length == 1) and .files[0].filename == "CHANGELOG.md"
+    ' >/dev/null
+}
+if ! verified_revision "$LATEST"; then
   echo "Skipping stale CI result: production branch has advanced."
   exit 0
 fi
 
 JOB_ID="$(aws amplify start-job --app-id "$AMPLIFY_APP_ID" \
   --branch-name "$AMPLIFY_BRANCH" --job-type RELEASE \
-  --commit-id "$VERIFIED_COMMIT" --query jobSummary.jobId --output text)"
+  --commit-id "$LATEST" --query jobSummary.jobId --output text)"
 for _ in $(seq 1 480); do
   JOB="$(aws amplify get-job --app-id "$AMPLIFY_APP_ID" \
     --branch-name "$AMPLIFY_BRANCH" --job-id "$JOB_ID" --output json)"
@@ -21,7 +32,7 @@ for _ in $(seq 1 480); do
   case "$STATUS" in
     SUCCEED)
       COMMIT="$(jq -r '.job.summary.commitId' <<<"$JOB")"
-      if [[ "$COMMIT" != "$VERIFIED_COMMIT" ]]; then
+      if ! verified_revision "$COMMIT"; then
         echo "Amplify deployed $COMMIT instead of verified commit $VERIFIED_COMMIT" >&2
         exit 1
       fi
