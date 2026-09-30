@@ -3,7 +3,7 @@
   "title": "M3 — Browser text encoding and hybrid search",
   "description": "Pinned q8 CLAP text-only WASM encoder in lazy Web Worker. Immediate unchanged lexical results plus automatic sound groups after600ms or Enter. Cache, progress, retry, cancellation and stale response guards. Global/Samples/Clips integration with existing filters; saved clips only in Clips. Depends M0 and M1. WebGPU excluded.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T18:40:00.889731Z",
-  "updated_at": "2026-09-30T18:40:00.889769Z",
+  "updated_at": "2026-09-30T20:57:06.349459Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
