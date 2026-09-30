@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "3a258c01-3626-40eb-a308-8e17ac308c16",
+      "author": "home",
+      "text": "Supervisor accepted retry correction after direct code review. Reran controller/encoder/client/cache matrix:26 passed,0 skipped or canceled; web build passed. Registered hybrid bindings and exact-name four M3 scenarios (initial mistargeted zero-scenario command is not evidence). Public API is frozen for UI integration. Actual browser-to-real-corpus drum query now yields drums.wav passages; local9,691-vector baseline measured8.7s, no cloud latency claim.",
+      "created_at": "2026-09-30T21:26:04.501228Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.308443Z",
-  "updated_at": "2026-09-30T21:22:38.388017Z",
+  "updated_at": "2026-09-30T21:26:04.501266Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

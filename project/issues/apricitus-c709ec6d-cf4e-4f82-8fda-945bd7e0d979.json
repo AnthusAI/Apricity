@@ -3,16 +3,29 @@
   "title": "Layer automatic hybrid results into global and section search",
   "description": "Purpose: preserve lexical ranks while adding clearlylabelled sound groups. Prereqcontroller. Allowed web/src/ui/search.ts,section.ts,main.ts sharedsemanticcards/styles/tests. Global sound clips+regions; Samples groups sample maxpassage; Clips savedonly; existingkind/rating/mine/source/sample/length filters applied both. Candidatecap100; groupingdedup stable; Enter immediate even if lexicalcallback. Verify unchanged lexical regressions plus hybridtests/build.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-def9c138-a63c-4fb4-b5ce-d1edb8f3838e",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6e711b80-46d9-448c-bd32-1cf0ba091c5f",
+      "author": "home",
+      "text": "Dispatching Terra actual automatic hybrid UI after supervisor controller acceptance. Frozen API createHybridSearchController setQuery(query,{immediate,kind,sampleId}),onState. Own search.ts,section.ts,main.ts,new semantic sound cards/helpers/style additions and focused UI tests. Preserve lexical ranking; immediate lexical typing,600ms sound pause and Enter immediate. Semantic endpoint configured locally; no query download in disabled deployment. Global clip+region groups, Samples best passage by parent, Clips saved only, existing filters both sources without reordering sound relevance. Navigation cancellation includes same-tab detail transitions. Real library not synthetic corpus; card playback uses current matched boundaries. UI gate requires real-model browser query/playback under supervisor, not mocks alone.",
+      "created_at": "2026-09-30T21:26:04.762144Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T18:43:42.466773Z",
+  "updated_at": "2026-09-30T21:26:04.762179Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
