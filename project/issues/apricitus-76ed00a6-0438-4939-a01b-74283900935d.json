@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-76ed00a6-0438-4939-a01b-74283900935d",
+  "title": "Backfill canonical clip and window embeddings for the real local library",
+  "description": "Purpose: regenerate stale v1 embeddings from actual audio for canonical current library clips and four-bar windows, not relabel old vectors. Ground-only pinned CLAP/reproducible preprocessing; never cloud inference. Implement safe CLI consuming canonical export {samples,clips,recordings,analyses}, resolving sample files/aliases within declared repo root and verifying audio SHA. Read clip IDs directly, include current clips not only old manifest annotations, exclude retired/invalid and reconcile removed windows. Atomic v2 sidecar writes, bounded batch inference with per-region failures, resumable unchanged-input reuse, coverage report. Excludes tracked manifest edits, source audio edits, models/thresholdchanges, broad deletes, commits/push/close by Terra. Deterministic synthetic fixtures + real selected recording backfill supervisor-run; loading/progress reports current sample, interrupted run keeps completed sidecars, no fake vectors. Handoff RED/GREEN/fileinventory and remaining exclusions. Registration/runtime final integration by supervisor.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4fe60ff6-4eae-454c-bd8f-dd6ec7b1d915",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "3eca59ae-83d5-4093-9565-50d5845d2f5f",
+      "author": "home",
+      "text": "Terra file ownership: analysis/apricity_analyze/semantic_backfill.py, analysis/tests/test_semantic_backfill.py, scripts/semantic-backfill.py only. Consume catalogdict directly, share pinned clap sidecar API, bounded4 batch with single-region fallback on error, verify source audio SHA actual bytes before cache reuse. Explicit --catalog --samples --report [--sample-id repeat] [--batch-size <=8]. Output next to source manifest only; refuse roots/path escapes/symlink escapes and missing manifests. Never mutate canonical catalog/tracked manifests/audio. Supervisor generates export from migrated real library, runs first selected sample then full corpus. Validate canonical clipIDs/startend, currentanalyses manifest sourceSHA, gridfingerprint; atomics preserve oldsidecar when no valid current source; reports include reused/recomputed/excluded per-kind. Fixture tests first and no real model inference in ordinary tests. No board/git/close by Terra.",
+      "created_at": "2026-09-30T20:34:00.001376Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T20:32:35.679935Z",
+  "updated_at": "2026-09-30T20:34:00.001422Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
