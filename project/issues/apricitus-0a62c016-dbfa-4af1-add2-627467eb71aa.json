@@ -3,16 +3,29 @@
   "title": "Restore Amplify-owned production deployment",
   "description": "User correction: GitHub must run CI and trigger the original Amplify app after success. Amplify must retain deployment of the existing Gen 2 backend and frontend. Remove the GitHub backend deployment step, restore amplify.yml, verify the original app before restoring its custom domain, and retain replacement hosting until cutover is verified.",
   "type": "bug",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "6841cc3b-1684-4e16-9562-6a78cdeadfe3",
+      "author": "home",
+      "text": "Restored amplify.yml and replaced GitHub backend/artifact deployment with a StartJob/GetJob trigger for original app d2n7w4kwqyfwn4. Removed GitHub backend provisioning permission. Correction committed on develop; isolated release PR #63 contains only this fix, excluding unrelated integration work. Local trigger checks prove success, failure propagation, and stale-CI rejection. Live domain cutover waits for original app deployment and smoke test.",
+      "created_at": "2026-09-30T21:07:52.933606Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Codex"
+      }
+    }
+  ],
   "created_at": "2026-09-30T19:42:03.374512Z",
-  "updated_at": "2026-09-30T19:42:03.374553Z",
+  "updated_at": "2026-09-30T21:07:52.933634Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
