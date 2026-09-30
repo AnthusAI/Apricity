@@ -32,6 +32,18 @@ denoise = ["noisereduce"]
 # CLAP audio/text embeddings (scripts/fit-features.py, apricity_analyze/clap.py). Checkpoint
 # (laion/clap-htsat-unfused, ~620 MB; see clap.py for why not the music one) downloads to the HF cache on first use, not at install time.
 clap = ["transformers"]
+# M4 deterministic ground clustering.  These are exact pins validated against the
+# analysis environment. Keep clustering dependencies pinned so manifests and
+# repeated runs identify the same numerical implementation.
+clustering = [
+  "umap-learn==0.5.12",
+  "hdbscan==0.8.44",
+  "numpy==2.2.6",
+  "scipy==1.18.1",
+  "scikit-learn==1.9.1",
+  "numba==0.67.0",
+  "pynndescent==0.6.0",
+]
 
 [project.scripts]
 apricity-analyze = "apricity_analyze.cli:main"
