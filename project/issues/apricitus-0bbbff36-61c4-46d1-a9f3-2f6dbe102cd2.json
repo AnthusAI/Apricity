@@ -34,10 +34,22 @@
         "model": "GPT-5.6",
         "name": "Terra"
       }
+    },
+    {
+      "id": "7b54c9a2-0df4-4d25-8eb6-6234c49c4978",
+      "author": "home",
+      "text": "Implementation progress: added local /semantic/search wiring with a shared native engine Arc and Files store, corpus validation/reload, exact dot ranking, current canonical hydration, and structured errors; added web semantic client/bootstrap config and focused client tests. RED/GREEN Rust route verification is blocked before compilation: workspace lockfile dependencies require rustc 1.94.1 while this environment has 1.81 default and 1.88 maximum installed. `rustup run 1.88.0 cargo test -p apricity-cli semantic --no-run` reports the minimum 1.94.1 AWS SDK requirement. GREEN: `cd web && npx tsx --test test/semantic-client.test.ts` (2 pass); `cd web && npm run build` passed. No commit/push/close.",
+      "created_at": "2026-09-30T20:53:00.488698Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5.6",
+        "name": "Terra"
+      }
     }
   ],
   "created_at": "2026-09-30T20:45:13.751870Z",
-  "updated_at": "2026-09-30T20:46:53.715651Z",
+  "updated_at": "2026-09-30T20:53:00.488733Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
