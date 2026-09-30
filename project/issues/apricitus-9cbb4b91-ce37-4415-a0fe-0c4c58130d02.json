@@ -3,16 +3,29 @@
   "title": "Semantic audio features",
   "description": "Implement M0–M5 from the accepted semantic audio plan. Ground CLAP audio analysis and clustering; browser CLAP text encoding; serverless native DynamoDB vector retrieval; related audio; hybrid search; published cluster exploration. All six epic specifications precede implementation. Terra implements bounded packets; supervisor verifies and integrates. No cloud encoder, replacement embedding model, manual deployment, or release. Independent rollout gates and measured compatibility, relevance, latency, and visibility protection are required.",
   "type": "initiative",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "213dd094-a7ef-4427-9c7f-edaaa206478f",
+      "author": "home",
+      "text": "Partial delivery on develop: all six epic specifications, stories and bounded task packets; reliable semantic region identities and deterministic ground sidecars; isolated browser/evaluation diagnostics. M0 actual q8 parity fails required 0.98 for bass 0.9776231 and metal 0.9740588, despite matching token IDs/masks. M1–M5 remain open and undispatched. No semantic search, related lists or clustering UI implemented yet. Await supervision direction on a same-model higher-precision browser evaluation; no substitute model, relaxed threshold, cloud inference or deployment authorized. Raw measurements and reproduction commands are in design/semantic-audio.md and fixtures/semantic-audio/browser-parity-preflight.json.",
+      "created_at": "2026-09-30T20:00:09.902932Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:38:52.978632Z",
-  "updated_at": "2026-09-30T18:38:52.978889Z",
+  "updated_at": "2026-09-30T20:00:09.902959Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "34371265-846f-4459-be3b-c5306d61fd86",
+      "author": "home",
+      "text": "M0 acceptance blocked: actual pinned q8 WASM parity is below required 0.98 for bass (0.9776231) and metal (0.9740588), with matching token IDs/masks. Story apricitus-e46692 and browser/evaluation tasks are blocked. Epic remains in_progress because epic workflow has no blocked status. No M1–M5 implementation dispatched; await direction on same-model precision evaluation, and designated mobile/listening/top20 evidence.",
+      "created_at": "2026-09-30T20:00:09.848939Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:40:00.366530Z",
-  "updated_at": "2026-09-30T18:53:13.442560Z",
+  "updated_at": "2026-09-30T20:00:09.848976Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

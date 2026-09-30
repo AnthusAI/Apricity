@@ -58,10 +58,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "83b77f09-7f72-4f11-ba50-fbb52f8c2d55",
+      "author": "home",
+      "text": "Final Terra correction reviewed and supervisor rerun complete: 54 Python tests passed, zero skipped (evaluation, semantic contract, freshness and feature regressions, including cached real-model tests). Duplicate/malformed canonical IDs and changed stored audio corpora are rejected; top-20 ordering is score descending then ID ascending. Diff check passed. Diagnostic reference tooling is ready to land; actual browser acceptance, full audio/top20 evaluation, listening review and designated mobile evidence remain blocked/unmeasured. No gate relaxed and no dependent epic dispatched.",
+      "created_at": "2026-09-30T19:59:38.746149Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.525314Z",
-  "updated_at": "2026-09-30T19:56:43.012008Z",
+  "updated_at": "2026-09-30T19:59:38.746179Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
