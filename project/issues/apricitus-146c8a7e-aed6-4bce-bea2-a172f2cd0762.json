@@ -3,7 +3,7 @@
   "title": "Implement versioned semantic records",
   "description": "Purpose: typed records with saved/window distinctions and canonical materialization. Prereq M0contract. Allowed: new ground records module and TS semantic contracts/fixtures/tests; no schema source changes unless approved packet update. Exact data in design spec. Metadata from current Sample/Clip/Recording; local path is not canonical cloud ID. Missing mappings report excluded rather than invent IDs. Verify record contract roundtrip and fixtures.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "d3c68986-42b6-4790-86b7-ce67bb80ed7a",
+      "author": "home",
+      "text": "Contract refinement after audit: revision=SHA256 compact ordered JSON [semanticId, gridFingerprint-or-empty], lowercase hex. For windows gridFingerprint is same sorted compact JSON SHA of bpm/meter/beats/downbeats as fit-features.py; saved clips use empty string so rename/display-only changes preserve revision. Canonical export {samples,clips,recordings,analyses} where analyses maps sampleId to current analysis manifest. Compare sidecar against canonical audio SHA/checkpoint/revision/runtime fingerprint/grid and canonical live boundaries; only exact unique mapping by id or rounded source boundary, never names/derivedfakeIDs. Python record field vector (not vector512) conforms to existing schema. Own semantic_records.py + test_semantic_records.py and web/src/semantic/contracts.ts + web/test/semantic-records.test.ts; schema changes excluded. Supervisor permits draft M1 implementation after measured desktop compatibility; M0 mobile/listening and cloud acceptance remain unaccepted and production rollout disabled. Local actual library migrated into /tmp/apricity-semantic-delivery.53NDAo/library.apricity:536samples,13848clips,473recordings. BDD under existing M1 story first; no commits by Terra.",
+      "created_at": "2026-09-30T20:31:18.264172Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.693451Z",
-  "updated_at": "2026-09-30T20:26:22.089939Z",
+  "updated_at": "2026-09-30T20:31:18.264206Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

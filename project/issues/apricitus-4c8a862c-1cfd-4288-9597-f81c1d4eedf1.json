@@ -10,9 +10,22 @@
   "parent": "apricitus-5bb1f371-f22c-4f04-bb9f-61453183836c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "82286bfb-3448-49ba-9de8-f52e0bb6b21b",
+      "author": "home",
+      "text": "Supervisor real-browser evidence: pinned fp32 WASM text-only export, six fixed prompts,48 pinned Python audio references. Every cosine >=0.999999999997; every top20 retention1.0;20 cache-bypassed warm encodes desktop p95=58.819999993ms. Isolation headers verified; no browser errors.19 unit tests/build/contract check passed. Raw artifact /tmp/apricity-semantic-delivery.53NDAo/browser-fp32-desktop.json. Adopt fp32 same-model for supervised desktop development, static download ~502MB rather than original127MB q8 default. No mobile/listening/cloud gate claimed. Preserve q8 failure artifact; update accepted evidence bindings and design before landing.",
+      "created_at": "2026-09-30T20:31:17.712311Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T20:25:38.380413Z",
-  "updated_at": "2026-09-30T20:26:21.859648Z",
+  "updated_at": "2026-09-30T20:31:17.712349Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

@@ -3,7 +3,7 @@
   "title": "M1 — Semantic records, publication, and retrieval",
   "description": "Publish versioned semantic records idempotently with recovery, retire stale regions, and expose typed searchAudio through exact local and native DynamoDB vector adapters. Dedicated on-demand 512 DOT_PRODUCT index. Canonical visibility/revision verification before returning hits; default24/max100; no catalog scans or arbitrary pagination. Depends M0.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T18:40:00.538979Z",
-  "updated_at": "2026-09-30T18:40:00.539018Z",
+  "updated_at": "2026-09-30T20:31:18.150689Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
