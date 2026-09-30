@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "bdd13de4-bb9f-4fa4-b85d-87c022eb832a",
+      "author": "home",
+      "text": "Supervisor accepted corrected narrow summaries packet:30Python cases and1Gherkin/3steps passed; exactsix actual Python textvectors retained, pinned tokenizerasset provenance corrected, windows do not invent clip IDs/names, safefilekeys and canonical model/fingerprint checks, normalizedcentroid/fallback plus recordingdiversity/aliascounts/outliers verified. Summaries remain drafts with pending listening review; no runpublication, clusteringUI or reviewed quality claim. Landing task packet separately.",
+      "created_at": "2026-09-30T22:44:30.217798Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.117613Z",
-  "updated_at": "2026-09-30T22:39:29.563051Z",
+  "updated_at": "2026-09-30T22:44:30.217833Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
