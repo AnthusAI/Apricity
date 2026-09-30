@@ -8,7 +8,7 @@ import { me, type SampleSummary } from "../apricity";
 import { mode } from "../data/client";
 import { handles } from "../data/handles";
 import { owns, type ClipItem } from "../data/catalog";
-import { rank, widenedNote, type Standing } from "../data/rank-window";
+import { rank, widenedNote, type DayTally, type Standing } from "../data/rank-window";
 import { load, matches, rowOf, SECTION_LABEL, KIND_OF_SECTION, type Entry, type Section } from "../data/sections";
 import { DEFAULT_VIEW, otherKeys, parseView, viewQuery, type ListView } from "../data/list-view";
 import { applyClipFilter, CHOICES, DEFAULT_FILTER, filterQuery, parseFilter, type ClipFilter } from "../data/clip-filter";
@@ -18,6 +18,10 @@ import { reportError } from "./notices";
 import { FilterBar } from "./filter-bar";
 import { FeedCard, feedItemOf, type FeedDeps } from "./feed-card";
 import { feedGrid } from "./feed-grid";
+import { semanticUrl } from "../data/client";
+import { createHybridSearchController, type HybridSearchController, type HybridSearchState } from "../semantic/hybrid-controller";
+import { semanticClipHits, semanticEntriesForView, semanticSampleHits, soundHostState } from "./semantic-sound";
+import { SemanticSoundCard, semanticStatus } from "./semantic-sound-card";
 
 const PAGE = 24;
 const ONE: Record<Section, string> = { scores: "score", beats: "beat", chords: "chords", melodies: "melody", clips: "clip", samples: "sample" };
@@ -35,15 +39,33 @@ export class SectionView {
   private entries: Entry[] = [];
   private loadedFor: Section | null = null;
   private body = el("div", { className: "act-body", ariaLive: "polite" });
+  /** Kept outside the lexical body so worker progress never rebuilds lexical cards. */
+  private soundHost = el("div", { className: "sound-results" });
   private barHost = el("div");
   private strip = el("div", { className: "section-strip", hidden: true });
   private bar: FilterBar | null = null;
   private more = el("div");
+  private semantic: HybridSearchController | null = null;
+  private semanticState: HybridSearchState = { phase: "idle", query: "" };
+  private soundCatalogError: unknown = null;
+  private soundWho: Awaited<ReturnType<typeof me>> = null;
+  private soundStars = new Map<string, number>();
+  private soundTallies: DayTally[] = [];
+  private cacheUnavailableQuery: string | null = null;
+  private acceptsSemanticEvents = true;
 
   constructor(private root: HTMLElement, private deps: SectionDeps) {
-    root.append(el("div", { className: "feed-page act" }, this.barHost, this.strip, this.body));
+    root.append(el("div", { className: "feed-page act" }, this.barHost, this.strip, this.body, this.soundHost));
     // Stars rated anywhere, a sign-in or out: what's listed may have changed.
     document.addEventListener("apricity:auth-changed", () => ((this.loadedFor = null), this.section && void this.render()));
+    // Creating the controller is cheap; its encoder stays dynamically unloaded until a configured
+    // audio-search surface receives nonempty text.
+    if (semanticUrl()) this.semantic = createHybridSearchController({ onState: (state) => {
+      if (!this.acceptsSemanticEvents) return;
+      this.semanticState = state;
+      if (state.progress?.phase === "cache_unavailable") this.cacheUnavailableQuery = state.query;
+      this.paintSound();
+    } });
   }
 
   /** Whether a section's front page is on show (the top bar's search then narrows it as you type). */
@@ -54,21 +76,38 @@ export class SectionView {
   /** Show a section with its view from the URL. */
   async show(section: Section, list = "") {
     const changed = section !== this.section;
+    if (changed) this.cancelSemantic();
+    this.acceptsSemanticEvents = true;
     this.section = section;
+    this.soundCatalogError = null;
+    this.cacheUnavailableQuery = null;
     this.view = parseView(list);
     this.clipFilter = section === "clips" ? parseFilter(otherKeys(list)) : { ...DEFAULT_FILTER };
     if (changed || !this.bar) this.makeBar(section);
     this.bar!.set(this.view);
+    this.setSemanticSearch(false);
+    this.paintSound();
     await this.render();
   }
 
   /** The words in the top bar's box, as they're typed. */
-  search(q: string) {
+  search(q: string, immediate = false) {
     if (!this.section) return;
     this.view = { ...this.view, q: q.trim() };
+    this.cacheUnavailableQuery = null;
     this.bar?.set(this.view);
     this.report();
+    this.setSemanticSearch(immediate);
+    this.paintSound();
     void this.render();
+  }
+
+  /** Route transitions must not let an idle cancellation repaint the outgoing section. */
+  cancelSemantic() {
+    ++this.seq;
+    this.acceptsSemanticEvents = false;
+    this.semantic?.cancel();
+    this.soundHost.replaceChildren();
   }
 
   get query(): string {
@@ -83,7 +122,10 @@ export class SectionView {
       (v) => {
         const typed = v.q !== this.view.q;
         this.view = v;
+        if (typed) this.cacheUnavailableQuery = null;
         this.report();
+        // Clearing the chip is a semantic cancellation too, and happens before its next list load.
+        if (typed) this.setSemanticSearch(false);
         void this.render();
         if (typed) document.dispatchEvent(new CustomEvent("apricity:search-cleared"));
       },
@@ -141,6 +183,9 @@ export class SectionView {
       if (seq !== this.seq) return;
       if (section === "clips") this.renderClipFilters();
       if (section === "samples") void this.renderStrip(who?.curator ?? mode() === "local");
+      this.soundWho = who;
+      this.soundStars = myStars;
+      this.soundTallies = tallies;
       const deps: FeedDeps = { who, names };
       const v = this.view;
       const mine = v.mine && mode() !== "local"; // a local library is all yours
@@ -165,8 +210,11 @@ export class SectionView {
       }
       const label = SECTION_LABEL[section];
       const count = el("div", { className: "hint section-count" }, `${rows.length} ${rows.length === 1 ? ONE[section] : label.toLowerCase()}${v.q ? ` matching “${v.q}”` : ""}`);
+      this.soundCatalogError = null;
       if (!rows.length) {
-        this.body.replaceChildren(el("div", { className: "empty" }, v.q ? `No ${label.toLowerCase()} match “${v.q}”.` : mine ? `You haven't made any ${label.toLowerCase()} yet.` : `No ${label.toLowerCase()} here yet.`));
+        const lexicalEmpty = el("div", { className: "empty" }, v.q ? `No text matches in ${label.toLowerCase()} for “${v.q}”.` : mine ? `You haven't made any ${label.toLowerCase()} yet.` : `No ${label.toLowerCase()} here yet.`);
+        this.body.replaceChildren(lexicalEmpty);
+        this.paintSound();
         return;
       }
       // Cards are made a page at a time as the grid asks for them (Clips has well over a thousand).
@@ -176,11 +224,42 @@ export class SectionView {
         return page.map(({ item, standing }) => new FeedCard(feedItemOf(rowOf(item, standing), deps), deps).root);
       };
       this.body.replaceChildren(count, feedGrid([], next));
+      this.paintSound();
     } catch (e) {
       if (seq !== this.seq) return;
       reportError(`load ${SECTION_LABEL[section]}`, e);
+      this.soundCatalogError = e;
       this.body.replaceChildren(el("div", { className: "empty" }, `Couldn't load ${SECTION_LABEL[section].toLowerCase()}: ${(e as Error).message}`));
+      this.paintSound();
     }
+  }
+
+  private setSemanticSearch(immediate: boolean) {
+    if (this.section !== "clips" && this.section !== "samples") return;
+    if (this.view.q) this.semantic?.setQuery(this.view.q, { immediate, ...(this.section === "clips" ? { kind: "saved_clip" as const } : {}) });
+    else this.semantic?.clear();
+  }
+
+  private paintSound() {
+    const section = this.section;
+    const query = this.view.q;
+    if ((section !== "clips" && section !== "samples") || !query || this.semanticState.query !== query) return this.soundHost.replaceChildren();
+    const catalogReady = this.loadedFor === section;
+    const display = soundHostState(query, this.semanticState, catalogReady, this.soundCatalogError);
+    if (display.kind === "hidden") return this.soundHost.replaceChildren();
+    if (display.kind === "status" || display.kind === "waiting") return this.soundHost.replaceChildren(el("div", { className: "sound-status", ariaLive: "polite" }, display.text));
+    if (display.kind === "error") return this.soundHost.replaceChildren(semanticStatus({ phase: "error", query, error: this.soundCatalogError ?? this.semanticState.error }, () => {
+      if (this.soundCatalogError) void this.render(); else this.semantic?.retry();
+    })!);
+    if (this.semanticState.phase !== "ready") return;
+    const semanticEntries = semanticEntriesForView(this.entries, this.view.mine, mode() === "local", (entry) => owns(this.soundWho, entry.owner));
+    // Mine is independent of lexical text; local libraries are all yours.
+    const matches = section === "clips"
+      ? semanticClipHits(this.semanticState.hits ?? [], semanticEntries, this.clipFilter, { me: this.soundWho, mine: this.soundStars, now: new Date() }, new Map(rank(semanticEntries, this.soundTallies, "all", new Date()).rows.map((row) => [row.item.id, row.standing])))
+      : semanticSampleHits(this.semanticState.hits ?? [], this.entries);
+    const warning = this.cacheUnavailableQuery === query ? el("div", { className: "sound-status", ariaLive: "polite" }, "Model cache unavailable; downloaded files will not persist in this browser.") : null;
+    if (!matches.length) return this.soundHost.replaceChildren(...[warning, el("section", { className: "sound-section" }, el("div", { className: "empty sound-empty" }, `No sound matches “${query}”.`))].filter(Boolean) as HTMLElement[]);
+    this.soundHost.replaceChildren(...[warning, el("section", { className: "sound-section" }, el("div", { className: "search-head" }, el("h2", {}, "Sound matches", el("span", { className: "hint" }, ` ${matches.length}`))), feedGrid(matches.map((match) => new SemanticSoundCard(match).root)))].filter(Boolean) as HTMLElement[]);
   }
 
   /** Samples, for curators: what's still being analyzed. */

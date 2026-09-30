@@ -13,6 +13,13 @@ function focused(pattern) {
   assert.match(result.stdout, /pass 1/);
 }
 
+function focusedUi(pattern) {
+  const result = spawnSync(path.join(web, "node_modules/.bin/tsx"), ["--test", "--test-name-pattern", pattern, "test/semantic-sound.test.ts"], { cwd: web, encoding: "utf8" });
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /pass 1/);
+}
+
 Given("an unloaded browser encoder and a nonempty audio query", function () { this.hybridScenario = "lexical debounce"; });
 When("the visitor types into existing search", function () { assert.equal(this.hybridScenario, "lexical debounce"); });
 Then("lexical matches keep their existing ordering while sound search waits for a 600 millisecond pause", function () { focused("keeps lexical search immediate"); });
@@ -20,6 +27,10 @@ Then("lexical matches keep their existing ordering while sound search waits for 
 Given("a pending semantic debounce timer", function () { this.hybridScenario = "enter"; });
 When("the visitor presses Enter", function () { assert.equal(this.hybridScenario, "enter"); });
 Then("sound encoding starts without waiting for the timer", function () { focused("keeps lexical search immediate"); });
+
+Given("semantic clips and windows matching samples with section filters", function () { this.hybridScenario = "section filtering"; });
+When("Samples or Clips search is shown", function () { assert.equal(this.hybridScenario, "section filtering"); });
+Then("Samples expose best passages per parent and Clips show saved clips only with all existing filters", function () { focusedUi("section grouping and filters expose best sample passages and Mine-only saved clips"); });
 
 Given("two overlapping queries and a pending response", function () { this.hybridScenario = "stale"; });
 When("the query is cleared or navigation changes", function () { assert.equal(this.hybridScenario, "stale"); });

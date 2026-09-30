@@ -67,8 +67,10 @@ const section = new SectionView(document.querySelector("#section")!, {
   },
 });
 // The top bar's search box narrows a section's front page as you type; anywhere else, Enter searches everything.
-const searchBox = mountSearch(document.querySelector("#top-search")!, () => (section.shown ? (q) => section.search(q) : null));
-const searchView = new SearchView(document.querySelector("#search")!, searchBox);
+let searchView!: SearchView;
+const searchBox = mountSearch(document.querySelector("#top-search")!, () => (section.shown ? (q, immediate) => section.search(q, immediate) : document.body.dataset.tab === "search" ? (q, immediate) => searchView.search(q, immediate) : null));
+searchView = new SearchView(document.querySelector("#search")!, searchBox);
+document.addEventListener("apricity:global-search-submit", (event) => searchView.submitNext((event as CustomEvent<string>).detail));
 (window as any).apricity = { player, score, clips, samples, docs }; // handy from the console
 
 // ---- tabs
@@ -132,6 +134,10 @@ function showTab(name: string) {
 const pageOfTab = (tab: string): Page => (tab === "docs" ? "help" : (tab as Page));
 /** Show what a route names: its tab, and the item on it. The URL is already there. */
 async function follow(r: Route) {
+  // `showTab` only announces tab changes. Routes can open a detail on the same tab, so semantic
+  // work must be invalidated explicitly before any transition as well.
+  searchView.cancelSemantic();
+  section.cancelSemantic();
   // An item named in the URL is opened below; the tab needn't open the top of its list first.
   if (r.sample) loaded.add("samples");
   if (r.clip) loaded.add("clips");
@@ -220,6 +226,8 @@ document.addEventListener("apricity:open-item", async (e) => {
     return;
   }
   const tab = type === "clip" ? "clips" : "samples";
+  searchView.cancelSemantic();
+  section.cancelSemantic();
   loaded.add(tab); // openId loads the list itself
   history.pushState(null, "", `/${tab}`);
   showTab(tab);

@@ -741,6 +741,13 @@ body.nav-open { overflow: hidden; }
 .search-section[hidden] { display: none; }
 .search-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
 .search-head h2 { font-size: 17px; margin: 0; }
+.sound-results:empty { display: none; }
+.sound-section { margin-top: 18px; }
+.sound-status { margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--accent) 7%, var(--panel)); color: var(--muted); font-size: 13px; }
+.sound-status.bad { border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); color: var(--bad); }
+.sound-stage { min-height: 58px; display: flex; align-items: center; justify-content: flex-end; padding: 8px 12px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--fg) 3%, var(--panel)); }
+.sound-stage .playctl { flex-direction: row-reverse; }
+.sound-range { font: 12px var(--mono); color: var(--muted); }
 
 /* The one filter bar (ui/filter-bar.ts): stays in view as the cards scroll, with no rule under it (the cards' own
    edges are enough). */
