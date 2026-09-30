@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "referenceVersion": "apricity.semantic-evaluation/1",
+  "judgments": [
+    {"prompt": "the sound of a drum beat", "promptId": "drums", "fixtureLabel": "synthetic-percussive-03", "ordinalRelevance": 1, "reviewer": "pending-supervisor-listening", "recordedAt": null, "status": "proposed", "reviewStatus": "unreviewed"},
+    {"prompt": "the sound of rain falling", "promptId": "rain", "fixtureLabel": "synthetic-noise-01", "ordinalRelevance": 1, "reviewer": "pending-supervisor-listening", "recordedAt": null, "status": "proposed", "reviewStatus": "unreviewed"},
+    {"prompt": "the sound of a bass guitar", "promptId": "bass", "fixtureLabel": "synthetic-tone-00", "ordinalRelevance": 1, "reviewer": "pending-supervisor-listening", "recordedAt": null, "status": "proposed", "reviewStatus": "unreviewed"},
+    {"prompt": "the sound of a person singing", "promptId": "vocal", "fixtureLabel": "synthetic-chirp-02", "ordinalRelevance": 1, "reviewer": "pending-supervisor-listening", "recordedAt": null, "status": "proposed", "reviewStatus": "unreviewed"},
+    {"prompt": "the sound of ambient music", "promptId": "ambient", "fixtureLabel": "synthetic-tone-04", "ordinalRelevance": 1, "reviewer": "pending-supervisor-listening", "recordedAt": null, "status": "proposed", "reviewStatus": "unreviewed"},
+    {"prompt": "the sound of metal being struck", "promptId": "metal", "fixtureLabel": "synthetic-percussive-07", "ordinalRelevance": 1, "reviewer": "pending-supervisor-listening", "recordedAt": null, "status": "proposed", "reviewStatus": "unreviewed"}
+  ]
+}

@@ -1,6 +1,6 @@
 # Semantic audio features
 
-Status: specifications accepted for bounded implementation; no compatibility, performance, cloud-recall, or listening gate has yet been measured. Initiative: apricitus-9cbb4b. Supervisor task: apricitus-cc5a3d.
+Status: all-six specifications landed. M0 identities and ground freshness are integrated; browser and evaluation tooling preserve diagnostic evidence but do not satisfy M0 acceptance. Actual q8 browser preflight fails the per-prompt cosine gate on two prompts, so M0 remains unaccepted and M1–M5 are not dispatched. Mobile, top-20 retention, cloud recall and listening gates remain unmeasured. Initiative: apricitus-9cbb4b. Supervisor task: apricitus-cc5a3d.
 
 ## Intent, ownership, and delivery
 
@@ -43,9 +43,15 @@ Sidecar contract v2 extends existing arrays with semantic/processing/model versi
 
 Shared small fixtures live outside project/ under fixtures/semantic-audio. Use 512D e0, e1, (e0+e1)/sqrt(2), -e0; samples A and B share recording R1, C uses R2, D uses R3. A clips a1 [0,4), a2 [4,8), window [0,8); C clip c1 [1,5). Include rename a2, boundary edit a1 [0,3), retired clip, hidden D, wrong space E, missing/zero/NaN vectors, duplicated source regions and explicit outliers. Synthetic audio is generated at test time. A JSON schema validates interchange; Python/TS/Rust fixtures must agree.
 
-Evaluation prompts are fixed, versioned strings covering drums, rain, bass, vocals, ambience and metallic sounds. Python reference projected text vectors come from the pinned checkpoint; audio references have full region/preprocessing provenance. Relevance judgments include reviewer, time, prompt, semanticId and ordinal relevance; unreviewed judgments never imply approval.
+Evaluation prompts, in order, are: "the sound of a drum beat", "the sound of rain falling", "the sound of a bass guitar", "the sound of a person singing", "the sound of ambient music", and "the sound of metal being struck". Python reference projected text vectors come from the pinned checkpoint; audio references have full region/preprocessing provenance. Browser reference interchange is {schemaVersion:1,embeddingSpace,prompts:[{text,vector512}],audio:[{semanticId,vector512}]}, plus provenance. Use at least forty audio candidates so top-20 retention is not a trivial full-corpus comparison. Relevance judgments include reviewer, time, prompt, semanticId and ordinal relevance; unreviewed judgments never imply approval.
 
-Required real-model gates: repeated audio analysis equivalence; browser/Python cosine >=0.98 for EVERY prompt; mean Python/browser top-20 set retention >=0.90 (at least 20 audio candidates; tied ordering stable); proposed warm p95 <=2000ms desktop and <=5000ms designated mobile. Include device/browser/runtime, cache state, sample count, raw timings and nearest-rank p95. A missing device, unavailable model, or skipped test produces not_evaluated and nonzero gated command exit. Supervisor judges listening relevance; map appearance is not a quality metric. Quantization failing parity is a blocker, not permission to change model or inference location.
+Required real-model gates: repeated audio analysis equivalence; browser/Python cosine >=0.98 for EVERY prompt; mean Python/browser top-20 set retention >=0.90 (at least forty unique audio candidates; tied ordering stable); proposed warm p95 <=2000ms desktop and <=5000ms designated mobile. Include device/browser/runtime, cache state, sample count, raw timings and nearest-rank p95. A missing device, unavailable model, or skipped test produces not_evaluated and nonzero gated command exit. Supervisor judges listening relevance; map appearance is not a quality metric. Quantization failing parity is a blocker, not permission to change model or inference location.
+
+### Measured M0 blocker
+
+Raw browser/Python vectors and desktop timings are preserved in `fixtures/semantic-audio/browser-parity-preflight.json`. The pinned q8 WASM browser export produced cosine agreement of 0.9776231031 for bass and 0.9740587759 for metal, below the required 0.98. The other four prompts passed. Token IDs and attention masks matched, so tokenization mismatch does not explain these failures. Twenty uncached warm desktop encodings had nearest-rank p95 51.775 ms; this is not a mobile measurement. Top-20 retention and reviewed listening judgments remain unevaluated.
+
+Recompute the recorded parity failure with `cd web && npx cucumber-js --config test/semantic-audio/cucumber.mjs --tags @m0_browser_gate` (expected nonzero). Verify truthful unavailable-device behavior with the same command and `--tags @m0_browser_evidence`. The isolated development harness is `/semantic-eval.html`; it is not integrated into application search. Changing precision, model, gates, or inference location requires supervision direction before dependent implementation proceeds.
 
 ## M1 publication and retrieval contracts
 
