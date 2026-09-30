@@ -11,6 +11,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
+    fs::File,
+    io::Read,
     path::PathBuf,
     sync::{Arc, Mutex, RwLock},
 };
@@ -24,6 +26,38 @@ pub struct SemanticState {
     pub corpus: PathBuf,
     pub engine: Arc<Mutex<Engine>>,
     pub files: Arc<RwLock<Box<dyn Files>>>,
+    pub(crate) corpus_cache: Arc<Mutex<CorpusCache>>,
+}
+
+/// The disk file is the authority.  This cache only retains a fully parsed and validated
+/// immutable snapshot after the opened file's identity has been checked.
+#[derive(Default)]
+pub(crate) struct CorpusCache {
+    entry: Option<Arc<CachedCorpus>>,
+    #[cfg(test)]
+    loads: usize,
+    #[cfg(test)]
+    parse_attempts: usize,
+}
+
+struct CachedCorpus {
+    key: CorpusKey,
+    records: Vec<Record>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct CorpusKey {
+    len: u64,
+    #[cfg(unix)]
+    device: u64,
+    #[cfg(unix)]
+    inode: u64,
+    #[cfg(unix)]
+    mtime_seconds: i64,
+    #[cfg(unix)]
+    mtime_nanoseconds: i64,
+    #[cfg(not(unix))]
+    modified: std::time::SystemTime,
 }
 
 #[derive(Deserialize)]
@@ -189,7 +223,8 @@ fn aware_timestamp(value: &str) -> bool {
     chrono::DateTime::parse_from_rfc3339(value).is_ok()
 }
 
-/// Local semantic endpoint.  The corpus is read afresh for every request: publishers replace it atomically.
+/// Local semantic endpoint. The on-disk corpus remains authoritative on every request; an
+/// unchanged opened file can reuse its already validated immutable vector snapshot.
 pub async fn search(State(state): State<SemanticState>, body: Bytes) -> Response {
     let request: Request = match serde_json::from_slice(&body) {
         Ok(v) => v,
@@ -226,85 +261,202 @@ pub async fn search(State(state): State<SemanticState>, body: Bytes) -> Response
         );
     }
     let limit = request.limit.unwrap_or(24);
-    let corpus: Corpus = match std::fs::read(&state.corpus)
-        .ok()
-        .and_then(|b| serde_json::from_slice(&b).ok())
+    let corpus_path = state.corpus.clone();
+    let corpus_cache = state.corpus_cache.clone();
+    let corpus = match tokio::task::spawn_blocking(move || load_corpus(&corpus_path, &corpus_cache))
+        .await
     {
-        Some(c) => c,
-        None => {
+        Ok(Ok(corpus)) => corpus,
+        _ => {
             return error(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "semantic_corpus_unavailable",
-                "semantic corpus is missing or corrupt; retry after publication",
+                "semantic corpus is missing, corrupt, or failed validation; retry after publication",
                 true,
             );
         }
     };
-    if corpus.schema_version != "apricity.semantic-corpus/1"
-        || corpus.embedding_space != SPACE
-        || corpus.processing_fingerprint.is_empty()
-        || corpus
-            .records
-            .iter()
-            .any(|r| !valid_record(r, &corpus.processing_fingerprint))
-        || {
-            let mut ids = std::collections::HashSet::new();
-            corpus
-                .records
-                .iter()
-                .any(|r| !ids.insert(&r.identity.semantic_id))
-        }
+    let score_corpus = corpus.clone();
+    let query_vector = request.query_vector;
+    let kind = request.kind;
+    let sample_id = request.sample_id;
+    let mut candidates = match tokio::task::spawn_blocking(move || {
+        score_records(
+            &score_corpus,
+            &query_vector,
+            kind.as_deref(),
+            sample_id.as_deref(),
+        )
+    })
+    .await
     {
-        return error(
-            StatusCode::SERVICE_UNAVAILABLE,
-            "semantic_corpus_unavailable",
-            "semantic corpus failed validation; retry after publication",
-            true,
-        );
-    }
-    let mut candidates: Vec<(f64, Record)> = corpus
-        .records
-        .into_iter()
-        .filter(|r| {
-            request
-                .kind
-                .as_deref()
-                .map_or(true, |k| r.identity.kind == k)
-                && request
-                    .sample_id
-                    .as_deref()
-                    .map_or(true, |s| r.identity.sample_id == s)
-        })
-        .map(|r| {
-            (
-                r.vector
-                    .iter()
-                    .zip(&request.query_vector)
-                    .map(|(a, b)| a * b)
-                    .sum(),
-                r,
-            )
-        })
-        .collect();
-    candidates.sort_by(|a, b| {
-        b.0.total_cmp(&a.0)
-            .then_with(|| a.1.identity.semantic_id.cmp(&b.1.identity.semantic_id))
-    });
+        Ok(candidates) => candidates,
+        Err(_) => {
+            return error(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "semantic_corpus_unavailable",
+                "semantic corpus could not be scored; retry after publication",
+                true,
+            );
+        }
+    };
     let candidate_count = candidates.len();
     let mut valid_hits = Vec::new();
     // Corpus publication is fresh per request, while a request may contain many windows for
     // one sample. Read and validate each sample manifest once for this request only.
     let mut analyses = std::collections::HashMap::new();
     let mut filtered = 0usize;
-    for (score, record) in candidates {
-        if let Some(hit) = hydrate(&state, &record, score, &mut analyses) {
+    for (score, index) in candidates.drain(..) {
+        let hydration_state = state.clone();
+        let hydration_corpus = corpus.clone();
+        let (hit, returned_analyses) = match tokio::task::spawn_blocking(move || {
+            let record = &hydration_corpus.records[index];
+            let hit = hydrate(&hydration_state, record, score, &mut analyses);
+            (hit, analyses)
+        })
+        .await
+        {
+            Ok(result) => result,
+            Err(_) => {
+                return error(
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "semantic_corpus_unavailable",
+                    "semantic corpus could not be hydrated; retry after publication",
+                    true,
+                );
+            }
+        };
+        analyses = returned_analyses;
+        if let Some(hit) = hit {
             valid_hits.push(hit);
+            if valid_hits.len() == limit {
+                break;
+            }
         } else {
             filtered += 1;
         }
     }
     let hits: Vec<Value> = valid_hits.into_iter().take(limit).collect();
     axum::Json(json!({"hits": hits, "embeddingSpace": SPACE, "candidateCount": candidate_count, "filteredCount": filtered})).into_response()
+}
+
+fn load_corpus(
+    path: &std::path::Path,
+    cache: &Arc<Mutex<CorpusCache>>,
+) -> Result<Arc<CachedCorpus>, ()> {
+    // Open before collecting metadata, so an atomic rename cannot make us associate a newly
+    // statted pathname with the bytes of an older file. A request that opens a corrupt
+    // replacement therefore fails closed even if a previous snapshot remains cached.
+    let mut file = File::open(path).map_err(|_| ())?;
+    let key = corpus_key(&file.metadata().map_err(|_| ())?);
+    // Single-flight cold loads: otherwise concurrent first searches each retain a
+    // full JSON buffer and parse the entire audio corpus independently.
+    let mut cache = cache.lock().map_err(|_| ())?;
+    if let Some(corpus) = cache
+        .entry
+        .as_ref()
+        .filter(|cached| cached.key == key)
+        .cloned()
+    {
+        return Ok(corpus);
+    }
+    #[cfg(test)]
+    {
+        cache.parse_attempts += 1;
+    }
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes).map_err(|_| ())?;
+    let parsed: Corpus = serde_json::from_slice(&bytes).map_err(|_| ())?;
+    let records = validate_corpus(parsed)?;
+    let parsed = Arc::new(CachedCorpus { key, records });
+    #[cfg(test)]
+    {
+        cache.loads += 1;
+    }
+    cache.entry = Some(parsed.clone());
+    Ok(parsed)
+}
+
+fn corpus_key(metadata: &std::fs::Metadata) -> CorpusKey {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        CorpusKey {
+            len: metadata.len(),
+            device: metadata.dev(),
+            inode: metadata.ino(),
+            mtime_seconds: metadata.mtime(),
+            mtime_nanoseconds: metadata.mtime_nsec(),
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        CorpusKey {
+            len: metadata.len(),
+            modified: metadata
+                .modified()
+                .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
+        }
+    }
+}
+
+fn validate_corpus(corpus: Corpus) -> Result<Vec<Record>, ()> {
+    if corpus.schema_version != "apricity.semantic-corpus/1"
+        || corpus.embedding_space != SPACE
+        || corpus.processing_fingerprint.is_empty()
+        || corpus
+            .records
+            .iter()
+            .any(|record| !valid_record(record, &corpus.processing_fingerprint))
+    {
+        return Err(());
+    }
+    let mut ids = std::collections::HashSet::new();
+    if corpus
+        .records
+        .iter()
+        .any(|record| !ids.insert(&record.identity.semantic_id))
+    {
+        return Err(());
+    }
+    Ok(corpus.records)
+}
+
+fn score_records(
+    corpus: &CachedCorpus,
+    query_vector: &[f64],
+    kind: Option<&str>,
+    sample_id: Option<&str>,
+) -> Vec<(f64, usize)> {
+    let mut candidates: Vec<_> = corpus
+        .records
+        .iter()
+        .enumerate()
+        .filter(|(_, record)| {
+            kind.map_or(true, |kind| record.identity.kind == kind)
+                && sample_id.map_or(true, |sample_id| record.identity.sample_id == sample_id)
+        })
+        .map(|(index, record)| {
+            (
+                record
+                    .vector
+                    .iter()
+                    .zip(query_vector)
+                    .map(|(a, b)| a * b)
+                    .sum::<f64>(),
+                index,
+            )
+        })
+        .collect();
+    candidates.sort_by(|(left_score, left_index), (right_score, right_index)| {
+        right_score.total_cmp(left_score).then_with(|| {
+            corpus.records[*left_index]
+                .identity
+                .semantic_id
+                .cmp(&corpus.records[*right_index].identity.semantic_id)
+        })
+    });
+    candidates
 }
 
 fn valid_record(r: &Record, corpus_fp: &str) -> bool {
@@ -583,6 +735,7 @@ mod tests {
         root: PathBuf,
         app: Router,
         shared_engine: Arc<Mutex<Engine>>,
+        cache: Arc<Mutex<CorpusCache>>,
     }
 
     fn fixture(records: Vec<Value>, analysis: Value) -> Fixture {
@@ -623,6 +776,7 @@ mod tests {
         let files: Arc<RwLock<Box<dyn Files>>> = Arc::new(RwLock::new(Box::new(
             apricity_data::FsFiles::new(root.join("files")),
         )));
+        let cache: Arc<Mutex<CorpusCache>> = Arc::default();
         let app = Router::new()
             .route(
                 "/semantic/search",
@@ -632,12 +786,14 @@ mod tests {
                 corpus: root.join("semantic/corpus.json"),
                 engine: shared_engine.clone(),
                 files,
+                corpus_cache: cache.clone(),
             });
         Fixture {
             _dir: dir,
             root,
             app,
             shared_engine,
+            cache,
         }
     }
 
@@ -1078,6 +1234,260 @@ mod tests {
             "the bounded result set retains negative dot scores"
         );
         assert!(hits.windows(2).all(|pair| pair[0]["score"].as_f64().unwrap() > pair[1]["score"].as_f64().unwrap()));
+    }
+
+    #[tokio::test]
+    async fn only_hydrates_candidates_until_the_requested_valid_limit() {
+        let mut records = Vec::new();
+        for index in 0..25 {
+            let start = index as f64 * 4.0;
+            let clip_id = if index == 0 {
+                "clp_A".to_owned()
+            } else {
+                format!("clp_bounded_{index:02}")
+            };
+            let mut value = record("saved_clip", Some(&clip_id), start, start + 4.0, 0);
+            let identity = identity("saved_clip", Some(&clip_id), start, start + 4.0, SHA_A);
+            value["identity"] = identity.clone();
+            value["revision"] = json!(sha(&serde_json::to_string(&json!([
+                identity["semanticId"],
+                ""
+            ]))
+            .unwrap()));
+            let score = 1.0 - index as f64 * 0.02;
+            let mut vector = vec![score, (1.0 - score * score).sqrt()];
+            vector.extend(std::iter::repeat(0.0).take(DIMENSIONS - vector.len()));
+            value["vector"] = json!(vector);
+            records.push(value);
+        }
+        let f = fixture(records, analysis());
+        for index in 1..24 {
+            let start = index as f64 * 4.0;
+            let clip_id = format!("clp_bounded_{index:02}");
+            create(
+                &mut f.shared_engine.lock().unwrap(),
+                "Clip",
+                json!({"id":clip_id,"sampleId":"smp_A","name":clip_id,"start":start,"end":start+4.0,"source":"user"}),
+            );
+        }
+
+        let (status, body) = search(
+            &f,
+            json!({"embeddingSpace":SPACE,"queryVector":vector(0),"limit":24}),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert_eq!(body["candidateCount"], 25);
+        assert_eq!(body["hits"].as_array().unwrap().len(), 24);
+        assert_eq!(
+            body["filteredCount"], 0,
+            "the stale 25th candidate is never hydrated or counted after the limit is filled"
+        );
+    }
+
+    #[test]
+    fn fixed_vectors_match_the_exact_dot_product_baseline_ordering() {
+        let cases = [
+            ("clp_e0", 0.0, 4.0, 1.0, 0.0),
+            ("clp_e1", 4.0, 8.0, 0.0, 1.0),
+            (
+                "clp_mix",
+                8.0,
+                12.0,
+                std::f64::consts::FRAC_1_SQRT_2,
+                std::f64::consts::FRAC_1_SQRT_2,
+            ),
+            ("clp_negative", 12.0, 16.0, -1.0, 0.0),
+        ];
+        let mut records = Vec::new();
+        for (clip_id, start, end, x, y) in cases {
+            let mut value = record("saved_clip", Some(clip_id), start, end, 0);
+            let identity = identity("saved_clip", Some(clip_id), start, end, SHA_A);
+            value["identity"] = identity.clone();
+            value["revision"] = json!(sha(&serde_json::to_string(&json!([
+                identity["semanticId"],
+                ""
+            ]))
+            .unwrap()));
+            let mut vector = vec![x, y];
+            vector.extend(std::iter::repeat(0.0).take(DIMENSIONS - vector.len()));
+            value["vector"] = json!(vector);
+            records.push(value);
+        }
+        let parsed: Corpus = serde_json::from_value(corpus(records)).unwrap();
+        let cached = CachedCorpus {
+            key: corpus_key(&std::fs::metadata("Cargo.toml").unwrap()),
+            records: validate_corpus(parsed).unwrap(),
+        };
+        let mut query = vec![0.6, 0.8];
+        query.extend(std::iter::repeat(0.0).take(DIMENSIONS - query.len()));
+        let ordered: Vec<_> = score_records(&cached, &query, Some("saved_clip"), Some("smp_A"))
+            .into_iter()
+            .map(|(_, index)| cached.records[index].identity.clip_id().unwrap().to_owned())
+            .collect();
+        assert_eq!(ordered, ["clp_mix", "clp_e1", "clp_e0", "clp_negative"]);
+    }
+
+    fn replace_atomically(path: &std::path::Path, bytes: &[u8]) {
+        let replacement = path.with_extension("replacement");
+        std::fs::write(&replacement, bytes).unwrap();
+        std::fs::rename(replacement, path).unwrap();
+    }
+
+    #[tokio::test]
+    async fn reuses_an_unchanged_validated_corpus_but_fails_closed_on_same_size_replacement() {
+        let f = fixture(
+            vec![record("saved_clip", Some("clp_A"), 0.0, 4.0, 0)],
+            analysis(),
+        );
+        let body = json!({"embeddingSpace":SPACE,"queryVector":vector(0)});
+        assert_eq!(search(&f, body.clone()).await.0, StatusCode::OK);
+        assert_eq!(f.cache.lock().unwrap().loads, 1);
+        assert_eq!(search(&f, body.clone()).await.0, StatusCode::OK);
+        assert_eq!(
+            f.cache.lock().unwrap().loads,
+            1,
+            "the immutable parsed vectors are reused while the opened file metadata is unchanged"
+        );
+
+        let corpus_path = f.root.join("semantic/corpus.json");
+        let original = std::fs::read(&corpus_path).unwrap();
+        let corrupt = vec![b'{'; original.len()];
+        replace_atomically(&corpus_path, &corrupt);
+        assert_eq!(corrupt.len(), original.len());
+        assert_eq!(
+            search(&f, body.clone()).await.0,
+            StatusCode::SERVICE_UNAVAILABLE
+        );
+        assert_eq!(
+            f.cache.lock().unwrap().loads,
+            1,
+            "a corrupt replacement cannot become a cached corpus"
+        );
+
+        replace_atomically(&corpus_path, &original);
+        assert_eq!(search(&f, body).await.0, StatusCode::OK);
+        assert_eq!(
+            f.cache.lock().unwrap().loads,
+            2,
+            "an atomic same-size replacement has a new opened-file identity and reloads"
+        );
+    }
+
+    #[tokio::test]
+    async fn cached_vectors_never_bypass_model_or_current_canonical_validation() {
+        let f = fixture(
+            vec![record("saved_clip", Some("clp_A"), 0.0, 4.0, 0)],
+            analysis(),
+        );
+        let body = json!({"embeddingSpace":SPACE,"queryVector":vector(0)});
+        assert_eq!(search(&f, body.clone()).await.0, StatusCode::OK);
+        let corpus_path = f.root.join("semantic/corpus.json");
+        let mut invalid_version = corpus(vec![record("saved_clip", Some("clp_A"), 0.0, 4.0, 0)]);
+        invalid_version["embeddingSpace"] = json!("blap-htsat-unfused-512-v1");
+        let invalid = serde_json::to_vec(&invalid_version).unwrap();
+        assert_eq!(
+            invalid.len(),
+            std::fs::metadata(&corpus_path).unwrap().len() as usize
+        );
+        replace_atomically(&corpus_path, &invalid);
+        assert_eq!(
+            search(&f, body.clone()).await.0,
+            StatusCode::SERVICE_UNAVAILABLE
+        );
+
+        let valid = serde_json::to_vec(&corpus(vec![record(
+            "saved_clip",
+            Some("clp_A"),
+            0.0,
+            4.0,
+            0,
+        )]))
+        .unwrap();
+        replace_atomically(&corpus_path, &valid);
+        assert_eq!(search(&f, body.clone()).await.0, StatusCode::OK);
+        f.shared_engine
+            .lock()
+            .unwrap()
+            .call(
+                "Clip",
+                "update",
+                &json!({"id":"clp_A","start":0.0,"end":3.0}),
+                &Identity::ApiKey,
+            )
+            .unwrap();
+        let (_, response) = search(&f, body).await;
+        assert!(response["hits"].as_array().unwrap().is_empty());
+        assert_eq!(
+            f.cache.lock().unwrap().loads,
+            2,
+            "canonical entities are not retained in the corpus cache"
+        );
+    }
+
+    #[tokio::test]
+    async fn concurrent_requests_to_a_corrupt_replacement_are_bounded_and_never_serve_stale_hits() {
+        let f = fixture(
+            vec![record("saved_clip", Some("clp_A"), 0.0, 4.0, 0)],
+            analysis(),
+        );
+        let body = json!({"embeddingSpace":SPACE,"queryVector":vector(0)});
+        assert_eq!(search(&f, body.clone()).await.0, StatusCode::OK);
+        let corpus_path = f.root.join("semantic/corpus.json");
+        let len = std::fs::metadata(&corpus_path).unwrap().len() as usize;
+        replace_atomically(&corpus_path, &vec![b'x'; len]);
+        let (one, two, three, four) = tokio::join!(
+            search(&f, body.clone()),
+            search(&f, body.clone()),
+            search(&f, body.clone()),
+            search(&f, body),
+        );
+        for (status, response) in [one, two, three, four] {
+            assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{response}");
+            assert_eq!(response["error"]["code"], "semantic_corpus_unavailable");
+        }
+    }
+
+    #[test]
+    fn concurrent_cold_requests_parse_one_immutable_corpus() {
+        let records = (0..1000)
+            .map(|index| {
+                record(
+                    "saved_clip",
+                    Some(&format!("clp_cold_{index}")),
+                    0.0,
+                    4.0,
+                    0,
+                )
+            })
+            .collect();
+        let f = fixture(records, analysis());
+        let barrier = Arc::new(std::sync::Barrier::new(4));
+        let handles: Vec<_> = (0..4)
+            .map(|_| {
+                let barrier = barrier.clone();
+                let cache = f.cache.clone();
+                let path = f.root.join("semantic/corpus.json");
+                std::thread::spawn(move || {
+                    barrier.wait();
+                    load_corpus(&path, &cache).unwrap()
+                })
+            })
+            .collect();
+        let results: Vec<_> = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .collect();
+        assert!(
+            results
+                .iter()
+                .all(|corpus| Arc::ptr_eq(corpus, &results[0]))
+        );
+        assert_eq!(
+            f.cache.lock().unwrap().parse_attempts,
+            1,
+            "parallel cold searches must not each parse the full library"
+        );
     }
 
     #[tokio::test]

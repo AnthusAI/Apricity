@@ -88,6 +88,7 @@ pub fn app_with_store(
         corpus: scratch.join("semantic/corpus.json"),
         engine,
         files: files.clone(),
+        corpus_cache: Arc::default(),
     };
     let state = Shared {
         files,
