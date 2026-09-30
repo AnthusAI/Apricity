@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "f102073b-65d9-4b91-9fc9-08818d3ef14e",
+      "author": "home",
+      "text": "Supervisor specification alignment: M3 executable feature still described historical failed q8/127MB weights despite landed fp32 decision. Correcting the two asset-description scenarios to pinned parity-approved fp32/502MB, preserving all lazy-download/progress/cache and numeric gates. Same model/revision/embedding space, not cloud inference or a replacement model.",
+      "created_at": "2026-09-30T21:09:41.127821Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.030301Z",
-  "updated_at": "2026-09-30T21:03:51.124034Z",
+  "updated_at": "2026-09-30T21:09:41.127856Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
