@@ -10,9 +10,22 @@
   "parent": "apricitus-4fe60ff6-4eae-454c-bd8f-dd6ec7b1d915",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "fd8124d9-71d3-4a64-a91e-ab9378e66b80",
+      "author": "home",
+      "text": "Supervisor review: fixture tests and build pass, but submitted feasibility command only validates a supplied report and does not capture real browser inference. Rework required before acceptance: add isolated web/semantic-eval.html and browser runner using approved worker; capture actual vectors/timings/progress/runtime/device metadata; robust malformed/missing/negative/duplicate/empty report rejection; finite512 parity against Python references. Add cancellation-progress and bounded LRU regression tests. These isolated harness files are added to allowed scope; search UI remains excluded. No gate claimed.",
+      "created_at": "2026-09-30T18:59:29.003994Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:43:40.349303Z",
-  "updated_at": "2026-09-30T18:53:13.373643Z",
+  "updated_at": "2026-09-30T18:59:29.004018Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
