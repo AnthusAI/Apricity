@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-73d41169-2843-40e5-a927-54edaa3cc8a4",
+  "title": "Move Amplify CI/CD to GitHub artifact deployment",
+  "description": "Replace the Git-connected Amplify build with GitHub Actions CI and deploy only the tested static artifact to a manual-deployment Amplify app. Preserve the old app as rollback until the new app and domain are verified; eliminate Amplify build-minute usage.",
+  "type": "chore",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-22a02538-aeec-43af-8ba7-2c3fdca4da8e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "c315229c-527f-487b-886d-7bb684d8f6ab",
+      "author": "home",
+      "text": "Decision: Apricity uses Amplify Gen 2 for its backend, so the existing Git-connected app will remain solely as the backend target for GitHub's pipeline deployment. A new manual Amplify hosting app will receive the tested static frontend artifact. This removes frontend CI from Amplify while preserving the existing backend and its rollback path.",
+      "created_at": "2026-09-30T13:54:30.384321Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    },
+    {
+      "id": "fb93c1e3-34f7-4150-b6d8-cc9dc6e2bd8e",
+      "author": "home",
+      "text": "Implemented the migration on the product branch: CI now produces and retains a tested static frontend artifact only for successful main pushes; production CD receives it through GitHub OIDC, deploys the Gen 2 backend from GitHub, adds its generated browser configuration, and publishes it to the manual Amplify hosting app. Local web build, WASM build, flow suite (270 passed, 1 skipped), and contract check pass.",
+      "created_at": "2026-09-30T13:59:17.748969Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T13:51:44.152703Z",
+  "updated_at": "2026-09-30T13:59:17.748998Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

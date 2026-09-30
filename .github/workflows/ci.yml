@@ -61,6 +61,21 @@ jobs:
       - name: Contract is up to date
         run: npm run contract:check
         working-directory: web
+      - name: Build the production frontend
+        run: |
+          npm run build
+          cp .cache/apricity_web.wasm dist/apricity_web.wasm
+          # Manual Amplify deployments read this from the artifact root.
+          cp ../customHttp.yml dist/customHttp.yml
+        working-directory: web
+      - name: Upload the tested production frontend
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: apricity-static-site
+          path: web/dist
+          if-no-files-found: error
+          retention-days: 1
 
   features:
     name: Gherkin step vocabulary
