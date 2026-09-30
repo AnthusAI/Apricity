@@ -22,10 +22,22 @@
         "model": "GPT-5",
         "name": "Codex"
       }
+    },
+    {
+      "id": "fb93c1e3-34f7-4150-b6d8-cc9dc6e2bd8e",
+      "author": "home",
+      "text": "Implemented the migration on the product branch: CI now produces and retains a tested static frontend artifact only for successful main pushes; production CD receives it through GitHub OIDC, deploys the Gen 2 backend from GitHub, adds its generated browser configuration, and publishes it to the manual Amplify hosting app. Local web build, WASM build, flow suite (270 passed, 1 skipped), and contract check pass.",
+      "created_at": "2026-09-30T13:59:17.748969Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Codex"
+      }
     }
   ],
   "created_at": "2026-09-30T13:51:44.152703Z",
-  "updated_at": "2026-09-30T13:54:30.384345Z",
+  "updated_at": "2026-09-30T13:59:17.748998Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
