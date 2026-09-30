@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "b6ae680c-ed8a-47c6-b002-02cc7f14a936",
+      "author": "home",
+      "text": "Supervisor reproduced defects after original39-green handoff: sidecar_reuse_plan returned a vector for retired=True and metadata_changed=False when existing window was removed. Rework required: exclusion/retirement/window deletion, robust normalization at every embed entrypoint, native-rate decoding followed by specified soxrHQ rather than undocumented Essentia resampling, per-region failure reports, tokenizer limit parity, strict sidecar provenance validation. No model equivalence gate accepted until reviewed. Original real-model repeated vector max_abs_delta0 was observed, not skipped.",
+      "created_at": "2026-09-30T19:17:39.672251Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.178441Z",
-  "updated_at": "2026-09-30T19:06:19.525749Z",
+  "updated_at": "2026-09-30T19:17:39.672292Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
