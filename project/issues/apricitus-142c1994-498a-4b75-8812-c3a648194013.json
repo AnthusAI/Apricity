@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "c502aec8-06b8-427d-8f9d-4f05a605a8d8",
+      "author": "home",
+      "text": "Initial publisher handoff reviewed and not accepted yet. Export successfully resolves 536 canonical samples,13848 clips,473 recordings,536 SHA-verified analysis refs. Publisher defects: cannot retire final record or publish valid empty corpus; scope does not reject out-of-scope incoming rows; preserved fingerprint mismatch can create invalid mixed corpus; tests use fake noncanonical IDs/revisions; cloud adapter omits semantic metadata and Query pagination. Separate export is usable for real-library backfill while bounded corrections proceed.",
+      "created_at": "2026-09-30T21:01:07.483216Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.872485Z",
-  "updated_at": "2026-09-30T20:54:01.384116Z",
+  "updated_at": "2026-09-30T21:01:07.483255Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
