@@ -70,10 +70,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "a22dfa6b-bf38-40e2-9aec-efc48767ac8e",
+      "author": "home",
+      "text": "Further supervisor browser regression: real query POST succeeds in6307ms but ready sound host is blank. soundHostState maps nonempty ready hits to waiting with empty text, causing paintSound to return before cards. Adding a failing ready-results regression before correcting this state discriminator; handoff unit tests had omitted this essential branch.",
+      "created_at": "2026-09-30T21:57:35.096385Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T21:51:52.467837Z",
+  "updated_at": "2026-09-30T21:57:35.096427Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
