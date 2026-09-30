@@ -15,6 +15,7 @@ download on its own.
 from __future__ import annotations
 
 import pathlib
+import types
 
 import numpy as np
 import pytest
@@ -188,6 +189,41 @@ def test_embed_windows_uses_a_fake_embed_function(monkeypatch, synthetic_wav):
     out = clap.embed_windows(mono, SR, windows)
     assert out.shape == (2, clap.EMBED_DIM)
     assert calls == [[int(2.0 * SR) - int(0.0 * SR), int(5.0 * SR) - int(2.0 * SR)]]
+
+
+@pytest.mark.parametrize("bad", [np.zeros(clap.EMBED_DIM), np.full(clap.EMBED_DIM, np.nan), np.ones(3)])
+def test_all_embedding_entrypoints_reject_invalid_model_output(monkeypatch, bad):
+    """Every CLAP producer uses the shared 512D finite nonzero normalization contract."""
+    import torch
+
+    class Model:
+        def get_audio_features(self, **_kwargs):
+            return types.SimpleNamespace(pooler_output=torch.tensor(np.atleast_2d(bad), dtype=torch.float32))
+
+        def get_text_features(self, **_kwargs):
+            return types.SimpleNamespace(pooler_output=torch.tensor(np.atleast_2d(bad), dtype=torch.float32))
+
+    class Processor:
+        class feature_extractor:
+            sampling_rate = clap.TARGET_SAMPLE_RATE
+
+        class tokenizer:
+            model_max_length = 512
+
+        def __call__(self, **_kwargs):
+            return {}
+
+    monkeypatch.setattr(clap, "_load", lambda *_: (Model(), Processor()))
+    monkeypatch.setattr(clap, "checkpoint_sample_rate", lambda *_: clap.TARGET_SAMPLE_RATE)
+    signal = np.ones(64, dtype=np.float32)
+    for call in (
+        lambda: clap.embed_audio(signal, clap.TARGET_SAMPLE_RATE),
+        lambda: clap.embed_audio_batch([signal], clap.TARGET_SAMPLE_RATE),
+        lambda: clap.embed_text("prompt"),
+        lambda: clap.embed_text_batch(["prompt"]),
+    ):
+        with pytest.raises(ValueError):
+            call()
 
 
 # --------------------------------------------------------------------------- CLAP: needs the real model
