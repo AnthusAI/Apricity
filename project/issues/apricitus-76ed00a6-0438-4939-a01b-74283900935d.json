@@ -3,7 +3,7 @@
   "title": "Backfill canonical clip and window embeddings for the real local library",
   "description": "Purpose: regenerate stale v1 embeddings from actual audio for canonical current library clips and four-bar windows, not relabel old vectors. Ground-only pinned CLAP/reproducible preprocessing; never cloud inference. Implement safe CLI consuming canonical export {samples,clips,recordings,analyses}, resolving sample files/aliases within declared repo root and verifying audio SHA. Read clip IDs directly, include current clips not only old manifest annotations, exclude retired/invalid and reconcile removed windows. Atomic v2 sidecar writes, bounded batch inference with per-region failures, resumable unchanged-input reuse, coverage report. Excludes tracked manifest edits, source audio edits, models/thresholdchanges, broad deletes, commits/push/close by Terra. Deterministic synthetic fixtures + real selected recording backfill supervisor-run; loading/progress reports current sample, interrupted run keeps completed sidecars, no fake vectors. Handoff RED/GREEN/fileinventory and remaining exclusions. Registration/runtime final integration by supervisor.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -46,11 +46,18 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "6d59362f-36e4-4a71-a703-4806710f8faa",
+      "author": "home",
+      "text": "Reviewed implementation landed on develop as b7b547ad; supervisor reran 54 combined affected tests (25 backfill/freshness), no skips. Actual corpus generation is ongoing under M1 publisher/export, not claimed by this bounded task.",
+      "created_at": "2026-09-30T20:54:04.037671Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T20:32:35.679935Z",
-  "updated_at": "2026-09-30T20:53:01.814896Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T20:54:04.104811Z",
+  "closed_at": "2026-09-30T20:54:04.104776Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
