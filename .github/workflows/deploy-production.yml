@@ -10,70 +10,34 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy the verified frontend
+    name: Trigger the existing Amplify app
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main' &&
       github.event.workflow_run.head_repository.full_name == 'AnthusAI/Apricity'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     environment: production
     concurrency:
       group: apricity-production
-      cancel-in-progress: true
+      cancel-in-progress: false
     permissions:
-      actions: read
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-          submodules: recursive
-
-      # The retained Git-connected app owns Apricity's Gen 2 backend.  Its Amplify
-      # builds will be disabled; this runs the backend deployment in GitHub instead.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - name: Install backend deployment dependencies
-        run: npm ci --no-fund --no-audit
-        working-directory: web
-      - name: Configure backend deployment credentials through GitHub OIDC
+      - name: Configure deployment-trigger credentials through GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::335163751677:role/ApricityGitHubProductionBackendDeploy
+          role-to-assume: arn:aws:iam::335163751677:role/ApricityGitHubProductionTrigger
           aws-region: ${{ vars.AWS_REGION }}
-      - name: Deploy backend and generate its browser configuration
-        env:
-          BACKEND_APP_ID: d2n7w4kwqyfwn4
-          BACKEND_BRANCH: main
-        run: |
-          npx ampx pipeline-deploy --branch "$BACKEND_BRANCH" --app-id "$BACKEND_APP_ID"
-          test -s amplify_outputs.json
-        working-directory: web
-
-      - name: Download the exact CI-tested frontend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: apricity-static-site
-          path: site-dist
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ github.token }}
-      - name: Add deployment-time backend configuration
-        run: |
-          cp web/amplify_outputs.json site-dist/amplify_outputs.json
-          test -s site-dist/amplify_outputs.json
-
-      - name: Configure manual-hosting credentials through GitHub OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::335163751677:role/ApricityGitHubProductionHostingDeploy
-          aws-region: ${{ vars.AWS_REGION }}
-      - name: Deploy the tested frontend to Amplify Hosting
+      - name: Trigger and verify Amplify deployment
         env:
           AMPLIFY_APP_ID: ${{ vars.AMPLIFY_APP_ID }}
           AMPLIFY_BRANCH: ${{ vars.AMPLIFY_BRANCH }}
-        run: bash scripts/deploy-amplify.sh site-dist
+          VERIFIED_COMMIT: ${{ github.event.workflow_run.head_sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/deploy-amplify.sh
