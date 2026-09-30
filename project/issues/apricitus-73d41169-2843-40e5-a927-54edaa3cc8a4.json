@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-73d41169-2843-40e5-a927-54edaa3cc8a4",
+  "title": "Move Amplify CI/CD to GitHub artifact deployment",
+  "description": "Replace the Git-connected Amplify build with GitHub Actions CI and deploy only the tested static artifact to a manual-deployment Amplify app. Preserve the old app as rollback until the new app and domain are verified; eliminate Amplify build-minute usage.",
+  "type": "chore",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-22a02538-aeec-43af-8ba7-2c3fdca4da8e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T13:51:44.152703Z",
+  "updated_at": "2026-09-30T13:51:44.152730Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
