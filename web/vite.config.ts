@@ -15,7 +15,7 @@ export default defineConfig({
     strictPort: true,
     headers: isolation,
     // changeOrigin off: the backend sees this server's Host, so its amplify_outputs.json names this server.
-    proxy: Object.fromEntries(["/api", "/files", "/graphql", "/amplify_outputs.json", "/apricity_web.wasm"].map((p) => [p, { target: api, changeOrigin: false }])),
+    proxy: Object.fromEntries(["/api", "/files", "/graphql", "/semantic", "/amplify_outputs.json", "/apricity_web.wasm"].map((p) => [p, { target: api, changeOrigin: false }])),
     // The Docs tab bundles ../docs/*.md; let the dev server read that folder (and nothing else outside web/).
     fs: { allow: [fileURLToPath(new URL(".", import.meta.url)), fileURLToPath(new URL("../docs", import.meta.url))] },
   },

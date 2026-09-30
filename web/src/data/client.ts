@@ -23,6 +23,8 @@ interface AmplifyOutputs {
   custom?: {
     apricity?: {
       mode?: "local" | "cloud";
+      /** POST base for semantic retrieval. Cloud deliberately has no local fallback. */
+      semanticUrl?: string;
       identity?: LocalIdentity;
     };
   };
@@ -31,6 +33,7 @@ interface AmplifyOutputs {
 let cachedMode: "local" | "cloud" = "cloud";
 let cachedIdentity: LocalIdentity | null = null;
 let cachedClient: any = null;
+let cachedSemanticUrl: string | null = null;
 let signedIn: Promise<boolean> | null = null;
 
 /**
@@ -50,6 +53,7 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
 
     // Determine mode. Amplify.configure keeps only the parts of `custom` it knows, so the local identity is kept here.
     cachedMode = outputs.custom?.apricity?.mode ?? "cloud";
+    cachedSemanticUrl = outputs.custom?.apricity?.semanticUrl ?? null;
     cachedIdentity = outputs.custom?.apricity?.identity ?? null;
     // Who is signed in decides how the cloud API is called; forget it whenever that changes. (Registered here, before
     // any view listens for the same event, so a view that reloads on it already reads with the new session.)
@@ -62,6 +66,11 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     cachedMode = "cloud";
     return cachedMode;
   }
+}
+
+/** Configured semantic API base, if this deployment provides one. */
+export function semanticUrl(): string | null {
+  return cachedSemanticUrl;
 }
 
 let failure: string | null = null;

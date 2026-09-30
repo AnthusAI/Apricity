@@ -13,7 +13,7 @@ use axum::{
     http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, Uri, header},
     middleware,
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
 };
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -68,12 +68,13 @@ pub fn app_with_store(
         },
         "custom": { "apricity": {
             "mode": "local",
+            "semanticUrl": "/semantic",
             "identity": { "sub": metadata.identity.sub, "groups": metadata.identity.groups },
         }},
     });
     let engine = Arc::new(Mutex::new(library.into_engine()));
     let graphql = router(
-        engine,
+        engine.clone(),
         SDL,
         &contract,
         RouterOptions {
@@ -82,13 +83,23 @@ pub fn app_with_store(
         },
     )
     .map_err(|e| e.to_string())?;
+    let files = Arc::new(RwLock::new(store));
+    let semantic = crate::semantic::SemanticState {
+        corpus: scratch.join("semantic/corpus.json"),
+        engine,
+        files: files.clone(),
+    };
     let state = Shared {
-        files: Arc::new(RwLock::new(store)),
+        files,
         scratch,
         outputs: Arc::new(outputs),
         web,
     };
     Ok(Router::new()
+        .route(
+            "/semantic/search",
+            post(crate::semantic::search).with_state(semantic),
+        )
         .route("/amplify_outputs.json", get(amplify_outputs))
         .route(
             "/files/*key",
@@ -616,6 +627,7 @@ mod tests {
         assert_eq!(v["data"]["authorization_types"], json!([]));
         assert!(v["data"]["model_introspection"]["models"]["Sample"].is_object());
         assert_eq!(v["custom"]["apricity"]["mode"], "local");
+        assert_eq!(v["custom"]["apricity"]["semanticUrl"], "/semantic");
         assert_eq!(v["custom"]["apricity"]["identity"]["sub"], "local");
         assert!(v.get("auth").is_none() && v.get("storage").is_none());
     }

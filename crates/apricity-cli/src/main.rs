@@ -5,6 +5,7 @@ mod cloud;
 mod migrate;
 mod play;
 mod render;
+mod semantic;
 mod serve;
 mod sources;
 mod steer;
