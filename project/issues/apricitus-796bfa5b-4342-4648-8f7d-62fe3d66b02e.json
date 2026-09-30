@@ -3,7 +3,7 @@
   "title": "M4 — Versioned audio clusters",
   "description": "Ground corpus snapshots; deduplicated valid source regions; UMAP10D+HDBSCAN and independent2D map; immutable run manifests, explicit outliers, normalized centroids, recording-diverse representatives, traceable vocabulary labels. Three accepted presets and seed42; fewer than5 unclustered. Listening evidence required. Depends M0.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T18:40:01.054889Z",
-  "updated_at": "2026-09-30T18:40:01.054924Z",
+  "updated_at": "2026-09-30T21:27:30.833792Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

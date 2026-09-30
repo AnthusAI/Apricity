@@ -3,16 +3,29 @@
   "title": "Build deduplicated current semantic corpus snapshots",
   "description": "Purpose: currentvalidrecords only, immutable provenance. PrereqM0contract. Allowed new ground cluster corpus module/tests. Dedup recordingId+audioSha+start/endmicroseconds+space+fingerprint selectinglowestsemanticId, retain aliasmembers. Corpus digest sorted canonicalidentities+vectorbytes; no mixedspace. Verify snapshot stable order, retiredvisibility, duplicates.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-796bfa5b-4342-4648-8f7d-62fe3d66b02e",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "768dc333-189f-45b3-bb0b-3db95f09aa0c",
+      "author": "home",
+      "text": "Dispatching bounded ground snapshot packet using accepted canonical semantic records and catalog. Own new cluster_corpus module/tests and m4 binding only. Immutable dedup by recording/source hash/microsecond bounds/model/preprocessing, retain aliases. Revalidate against current catalog visibility/parents/retirement/audio/boundaries/window grid; no stale index trust. Deterministic float32 little-endian vectors and sorted identity digest; metadata changes do not alter audio corpus digest. No UMAP/HDBSCAN/UI/cloud/publisher changes in this packet. Browser/mobile rollout gate remains separate; draft offline clustering preparation may proceed under supervisor.",
+      "created_at": "2026-09-30T21:27:30.990144Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:43:42.785631Z",
-  "updated_at": "2026-09-30T18:43:42.785655Z",
+  "updated_at": "2026-09-30T21:27:30.990176Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

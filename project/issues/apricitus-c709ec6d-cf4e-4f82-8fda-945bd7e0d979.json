@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "e3cd089b-c005-4b09-8337-34b38b29ef21",
+      "author": "home",
+      "text": "Started bounded UI implementation: will add deterministic RED hybrid display/filter fixtures before production changes; no controller/API/board-code edits.",
+      "created_at": "2026-09-30T21:27:21.317683Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T21:26:04.762179Z",
+  "updated_at": "2026-09-30T21:27:21.317716Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
