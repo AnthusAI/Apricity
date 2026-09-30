@@ -46,10 +46,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "64e93567-5ac0-4058-a607-a8c76e43dc1b",
+      "author": "home",
+      "text": "Final supervisor check: 21 publisher/catalog tests pass; reviewed actual atomic writer failure/retry with unchanged prior corpus/checkpoint, scoped/full retirement, first-empty snapshots, projected versus persisted dryrun coverage, schema-valid metadata and paginated cloud metadata writes. Real-library dryrun currently materializes 2813 saved clips+2647 windows;406 old sidecars explicitly excluded while ongoing backfill advances. Registering publication Cucumber binding; first mistargeted --name matched zero scenarios and is NOT verification, rerunning exact names.",
+      "created_at": "2026-09-30T21:17:20.582302Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.872485Z",
-  "updated_at": "2026-09-30T21:08:54.878586Z",
+  "updated_at": "2026-09-30T21:17:20.582342Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
