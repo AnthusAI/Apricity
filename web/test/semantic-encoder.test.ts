@@ -12,17 +12,17 @@ import {
 const unit = (index = 0) => Array.from({ length: 512 }, (_, i) => (i === index ? 2 : 0));
 
 describe("pinned browser CLAP feasibility encoder", () => {
-  it("pins the approved text-only q8 WASM export", () => {
+  it("pins the approved text-only fp32 WASM export", () => {
     assert.deepEqual(CLAP_BROWSER_MANIFEST, {
       embeddingSpace: "clap-htsat-unfused-512-v1",
       modelId: "Xenova/clap-htsat-unfused",
       revision: "c28f2883575e590e04d3146ff0713c2448d691ba",
       runtime: "@huggingface/transformers@3.8.1",
       architecture: "ClapTextModelWithProjection",
-      dtype: "q8",
+      dtype: "fp32",
       device: "wasm",
       textOnly: true,
-      assets: ["config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "onnx/text_model_quantized.onnx"],
+      assets: ["config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "onnx/text_model.onnx"],
     });
   });
 

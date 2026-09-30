@@ -8,10 +8,10 @@ export const CLAP_BROWSER_MANIFEST = {
   revision: "c28f2883575e590e04d3146ff0713c2448d691ba",
   runtime: "@huggingface/transformers@3.8.1",
   architecture: "ClapTextModelWithProjection",
-  dtype: "q8",
+  dtype: "fp32",
   device: "wasm",
   textOnly: true,
-  assets: ["config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "onnx/text_model_quantized.onnx"],
+  assets: ["config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "onnx/text_model.onnx"],
 } as const;
 
 export type EncoderRequest =

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { EVALUATION_PROMPTS, isNormalizedVector512, isVector512, MINIMUM_REFERENCE_AUDIO_ENTRIES, promptListHash } from "../src/semantic/encoder-evaluation-contract";
 
 export const FIXED_PROMPTS = EVALUATION_PROMPTS;
-export const PINNED_MANIFEST = { embeddingSpace: "clap-htsat-unfused-512-v1", modelId: "Xenova/clap-htsat-unfused", revision: "c28f2883575e590e04d3146ff0713c2448d691ba", runtime: "@huggingface/transformers@3.8.1", architecture: "ClapTextModelWithProjection", dtype: "q8", device: "wasm" } as const;
+export const PINNED_MANIFEST = { embeddingSpace: "clap-htsat-unfused-512-v1", modelId: "Xenova/clap-htsat-unfused", revision: "c28f2883575e590e04d3146ff0713c2448d691ba", runtime: "@huggingface/transformers@3.8.1", architecture: "ClapTextModelWithProjection", dtype: "fp32", device: "wasm" } as const;
 type Vector = number[];
 type Reference = { schemaVersion: 1; embeddingSpace: string; prompts: { text: string; vector512: Vector }[]; audio: { semanticId: string; vector512: Vector }[] };
 type PromptMeasurement = { prompt: string; browserVector512: Vector; cosine?: number; browserTop20?: string[]; pythonTop20?: string[] };

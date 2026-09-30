@@ -23,6 +23,13 @@ function measurement(device: string) {
 }
 
 describe("browser feasibility gate", () => {
+  it("accepts evidence only when its manifest names the approved fp32 text asset", () => {
+    assert.equal(PINNED_MANIFEST.dtype, "fp32");
+    const invalid: any = report();
+    invalid.pinnedManifest = { ...invalid.pinnedManifest, dtype: "q8" };
+    assert.ok(evaluateBrowserReport(invalid).reasons.some((reason) => reason.includes("pinnedManifest does not match approved encoder")));
+  });
+
   it("uses the M0 evaluation prompts in their fixed full-text order", () => {
     assert.deepEqual(FIXED_PROMPTS, ["the sound of a drum beat", "the sound of rain falling", "the sound of a bass guitar", "the sound of a person singing", "the sound of ambient music", "the sound of metal being struck"]);
   });

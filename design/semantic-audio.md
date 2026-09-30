@@ -1,6 +1,6 @@
 # Semantic audio features
 
-Status: all-six specifications landed. M0 identities and ground freshness are integrated; browser and evaluation tooling preserve diagnostic evidence but do not satisfy M0 acceptance. Actual q8 browser preflight fails the per-prompt cosine gate on two prompts, so M0 remains unaccepted and M1–M5 are not dispatched. Mobile, top-20 retention, cloud recall and listening gates remain unmeasured. Initiative: apricitus-9cbb4b. Supervisor task: apricitus-cc5a3d.
+Status: all-six specifications landed. M0 identities and ground freshness are integrated. Same-model fp32 WASM resolves the measured q8 mismatch: six prompt cosines >=0.999999999997, top-20 retention 100% across 48 audio candidates, desktop warm p95 58.82 ms. Mobile, cloud recall and reviewed listening gates remain unaccepted. Supervisor authorizes draft implementation toward real local library search while these acceptance gates remain explicit; no production rollout is enabled. M1 canonical records and ground backfill are in progress. Initiative: apricitus-9cbb4b. Supervisor task: apricitus-cc5a3d.
 
 ## Intent, ownership, and delivery
 
@@ -21,7 +21,7 @@ All timestamps at API/card/playback boundaries are seconds, half-open [start,end
 Initial embeddingSpace is clap-htsat-unfused-512-v1. It identifies the model checkpoint, projection, tokenizer and their revisions, not a display title. A different projection/checkpoint/tokenizer revision requires a new space; versions never mix.
 Ground checkpoint: laion/clap-htsat-unfused revision 8fa0f1c6d0433df6e97c127f64b2a1d6c0dcda8a.
 Browser export: Xenova/clap-htsat-unfused revision c28f2883575e590e04d3146ff0713c2448d691ba.
-Browser runtime: @huggingface/transformers 3.8.1, ClapTextModelWithProjection, q8, wasm, text-only weights. Asset manifest pins tokenizer/config/weights and runtime; no moving main requests. Fetch/cross-origin isolation behavior must be verified in Apricity's actual server headers.
+Browser runtime: @huggingface/transformers 3.8.1, ClapTextModelWithProjection, fp32, wasm, text-only weights. Supervisor adopts the pinned same-model `onnx/text_model.onnx` export after q8 failed parity; the larger static text download is approximately 502 MB instead of 127 MB. This precision correction preserves the ground model, embedding space, tokenizer and numerical gates; it does not add cloud inference or WebGPU. Asset manifest pins tokenizer/config/weights and runtime; no moving main requests. Fetch/cross-origin isolation behavior must be verified in Apricity's actual server headers.
 
 A vector is exactly 512 finite numbers, normalized to L2 norm 1 with tolerance 1e-4. Zero or near-zero (norm <= 1e-9), nonfinite and wrong-dimensional vectors are rejected. Producers normalize; retrieval validates rather than accepting arbitrary scales. Scores are raw dot products, not confidence probabilities.
 
@@ -33,7 +33,7 @@ SemanticIdentity fields:
 - audioSha256: current Sample.audio.sha256, 64 lowercase hex characters.
 - embeddingSpace and processingFingerprint: nonempty versioned strings.
 
-SemanticRecord adds vector, display {samplePath,sampleTitle,clipName?,clipKind?,tags}, playback {fileKey,start,end}, revision and metadataUpdatedAt. The canonical visibility/revision policy at retrieval, not cached display metadata, decides access. Revision covers audio/boundaries/version/fingerprint; rename changes only display metadata. Saved clips and window identities are never conflated; deduplication for clustering explicitly retains aliases.
+SemanticRecord adds vector, display {samplePath,sampleTitle,clipName?,clipKind?,tags}, playback {fileKey,start,end}, revision and metadataUpdatedAt. Revision is SHA256 of compact ordered JSON [semanticId, windowGridFingerprint-or-empty-string]; windows use the same sorted compact JSON digest of bpm/meter/beats/downbeats as ground analysis, and saved clips use an empty string. The canonical visibility/revision policy at retrieval, not cached display metadata, decides access. Revision covers audio/boundaries/version/fingerprint; rename changes only display metadata. Saved clips and window identities are never conflated; deduplication for clustering explicitly retains aliases.
 
 Processing manifest v1: mono float32, nonfinite waveform rejected, deterministic soxr HQ resampling to 48000 Hz, centered contiguous 10-second crop after resampling when longer than 480000 frames (floor((N-480000)/2)); model's pinned repeatpad behavior for shorter input. Do not let CLAP randomly truncate longer inputs. Ground runtime/library versions and preprocessing manifest determine processingFingerprint. Text tokenization is pinned, padded, and truncates at the checkpoint configuration's maximum sequence length identically in Python/browser. Record effective length in evaluation artifacts.
 
@@ -47,11 +47,13 @@ Evaluation prompts, in order, are: "the sound of a drum beat", "the sound of rai
 
 Required real-model gates: repeated audio analysis equivalence; browser/Python cosine >=0.98 for EVERY prompt; mean Python/browser top-20 set retention >=0.90 (at least forty unique audio candidates; tied ordering stable); proposed warm p95 <=2000ms desktop and <=5000ms designated mobile. Include device/browser/runtime, cache state, sample count, raw timings and nearest-rank p95. A missing device, unavailable model, or skipped test produces not_evaluated and nonzero gated command exit. Supervisor judges listening relevance; map appearance is not a quality metric. Quantization failing parity is a blocker, not permission to change model or inference location.
 
-### Measured M0 blocker
+### Measured M0 precision correction
 
 Raw browser/Python vectors and desktop timings are preserved in `fixtures/semantic-audio/browser-parity-preflight.json`. The pinned q8 WASM browser export produced cosine agreement of 0.9776231031 for bass and 0.9740587759 for metal, below the required 0.98. The other four prompts passed. Token IDs and attention masks matched, so tokenization mismatch does not explain these failures. Twenty uncached warm desktop encodings had nearest-rank p95 51.775 ms; this is not a mobile measurement. Top-20 retention and reviewed listening judgments remain unevaluated.
 
-Recompute the recorded parity failure with `cd web && npx cucumber-js --config test/semantic-audio/cucumber.mjs --tags @m0_browser_gate` (expected nonzero). Verify truthful unavailable-device behavior with the same command and `--tags @m0_browser_evidence`. The isolated development harness is `/semantic-eval.html`; it is not integrated into application search. Changing precision, model, gates, or inference location requires supervision direction before dependent implementation proceeds.
+The q8 evidence is historical diagnostic evidence, not the selected encoder. The supervisor's actual fp32 browser run is preserved in `fixtures/semantic-audio/browser-parity-fp32.json`, including raw browser vectors, pinned Python vectors, 48 audio vectors, nearest-neighbor IDs, device metadata and 20 cache-bypassed warm timings. All six cosines >=0.999999999997, each top-20 set retention is 1.0, and desktop p95 is 58.82 ms. No mobile result or reviewed listening judgment is fabricated.
+
+Recompute desktop parity with `cd web && npx cucumber-js --config test/semantic-audio/cucumber.mjs --tags @m0_browser_gate`. Verify truthful unavailable-device behavior with the same command and `--tags @m0_browser_evidence`. The complete browser acceptance command still returns not_evaluated and nonzero when the designated mobile measurement is absent. The isolated development harness is `/semantic-eval.html`; it is an engineering tool, not the feature handed to visitors. Real local library development proceeds behind explicit rollout controls; public release acceptance still requires every applicable gate.
 
 ## M1 publication and retrieval contracts
 
