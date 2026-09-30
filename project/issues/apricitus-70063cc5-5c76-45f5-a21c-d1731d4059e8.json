@@ -3,7 +3,7 @@
   "title": "Bound exact local retrieval work for the complete audio corpus",
   "description": "Purpose: make the accepted exact local semantic endpoint usable for the complete27714-region library without weakening current visibility/revision guards. Prereq accepted0bbbff and actual full publication. Allowed crates/apricity-cli/src/semantic.rs and route initialization plus native tests, dedicated performance verification script/docs only. Exclude cloud/browser/analysis/embedding changes and sibling Virtuus. Cache only immutable parsed+validated published vectors, keyed by authoritative file replacement metadata; changed/corrupt corpus must reload/failclosed, never return prior cached corpus. Current canonical entities remain checked every request; no cross-request sample/clip/visibility cache. Score all vectors exactly and tie semanticId ascending, but stop canonical hydration once requested valid hit limit is filled; filteredCount counts candidates actually rejected during this request, not a full-corpus freshness audit. Publication coverage remains authoritative corpus audit. Execute deterministic RED tests for repeated parse/cache invalidation/corrupt replacement/current edit and bounded canonical lookup work; compare exact results to fixed-vector full baseline. Real browser query against full real corpus before claiming performance; command must report errors/timeouts, no skipped model pass. Temporary local runtime restart must be announced and browser-verified; preserve user test assets, build verification to separate output directory. Terra cannot commit/push/close/deploy; supervisor reruns before landing. Loading/error/cancellation unchanged. Report exact diffs RED/GREEN counts real timing and unresolved states.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -37,8 +37,8 @@
     }
   ],
   "created_at": "2026-09-30T22:14:15.228195Z",
-  "updated_at": "2026-09-30T22:33:20.452908Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T22:35:26.826671Z",
+  "closed_at": "2026-09-30T22:35:26.826624Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
