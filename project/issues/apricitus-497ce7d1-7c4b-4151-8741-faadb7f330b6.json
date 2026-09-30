@@ -70,10 +70,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "ae0ee426-6ba7-402f-bc67-1ec3e1cacf68",
+      "author": "home",
+      "text": "Reviewed evaluation scaffold and measured blocker documentation landed and pushed on develop in f66746b2. Final supervisor rerun: 54 Python tests passed with no skips; diff check passed. Task remains blocked pending browser compatibility, real top20 retention, supervised listening judgments and designated mobile evidence. All temporary browser/ground verification processes have finished; dev verification server stopped. User-owned unrelated files preserved.",
+      "created_at": "2026-09-30T20:01:05.396098Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.525314Z",
-  "updated_at": "2026-09-30T19:59:38.746179Z",
+  "updated_at": "2026-09-30T20:01:05.396127Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
