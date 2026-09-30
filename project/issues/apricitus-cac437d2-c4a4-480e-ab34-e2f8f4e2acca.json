@@ -1,7 +1,7 @@
 {
   "id": "apricitus-cac437d2-c4a4-480e-ab34-e2f8f4e2acca",
   "title": "Harmony checker misranks single-voice timbre auditions",
-  "description": "When comparing isolated single-note sample voices, the harmony objective can rank a perceptually noisy source above cleaner alternatives. The consonance implementation only accumulates pairwise clash across different stems; a one-stem audition therefore has no within-stem spectral-noise penalty. The first A/B/C experiment also revealed that comparisons across different absolute keys/chord maps are not metrically comparable. Define and test a timbre-aware, same-context audition measure before using objective_v2 to recommend a sample voice.",
+  "description": "Confirmed by reproducing CLI output: isolated voices A/B/C receive consonance 86.71/93.22/95.30 despite this being an inappropriate timbre ranking. check.rs selects the first event-bearing stem as bass, including a sole melody and unordered multiple candidates. Cross-stem clash is zero here; the remaining penalty is bass-semitone energy, not clarity. Removing event metadata from unchanged C audio raises its score to 100. Render metadata also loses written chords when harmonic solver fit is absent, disabling target/coverage context. Repair bass identification and harmony metadata; expose metric components and applicability. Separate expected-pitch accuracy, stability and broadband descriptors from musical taste. The original A/B/C comparison also changed register, lengths and effects; controlled same-MIDI experiments and synthetic checks are recorded in the investigation comment. Do not add a generic within-stem noise/self-clash quality penalty.",
   "type": "bug",
   "status": "in_progress",
   "priority": 2,
@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Sol"
       }
+    },
+    {
+      "id": "145e7a77-af10-4016-88db-536b9d87c25d",
+      "author": "home",
+      "text": "Investigation completed; no production analyzer changes yet. Independently reproduced C95.298 versus identical audio without events100. Confirmed first event-bearing stem is forced into bass role and written chord metadata vanishes without solver fit. Raw spectral flatness50–4000Hz A0.0000027/B0.0241/C0.0435 supports greater broadband content in original C; A has only1.14% energy near its first8 declared C4 harmonics, suggesting unreliable root/polyphonic source rather than merely noise. Original drafts used different MIDI, durations and effects. New controlled auditions compile identical D3 E3 C3 C2 G2 at0/2/4/6/8s with1s durations and matched envelopes/effects/loudness. Original C cannot fit that register under +/-24semitones; C2 explicitly substitutes hold-9 Eb2. Synthetic clean sine, mismatched-pitch sine, and noise checks at each root pass; descriptors are not a taste score. C2 rendered tuning30–35c low versus raw5c low needs separate manifest-correction investigation. Local report: renders/signal-investigation/controlled/REPORT.md; diagnostic script and JSON alongside it. Acceptance behaviors for repair: solo melody must not automatically count as bass; repeated multi-track checks must agree; written chord context must survive no solver-fit voices; report zero/nonapplicable cross-stem clash explicitly; pitch mismatch must remain distinct from noisy timbre. Bug remains in_progress until repairs land.",
+      "created_at": "2026-09-30T21:54:28.853609Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Sol"
+      }
     }
   ],
   "created_at": "2026-09-30T13:13:20.879697Z",
-  "updated_at": "2026-09-30T21:45:55.083008Z",
+  "updated_at": "2026-09-30T21:54:28.853639Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
@@ -34,5 +46,8 @@
   },
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
 }
