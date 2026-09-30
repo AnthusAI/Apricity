@@ -9,6 +9,7 @@ import { cycleUploadPolicy } from "./storage/cycle-upload-policy";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
 import { ranking } from "./functions/ranking/resource";
+import { createSemanticAudioResources } from "./semantic/resource";
 
 export const backend = defineBackend({
   auth,
@@ -18,6 +19,10 @@ export const backend = defineBackend({
   activity,
   ranking,
 });
+
+// This stack contains only the private semantic-record table. Retrieval and publisher grants are intentionally
+// exported as pure helpers by semantic/resource and are attached only when their real server-side integrations land.
+export const semanticAudio = createSemanticAudioResources(backend.createStack("semanticAudio"));
 
 // Cognito group users assume their group role instead of the authenticated identity-pool role. Put these policies in
 // the storage stack: attaching them directly to the auth-stack role makes auth depend on storage, while storage
