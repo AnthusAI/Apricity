@@ -3,7 +3,7 @@
   "title": "Curate and production-import new Commons sound samples",
   "description": "Use the associated behavior story to discover direct members of these Commons categories only: Audio files of ambient music; Audio files of drum and bass; Audio files of sound effects; Audio files of drum patterns; Sounds of drums; Sounds of musical instruments; Synthesizer sound. Deduplicate against the existing Wikimedia Commons catalog by Commons page ID, fetch metadata in small batches, import only supported audio with complete credits and licensing, analyze files, stage only the requested new set, upload and register it in production, and save a review report for every excluded candidate. Verify every admitted recording and sample has complete attribution and a working production link.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -29,11 +29,18 @@
       "text": "Commons batch prepared 468 eligible new audio files from 7 direct-member categories with provenance snapshots and analysis; 99 exclusions are documented in the review report. Uploaded all 8,276 reviewed S3 objects (including 6 successful sequential retries); production Samples count increased from 536 to 1,004. App bucket import is continuing through Clip records, last observed at 8,813/18,430 with 0 failures; completion and final Samples/Clip/Marker linkage verification remain open.",
       "created_at": "2026-09-30T18:29:38.130269Z",
       "comment_type": "default"
+    },
+    {
+      "id": "22049b8c-312d-41b1-9e8c-9ecb99db6cb6",
+      "author": "home",
+      "text": "Completed: 468 new Commons recordings and samples are staged and analyzed, with 99 excluded/already-present entries documented in the review report. Uploaded the exact 8,276-object reviewed plan to production storage and verified every planned key is present. The authenticated library import completed with 6,263 created, 23,715 updated, and 0 failures. Recent Samples shows 1,004 total (536 prior + 468 new); opened a new DnB sample and confirmed attribution, CC BY 3.0 link, Commons file page, original download link, analysis summary, and generated clips are visible. No production sync conflicts were overwritten.",
+      "created_at": "2026-09-30T18:40:04.384622Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T16:12:21.912973Z",
-  "updated_at": "2026-09-30T18:29:38.130555Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T18:40:04.454613Z",
+  "closed_at": "2026-09-30T18:40:04.454284Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",

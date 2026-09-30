@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-9cbb4b91-ce37-4415-a0fe-0c4c58130d02",
+  "title": "Semantic audio features",
+  "description": "Implement M0–M5 from the accepted semantic audio plan. Ground CLAP audio analysis and clustering; browser CLAP text encoding; serverless native DynamoDB vector retrieval; related audio; hybrid search; published cluster exploration. All six epic specifications precede implementation. Terra implements bounded packets; supervisor verifies and integrates. No cloud encoder, replacement embedding model, manual deployment, or release. Independent rollout gates and measured compatibility, relevance, latency, and visibility protection are required.",
+  "type": "initiative",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T18:38:52.978632Z",
+  "updated_at": "2026-09-30T18:38:52.978889Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

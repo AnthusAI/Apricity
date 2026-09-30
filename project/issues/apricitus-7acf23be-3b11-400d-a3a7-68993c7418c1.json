@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "title": "M5 — Cluster leaderboards, maps, and curator controls",
+  "description": "Bookmarkable published cluster leaderboard/detail/map with accessible lists, playable passages and rating/similarity ordering. Curator-only parameter jobs: queued offline, leased ground processing, retry failures, preview drafts, explicit atomic publication preserving previous runs. Current visibility checked for public content. Depends M1 and M4.",
+  "type": "epic",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9cbb4b91-ce37-4415-a0fe-0c4c58130d02",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T18:40:01.217236Z",
+  "updated_at": "2026-09-30T18:40:01.217270Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
