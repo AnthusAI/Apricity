@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "02b9886d-4da7-4bb3-895d-a026689e13e3",
+      "author": "home",
+      "text": "Supervisor review requires final scaffold corrections before landing: unchanged-audio equivalence must use vector allclose (atol1e-6,rtol1e-5), not reuse browser0.98 threshold; a final acceptance command must never pass with relevance judgments still unreviewed. Permit reviewed judgments with explicit reviewer/time/provenance but do not approve automatically. Preserve proposed fixtures. Browser q8 actual gate failed two prompts, no higher-precision/cloud substitution authorized; keep dependent work undispatched. Evaluation audio IDs should conform to shared canonical identities and retain readable fixture labels separately.",
+      "created_at": "2026-09-30T19:36:32.071924Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.525314Z",
-  "updated_at": "2026-09-30T19:06:19.713254Z",
+  "updated_at": "2026-09-30T19:36:32.071959Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
