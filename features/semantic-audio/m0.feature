@@ -1,5 +1,6 @@
 Feature: M0 Reliable embeddings and browser compatibility
 
+  @m0_contract
   Scenario: Valid region identity
     Given a saved clip and a four-bar window from the same sample
     When their semantic records are prepared

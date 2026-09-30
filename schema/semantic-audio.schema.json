@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apricity.local/schema/semantic-audio.schema.json",
+  "title": "Apricity semantic audio interchange",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "records", "invalidVectors", "aliases", "outliers", "stateCases"],
+  "properties": {
+    "schemaVersion": {"const": "apricity.semantic-audio/1"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/semanticRecord"}},
+    "invalidVectors": {"type": "array", "items": {"$ref": "#/$defs/invalidVector"}},
+    "aliases": {"type": "array", "items": {"$ref": "#/$defs/alias"}},
+    "outliers": {"type": "array", "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+    "stateCases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["boundaryEdit", "renamed", "retired", "hidden"],
+      "properties": {
+        "boundaryEdit": {"type": "object", "additionalProperties": false, "required": ["previousSemanticId", "currentSemanticId"], "properties": {"previousSemanticId": {"$ref": "#/$defs/semanticId"}, "currentSemanticId": {"$ref": "#/$defs/semanticId"}}},
+        "renamed": {"type": "object", "additionalProperties": false, "required": ["semanticId", "clipName"], "properties": {"semanticId": {"$ref": "#/$defs/semanticId"}, "clipName": {"type": "string", "minLength": 1}}},
+        "retired": {"$ref": "#/$defs/semanticId"},
+        "hidden": {"$ref": "#/$defs/semanticId"}
+      }
+    }
+  },
+  "$defs": {
+    "semanticId": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semanticId", "sampleId", "recordingId", "kind", "start", "end", "audioSha256", "embeddingSpace", "processingFingerprint"],
+      "properties": {
+        "semanticId": {"$ref": "#/$defs/semanticId"},
+        "sampleId": {"type": "string", "minLength": 1},
+        "recordingId": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["saved_clip", "window"]},
+        "clipId": {"type": "string", "minLength": 1},
+        "start": {"type": "number", "minimum": 0},
+        "end": {"type": "number", "exclusiveMinimum": 0},
+        "audioSha256": {"$ref": "#/$defs/sha256"},
+        "embeddingSpace": {"type": "string", "minLength": 1},
+        "processingFingerprint": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "saved_clip"}}}, "then": {"required": ["clipId"]}},
+        {"if": {"properties": {"kind": {"const": "window"}}}, "then": {"not": {"required": ["clipId"]}}}
+      ]
+    },
+    "semanticRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "vector", "display", "playback", "revision", "metadataUpdatedAt"],
+      "properties": {
+        "identity": {"$ref": "#/$defs/identity"},
+        "vector": {"type": "array", "minItems": 512, "maxItems": 512, "items": {"type": "number"}},
+        "display": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samplePath", "sampleTitle", "tags"],
+          "properties": {
+            "samplePath": {"type": "string"},
+            "sampleTitle": {"type": "string"},
+            "clipName": {"type": "string"},
+            "clipKind": {"type": "string"},
+            "tags": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "playback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fileKey", "start", "end"],
+          "properties": {
+            "fileKey": {"type": "string", "minLength": 1},
+            "start": {"type": "number", "minimum": 0},
+            "end": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "revision": {"type": "string", "minLength": 1},
+        "metadataUpdatedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "invalidVector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "reason"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "reason": {"enum": ["missing", "zero", "nonfinite", "wrong_dimension", "wrong_embedding_space"]}
+      }
+    },
+    "alias": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceRegion", "semanticIds"],
+      "properties": {
+        "sourceRegion": {"type": "string", "minLength": 1},
+        "semanticIds": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/semanticId"}}
+      }
+    }
+  }
+}
