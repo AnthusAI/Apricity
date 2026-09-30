@@ -24,11 +24,13 @@ Feature: M0 Reliable embeddings and browser compatibility
     When analysis validates the corpus
     Then invalid records are excluded with explicit reasons
 
+  @m0_browser_gate
   Scenario: Browser parity gate
     Given pinned browser and Python encoders with fixed prompts and reference vectors
     When the model-backed evaluation is requested
     Then each cosine is at least 0.98 and average top-20 retention is at least 0.90
 
+  @m0_browser_evidence
   Scenario: Performance evidence is not fabricated
     Given a desktop and designated mobile device or an unavailable device
     When warm encoding is evaluated
