@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "68b2452a-1e91-4120-8f31-231d351684f1",
+      "author": "home",
+      "text": "Supervisor review requires corrections before integration: path mapping currently compares basenames/stems, allowing an unrelated directory match; add explicit samples_root and exact normalized canonical path/alias equality, exclude escapes. Handle nullable canonical tags/aliases and optional Clip.kind consistently in Python/TS. Validate canonical bounds before rounding rather than crashing; reject malformed per-row sidecar fingerprints and windows not in current computed grid, while allowing rename metadata refresh and per-region invalid-vector reports. Require timezone-aware metadata timestamps. Add actual before/after rename assertion, unknown/malformed refs, duplicate basename paths, null optional metadata, corrupt bounds/fingerprint/grid regressions. BDD should dispatch named real behavior cases rather than every scenario simply rerunning all pytest tests. No contract expansion/model change.",
+      "created_at": "2026-09-30T20:43:01.313031Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.693451Z",
-  "updated_at": "2026-09-30T20:31:18.264206Z",
+  "updated_at": "2026-09-30T20:43:01.313064Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "94ffc49c-45ed-49c4-b99f-6483503ce1fc",
+      "author": "home",
+      "text": "Supervisor review requires corrections before real data writes: reject duplicate/invalid canonical IDs and boolean batch-size; refuse source manifest symlinks outside declared root; catch per-sample hash/read failures with structured exclusions so other sources continue. CLI currently returns0 for source-fatal exclusions (wrongSHA/unsafepath/decode/writefailure); return nonzero for these while retirement/partial valid per-region coverage remains explicit. Do not claim persisted coverage if atomic sidecar write fails. Add deterministic regression tests before corrections. Never edit source audio/manifests and keep completed sidecars resumable.",
+      "created_at": "2026-09-30T20:43:01.499256Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T20:32:35.679935Z",
-  "updated_at": "2026-09-30T20:34:00.001422Z",
+  "updated_at": "2026-09-30T20:43:01.499293Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
