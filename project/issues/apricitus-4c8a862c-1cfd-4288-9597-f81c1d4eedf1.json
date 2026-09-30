@@ -3,7 +3,7 @@
   "title": "Evaluate and adopt compatible same-model browser precision",
   "description": "Purpose: resolve measured q8 incompatibility without changing CLAP embedding space, ground model, inference location or numerical gates. Supervisor authorizes pinned same-export fp32 WASM as candidate (larger static download). Own encoder manifest/runtime, browser evaluator and related tests only. Excludes app search, backend, cloud inference, board/git/release writes. Tests first: exact manifest fp32/text_model.onnx, same512 normalization/progress/cancel/cache contracts, measured missing/failure gates. Supervisor captures six real browser vectors against pinned Python and48 audio candidates and desktop warm timing, reruns tests/build. Missing mobile/listening remains explicit, never fabricated. Handoff: file inventory/red-green/evidence/blockers. No commit/push/close.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -34,11 +34,18 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "78b10dea-3895-4da2-895d-d3ecc3323064",
+      "author": "home",
+      "text": "Reviewed precision correction landed on develop in c1088e7e; actual desktop cosine/top20 gates pass,19 unit tests/build/contract and2 Gherkin scenarios pass. Same pinned model/space and thresholds preserved. Parent M0 remains unaccepted for absent mobile/listening evidence.",
+      "created_at": "2026-09-30T20:46:31.415127Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T20:25:38.380413Z",
-  "updated_at": "2026-09-30T20:39:17.357188Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T20:46:31.561122Z",
+  "closed_at": "2026-09-30T20:46:31.561075Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
