@@ -46,10 +46,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "2472c4c0-ff54-4ad1-8735-efc79eb9c272",
+      "author": "home",
+      "text": "Final harness review before landing diagnostic-only code: empty requests return before active-subscription cleanup, and cancelling an already settled/unknown request can leave unbounded tombstones. Terra correction required: validate nonempty text before subscription, cancel only active IDs, test completed/empty/unknown cancellations never receive later progress. Model blocker remains unchanged.",
+      "created_at": "2026-09-30T19:48:12.169681Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.349303Z",
-  "updated_at": "2026-09-30T19:33:54.202274Z",
+  "updated_at": "2026-09-30T19:48:12.169721Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
