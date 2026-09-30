@@ -3,7 +3,7 @@
   "title": "Build pinned browser CLAP feasibility harness",
   "description": "Purpose: prove approved browser text tower compatibility, not UI rollout. Prerequisite: identities/pins. Allowed: web/src/semantic/encoder*, web/test/semantic-encoder*, web/package*.json, web/scripts/semantic-eval*; no existing search UI. Transformers.js3.8.1 q8 WASM ClapTextModelWithProjection; Xenova revision c28f2883575e590e04d3146ff0713c2448d691ba and Python checkpoint revision8fa0f1c6d0433df6e97c127f64b2a1d6c0dcda8a. Handle progress/cache/retry and cancellation protocol. Verify: build; deterministic worker tests; explicit browser parity command.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "blocked",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,10 +34,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "ec8cdc2e-28fb-45b1-9736-aebfd85245b1",
+      "author": "home",
+      "text": "Real Chromium/WASM preflight under Apricity isolation headers failed per-prompt cosine gate: drums0.9862664185,rain0.9986884455,bass0.9776231031,vocals0.9959190595,ambient0.9918837443,metal0.9740587759. Browser/Python token IDs and masks matched for every prompt; bass/metal have no padding difference. 20 cache-bypassed warm encodes desktop p95=51.774999976ms;126603263-byte pinned quantized text weights downloaded with progress,512unit output. No mobile/top20/listening gate claimed. Persist raw preflight vectors/timings under fixtures/semantic-audio/browser-parity-preflight.json as added scope. M0 remains unaccepted; no dependent dispatch or model/gate substitution.",
+      "created_at": "2026-09-30T19:33:54.043983Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.349303Z",
-  "updated_at": "2026-09-30T19:10:00.835480Z",
+  "updated_at": "2026-09-30T19:33:54.202274Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
