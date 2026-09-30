@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "675d952d-59cc-4b54-93b1-5743c81543ee",
+      "author": "home",
+      "text": "Supervisor accepted corrected ground draft pipeline after70snapshot/actualpinnedalgorithms/summaries/run tests and registered immutable Gherkin1scenario3steps pass. Additional supervisor RED fourcases caught NUL playback key and wrong representative clip/model metadata; corrections preserve exactalias identity. Immutable mkdir/no-replace hardlink protects existing artifacts and publishedpointer. Draft quality stays pending, no publication/listening/mobile/cloudclaim. Parent9b0c93 retains explicit publication controls.",
+      "created_at": "2026-09-30T23:10:43.392961Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T22:47:55.088998Z",
-  "updated_at": "2026-09-30T23:00:12.934894Z",
+  "updated_at": "2026-09-30T23:10:43.392996Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
