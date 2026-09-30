@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "a40c6427-3198-44f2-aacc-c87a9aabf848",
+      "author": "home",
+      "text": "Supervisor review: cloud service and canonical hydrator return contracts do not compose: hydrate must return Omit<SemanticSearchHit, score>, since retrieval owns score. Plain Amplify TypeScript fails on newly introduced .ts import suffixes. filteredCount currently counts response-limit truncation as rejected/stale; align with local observable rejected-count semantics. Require shared canonical identity rounding with i64 bounds, constraint recheck on returned candidates, and deterministic tests before integration; no cloud deployment or sandbox recall claim.",
+      "created_at": "2026-09-30T22:25:30.029883Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.185927Z",
-  "updated_at": "2026-09-30T22:10:07.104388Z",
+  "updated_at": "2026-09-30T22:25:30.029911Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
