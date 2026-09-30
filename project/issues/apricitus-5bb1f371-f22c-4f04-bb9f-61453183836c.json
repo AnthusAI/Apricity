@@ -82,10 +82,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "d746d29c-5a5a-497e-bd9b-81b59ed19be6",
+      "author": "home",
+      "text": "User requested running the existing work locally for hands-on testing. Start the isolated q8 WASM harness, verify it in a browser, and provide a real locally generated Python/audio reference file. No model precision change, feature implementation, deployment, or gate relaxation. M0 acceptance remains blocked.",
+      "created_at": "2026-09-30T20:09:13.168807Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:40.349303Z",
-  "updated_at": "2026-09-30T20:01:05.323213Z",
+  "updated_at": "2026-09-30T20:09:13.168842Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
