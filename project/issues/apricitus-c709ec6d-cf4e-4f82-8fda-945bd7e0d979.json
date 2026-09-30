@@ -46,10 +46,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "0ae57ce9-cfda-4b42-9b9e-1dbdc5929043",
+      "author": "home",
+      "text": "Supervisor review requests correction before acceptance: section Mine list toggle is not applied to sound entries; clearing query chip does not cancel controller; zero sound hits have no explicit empty state; SearchView initial me/handles await lacks generation guard and can repaint stale lexical skeleton; no clickable parent link on clip soundcards. New request must invalidate old host immediately and nav cancels pending lexical repaint too. Add focused regression fixtures and section filter scenario binding; rerun build/lexical matrix. Real-browser verification follows, not helper mocks as acceptance.",
+      "created_at": "2026-09-30T21:38:46.705569Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T21:35:49.781234Z",
+  "updated_at": "2026-09-30T21:38:46.705652Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
