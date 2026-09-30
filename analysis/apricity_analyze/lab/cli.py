@@ -19,6 +19,7 @@ from .commands import (
     neighbors as neighbors_cmd,
     palette as palette_cmd,
     ratings as ratings_cmd,
+    semantic as semantic_cmd,
     swap as swap_cmd,
     try_ as try_cmd,
 )
@@ -36,6 +37,7 @@ SUBCOMMANDS = [
     palette_cmd,
     ratings_cmd,
     features_cmd,
+    semantic_cmd,
 ]
 
 
