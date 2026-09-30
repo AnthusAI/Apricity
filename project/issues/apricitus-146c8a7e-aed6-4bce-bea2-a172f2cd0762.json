@@ -3,7 +3,7 @@
   "title": "Implement versioned semantic records",
   "description": "Purpose: typed records with saved/window distinctions and canonical materialization. Prereq M0contract. Allowed: new ground records module and TS semantic contracts/fixtures/tests; no schema source changes unless approved packet update. Exact data in design spec. Metadata from current Sample/Clip/Recording; local path is not canonical cloud ID. Missing mappings report excluded rather than invent IDs. Verify record contract roundtrip and fixtures.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -70,11 +70,18 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "482da79a-951d-4ad7-b92d-512106386804",
+      "author": "home",
+      "text": "Reviewed canonical record materialization landed on develop as 76ff92a4. Supervisor verification: 33 Python tests,4 TS tests,3 Gherkin scenarios/9 steps and web build passed, no skips. Retrieval/UI remain separate unfinished tasks.",
+      "created_at": "2026-09-30T20:58:42.658306Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T18:43:40.693451Z",
-  "updated_at": "2026-09-30T20:58:13.767607Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T20:58:42.891107Z",
+  "closed_at": "2026-09-30T20:58:42.891061Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
