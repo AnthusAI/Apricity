@@ -3,7 +3,7 @@
   "title": "M2 — Related samples and clips",
   "description": "Playable Related by sound on existing detail pages. Stored clip vectors; up to four deterministic sample representatives; best-passage scoring; six initial suggestions, source sample excluded, recording diversity. Missing vectors visible unavailable state; no confidence percentages. Depends M0 and M1.",
   "type": "epic",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T18:40:00.716641Z",
-  "updated_at": "2026-09-30T18:40:00.716674Z",
+  "updated_at": "2026-09-30T22:47:54.619618Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-36e98e76-8c13-49e3-95bc-f0375ec28e91",
+  "title": "Persist immutable draft clustering runs and ground command",
+  "description": "Bounded current-corpus pipeline through accepted snapshot/algorithms/summaries, deterministic runId from corpus/model/config/pins, per-run unique clusterIds, complete model/preset/params/seed/versions/createdAt manifest, detached members/outliers/centroids/conceptlabels pending listening. lab semantic cluster --corpus --catalog --preset --output validates current canonical data and metadata; never changes publishedpointer. Atomic no-clobber run install, repeated samepacket reuses original createdAt; divergent content for sameID fails rather than overwrite. Empty/small inputs explicit unclustered validdraft, missingdependency nonzero not_evaluated. No UI/publication/customparams/queue/AWS. Tests first, focusedpytest plus immutableGherkin; supervisor reruns. Parent retains publication controls.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9b0c9344-057f-44bd-a69a-7d2a760243d8",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T22:47:55.088998Z",
+  "updated_at": "2026-09-30T22:47:55.089031Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
