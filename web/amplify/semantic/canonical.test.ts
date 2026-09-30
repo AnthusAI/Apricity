@@ -138,6 +138,22 @@ describe("canonical semantic hydrator", () => {
     assert.ok(await integers.hydrator({ identity: current, revision: pythonRevision(current, pythonIntegerGridSha) }));
   });
 
+  it("accepts the existing compound-meter analysis shape with the Python revision and rejects changed or malformed meter", async () => {
+    const current = identity({ kind: "window", clipId: undefined, start: 0, end: 5 });
+    const { state, hydrator } = fixture();
+    const raw = Buffer.from(pythonAnalysisBytes()).toString("utf8");
+    state.sample.duration = 5;
+    const frozen = pythonRevision(current, "cf413765641a226d3338aad5406854102d656ed2ee64ac7522a192bed6fdf3ca");
+    state.analysis = Buffer.from(raw.replace('"meter":4', '"meter":[4,4]'));
+    state.sample.analysis.sha256 = sha(state.analysis);
+    assert.ok(await hydrator({ identity: current, revision: frozen }));
+    for (const meter of ['[3,4]', '[4]', '[4,"four"]', 'null']) {
+      state.analysis = Buffer.from(raw.replace('"meter":4', `"meter":${meter}`));
+      state.sample.analysis.sha256 = sha(state.analysis);
+      assert.equal(await hydrator({ identity: current, revision: frozen }), null);
+    }
+  });
+
   it("keeps samples distinct when they share a documented recording", async () => {
     const { state } = fixture();
     const second = { ...state.sample, id: "smp_B", path: "current/b.wav", title: "Current B", audio: { key: "audio/b.wav", sha256: audioSha } };

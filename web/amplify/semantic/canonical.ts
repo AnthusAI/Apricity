@@ -168,17 +168,22 @@ const pythonFloat = (value: number): string => {
 };
 const pythonNumber = (value: JsonNumber) => value.integer ? BigInt(value.raw).toString() : pythonFloat(value.value);
 
-type Grid = { beats: JsonNumber[]; bpm: JsonNumber; downbeats: JsonNumber[]; meter: JsonNumber; };
+type Meter = JsonNumber | [JsonNumber, JsonNumber];
+const isMeter = (value: JsonValue | undefined): value is Meter => isJsonNumber(value)
+  || (Array.isArray(value) && value.length === 2 && value.every(isJsonNumber));
+const pythonMeter = (meter: Meter) => Array.isArray(meter)
+  ? `[${meter.map(pythonNumber).join(",")}]` : pythonNumber(meter);
+type Grid = { beats: JsonNumber[]; bpm: JsonNumber; downbeats: JsonNumber[]; meter: Meter; };
 const parseGrid = (bytes: Uint8Array, audioSha256: string): Grid | null => {
   const parsed = parseTypedJson(bytes);
   if (!isJsonObject(parsed)) return null;
   const source = parsed.get("source"); const rhythm = parsed.get("rhythm");
   if (!isJsonObject(source) || source.get("sha256") !== audioSha256 || !isJsonObject(rhythm)) return null;
   const bpm = rhythm.get("bpm"); const meter = rhythm.get("meter"); const beats = rhythm.get("beats"); const downbeats = rhythm.get("downbeats");
-  if (!isJsonNumber(bpm) || !isJsonNumber(meter) || !Array.isArray(beats) || !Array.isArray(downbeats) || !beats.every(isJsonNumber) || !downbeats.every(isJsonNumber)) return null;
+  if (!isJsonNumber(bpm) || !isMeter(meter) || !Array.isArray(beats) || !Array.isArray(downbeats) || !beats.every(isJsonNumber) || !downbeats.every(isJsonNumber)) return null;
   return { beats, bpm, downbeats, meter };
 };
-const gridFingerprint = (grid: Grid) => sha(`{"beats":[${grid.beats.map(pythonNumber).join(",")}],"bpm":${pythonNumber(grid.bpm)},"downbeats":[${grid.downbeats.map(pythonNumber).join(",")}],"meter":${pythonNumber(grid.meter)}}`);
+const gridFingerprint = (grid: Grid) => sha(`{"beats":[${grid.beats.map(pythonNumber).join(",")}],"bpm":${pythonNumber(grid.bpm)},"downbeats":[${grid.downbeats.map(pythonNumber).join(",")}],"meter":${pythonMeter(grid.meter)}}`);
 const currentWindow = (grid: Grid, start: number, end: number) => {
   for (let index = 0; index + 4 < grid.downbeats.length; index += 4) if (sameBounds(grid.downbeats[index].value, start) && sameBounds(grid.downbeats[index + 4].value, end)) return true;
   return false;
