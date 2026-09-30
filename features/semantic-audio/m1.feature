@@ -1,5 +1,23 @@
 Feature: M1 Semantic publication and retrieval
 
+  @m1_records
+  Scenario: Materialize only current canonical semantic records
+    Given a v2 sidecar and current canonical sample clip recording and analysis metadata
+    When semantic records are materialized
+    Then each record has its canonical identity current display playback revision and metadata timestamp
+
+  @m1_records
+  Scenario: Preserve identity through a clip rename
+    Given a v2 saved clip sidecar whose canonical clip was renamed
+    When semantic records are materialized
+    Then its semantic identity and revision remain stable while current clip display metadata is used
+
+  @m1_records
+  Scenario: Exclude invalid or stale sidecar regions
+    Given v1 invalid vector stale grid ambiguous mapping retired and changed-boundary sidecars
+    When semantic records are materialized
+    Then every noncurrent region is excluded with a structured reason and no identifier is invented
+
   Scenario: Idempotent resumable publication
     Given current records and an interrupted publication checkpoint
     When publication is repeated after interruption
