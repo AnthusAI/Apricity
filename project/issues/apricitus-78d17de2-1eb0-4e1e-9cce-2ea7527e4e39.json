@@ -3,7 +3,7 @@
   "title": "Define semantic region identities and vector contracts",
   "description": "Purpose: stable saved-clip/window identities and cross-runtime fixtures. Prerequisites: all-six spec. Allowed: new analysis semantic contract module, shared schema/semantic-audio.schema.json and small fixtures, contract unit tests. Identity hash includes sampleId,recordingId,clipId or window kind,start/end microseconds,audioSha256,embeddingSpace,processingFingerprint; display metadata excluded. Validate512 finite unitnorm tolerance1e-4; zero rejected. Verify: analysis semantic-contract tests and web contract tests.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -22,11 +22,18 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "6b626eab-e5c0-4856-8226-468d48a43733",
+      "author": "home",
+      "text": "Reviewed task landed on develop; supervisor15unit tests and1 executable Gherkin scenario passed. Wrong-size/overflow producer regressions corrected. Model/browser/clustering gates remain separate.",
+      "created_at": "2026-09-30T19:06:19.153836Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T18:43:40.006670Z",
-  "updated_at": "2026-09-30T19:03:34.526504Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T19:06:19.301055Z",
+  "closed_at": "2026-09-30T19:06:19.301025Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
