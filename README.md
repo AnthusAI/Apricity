@@ -55,6 +55,27 @@ PYTHONPATH=analysis analysis/.venv/bin/python -m pytest analysis/tests
 
 iOS: `cargo build -p apricity-dsp --target aarch64-apple-ios[-sim]` builds as-is.
 
+## Production deployment
+
+GitHub Actions runs the Rust, web, and feature checks for every pull request and
+push. A successful push to `main` publishes the exact tested frontend artifact
+to Amplify Hosting. Amplify is artifact hosting only: it does not build this
+repository.
+
+Apricity's Gen 2 backend remains attached to its original Amplify app. The
+production deployment workflow updates that backend in GitHub, generates its
+`amplify_outputs.json`, adds that configuration to the already-tested frontend
+artifact, and sends the artifact to the separate manual-hosting app. The
+original app is retained as backend and rollback infrastructure, with its
+Git-connected auto-builds disabled after the manual-hosting app passes its
+default-domain smoke test.
+
+The production GitHub environment is restricted to `main`. Its only variables
+are `AWS_REGION`, `AMPLIFY_APP_ID`, and `AMPLIFY_BRANCH`; AWS access uses
+GitHub OIDC roles rather than stored credentials. `customHttp.yml` is copied
+into each static artifact so the manual-hosting app preserves the required
+cross-origin isolation and WebAssembly headers.
+
 ## The Apricity language
 
 Scores can be written as `.apr` text instead of YAML; both compile to the same score (a test keeps
