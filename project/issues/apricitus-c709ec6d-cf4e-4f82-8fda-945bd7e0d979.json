@@ -34,10 +34,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "469ea7f0-fec3-4e0f-96c6-84aecbdc06c7",
+      "author": "home",
+      "text": "RED→GREEN evidence: `npx tsx --test test/semantic-sound.test.ts` initially failed because the UI reconciliation module was absent; now 4 deterministic fixture tests pass. Added global clips/passages grouping, Samples best-parent grouping, Clips saved-only canonical filter reconciliation without lexical matching or relevance re-sort, plus a focused M3 Gherkin binding. Integrated configured-URL-gated controller use in global and Samples/Clips search, immediate lexical typing/Enter semantics, status/retry, and explicit same-tab route cancellation. GREEN: focused cucumber 1 scenario/3 steps; hybrid+UI 11 tests; lexical regressions 15 tests; npm run build; git diff --check. No model/browser/mobile acceptance run, commit, push, close, or deploy.",
+      "created_at": "2026-09-30T21:35:49.781193Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.466679Z",
-  "updated_at": "2026-09-30T21:27:21.317716Z",
+  "updated_at": "2026-09-30T21:35:49.781234Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

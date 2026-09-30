@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "b8bc11f9-1a4b-4b72-ae94-c3aa91436013",
+      "author": "home",
+      "text": "Supervisor initial snapshot review not accepted yet: duplicate semantic IDs with differing valid vectors are first-wins, so input reorder changes representative and digest; exclude all duplicates or deterministic documented conflict resolution. Window analysis source.sha256 is not compared to currentaudio hash, allowing stale same-grid analysis. Add RED reorder/conflictingduplicate and stale/missinganalysis sourcehash cases, preserving existing actualcatalog contract. No quality gate claims from fixturetests.",
+      "created_at": "2026-09-30T21:36:33.630305Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:42.785631Z",
-  "updated_at": "2026-09-30T21:27:30.990176Z",
+  "updated_at": "2026-09-30T21:36:33.630385Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
