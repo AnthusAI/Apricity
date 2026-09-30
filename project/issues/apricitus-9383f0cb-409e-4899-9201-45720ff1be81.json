@@ -10,9 +10,22 @@
   "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "eef2b320-98f9-40bc-8134-9e71910c7f01",
+      "author": "home",
+      "text": "Infrastructure packet accepted and landed796e3f9e: official native index512DOT_PRODUCT, identity/revision projection and narrowly scoped policy helpers. Next bounded cloud packet creates typed SearchVectors service with injected canonical hydration then actual server integration; no public placeholder that bypasses current guards. Queries must use one capped SearchVectors operation and noScan. Existing local route and user runtime must remain untouched.",
+      "created_at": "2026-09-30T22:10:07.104366Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:43:41.185927Z",
-  "updated_at": "2026-09-30T20:46:31.289871Z",
+  "updated_at": "2026-09-30T22:10:07.104388Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
