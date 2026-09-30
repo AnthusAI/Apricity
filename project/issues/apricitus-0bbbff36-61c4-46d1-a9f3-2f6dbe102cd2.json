@@ -94,10 +94,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "1f4ac1f6-eb4c-4ae4-8c99-6e617253ce85",
+      "author": "home",
+      "text": "Supervisor review accepted checked half-up conversion after verifying no expect/pow overflow path remains; unrepresentable microseconds fail closed. Reran12 semantic route tests plus13serve,7client/bootstrap TS tests and contract:check; buildpassed. Real canonical corpus:9,691 regions, drum prompt yields drums.wav clips/windows and bass prompt realcatalogmatches with0filtered stales. Measured6.5–8.7s exact local baseline, no cloud performance claim. Viteproxy integrated. Landing bounded local adapter; cloud/public guard andANN sandbox tasks remain open.",
+      "created_at": "2026-09-30T21:33:42.511Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T20:45:13.751870Z",
-  "updated_at": "2026-09-30T21:28:57.574685Z",
+  "updated_at": "2026-09-30T21:33:42.511062Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
