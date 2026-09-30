@@ -82,10 +82,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "21fcd271-ec1b-4d51-972b-20bc5b349adb",
+      "author": "home",
+      "text": "Final review found rounding helper still panics on extreme finite values: fixed-width integer parse/pow and expect are reachable from corpus bounds before canonical duration checks, and subnormal f64 decimal strings can exceed parser length. Nine tests/13serve/7TS+contract-check pass, but this hardening is required before acceptance. Preserve Python half-up for real times; checked conversion must fail closed with structured corpus failure or excluded hit, never panic. Add tiny/extreme finite regression fixtures.",
+      "created_at": "2026-09-30T21:28:57.574633Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T20:45:13.751870Z",
-  "updated_at": "2026-09-30T21:22:38.472775Z",
+  "updated_at": "2026-09-30T21:28:57.574685Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
