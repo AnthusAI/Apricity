@@ -46,10 +46,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "92bafbbc-9d4d-4ee4-985f-0734f951fe70",
+      "author": "home",
+      "text": "Current handoff: actual Apricity localhost5181 semantic search uses full real27714-vector corpus535healthy sources,536sample canonical catalog; one existing Railing.oga libsndfile decode failure explicitly excluded, original audio untouched. Browser functional soundresults/playback verified and local cached warm retrieval28-30ms measured. Landed/reviewed current turn: ground algorithms7c4205ee; local performance6cb80614; cloud canonicalguard0abc106e; nativevectorcore6619ffed; ground summaries aaf18292. Goal remains active/fullscope: cloud HTTPintegration/deploymentANN gate, M2related endpoints/UI, M4immutable runs/real qualitylistening, allM5exploration/jobs/curatorcontrols, mobile/fullbrowserfailurematrix and CIintegration remain unfinished. Newly filed cloud compound-meter guard bugdd6041 and CIchoree426b3 are next bounded review work; no unfinished gate is counted passed. User-test link is actual /samples?q=the+sound+of+a+drum+beat, never semantic-eval harness.",
+      "created_at": "2026-09-30T22:45:26.864712Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:38:52.978632Z",
-  "updated_at": "2026-09-30T22:09:02.687327Z",
+  "updated_at": "2026-09-30T22:45:26.864747Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
