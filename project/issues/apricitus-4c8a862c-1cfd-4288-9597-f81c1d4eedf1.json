@@ -22,10 +22,22 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "3af50232-e84d-4ca8-ab36-3b4dc44b10f5",
+      "author": "home",
+      "text": "Supervisor final review:19 deterministic worker/evaluator tests, build and contract check passed; two bound Gherkin scenarios/six steps passed. Desktop parity recomputes six actual raw vectors and top20 IDs against48 real CLAP-encoded syntheticaudio references. Complete desktop/mobile CLI correctly remains not_evaluated with nonzero exit, exactly for absent mobile. Preserve historicalq8 artifact, add durable raw fp32 fixture and updated spec. Land reviewed precision sub-task only, parentM0 acceptance remains open for mobile/listening.",
+      "created_at": "2026-09-30T20:39:17.357155Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T20:25:38.380413Z",
-  "updated_at": "2026-09-30T20:31:17.712349Z",
+  "updated_at": "2026-09-30T20:39:17.357188Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
