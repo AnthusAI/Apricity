@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.34.2 (2026-09-30)
+
+### Bug Fixes
+
+- **apricitus-0a62c0**: Allow verified release changelog revision
+  ([`d4a7395`](https://github.com/AnthusAI/Apricity/commit/d4a73957c1c63f8ea4f3ff5d79c33c13f33bf287))
+
+
 ## v0.34.1 (2026-09-30)
 
 ### Bug Fixes
