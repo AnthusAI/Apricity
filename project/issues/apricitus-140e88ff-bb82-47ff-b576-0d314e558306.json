@@ -34,10 +34,22 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "6d2c9561-d7dc-481b-ba4b-e9006fb7e16e",
+      "author": "home",
+      "text": "Handoff: added only web/amplify/semantic/related-service.ts, related-service.test.ts, and web/test/semantic-audio/related-clips.steps.cjs. RED: cd web && npx tsx --test amplify/semantic/related-service.test.ts -> expected ERR_MODULE_NOT_FOUND for related-service (1 failed test file). GREEN: focused tsx suite 5 passed/0 failed; focused stored-vector Gherkin scenario 1 passed/3 steps; plain npx tsc --noEmit passed. Coverage: validated stored saved-clip source + canonical identity, current hydration before one exact saved_clip limit-100 search, awaiting_analysis/no query for missing/malformed/stale/unauthorized/incompatible source, source-sample exclusion before take, best-score semantic dedup + score/semanticId order, request 400/409 and retryable 503. No encoder/model imports. Unresolved: supervisor must register the new step binding; HTTP/UI/endpoint and next-task representative/diversification work are intentionally absent.",
+      "created_at": "2026-09-30T22:53:26.967445Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.542643Z",
-  "updated_at": "2026-09-30T22:49:31.994892Z",
+  "updated_at": "2026-09-30T22:53:26.967482Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
