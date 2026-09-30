@@ -3,7 +3,7 @@
   "title": "Accept canonical compound-meter analysis in cloud window guards",
   "description": "Current ground semantic_records supports meter as either scalar or existing [numerator, denominator] analysis values (deterministic records tests use [4,4]); cloud canonical parser accepts only scalar and incorrectly hides valid compound-meter windows. Preserve rawbytes/sourceSHA/revision/currentfourbar checks and Python typednumber serialization. Add executable RED compound-meter Python-produced golden fixture, valid same revision succeeds; edited meter or malformed meter fails. Do not change producercontract or bypass guard. Verify canonical/core tests, plain Amplifytsc, contractcheck, real window sample reference check. No endpoint/deploy changes.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -25,8 +25,8 @@
     }
   ],
   "created_at": "2026-09-30T22:44:28.726888Z",
-  "updated_at": "2026-09-30T22:50:56.121766Z",
-  "closed_at": null,
+  "updated_at": "2026-09-30T22:52:59.126172Z",
+  "closed_at": "2026-09-30T22:52:59.126139Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",

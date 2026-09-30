@@ -3,7 +3,7 @@
   "title": "Persist immutable draft clustering runs and ground command",
   "description": "Bounded current-corpus pipeline through accepted snapshot/algorithms/summaries, deterministic runId from corpus/model/config/pins, per-run unique clusterIds, complete model/preset/params/seed/versions/createdAt manifest, detached members/outliers/centroids/conceptlabels pending listening. lab semantic cluster --corpus --catalog --preset --output validates current canonical data and metadata; never changes publishedpointer. Atomic no-clobber run install, repeated samepacket reuses original createdAt; divergent content for sameID fails rather than overwrite. Empty/small inputs explicit unclustered validdraft, missingdependency nonzero not_evaluated. No UI/publication/customparams/queue/AWS. Tests first, focusedpytest plus immutableGherkin; supervisor reruns. Parent retains publication controls.",
   "type": "sub-task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -12,7 +12,7 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-09-30T22:47:55.088998Z",
-  "updated_at": "2026-09-30T22:47:55.089031Z",
+  "updated_at": "2026-09-30T22:52:59.293495Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
