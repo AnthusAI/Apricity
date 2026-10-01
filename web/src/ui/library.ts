@@ -20,6 +20,8 @@ import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
 import { computePeaks, roughPeaks, Waveform } from "./waveform";
+import { RelatedAudio } from "./related-audio";
+import { clipEntry, sampleEntry } from "../data/sections";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
 const keyLabel = (k: string) => k.replace(/b/g, "♭");
@@ -58,6 +60,8 @@ export class Library {
   /** What the audition playing now is (a clip's id, or a row on the sample page), and how its button resets. */
   private auditionKey: string | null = null;
   private auditionEnded: (() => void) | null = null;
+  /** The detail's related request is cancelled before this view changes sample or section. */
+  private related: RelatedAudio | null = null;
 
   constructor(
     root: HTMLElement,
@@ -119,6 +123,13 @@ export class Library {
       if ((e as CustomEvent<{ type: string }>).detail.type === "clip") void this.loadMyStars().then((m) => (this.myStars = m));
     });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
+    // Library instances can remain attached while another section is shown. Do not leave a hidden
+    // detail request alive just because its DOM has not been removed yet.
+    document.addEventListener("apricity:at", (event) => {
+      const route = (event as CustomEvent<{ route?: { page?: string; sample?: string; clip?: unknown } }>).detail.route;
+      const staysOnDetail = this.mode === "samples" ? route?.page === "samples" && !!route.sample : route?.page === "clips" && !!route.clip;
+      if (!staysOnDetail) { this.related?.dispose(); this.related = null; }
+    });
   }
 
   private cloud() {
@@ -359,6 +370,8 @@ export class Library {
   }
 
   async show(path: string, how: Opened = "user") {
+    this.related?.dispose();
+    this.related = null;
     this.current = path;
     // The address bar follows: the sample, or (in Clips) the clip open on it.
     const clipOpen = this.mode === "clips" ? this.currentClip : null;
@@ -646,6 +659,22 @@ export class Library {
     const stat = (label: string, value: string) => el("div", { className: "stat" }, el("b", {}, label), el("span", {}, value));
     const keysOverTime = c.keys_over_time.map(keyLabel).join(" → ");
     const clip = this.mode === "clips" ? this.currentClip : null;
+    // Retrieval order is useful, but returned card metadata is not trusted: each hit is resolved through
+    // the currently visible catalog before SemanticSoundCard gets a path, title, link, or playback source.
+    let relatedClips: ClipItem[] = [];
+    const related = new RelatedAudio({
+      active: () => this.current === path && this.detailEl.dataset.path === path && this.detailEl.isConnected,
+      resolve: (hit) => {
+        if (hit.identity.kind === "saved_clip" && hit.identity.clipId) {
+          const current = relatedClips.find((item) => item.id === hit.identity.clipId);
+          return current && current.sampleId === hit.parent.sampleId && current.start === hit.identity.start && current.end === hit.identity.end ? { hit, entry: clipEntry(current, this.names) } : null;
+        }
+        const current = this.samples.find((item) => item.id === hit.parent.sampleId);
+        return current ? { hit, entry: sampleEntry(current) } : null;
+      },
+    });
+    this.related = related;
+    related.prepare();
     // Comments on the clip open in Clips, else on the sample.
     const thread = new CommentThread(clip ? { type: "clip", id: clip.id } : { type: "sample", id: c.id });
     // Where it came from and what its license asks (a clip shows its sample's); curators can write it down.
@@ -687,6 +716,7 @@ export class Library {
       ),
       license,
       waveCard,
+      related.root,
       el("p", { className: "hint" }, "Play (top right, or space) plays the selection or the selected clip, else the whole sample. Drag to select (snaps to beats; hold ⌥ for free), double-click to play from a point. Drag a clip's edges or body in the lower lane; Delete removes the selected clip."),
       el("div", { className: "toolbar" }, makeClip, save, snippet),
       errors,
@@ -696,6 +726,13 @@ export class Library {
     void thread.load();
     renderTable();
     this.paintStars();
+    void (this.mode === "clips" ? Promise.resolve(this.clips) : api.clips())
+      .then((items) => {
+        if (this.current !== path || this.detailEl.dataset.path !== path) return;
+        relatedClips = items;
+        related.load({ sampleId: c.id, ...(clip ? { clipId: clip.id } : {}) });
+      })
+      .catch((error) => related.fail(error));
     requestAnimationFrame(() => wave.draw());
     window.onbeforeunload = () => (dirty ? true : null);
   }
