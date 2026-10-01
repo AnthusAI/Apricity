@@ -99,7 +99,11 @@ pub fn app_with_store(
     Ok(Router::new()
         .route(
             "/semantic/search",
-            post(crate::semantic::search).with_state(semantic),
+            post(crate::semantic::search).with_state(semantic.clone()),
+        )
+        .route(
+            "/semantic/related",
+            post(crate::semantic::related).with_state(semantic),
         )
         .route("/amplify_outputs.json", get(amplify_outputs))
         .route(
@@ -439,7 +443,11 @@ async fn static_file(
     // A page of the app (/samples/…, /beats/…) has no file: the app itself answers, as on the website. A missing
     // file with an extension (an asset) is still a 404.
     let is_page = !rel.rsplit('/').next().unwrap_or(rel).contains('.');
-    let rel = if is_page && !web.join(rel).is_file() { "index.html" } else { rel };
+    let rel = if is_page && !web.join(rel).is_file() {
+        "index.html"
+    } else {
+        rel
+    };
     serve_path(
         &web.join(rel),
         &headers,
@@ -557,8 +565,11 @@ mod tests {
         let f = fixture(false);
         let (status, _, _) = send(&f.app, gql(None, "{ listSamples { items { id } } }")).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
-        let (status, _, _) =
-            send(&f.app, gql(Some("wrong"), "{ listSamples { items { id } } }")).await;
+        let (status, _, _) = send(
+            &f.app,
+            gql(Some("wrong"), "{ listSamples { items { id } } }"),
+        )
+        .await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         let create = "mutation { createSample(input: {id: \"c1\", recordingId: \"r1\", path: \"p/a.wav\", collection: \"p\", title: \"A\", audio: {key: \"audio/c1/a.wav\", sha256: \"x\", size: 20}}) { id } }".to_string();
         let (status, _, body) = send(&f.app, gql(Some(&f.key), &create)).await;
@@ -817,9 +828,17 @@ mod tests {
         let (s, _, _) = send(&f.app, req("GET", "/assets/missing.js", &[], b"")).await;
         assert_eq!(s, StatusCode::NOT_FOUND);
         // A page of the app (a deep link) is the app itself; a missing asset is still missing.
-        for page in ["/samples/marine-band/Thunderer", "/beats/examples/salamander-beat", "/help/language"] {
+        for page in [
+            "/samples/marine-band/Thunderer",
+            "/beats/examples/salamander-beat",
+            "/help/language",
+        ] {
             let (s, _, b) = send(&f.app, req("GET", page, &[], b"")).await;
-            assert_eq!((s, b.as_slice()), (StatusCode::OK, &b"<html>app</html>"[..]), "{page}");
+            assert_eq!(
+                (s, b.as_slice()),
+                (StatusCode::OK, &b"<html>app</html>"[..]),
+                "{page}"
+            );
         }
         let (s, _, _) = send(&f.app, req("GET", "/../secret.txt", &[], b"")).await;
         assert!(s == StatusCode::BAD_REQUEST || s == StatusCode::NOT_FOUND);

@@ -75,6 +75,17 @@ struct Request {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct RelatedRequest {
+    embedding_space: String,
+    sample_id: String,
+    #[serde(default, deserialize_with = "deserialize_clip_id")]
+    clip_id: Option<Option<String>>,
+    #[serde(default, deserialize_with = "deserialize_limit")]
+    limit: Option<usize>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Corpus {
     schema_version: String,
     embedding_space: String,
@@ -142,6 +153,14 @@ where
             "clipId must be a string when present",
         )),
     }
+}
+
+/// An omitted limit uses the endpoint default; an explicit null is not a valid limit.
+fn deserialize_limit<'de, D>(deserializer: D) -> Result<Option<usize>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    usize::deserialize(deserializer).map(Some)
 }
 
 fn error(status: StatusCode, code: &str, message: impl Into<String>, retryable: bool) -> Response {
@@ -338,6 +357,241 @@ pub async fn search(State(state): State<SemanticState>, body: Bytes) -> Response
     }
     let hits: Vec<Value> = valid_hits.into_iter().take(limit).collect();
     axum::Json(json!({"hits": hits, "embeddingSpace": SPACE, "candidateCount": candidate_count, "filteredCount": filtered})).into_response()
+}
+
+/// Related retrieval uses only the already published audio vectors.  It deliberately shares the
+/// corpus loader and canonical hydration guard with search: neither an old cache entry nor an
+/// indexed display field can make a stale region a source or a result.
+pub async fn related(State(state): State<SemanticState>, body: Bytes) -> Response {
+    let request: RelatedRequest = match serde_json::from_slice(&body) {
+        Ok(value) => value,
+        Err(_) => {
+            return error(
+                StatusCode::BAD_REQUEST,
+                "invalid_request",
+                "semantic request must match the related contract",
+                false,
+            );
+        }
+    };
+    if request.embedding_space != SPACE {
+        return error(
+            StatusCode::CONFLICT,
+            "unsupported_embedding_space",
+            "the local corpus does not support that embedding space",
+            false,
+        );
+    }
+    if request.sample_id.is_empty()
+        || request
+            .clip_id
+            .as_ref()
+            .is_some_and(|value| value.as_deref().is_none_or(str::is_empty))
+        || request.limit.is_some_and(|limit| limit == 0 || limit > 24)
+    {
+        return error(
+            StatusCode::BAD_REQUEST,
+            "invalid_request",
+            "sampleId, optional clipId, and limit must be valid",
+            false,
+        );
+    }
+    let limit = request.limit.unwrap_or(6);
+    let corpus_path = state.corpus.clone();
+    let corpus_cache = state.corpus_cache.clone();
+    let corpus = match tokio::task::spawn_blocking(move || load_corpus(&corpus_path, &corpus_cache))
+        .await
+    {
+        Ok(Ok(corpus)) => corpus,
+        _ => {
+            return error(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "semantic_corpus_unavailable",
+                "semantic corpus is missing, corrupt, or failed validation; retry after publication",
+                true,
+            );
+        }
+    };
+    match tokio::task::spawn_blocking(move || related_hits(&state, &corpus, &request, limit)).await
+    {
+        Ok(Ok(hits)) => axum::Json(json!({"state": "ready", "hits": hits})).into_response(),
+        Ok(Err(RelatedUnavailable::Awaiting)) => {
+            axum::Json(json!({"state": "awaiting_analysis", "hits": []})).into_response()
+        }
+        Err(_) => error(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "semantic_corpus_unavailable",
+            "semantic corpus could not be hydrated; retry after publication",
+            true,
+        ),
+    }
+}
+
+enum RelatedUnavailable {
+    Awaiting,
+}
+
+fn related_hits(
+    state: &SemanticState,
+    corpus: &CachedCorpus,
+    request: &RelatedRequest,
+    limit: usize,
+) -> Result<Vec<Value>, RelatedUnavailable> {
+    let mut analyses = std::collections::HashMap::new();
+    let source_indices: Vec<usize> = match request.clip_id.as_ref() {
+        Some(Some(clip_id)) => corpus
+            .records
+            .iter()
+            .enumerate()
+            .filter_map(|(index, record)| {
+                (record.identity.sample_id == request.sample_id
+                    && record.identity.kind == "saved_clip"
+                    && record.identity.clip_id() == Some(clip_id.as_str()))
+                .then_some(index)
+            })
+            .collect(),
+        Some(None) => return Err(RelatedUnavailable::Awaiting),
+        None => corpus
+            .records
+            .iter()
+            .enumerate()
+            .filter_map(|(index, record)| {
+                (record.identity.sample_id == request.sample_id).then_some(index)
+            })
+            .collect(),
+    };
+    let mut sources = Vec::new();
+    for index in source_indices {
+        let record = &corpus.records[index];
+        // A source is current only if it can be hydrated from its own saved clip/window.
+        if hydrate(state, record, 0.0, &mut analyses).is_some() {
+            sources.push(index);
+        }
+    }
+    if sources.is_empty() {
+        return Err(RelatedUnavailable::Awaiting);
+    }
+    let representatives = if request.clip_id.is_some() {
+        sources
+    } else {
+        choose_representatives(corpus, sources)
+    };
+    let candidate_kind = request.clip_id.is_some().then_some("saved_clip");
+    let mut merged: std::collections::HashMap<String, (f64, usize)> =
+        std::collections::HashMap::new();
+    for source in representatives {
+        // Exact scores are computed for the full corpus, then the bounded nearest set is applied
+        // before canonical filtering. This keeps each representative's retrieval bounded at 100.
+        for (score, index) in
+            score_records(corpus, &corpus.records[source].vector, candidate_kind, None)
+                .into_iter()
+                .take(100)
+        {
+            let semantic_id = corpus.records[index].identity.semantic_id.clone();
+            let entry = merged.entry(semantic_id).or_insert((score, index));
+            if score > entry.0
+                || (score == entry.0
+                    && corpus.records[index].identity.semantic_id
+                        < corpus.records[entry.1].identity.semantic_id)
+            {
+                *entry = (score, index);
+            }
+        }
+    }
+    // Sample requests choose one best passage per parent sample. A clip request instead keeps
+    // each saved clip distinct, even when several clips belong to the same parent sample.
+    let mut grouped: std::collections::HashMap<String, (f64, usize, Value)> =
+        std::collections::HashMap::new();
+    for (_, (score, index)) in merged {
+        let record = &corpus.records[index];
+        if record.identity.sample_id == request.sample_id {
+            continue;
+        }
+        let Some(hit) = hydrate(state, record, score, &mut analyses) else {
+            continue;
+        };
+        let group = if request.clip_id.is_some() {
+            record.identity.semantic_id.clone()
+        } else {
+            record.identity.sample_id.clone()
+        };
+        let replace = grouped.get(&group).is_none_or(|(best, best_index, _)| {
+            score > *best
+                || (score == *best
+                    && record.identity.semantic_id
+                        < corpus.records[*best_index].identity.semantic_id)
+        });
+        if replace {
+            grouped.insert(group, (score, index, hit));
+        }
+    }
+    let mut ranked: Vec<_> = grouped.into_values().collect();
+    ranked.sort_by(|(a, ai, _), (b, bi, _)| {
+        b.total_cmp(a).then_with(|| {
+            corpus.records[*ai]
+                .identity
+                .semantic_id
+                .cmp(&corpus.records[*bi].identity.semantic_id)
+        })
+    });
+    let mut first_recordings = std::collections::HashSet::new();
+    let mut first = Vec::new();
+    let mut remainder = Vec::new();
+    for item @ (_, index, _) in ranked {
+        if first_recordings.insert(corpus.records[index].identity.recording_id.clone()) {
+            first.push(item);
+        } else {
+            remainder.push(item);
+        }
+    }
+    Ok(first
+        .into_iter()
+        .chain(remainder)
+        .take(limit)
+        .map(|(_, _, hit)| hit)
+        .collect())
+}
+
+fn choose_representatives(corpus: &CachedCorpus, mut source: Vec<usize>) -> Vec<usize> {
+    source.sort_by(|a, b| {
+        corpus.records[*a]
+            .identity
+            .semantic_id
+            .cmp(&corpus.records[*b].identity.semantic_id)
+    });
+    let mut selected = vec![source.remove(0)];
+    while selected.len() < 4 && !source.is_empty() {
+        let (position, _) = source
+            .iter()
+            .enumerate()
+            .map(|(position, candidate)| {
+                let min_distance = selected
+                    .iter()
+                    .map(|picked| {
+                        1.0 - dot(
+                            &corpus.records[*candidate].vector,
+                            &corpus.records[*picked].vector,
+                        )
+                    })
+                    .fold(f64::INFINITY, f64::min);
+                (position, min_distance)
+            })
+            .max_by(|(left_index, left), (right_index, right)| {
+                left.total_cmp(right).then_with(|| {
+                    corpus.records[source[*right_index]]
+                        .identity
+                        .semantic_id
+                        .cmp(&corpus.records[source[*left_index]].identity.semantic_id)
+                })
+            })
+            .expect("source is not empty");
+        selected.push(source.remove(position));
+    }
+    selected
+}
+
+fn dot(left: &[f64], right: &[f64]) -> f64 {
+    left.iter().zip(right).map(|(a, b)| a * b).sum()
 }
 
 fn load_corpus(
@@ -782,6 +1036,10 @@ mod tests {
                 "/semantic/search",
                 axum::routing::post(crate::semantic::search),
             )
+            .route(
+                "/semantic/related",
+                axum::routing::post(crate::semantic::related),
+            )
             .with_state(SemanticState {
                 corpus: root.join("semantic/corpus.json"),
                 engine: shared_engine.clone(),
@@ -812,6 +1070,277 @@ mod tests {
         let status = response.status();
         let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
         (status, serde_json::from_slice(&bytes).unwrap())
+    }
+
+    async fn related(fixture: &Fixture, body: Value) -> (StatusCode, Value) {
+        let response = fixture
+            .app
+            .clone()
+            .oneshot(
+                Request::post("/semantic/related")
+                    .header("content-type", "application/json")
+                    .body(axum::body::Body::from(body.to_string()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let status = response.status();
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        (status, serde_json::from_slice(&bytes).unwrap())
+    }
+
+    fn related_record(sample: &str, recording: &str, clip: &str, start: f64, axis: usize) -> Value {
+        let mut value = record("saved_clip", Some(clip), start, start + 4.0, axis);
+        let canonical = json!([
+            sample,
+            recording,
+            "saved_clip",
+            clip,
+            microseconds(start).unwrap(),
+            microseconds(start + 4.0).unwrap(),
+            SHA_A,
+            SPACE,
+            "fp-v1"
+        ]);
+        let identity = json!({"semanticId":sha(&serde_json::to_string(&canonical).unwrap()),"sampleId":sample,"recordingId":recording,"kind":"saved_clip","clipId":clip,"start":start,"end":start+4.0,"audioSha256":SHA_A,"embeddingSpace":SPACE,"processingFingerprint":"fp-v1"});
+        value["identity"] = identity.clone();
+        value["revision"] = json!(sha(&serde_json::to_string(&json!([
+            identity["semanticId"],
+            ""
+        ]))
+        .unwrap()));
+        value
+    }
+
+    fn add_related_parent(
+        fixture: &Fixture,
+        sample: &str,
+        recording: &str,
+        clip: &str,
+        start: f64,
+    ) {
+        let mut engine = fixture.shared_engine.lock().unwrap();
+        create(
+            &mut engine,
+            "Recording",
+            json!({"id":recording,"title":recording,"collection":"test"}),
+        );
+        create(
+            &mut engine,
+            "Sample",
+            json!({"id":sample,"recordingId":recording,"path":format!("{sample}.wav"),"collection":"test","title":sample,"audio":{"key":format!("audio/{sample}.wav"),"sha256":SHA_A,"size":1}}),
+        );
+        create(
+            &mut engine,
+            "Clip",
+            json!({"id":clip,"sampleId":sample,"name":clip,"start":start,"end":start+4.0,"source":"user"}),
+        );
+    }
+
+    #[tokio::test]
+    async fn related_route_is_a_strict_post_contract() {
+        // RED: M2 is a distinct stored-vector endpoint, not a disguised text search.
+        let fixture = fixture(
+            vec![record("saved_clip", Some("clp_A"), 0.0, 4.0, 0)],
+            analysis(),
+        );
+        let response = fixture
+            .app
+            .clone()
+            .oneshot(
+                Request::post("/semantic/related")
+                    .header("content-type", "application/json")
+                    .body(axum::body::Body::from(
+                        json!({"embeddingSpace": SPACE, "sampleId": "smp_A"}).to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn related_uses_current_stored_vectors_diversifies_and_preserves_typed_hits() {
+        let records = vec![
+            related_record("smp_A", "rec_A", "clp_A", 0.0, 0),
+            related_record("smp_A", "rec_A", "clp_A2", 4.0, 1),
+            related_record("smp_B", "rec_R1", "clp_B", 0.0, 0),
+            related_record("smp_C", "rec_R1", "clp_C", 0.0, 0),
+            related_record("smp_D", "rec_R2", "clp_D", 0.0, 0),
+            related_record("smp_E", "rec_R3", "clp_E", 0.0, 1),
+        ];
+        let fixture = fixture(records, analysis());
+        create(
+            &mut fixture.shared_engine.lock().unwrap(),
+            "Clip",
+            json!({"id":"clp_A2","sampleId":"smp_A","name":"clp_A2","start":4.0,"end":8.0,"source":"user"}),
+        );
+        add_related_parent(&fixture, "smp_B", "rec_R1", "clp_B", 0.0);
+        add_related_parent(&fixture, "smp_C", "rec_R1", "clp_C", 0.0);
+        add_related_parent(&fixture, "smp_D", "rec_R2", "clp_D", 0.0);
+        add_related_parent(&fixture, "smp_E", "rec_R3", "clp_E", 0.0);
+        let (status, body) = related(
+            &fixture,
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","limit":4}),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert_eq!(body["state"], "ready");
+        let hits = body["hits"].as_array().unwrap();
+        assert_eq!(hits.len(), 4);
+        assert!(
+            hits.iter()
+                .all(|hit| hit["score"].as_f64().is_some_and(f64::is_finite)
+                    && hit.get("vector").is_none())
+        );
+        assert!(hits.iter().all(|hit| hit["parent"]["sampleId"] != "smp_A"));
+        let recordings: Vec<_> = hits
+            .iter()
+            .map(|hit| hit["parent"]["recordingId"].as_str().unwrap())
+            .collect();
+        assert_ne!(
+            recordings[0], recordings[1],
+            "strongest distinct recordings lead"
+        );
+        assert!(
+            recordings.contains(&"rec_R1")
+                && recordings.contains(&"rec_R2")
+                && recordings.contains(&"rec_R3")
+        );
+        let (status, clip_body) = related(
+            &fixture,
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","clipId":"clp_A","limit":24}),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{clip_body}");
+        assert!(
+            clip_body["hits"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|hit| hit["identity"]["kind"] == "saved_clip")
+        );
+        fixture
+            .shared_engine
+            .lock()
+            .unwrap()
+            .call("Clip", "delete", &json!({"id":"clp_A"}), &Identity::ApiKey)
+            .unwrap();
+        let (_, stale) = related(
+            &fixture,
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","clipId":"clp_A"}),
+        )
+        .await;
+        assert_eq!(stale, json!({"state":"awaiting_analysis","hits":[]}));
+    }
+
+    #[tokio::test]
+    async fn related_rejects_invalid_requests_and_reports_corpus_failure() {
+        let fixture = fixture(
+            vec![record("saved_clip", Some("clp_A"), 0.0, 4.0, 0)],
+            analysis(),
+        );
+        for body in [
+            json!({"embeddingSpace":SPACE,"sampleId":""}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","clipId":null}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","clipId":7}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","limit":0}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","limit":null}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","limit":25}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","limit":1.5}),
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","unknown":true}),
+        ] {
+            assert_eq!(related(&fixture, body).await.0, StatusCode::BAD_REQUEST);
+        }
+        assert_eq!(
+            related(
+                &fixture,
+                json!({"embeddingSpace":"other","sampleId":"smp_A"})
+            )
+            .await
+            .0,
+            StatusCode::CONFLICT
+        );
+        std::fs::write(fixture.root.join("semantic/corpus.json"), b"{").unwrap();
+        let (status, body) =
+            related(&fixture, json!({"embeddingSpace":SPACE,"sampleId":"smp_A"})).await;
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(body["error"]["retryable"], true);
+    }
+
+    #[tokio::test]
+    async fn related_clip_keeps_distinct_clips_on_one_parent_but_samples_group_best_passage() {
+        let records = vec![
+            related_record("smp_A", "rec_A", "clp_A", 0.0, 0),
+            related_record("smp_B", "rec_B", "clp_B", 0.0, 0),
+            related_record("smp_B", "rec_B", "clp_B2", 4.0, 1),
+        ];
+        let fixture = fixture(records, analysis());
+        add_related_parent(&fixture, "smp_B", "rec_B", "clp_B", 0.0);
+        create(
+            &mut fixture.shared_engine.lock().unwrap(),
+            "Clip",
+            json!({"id":"clp_B2","sampleId":"smp_B","name":"second clip","start":4.0,"end":8.0,"source":"user"}),
+        );
+        let (status, clips) = related(
+            &fixture,
+            json!({"embeddingSpace":SPACE,"sampleId":"smp_A","clipId":"clp_A"}),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(
+            clips["hits"].as_array().unwrap().len(),
+            2,
+            "distinct saved clips must not be collapsed by sample"
+        );
+        let (_, samples) =
+            related(&fixture, json!({"embeddingSpace":SPACE,"sampleId":"smp_A"})).await;
+        assert_eq!(samples["hits"].as_array().unwrap().len(), 1);
+        assert_eq!(samples["hits"][0]["card"]["clipId"], "clp_B");
+    }
+
+    #[test]
+    fn related_representatives_are_farthest_first_with_stable_ties() {
+        let mut negative = related_record("smp_A", "rec_A", "clp_A2", 8.0, 0);
+        negative["vector"][0] = json!(-1.0);
+        let records = vec![
+            related_record("smp_A", "rec_A", "clp_A0", 0.0, 0),
+            related_record("smp_A", "rec_A", "clp_A1", 4.0, 1),
+            negative,
+            related_record("smp_A", "rec_A", "clp_A3", 12.0, 3),
+            related_record("smp_A", "rec_A", "clp_A4", 16.0, 0),
+        ];
+        let corpus = CachedCorpus {
+            key: CorpusKey {
+                len: 0,
+                #[cfg(unix)]
+                device: 0,
+                #[cfg(unix)]
+                inode: 0,
+                #[cfg(unix)]
+                mtime_seconds: 0,
+                #[cfg(unix)]
+                mtime_nanoseconds: 0,
+                #[cfg(not(unix))]
+                modified: std::time::SystemTime::UNIX_EPOCH,
+            },
+            records: validate_corpus(serde_json::from_value(corpus(records)).unwrap()).unwrap(),
+        };
+        let selected = choose_representatives(&corpus, (0..5).collect());
+        assert_eq!(selected.len(), 4);
+        let seed = (0..5)
+            .min_by_key(|index| &corpus.records[*index].identity.semantic_id)
+            .unwrap();
+        assert_eq!(selected[0], seed, "smallest semanticId seeds selection");
+        assert!(
+            selected.contains(&2),
+            "the negative passage maximizes 1-dot distance"
+        );
+        assert!(
+            selected.contains(&1),
+            "orthogonal tied passages use semanticId order"
+        );
     }
 
     #[tokio::test]
