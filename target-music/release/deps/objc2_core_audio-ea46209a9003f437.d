@@ -1,0 +1,10 @@
+/Users/home/Projects/Apricity/target-music/release/deps/objc2_core_audio-ea46209a9003f437.d: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardware.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardwareDeprecated.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libobjc2_core_audio-ea46209a9003f437.rlib: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardware.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardwareDeprecated.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libobjc2_core_audio-ea46209a9003f437.rmeta: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardware.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardwareDeprecated.rs
+
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/lib.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/mod.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardware.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-0.3.2/src/generated/AudioHardwareDeprecated.rs:

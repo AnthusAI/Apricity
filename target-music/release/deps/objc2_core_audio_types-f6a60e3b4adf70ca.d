@@ -1,0 +1,10 @@
+/Users/home/Projects/Apricity/target-music/release/deps/objc2_core_audio_types-f6a60e3b4adf70ca.d: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/base_types.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/CoreAudioBaseTypes.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libobjc2_core_audio_types-f6a60e3b4adf70ca.rlib: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/base_types.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/CoreAudioBaseTypes.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libobjc2_core_audio_types-f6a60e3b4adf70ca.rmeta: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/base_types.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/CoreAudioBaseTypes.rs
+
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/lib.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/base_types.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/mod.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-audio-types-0.3.2/src/generated/CoreAudioBaseTypes.rs:

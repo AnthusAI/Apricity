@@ -1,0 +1,10 @@
+/Users/home/Projects/Apricity/target-music/release/deps/objc2_app_kit-79d8f14c26c2e008.d: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSRunningApplication.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSWorkspace.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libobjc2_app_kit-79d8f14c26c2e008.rlib: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSRunningApplication.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSWorkspace.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libobjc2_app_kit-79d8f14c26c2e008.rmeta: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSRunningApplication.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSWorkspace.rs
+
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/lib.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/mod.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSRunningApplication.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-app-kit-0.3.2/src/generated/NSWorkspace.rs:

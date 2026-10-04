@@ -1,0 +1,10 @@
+/Users/home/Projects/Apricity/target-music/release/deps/virtuus_appsync-7421153dd25e1c5d.d: /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/lib.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/router.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/scalars.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/schema.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libvirtuus_appsync-7421153dd25e1c5d.rlib: /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/lib.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/router.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/scalars.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/schema.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libvirtuus_appsync-7421153dd25e1c5d.rmeta: /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/lib.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/router.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/scalars.rs /Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/schema.rs
+
+/Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/lib.rs:
+/Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/router.rs:
+/Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/scalars.rs:
+/Users/home/.cargo/git/checkouts/virtuus-2245f840071d0118/e085c8f/rust/crates/virtuus-appsync/src/schema.rs:

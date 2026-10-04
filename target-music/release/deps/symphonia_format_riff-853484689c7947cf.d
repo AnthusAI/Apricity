@@ -1,0 +1,10 @@
+/Users/home/Projects/Apricity/target-music/release/deps/symphonia_format_riff-853484689c7947cf.d: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/common.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/chunks.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libsymphonia_format_riff-853484689c7947cf.rlib: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/common.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/chunks.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libsymphonia_format_riff-853484689c7947cf.rmeta: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/common.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/mod.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/chunks.rs
+
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/lib.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/common.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/mod.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-format-riff-0.5.5/src/wave/chunks.rs:

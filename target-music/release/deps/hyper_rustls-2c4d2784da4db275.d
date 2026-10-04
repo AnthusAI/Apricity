@@ -1,0 +1,11 @@
+/Users/home/Projects/Apricity/target-music/release/deps/hyper_rustls-2c4d2784da4db275.d: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/config.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector/builder.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/stream.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libhyper_rustls-2c4d2784da4db275.rlib: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/config.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector/builder.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/stream.rs
+
+/Users/home/Projects/Apricity/target-music/release/deps/libhyper_rustls-2c4d2784da4db275.rmeta: /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/lib.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/config.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector/builder.rs /Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/stream.rs
+
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/lib.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/config.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/connector/builder.rs:
+/Users/home/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.10/src/stream.rs:
