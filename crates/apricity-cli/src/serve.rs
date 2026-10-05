@@ -93,6 +93,7 @@ fn app_with_store_and_cluster_config(
             "mode": "local",
             "semanticUrl": "/semantic",
             "clusterEnabled": clusters.enabled_flag(),
+            "clusterCuratorEnabled": clusters.controls_enabled_flag(),
             "identity": { "sub": metadata.identity.sub, "groups": metadata.identity.groups },
         }},
     });

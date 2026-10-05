@@ -2,10 +2,11 @@
 
 use axum::{
     Router,
+    body::Bytes,
     extract::State,
     http::{StatusCode, Uri},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
 };
 use serde::Deserialize;
 use serde_json::{Map, Value, json};
@@ -36,6 +37,8 @@ const DEADLINE: Duration = Duration::from_secs(30);
 #[derive(Clone, Debug)]
 pub struct ClusterConfig {
     enabled: bool,
+    controls_enabled: bool,
+    curator_id: Option<String>,
     library: PathBuf,
     python: Option<PathBuf>,
     deadline: Duration,
@@ -47,6 +50,8 @@ impl ClusterConfig {
     pub fn disabled(library: impl Into<PathBuf>) -> Self {
         Self {
             enabled: false,
+            controls_enabled: false,
+            curator_id: None,
             library: library.into(),
             python: None,
             deadline: DEADLINE,
@@ -79,6 +84,8 @@ impl ClusterConfig {
         }
         Ok(Self {
             enabled: true,
+            controls_enabled: false,
+            curator_id: None,
             library,
             python: Some(python),
             deadline: DEADLINE,
@@ -89,6 +96,26 @@ impl ClusterConfig {
 
     pub fn enabled_flag(&self) -> bool {
         self.enabled
+    }
+
+    pub fn controls_enabled_flag(&self) -> bool { self.controls_enabled }
+
+    pub fn without_public_reads(mut self) -> Self {
+        self.enabled = false;
+        self
+    }
+
+    /// Enable the entirely separate local curator-control bridge.  The
+    /// identity is startup configuration, never a browser/header field.
+    pub fn with_curator_controls(mut self, curator_id: String) -> Result<Self, String> {
+        if curator_id.is_empty() || curator_id.len() > 160
+            || !curator_id.bytes().all(|b| b.is_ascii_alphanumeric() || b"._:-".contains(&b)) {
+            return Err("--cluster-curator-id must be 1..160 safe identifier characters".into());
+        }
+        if self.python.is_none() { return Err("--cluster-python is required with curator controls".into()); }
+        self.controls_enabled = true;
+        self.curator_id = Some(curator_id);
+        Ok(self)
     }
 
     #[cfg(test)]
@@ -156,7 +183,28 @@ impl Bridge {
         (StatusCode::SERVICE_UNAVAILABLE, axum::Json(body)).into_response()
     }
 
+    async fn curator_request(&self, body: Bytes) -> Response {
+        // This is intentionally a different rollout gate and route from
+        // public reads.  It must not infer authority from the request.
+        if !self.config.controls_enabled { return unavailable(); }
+        if body.len() > MAX_INPUT { return bad_request(); }
+        let value: Value = match serde_json::from_slice(&body) {
+            Ok(value @ Value::Object(_)) => value,
+            _ => return bad_request(),
+        };
+        let Some(_active) = self.try_acquire() else { return unavailable(); };
+        let Some(curator_id) = self.config.curator_id.as_deref() else { return unavailable(); };
+        match self.invoke_module(value, "apricity_analyze.cluster_curator_http", Some(curator_id)).await {
+            Ok((status, body)) => (status, axum::Json(body)).into_response(),
+            Err(()) => (StatusCode::SERVICE_UNAVAILABLE, axum::Json(json!({"error": "service unavailable"}))).into_response(),
+        }
+    }
+
     async fn invoke(&self, query: Value) -> Result<(StatusCode, Value), ()> {
+        self.invoke_module(query, "apricity_analyze.cluster_http", None).await
+    }
+
+    async fn invoke_module(&self, query: Value, module: &str, curator_id: Option<&str>) -> Result<(StatusCode, Value), ()> {
         let stdin = serde_json::to_vec(&query).map_err(|_| ())?;
         if stdin.len() > MAX_INPUT {
             return Err(());
@@ -167,18 +215,10 @@ impl Bridge {
         let runs = self.config.library.join("semantic/clusters");
         let controls = controls.to_str().ok_or(())?;
         let runs = runs.to_str().ok_or(())?;
-        let mut child = Command::new(python)
-            .args([
-                "-m",
-                "apricity_analyze.cluster_http",
-                "--library",
-                library,
-                "--controls-root",
-                controls,
-                "--runs-root",
-                runs,
-                "--enabled",
-            ])
+        let mut command = Command::new(python);
+        command.args(["-m", module, "--library", library, "--controls-root", controls, "--runs-root", runs, "--enabled"]);
+        if let Some(curator_id) = curator_id { command.args(["--curator-id", curator_id]); }
+        let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
@@ -231,11 +271,16 @@ impl Bridge {
 pub fn router(config: ClusterConfig) -> Router {
     Router::new()
         .route("/semantic/clusters", get(get_clusters))
+        .route("/semantic/cluster-curator", post(post_curator))
         .with_state(Bridge::new(config))
 }
 
 async fn get_clusters(State(bridge): State<Bridge>, uri: Uri) -> Response {
     bridge.request(uri.query()).await
+}
+
+async fn post_curator(State(bridge): State<Bridge>, body: Bytes) -> Response {
+    bridge.curator_request(body).await
 }
 
 struct ActiveChild(Arc<AtomicUsize>);
@@ -389,6 +434,7 @@ fn parse_envelope(bytes: &[u8]) -> Result<(StatusCode, Value), ()> {
         status,
         StatusCode::OK
             | StatusCode::BAD_REQUEST
+            | StatusCode::FORBIDDEN
             | StatusCode::NOT_FOUND
             | StatusCode::SERVICE_UNAVAILABLE
     ) {
@@ -441,6 +487,14 @@ mod tests {
         (status, serde_json::from_slice(&body).unwrap())
     }
 
+    async fn post_json(app: &Router, uri: &str, value: Value) -> (StatusCode, Value) {
+        let response = app.clone().oneshot(Request::builder().method("POST").uri(uri)
+            .header("content-type", "application/json").body(Body::from(value.to_string())).unwrap()).await.unwrap();
+        let status = response.status();
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        (status, serde_json::from_slice(&body).unwrap())
+    }
+
     #[tokio::test]
     async fn direct_harmless_child_returns_only_the_envelope_body() {
         let dir = TempDir::new().unwrap();
@@ -455,6 +509,21 @@ mod tests {
             call(&app, "/semantic/clusters?view=leaderboard").await,
             (StatusCode::OK, json!({"ok": true}))
         );
+    }
+
+    #[tokio::test]
+    async fn curator_controls_are_disabled_by_default_and_use_only_startup_identity() {
+        let dir = TempDir::new().unwrap();
+        assert_eq!(post_json(&router(ClusterConfig::disabled(dir.path())), "/semantic/cluster-curator",
+                             json!({"op":"preview","runId":"a".repeat(64),"curator":true})).await.0,
+                   StatusCode::SERVICE_UNAVAILABLE);
+        let child = script(&dir, "curator", "[ \"$2\" = apricity_analyze.cluster_curator_http ] && [ \"${11}\" = curator-1 ] || exit 9\necho '{\"statusCode\":403,\"body\":{\"error\":\"forbidden\"}}'");
+        let config = ClusterConfig::enabled(dir.path(), child).unwrap().without_public_reads()
+            .with_curator_controls("curator-1".into()).unwrap();
+        let app = router(config);
+        assert_eq!(post_json(&app, "/semantic/cluster-curator", json!({"op":"preview","runId":"a".repeat(64)})).await,
+                   (StatusCode::FORBIDDEN, json!({"error":"forbidden"})));
+        assert_eq!(call(&app, "/semantic/clusters").await.0, StatusCode::SERVICE_UNAVAILABLE);
     }
 
     #[test]

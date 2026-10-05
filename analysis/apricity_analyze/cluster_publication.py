@@ -231,6 +231,23 @@ class ClusterPublicationRegistry:
             control = self._control(self._load(), run_id)
             return self._private(control)
 
+    def draft_manifest(self, actor: object, run_id: object) -> dict[str, Any]:
+        """Return one immutable *draft* only to a trusted curator.
+
+        This deliberately lives beside the private control surface rather than
+        ``published_manifest``: callers of the latter must never gain a way to
+        address an unpublished run.  The result is detached so a transport or
+        preview presenter cannot mutate the stored artifact in memory.
+        """
+        _curator(actor)
+        return copy.deepcopy(self._manifest(_run_id(run_id)))
+
+    def pointer_revision(self, actor: object) -> int:
+        """Read the publication CAS revision through the private boundary."""
+        _curator(actor)
+        with self._locked():
+            return self._load()["pointerRevision"]
+
     def override(self, actor: object, run_id: object, cluster_id: object, label: object, *, expected_run_revision: object) -> dict[str, Any]:
         curator, run_id, expected = _curator(actor), _run_id(run_id), _revision(expected_run_revision, "run revision")
         if not isinstance(cluster_id, str) or not cluster_id.strip(): raise ValidationError("unknown cluster")

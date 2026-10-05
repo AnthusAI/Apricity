@@ -105,6 +105,13 @@ enum Cmd {
         /// Absolute trusted Python executable used only by --semantic-clusters.
         #[arg(long)]
         cluster_python: Option<PathBuf>,
+        /// Enable the separate local-only curator draft/review/publish bridge.
+        /// It is disabled by default and never trusts browser role fields.
+        #[arg(long, default_value_t = false)]
+        semantic_cluster_curator: bool,
+        /// Trusted local curator identifier injected into the private bridge.
+        #[arg(long)]
+        cluster_curator_id: Option<String>,
     },
     /// Keep a library and a bucket (or folder) identical: push, pull, or show the plan.
     Sync {
@@ -459,20 +466,35 @@ fn main() -> ExitCode {
         web,
         semantic_clusters,
         cluster_python,
+        semantic_cluster_curator,
+        cluster_curator_id,
     } = &cli.cmd
     {
-        let clusters = if *semantic_clusters {
+        let clusters = if *semantic_clusters || *semantic_cluster_curator {
             let Some(python) = cluster_python.clone() else {
-                eprintln!("--cluster-python is required with --semantic-clusters");
+                eprintln!("--cluster-python is required with semantic cluster bridges");
                 return ExitCode::FAILURE;
             };
-            match cluster_bridge::ClusterConfig::enabled(library.clone(), python) {
+            let config = match cluster_bridge::ClusterConfig::enabled(library.clone(), python) {
                 Ok(config) => config,
                 Err(e) => {
                     eprintln!("{e}");
                     return ExitCode::FAILURE;
                 }
-            }
+            };
+            let config = if *semantic_cluster_curator {
+                let Some(curator_id) = cluster_curator_id.clone() else {
+                    eprintln!("--cluster-curator-id is required with --semantic-cluster-curator");
+                    return ExitCode::FAILURE;
+                };
+                match config.with_curator_controls(curator_id) {
+                    Ok(config) => config,
+                    Err(e) => { eprintln!("{e}"); return ExitCode::FAILURE; }
+                }
+            } else { config };
+            // Preserve independent rollout gates: curator controls alone do
+            // not make the public cluster explorer readable.
+            if !*semantic_clusters { config.without_public_reads() } else { config }
         } else {
             cluster_bridge::ClusterConfig::disabled(library.clone())
         };
