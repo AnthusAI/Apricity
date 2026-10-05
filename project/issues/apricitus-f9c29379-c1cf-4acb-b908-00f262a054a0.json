@@ -10,16 +10,29 @@
   "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8eea67f4-e53a-46e8-8c88-92719f0d40eb",
+      "author": "home",
+      "text": "Root review of9 focused auth/HTTP tests and113 suite green found disabled HTTP operation still calls verifier (targeted response503 verifies1), contrary to no dependency calls. Return correction: disabled gate before auth dependencies; fixed verifier clock applied to actual library verification; unknown-kid invalid token401 vs JWKS outage503; allowlisted domain error codes and no queryVector/vector leaks. Strengthen exact status and no-service/auth assertions with real signed tokens. No runtime deployment acceptance.",
+      "created_at": "2026-10-05T14:33:14.410868Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:06:00.370376Z",
-  "updated_at": "2026-10-05T14:07:00.733345Z",
+  "updated_at": "2026-10-05T14:33:14.410906Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The secure semantic HTTP transport and verified Cognito authentication are being implemented and tested.",
-  "right_now_updated_at": "2026-10-05T14:07:03.026273Z",
+  "right_now_summary": "Root review found the disabled endpoint still calls authentication, so the gate must move before verifier dependencies.",
+  "right_now_updated_at": "2026-10-05T14:33:15.983491Z",
   "custom": {}
 }

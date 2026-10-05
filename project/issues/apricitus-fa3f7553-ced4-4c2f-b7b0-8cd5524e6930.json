@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "3cfc6028-b08f-4f10-a30c-b09250f2de63",
+      "author": "home",
+      "text": "Root rerun49 tests passed0skips, but targeted unauthorized renewal proof created private control directory before returning ForbiddenError. Return final child correction: authorize and validate every worker mutation before opening persistence; mode0700 control root and structured lock failures. Existing draft success/race evidence retained; no task landing yet.",
+      "created_at": "2026-10-05T14:33:05.896353Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T14:09:29.916753Z",
-  "updated_at": "2026-10-05T14:21:42.038823Z",
+  "updated_at": "2026-10-05T14:33:05.896385Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The child is fixing contract gaps in validation, storage errors, lease handling, failure safety, and retry history.",
-  "right_now_updated_at": "2026-10-05T14:21:43.763657Z",
+  "right_now_summary": "The child is fixing authorization and storage handling before the supervisor accepts the lease work.",
+  "right_now_updated_at": "2026-10-05T14:33:10.104451Z",
   "custom": {}
 }
