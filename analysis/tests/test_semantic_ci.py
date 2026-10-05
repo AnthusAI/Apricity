@@ -22,6 +22,20 @@ CLUSTERING_PINS = {
     "pynndescent": "0.6.0",
 }
 
+
+def test_board_only_pushes_do_not_replace_product_ci_and_other_triggers_remain():
+    workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf8"))
+    triggers = workflow.get("on", workflow.get(True))
+    assert triggers["push"] == {
+        "branches": ["develop", "main"],
+        "paths-ignore": ["project/issues/**", "project/events/**"],
+    }
+    assert triggers["pull_request"] == {"branches": ["develop", "main"]}
+    assert "workflow_dispatch" in triggers
+    assert workflow["concurrency"] == {
+        "group": "ci-${{ github.ref }}", "cancel-in-progress": True,
+    }
+
 PYTHON_TESTS = (
     "analysis/tests/test_semantic_contract.py",
     "analysis/tests/test_semantic_freshness.py",
