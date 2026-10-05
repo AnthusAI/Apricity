@@ -34,17 +34,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "77c6ee06-e5ff-426b-b201-77c283447492",
+      "author": "home",
+      "text": "Additional supervisor evidence: isolated narrow CI dependency environment ran all 12 established semantic ground suites (contract/freshness/records/publisher/backfill/catalog/evaluation/corpus/clustering/summaries/runs/jobs), 206 passed, zero skips in25.55s. Two existing multiprocessing fork warnings remain; neither is suppressed. Hosted run37328055254 is currently in progress, so Linux gate remains unproven and issue stays open for verification.",
+      "created_at": "2026-10-05T14:52:55.055819Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T14:31:01.369411Z",
-  "updated_at": "2026-10-05T14:49:26.448252Z",
+  "updated_at": "2026-10-05T14:52:55.055853Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Hosted Linux verification is still pending after the seeded initialization and provenance fixes landed.",
-  "right_now_updated_at": "2026-10-05T14:49:28.301822Z",
+  "right_now_summary": "The seeded fix is landed, but hosted Linux verification is still pending.",
+  "right_now_updated_at": "2026-10-05T14:52:57.402729Z",
   "custom": {}
 }
