@@ -34,17 +34,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "58b872f5-ff41-481f-9396-9316b5b1b894",
+      "author": "home",
+      "text": "Supervisor reran 50 focused and 51 including CI registration checks, no skips. Review found explicit packet gap: published_manifest and list_published_manifests ignore trusted enabled=False, so disabled rollout can still return stored published content. Return correction: both read/list and aliases must reject disabled before storage/artifact access with structured unavailable503; tests against existing approved stored runs and missing roots prove no content/side effects. Private curator draft controls may remain usable while disabled; publish remains denied. No acceptance until gate fixed.",
+      "created_at": "2026-10-05T14:50:52.900001Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T14:23:25.959963Z",
-  "updated_at": "2026-10-05T14:41:12.999849Z",
+  "updated_at": "2026-10-05T14:50:52.900055Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The work is back for fixes and tests; no library has been approved or published.",
-  "right_now_updated_at": "2026-10-05T14:41:14.936400Z",
+  "right_now_summary": "Review requires a fix so disabled rollouts expose no published content before acceptance.",
+  "right_now_updated_at": "2026-10-05T14:50:56.272627Z",
   "custom": {}
 }

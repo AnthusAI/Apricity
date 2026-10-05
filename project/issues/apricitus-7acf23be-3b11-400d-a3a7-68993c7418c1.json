@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Checks are complete, but worker execution, publishing, and integration still need work.",
-  "right_now_updated_at": "2026-10-05T14:41:18.081682Z",
+  "right_now_summary": "Focused checks are complete, but worker, transport, publishing, and integration work still remain.",
+  "right_now_updated_at": "2026-10-05T14:50:59.966612Z",
   "custom": {}
 }
