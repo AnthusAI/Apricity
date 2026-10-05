@@ -34,17 +34,29 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "c722ad1e-8bdc-4b12-9284-7fb04a45bca6",
+      "author": "home",
+      "text": "RED→GREEN complete in the two allowed adapter files. Added coverage for omitted GetItem Item (`{}`) as null, foreign returned IDs, native-M malformed FileRefs, S3 missing/outage/cap and canonical-hydrator SHA rejection, actual 4,097-record and >16 MiB source caps, repeated cursor/no-progress pagination, invalid scope with zero Query calls, exact GSI projection/no Scan, and request-local caches. Focused `npx tsx --test amplify/semantic/aws-store.test.ts`: 8/8 green; `npx tsc --noEmit` and `npx tsc --noEmit -p amplify/tsconfig.json`: green. Did not touch package/resources/GSI/deploy/Git. Root semantic registration currently excludes aws-store.test.ts; per explicit no-package scope, left unchanged.",
+      "created_at": "2026-10-05T15:04:37.531286Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-10-05T14:26:14.459758Z",
-  "updated_at": "2026-10-05T14:57:58.850465Z",
+  "updated_at": "2026-10-05T15:04:37.531318Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The AWS storage adapter is being tightened with missing-item, ID, pagination, and integrity tests.",
-  "right_now_updated_at": "2026-10-05T14:58:00.407802Z",
+  "right_now_summary": "AWS adapter tests pass; runtime wiring, GSI integration, and root test registration remain.",
+  "right_now_updated_at": "2026-10-05T15:04:39.621529Z",
   "custom": {}
 }

@@ -58,17 +58,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "40da93d4-33e6-4122-b621-6b824028a829",
+      "author": "home",
+      "text": "Fresh real-library draft completed a66b94482498f1db3d411e6822c048caa6a98662bb0c51117b97749f9faffca1:27219deduplicatedregions,591clusters,5472outliers. Manifest carries apricity-audio-clusters=umap-random-init-seed42-v1 plus pinneddependencies. State draft qualityReview pending. Prior f54c7404 run preserved; no publication/listeningapproval performed.",
+      "created_at": "2026-10-05T15:04:34.543898Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.287061Z",
-  "updated_at": "2026-10-05T14:58:26.734130Z",
+  "updated_at": "2026-10-05T15:04:34.543929Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "An immutable draft run was rebuilt from the current corpus; quality review and publication controls remain pending.",
-  "right_now_updated_at": "2026-10-05T14:58:29.358081Z",
+  "right_now_summary": "An immutable draft run exists, but explicit publication and listening approval are still pending.",
+  "right_now_updated_at": "2026-10-05T15:04:36.465134Z",
   "custom": {}
 }
