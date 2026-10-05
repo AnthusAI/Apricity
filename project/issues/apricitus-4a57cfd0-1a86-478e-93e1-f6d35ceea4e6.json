@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Worker contracts are defined, but execution, transport, publishing, and integration are not implemented.",
-  "right_now_updated_at": "2026-10-05T14:55:18.610064Z",
+  "right_now_summary": "The ground worker contract is defined, but execution, transport, publishing, and integration have not started.",
+  "right_now_updated_at": "2026-10-05T15:00:48.088469Z",
   "custom": {}
 }

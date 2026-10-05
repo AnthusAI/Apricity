@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Record contracts pass, but cloud search integration and clustering reproducibility still need fixes.",
-  "right_now_updated_at": "2026-10-05T14:58:04.540919Z",
+  "right_now_summary": "Semantic records and guards pass checks, but search integration and reproducibility validation still need work.",
+  "right_now_updated_at": "2026-10-05T15:00:41.224180Z",
   "custom": {}
 }
