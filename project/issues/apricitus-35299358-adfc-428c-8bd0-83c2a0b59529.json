@@ -3,7 +3,7 @@
   "title": "Read current canonical AWS records and sample-scoped stored vectors",
   "description": "Purpose actual cloud storage ports for existing search/related services; prerequisite accepted canonical/record contracts, HTTP and source index provision task integrated later. Allowed new web/amplify/semantic/aws-store.ts and aws-store.test.ts only; root package-test registration. No backend/CDK/dependency/publisher/auth/browser changes. Inject DynamoDB send and S3 analysis reader ports; current Sample/Recording/Clip GetItem exact id keys ConsistentRead true, explicit minimal projection, strict nested AttributeValue parsing; malformed missing canonical records deny, operational storage error propagates503. readAnalysis accepts only safe analysis/... canonical FileRef, fetch actual files/<key> under configured bucket, decoded cap16MiB, exact SHA validated by canonical hydrator; port must distinguish absence404 from outage. No whole catalog Scan, partition filter scan, response metadata or tokens logged. Each handler invocation creates scoped memo caches at most current request only, no cross-request authorization or stale canonical cache. Related sources Query only exact dedicated sample GSI semantic-by-sample with samplePartition SHA256 compact ordered [embeddingSpace,sampleId], pagination capped4096 records/16MiB, no partial representative selection if cap exceeded; duplicates/incompatible/malformed rows503 or invalid stale record excluded according typed service contract; canonical hydrator independently guards every source before querying. readSource same sample scope, exact clip identity match; no whole-sample vector substitution. Return full SemanticRecord internally only, no public vectors. Dedicated sample GSI is separate from narrow native vector index; provision/publisher task will add matching attribute. Tests RED with exact commands/projections/keys/pagination/source no Scan and no unintended query, FileRef traversal/SHA/cap/notfound vs transient, stale current records and curator/guest independent scopes, representative sources allpages, capfailure no partial, wrong sample/model/clip identities. Deterministic signed-independent fixtures native DDB M custom FileRef and existing canonical fields. Verify focused tsx, both tsc projects, semantic104+new tests, root CIregistry. Handoff RED/GREEN counts,diff, remaining GSI/runtime/ANN/deployment gates. No claims real cloud retrieval until runtime wired and sandbox verified.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -58,17 +58,24 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "91a4b4ef-3e0d-4f1e-8a14-5c458094fc09",
+      "author": "home",
+      "text": "Landed9c9e115a after supervisor reviewed storage/schema/security source and reran8focused126integrated tests zero skips, bothTypeScript and CIregistry passed. Includes missingItemnull exactcurrentIDs paginatedsampleGSI4096/16MiB caps boundedcursors analysisSHAhydration and requestlocalcaches. No cloudruntime/ANN deployment claimed.",
+      "created_at": "2026-10-05T15:08:17.425092Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-10-05T14:26:14.459758Z",
-  "updated_at": "2026-10-05T15:06:23.658742Z",
-  "closed_at": null,
+  "updated_at": "2026-10-05T15:08:25.227420Z",
+  "closed_at": "2026-10-05T15:08:25.227389Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "AWS storage adapters are implemented and tested; TypeScript checks pass, but root test registration and GSI wiring",
-  "right_now_updated_at": "2026-10-05T15:06:25.218769Z",
+  "right_now_summary": "The AWS storage adapter is tested, but cloud runtime and ANN deployment are not yet wired.",
+  "right_now_updated_at": "2026-10-05T15:08:27.231479Z",
   "custom": {}
 }
