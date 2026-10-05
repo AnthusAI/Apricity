@@ -10,16 +10,29 @@
   "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "ce8889cc-cdda-466b-8904-59fec4393742",
+      "author": "home",
+      "text": "Supervisor independently reran a fresh Node22/npm10 npm ci:1143 packages installed successfully (38s); accepted minimal68-line four-record lock fix committed0ceff5df and pushed develop. Both TypeScript projects,104 semantic tests0skips, Gherkin vocabulary and semantic CI registry pass. Hosted latest board head113cc077 run37324097002 is still in progress; leave e2007c and e426b3 open until hosted checks succeed. No advisory-resolution claim.",
+      "created_at": "2026-10-05T14:24:23.108447Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:06:53.986323Z",
-  "updated_at": "2026-10-05T14:07:51.837929Z",
+  "updated_at": "2026-10-05T14:24:23.108567Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The lockfile is being repaired and clean Node 22/npm 10 installation checks are being rerun.",
-  "right_now_updated_at": "2026-10-05T14:07:53.042940Z",
+  "right_now_summary": "The lockfile fix is pushed; local checks pass, and hosted CI is still running for final validation.",
+  "right_now_updated_at": "2026-10-05T14:24:25.247192Z",
   "custom": {}
 }

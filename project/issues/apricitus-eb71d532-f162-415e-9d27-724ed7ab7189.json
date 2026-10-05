@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-eb71d532-f162-415e-9d27-724ed7ab7189",
+  "title": "Version curator reviews and publish immutable cluster runs atomically",
+  "description": "Purpose: isolated private local cluster review/override/publication registry toward M5, prerequisites accepted immutable M4 draft manifests; no UI/HTTP/cloud wiring yet. Allowed only new analysis/apricity_analyze/cluster_publication.py and analysis/tests/test_cluster_publication.py. Root later registers CI. Terra no Kanbus/git/deploy or modify immutable manifests. API private curator initialize/get/override/review/publish plus public publishedManifest lookup; explicit trusted curator context, never body roles. Registry has monotonic per-run revision; label override clusterId must exist, trim1..120 nonempty, CAS expected revision; preserves immutable suggested label. Listening approval requires curator identity/time and nonempty reviewed representative semanticIds belonging to run, review notes1..2000; no automatic approval. Review scoped to current control revision; label/other control changes invalidate approval. Publish requires complete validated draft, exact expected run revision and approved review covering every cluster representative, CAS expected global pointer revision (null only initial). Root current corpus revision provider must match draft digest; mismatch stale conflict. Atomic registry transaction records publication and preset pointer together; failures or competing publishers preserve prior pointer; previously published run addressable by explicit runId regardless newer preset pointer. Immutable manifest state remains draft on disk; public envelope projects state published with audit, never expose unapproved draft as published. Safe roots/64hex runIds, refuse symlink paths, flock+atomic JSON replace/private permissions, structured retryable sanitized storage errors. Never overwrite runs, auto-run algorithms, auto-approve quality or change production flags. Public read/list refuses drafts and missing run; configured flags-disabled unavailable, no read leakage. Tests RED first for denied guest/private reads/mutations, no persistence for invalid, bounds/unknowncluster, stale run and pointer revisions, missing review, incomplete review, review invalidation on override, atomic interrupt retains previous, true multiprocessing race only one publishes, previous run lookup, symlink/traversal/invalidmanifest, no manifest changes. Fixed vectors and genuine prepare_run/save_draft_run packets, no actual library publication. Gherkin Explicit atomic publication and Curator label overrides bind domain scenarios. Verify focused publication and existing cluster-run pytest, all pass no skips. Handoff exact RED/GREEN counts,diff, safe publication evidence and limitations. Root reruns before landing; no M5 complete or listening approval claim.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5b44025a-a339-4979-8505-38647d0fe5cc",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T14:23:25.959963Z",
+  "updated_at": "2026-10-05T14:24:09.662880Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The team is defining private, atomic review and publication for immutable cluster runs.",
+  "right_now_updated_at": "2026-10-05T14:24:11.715768Z",
+  "custom": {}
+}
