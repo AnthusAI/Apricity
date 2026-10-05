@@ -14,7 +14,7 @@
     {
       "id": "bd0add1b-e1fc-4aba-81ba-c0f97d49d01c",
       "author": "home",
-      "text": "Supervisor review found valid-representative alias approval blocked: current real draft contains representative semantic IDs from deduplicated aliases, but review allows only region root semanticId. Public envelope also discards published coordinates needed by map, though only draft/private coordinates must be protected; this boundary is an internal publication registry until current-visible external projection lands. Review needs monotonic revisions, complete invalid/missing review/storage interruption/prior-run/race tests (only6 new tests delivered), and no raw storage/schema errors. Return before acceptance; no actual quality approved or published.",
+      "text": "Supervisor review: public envelope discards published coordinates needed by map, though only draft/private coordinates must be protected; registry remains internal until current-visible external projection lands. Review needs monotonic revisions and full invalid/missing review/storage interruption/prior-run/race tests (only6 new tests delivered), and no raw storage/schema errors. Valid immutable manifests can contain alias representative IDs, so approval must accept those aliases; inspection confirms current real draft has2304 representatives and0 non-root representative IDs, so this is contract edge coverage, not an observed current-corpus blockage. Return before acceptance; no actual quality approved or published.",
       "created_at": "2026-10-05T14:34:04.237918Z",
       "comment_type": "default",
       "agent": {
@@ -25,14 +25,14 @@
     }
   ],
   "created_at": "2026-10-05T14:23:25.959963Z",
-  "updated_at": "2026-10-05T14:34:04.237945Z",
+  "updated_at": "2026-10-05T14:34:51.279272Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The curator registry needs fixes to representative IDs, public coordinates, revision handling, and atomic publication",
-  "right_now_updated_at": "2026-10-05T14:34:05.482961Z",
+  "right_now_summary": "The review is being returned for missing tests, safe errors, and preserved public map coordinates.",
+  "right_now_updated_at": "2026-10-05T14:34:53.743433Z",
   "custom": {}
 }

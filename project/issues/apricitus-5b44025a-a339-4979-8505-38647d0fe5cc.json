@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The curator registry needs fixes for IDs, public coordinates, revisions, and atomic publication.",
-  "right_now_updated_at": "2026-10-05T14:34:06.976481Z",
+  "right_now_summary": "The review is being revised to add tests, safe errors, and preserve public map coordinates.",
+  "right_now_updated_at": "2026-10-05T14:34:55.474923Z",
   "custom": {}
 }
