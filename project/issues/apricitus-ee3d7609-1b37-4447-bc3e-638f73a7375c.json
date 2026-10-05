@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The public cluster leaderboard and detail routes are defined, but implementation has not started.",
-  "right_now_updated_at": "2026-10-05T15:11:59.823829Z",
+  "right_now_summary": "The team is adding bookmarkable published cluster leaderboard and detail routes with validation and stable ordering.",
+  "right_now_updated_at": "2026-10-05T15:21:06.961511Z",
   "custom": {}
 }
