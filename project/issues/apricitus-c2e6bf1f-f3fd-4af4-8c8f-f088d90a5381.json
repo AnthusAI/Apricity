@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The semantic Lambda runtime is being wired to AWS storage and verified HTTP services.",
-  "right_now_updated_at": "2026-10-05T15:02:14.906332Z",
+  "right_now_summary": "The semantic Lambda runtime is being wired to AWS storage, search, related audio, and verified HTTP services.",
+  "right_now_updated_at": "2026-10-05T15:08:35.208603Z",
   "custom": {}
 }

@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Core publication and record guards pass, but cloud retrieval, deployment, recall, and clustering reproducibility still",
-  "right_now_updated_at": "2026-10-05T15:08:31.386997Z",
+  "right_now_summary": "Core records and local search pass, but cloud retrieval, deployment, and recall evidence still need work.",
+  "right_now_updated_at": "2026-10-05T15:08:40.559490Z",
   "custom": {}
 }
