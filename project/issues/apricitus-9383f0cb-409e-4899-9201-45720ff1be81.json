@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The local adapter is accepted; cloud HTTP wiring, public access guards, and ANN sandbox validation remain.",
-  "right_now_updated_at": "2026-10-05T14:33:17.951923Z",
+  "right_now_summary": "Cloud HTTP wiring and auth tests remain; local search is accepted, while ANN sandbox recall is untested.",
+  "right_now_updated_at": "2026-10-05T14:47:40.266987Z",
   "custom": {}
 }
