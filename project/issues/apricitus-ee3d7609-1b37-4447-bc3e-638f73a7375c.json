@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Leaderboard routes are not integrated; UI work awaits adapter fixes and publication.",
-  "right_now_updated_at": "2026-10-05T16:13:14.356386Z",
+  "right_now_summary": "The data boundary passed tests, but HTTP and UI routes and real publication are still pending.",
+  "right_now_updated_at": "2026-10-05T16:19:40.431222Z",
   "custom": {}
 }

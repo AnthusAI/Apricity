@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Cluster drafts pass tests but await curator review, publication, and leaderboard integration.",
-  "right_now_updated_at": "2026-10-05T16:13:15.660251Z",
+  "right_now_summary": "Cluster drafts pass processing checks but still await curator review, publication, and route verification.",
+  "right_now_updated_at": "2026-10-05T16:19:42.226538Z",
   "custom": {}
 }
