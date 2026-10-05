@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Cloud search core is ready, but HTTP, authentication, infrastructure wiring, and signed-flow tests remain unfinished.",
-  "right_now_updated_at": "2026-10-05T15:34:26.940416Z",
+  "right_now_summary": "Cloud search is wired and tested, while deployment, authentication transport, and ANN recall remain unfinished.",
+  "right_now_updated_at": "2026-10-05T15:36:19.135476Z",
   "custom": {}
 }

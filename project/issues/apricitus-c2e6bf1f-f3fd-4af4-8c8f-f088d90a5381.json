@@ -58,17 +58,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "e53be9ea-dd0b-4e35-8b34-66f2daac7b9b",
+      "author": "home",
+      "text": "Third handoff reviewed: typed synth helper and actual search pipeline are useful, but helper still outputs bare API endpoint instead of endpoint+/semantic. IAM test checks action names without exact resources; curator response checks200 without checking its private hit (false-positive empty result). Related test only empty GSI and does not prove multi-passage retrieval. Add targeted assertions and independent lifecycle cases before final acceptance.",
+      "created_at": "2026-10-05T15:36:15.621506Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T15:02:12.897924Z",
-  "updated_at": "2026-10-05T15:34:24.611117Z",
+  "updated_at": "2026-10-05T15:36:15.621543Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Runtime and infrastructure wiring still lack full signed-flow tests, scoped AWS permissions, and the required",
-  "right_now_updated_at": "2026-10-05T15:34:25.870511Z",
+  "right_now_summary": "The semantic runtime is being revised to fix endpoint wiring, prove real data flows, and tighten IAM tests.",
+  "right_now_updated_at": "2026-10-05T15:36:17.909220Z",
   "custom": {}
 }

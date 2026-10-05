@@ -34,17 +34,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "7db7c453-65f5-4b12-a81b-63550b7c8f79",
+      "author": "home",
+      "text": "Review of second handoff: fixes accepted in principle, but remaining declared behaviors still have no tests: visibility/retirement/deletion/boundary/grid/version filtering, count/order across multiple clusters and recordings, outliers, pointer advancement, storage/missing/draft failures. Corrupt audit test changes status/revision/coverage together so cannot prove independent guards. 10001 map test mocks _members and bypasses real current-visible projection; add real pipeline fixture. Return focused final verification pass; no requirement relaxation.",
+      "created_at": "2026-10-05T15:36:09.290641Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T15:10:50.827267Z",
-  "updated_at": "2026-10-05T15:28:35.883014Z",
+  "updated_at": "2026-10-05T15:36:09.290672Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is revising validation and tests for public cluster data before accepting the implementation.",
-  "right_now_updated_at": "2026-10-05T15:28:37.121341Z",
+  "right_now_summary": "The handoff needs full tests for validation, privacy, visibility, ordering, aliases, failures, and map limits.",
+  "right_now_updated_at": "2026-10-05T15:36:11.593385Z",
   "custom": {}
 }
