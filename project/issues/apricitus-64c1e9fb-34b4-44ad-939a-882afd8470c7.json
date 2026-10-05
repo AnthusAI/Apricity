@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Semantic records and guards pass checks, but search integration and reproducibility validation still need work.",
-  "right_now_updated_at": "2026-10-05T15:00:41.224180Z",
+  "right_now_summary": "Core publication and local retrieval pass checks; cloud deployment, recall evidence, and CI reproducibility need fixes.",
+  "right_now_updated_at": "2026-10-05T15:02:19.914359Z",
   "custom": {}
 }

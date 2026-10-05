@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The typed cloud search service is ready, but HTTP integration and final validation remain.",
-  "right_now_updated_at": "2026-10-05T14:58:01.567502Z",
+  "right_now_summary": "Cloud HTTP wiring and security checks are underway; local search is accepted, but cloud and sandbox validation remain",
+  "right_now_updated_at": "2026-10-05T15:02:16.834425Z",
   "custom": {}
 }
