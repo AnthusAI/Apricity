@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "7c9428b0-7727-4a53-921c-5e7115844e8e",
+      "author": "home",
+      "text": "Terminal handoff reviewed but not accepted: only two new tests do not prove declared lifecycle/privacy/order/map contracts. Correct invalid run validation being converted to 503; accept matching run and preset bookmark selection; validate approved publication review and representative coverage. Missing ratings currently emit negative infinity as score, which is not valid JSON: define finite or null missing-rating representation and strict serialization test. Include canonical parent links and comprehensive deterministic fixtures, actual capped map versus uncapped list, aliases/outliers/current visibility and freshness, storage failures and old published runs. Return RED/GREEN and focused suite evidence; no actual real-run approval/publication.",
+      "created_at": "2026-10-05T15:28:35.882984Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T15:10:50.827267Z",
-  "updated_at": "2026-10-05T15:21:04.262393Z",
+  "updated_at": "2026-10-05T15:28:35.883014Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Validation must return structured 400 errors before provider calls and reject mismatched run and preset selections.",
-  "right_now_updated_at": "2026-10-05T15:21:05.801262Z",
+  "right_now_summary": "The team is revising validation and tests for public cluster data before accepting the implementation.",
+  "right_now_updated_at": "2026-10-05T15:28:37.121341Z",
   "custom": {}
 }

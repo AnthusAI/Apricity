@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The clustering pieces are ready, but hosted verification, listening review, and publication approval still await.",
-  "right_now_updated_at": "2026-10-05T15:04:39.564956Z",
+  "right_now_summary": "Corpus, clustering, and summaries are verified, but listening review and publication approval are still pending.",
+  "right_now_updated_at": "2026-10-05T15:28:21.076050Z",
   "custom": {}
 }
