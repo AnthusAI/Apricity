@@ -9,7 +9,9 @@ import { cycleUploadPolicy } from "./storage/cycle-upload-policy";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
 import { ranking } from "./functions/ranking/resource";
+import { semantic } from "./functions/semantic/resource";
 import { createSemanticAudioResources } from "./semantic/resource";
+import { createSemanticRuntimeDeployment } from "./semantic/runtime-resource";
 
 export const backend = defineBackend({
   auth,
@@ -18,11 +20,26 @@ export const backend = defineBackend({
   tally,
   activity,
   ranking,
+  semantic,
 });
 
 // This stack contains only the private semantic-record table. Retrieval and publisher grants are intentionally
 // exported as pure helpers by semantic/resource and are attached only when their real server-side integrations land.
 export const semanticAudio = createSemanticAudioResources(backend.createStack("semanticAudio"));
+
+const semanticFn = backend.semantic.resources.lambda;
+const semanticTables = backend.data.resources.tables;
+const semanticRuntime = createSemanticRuntimeDeployment(Stack.of(semanticFn), {
+  lambda: semanticFn,
+  addEnvironment: backend.semantic.addEnvironment.bind(backend.semantic),
+  semanticTableName: semanticAudio.tableName, vectorIndexName: semanticAudio.indexName, vectorIndexArn: semanticAudio.vectorIndexArn, sampleIndexArn: semanticAudio.sampleIndexArn,
+  sampleTableName: semanticTables["Sample"].tableName, sampleTableArn: semanticTables["Sample"].tableArn,
+  recordingTableName: semanticTables["Recording"].tableName, recordingTableArn: semanticTables["Recording"].tableArn,
+  clipTableName: semanticTables["Clip"].tableName, clipTableArn: semanticTables["Clip"].tableArn,
+  bucketName: backend.storage.resources.bucket.bucketName, bucketArn: backend.storage.resources.bucket.bucketArn,
+  userPoolId: backend.auth.resources.userPool.userPoolId, userPoolClientId: backend.auth.resources.userPoolClient.userPoolClientId,
+});
+backend.addOutput({ custom: { apricity: { semanticUrl: semanticRuntime.url, semanticSearchEnabled: semanticRuntime.searchEnabled, semanticRelatedEnabled: semanticRuntime.relatedEnabled } } });
 
 // Cognito group users assume their group role instead of the authenticated identity-pool role. Put these policies in
 // the storage stack: attaching them directly to the auth-stack role makes auth depend on storage, while storage
