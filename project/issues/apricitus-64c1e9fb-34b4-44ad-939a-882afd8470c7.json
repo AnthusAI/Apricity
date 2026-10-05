@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Core publication and record checks pass, but cloud retrieval and clustering still need final validation.",
-  "right_now_updated_at": "2026-10-05T14:56:29.090934Z",
+  "right_now_summary": "Semantic records are verified; cloud retrieval and recall validation continue, with CI exposing a clustering bug.",
+  "right_now_updated_at": "2026-10-05T14:57:40.463873Z",
   "custom": {}
 }

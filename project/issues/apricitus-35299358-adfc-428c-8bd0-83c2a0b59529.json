@@ -10,16 +10,29 @@
   "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "9be031ff-446d-430a-a1d0-f64c659e82ea",
+      "author": "home",
+      "text": "Root review of delivered adapter found real AWS missing-item shape {} is treated as malformed503 rather than confirmed absence null. GetItem omits Item when not found; accept undefined Item on a valid object response. Add exact requested canonical ID checks (foreign returned id cannot be accepted), pagination repeated-cursor/no-progress protection to avoid unbounded empty-page loops, and stronger cap/no-partial tests. Five delivered tests do not yet cover packet full malformed/cap/current lifecycle cases. Amplify tsc blocked by concurrent GSI exports is temporary integration state, not reason to alter other files.",
+      "created_at": "2026-10-05T14:57:31.468375Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:26:14.459758Z",
-  "updated_at": "2026-10-05T14:49:08.095328Z",
+  "updated_at": "2026-10-05T14:57:31.468407Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "AWS record and vector retrieval ports are being specified with strict validation and focused tests.",
-  "right_now_updated_at": "2026-10-05T14:49:11.418154Z",
+  "right_now_summary": "Review found missing-item and pagination bugs; tests and TypeScript checks still need fixes.",
+  "right_now_updated_at": "2026-10-05T14:57:33.809653Z",
   "custom": {}
 }
