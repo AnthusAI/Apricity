@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Work is underway on secure cluster job leases, retries, worker processing, and tests.",
-  "right_now_updated_at": "2026-10-05T15:16:17.612478Z",
+  "right_now_summary": "The team is implementing secure curator clustering jobs with retries, leases, ground processing, and focused tests.",
+  "right_now_updated_at": "2026-10-05T15:31:46.862048Z",
   "custom": {}
 }
