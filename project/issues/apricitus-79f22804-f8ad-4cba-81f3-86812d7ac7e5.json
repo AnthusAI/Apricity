@@ -10,16 +10,29 @@
   "parent": "apricitus-796bfa5b-4342-4648-8f7d-62fe3d66b02e",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e5f43db1-2746-4de2-a5a1-8a970d1c2a6b",
+      "author": "home",
+      "text": "Root review: explicit randominit remains UMAP and fixes degenerate spectral solver locally, but new top-level algorithmRevision is discarded by cluster_summaries/cluster_runs and does NOT change immutable runId (targeted two-packet proof sameID=true). Return correction: add Apricity algorithm revision to carried algorithmVersions mapping so summaries and prepare_run digest already preserve it; tests prove new revision changes run identity and unchanged revision repeats same ID. Remove importorskip from required pinned algorithm gate. Do not land incomplete provenance correction.",
+      "created_at": "2026-10-05T14:39:52.706798Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:31:01.369411Z",
-  "updated_at": "2026-10-05T14:31:49.265585Z",
+  "updated_at": "2026-10-05T14:39:52.706817Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is investigating nondeterministic UMAP clustering coordinates across CI runs.",
-  "right_now_updated_at": "2026-10-05T14:31:51.838278Z",
+  "right_now_summary": "The team is fixing provenance so the reproducibility change updates run IDs before review.",
+  "right_now_updated_at": "2026-10-05T14:39:54.720879Z",
   "custom": {}
 }

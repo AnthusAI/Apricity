@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Corpus, clustering, and draft summaries passed checks; listening review and publication controls remain unfinished.",
-  "right_now_updated_at": "2026-10-05T14:31:54.512184Z",
+  "right_now_summary": "The corpus, clustering, and summaries are accepted, but listening review and publication controls remain unfinished.",
+  "right_now_updated_at": "2026-10-05T14:39:57.186856Z",
   "custom": {}
 }
