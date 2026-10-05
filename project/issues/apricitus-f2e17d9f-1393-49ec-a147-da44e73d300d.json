@@ -3,7 +3,7 @@
   "title": "Add Related by sound to clip and sample pages",
   "description": "Purpose: existing-style playable six cards and parentlinks. Prereq relatedmodule. Allowed web/src/ui/library.ts,new semantic cards/styles/tests. Loading/empty/awaiting-analysis/retry states no scorespercent; navigation cancels/ignores old responses. Playback precisely start/end seconds in Sampleaudio. Verify UI/component and build; supervisor browser auditions.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,17 +34,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "5ad4c4ff-5385-46eb-aafe-5abbc4c2c30c",
+      "author": "home",
+      "text": "Supervisor accepted and landed484327ac after104 semantic TS tests (no skips), frontend+Amplify tsc,2related BDD scenarios/6steps and actual Apricity browser verification. Sample and clip pages display six real related cards, no encoder asset loads, no confidence scores, canonical links. Instrumented real audio start confirmed161.88s offset/3.74s duration for the displayed161.88-165.62s passage. Forced retrieval failure and actual listClips catalog-fetch failure each displayed Retry and recovered to six cards. Controller tests cover late retrieval/catalog generations and terminal disposal, including same-parent clips; fake-DOM ready grid/six limit covered. Listening quality/instrument confirmation still unreviewed; no production/cloud gate claim.",
+      "created_at": "2026-10-05T14:04:03.508609Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.860580Z",
-  "updated_at": "2026-10-05T13:39:37.876385Z",
-  "closed_at": null,
+  "updated_at": "2026-10-05T14:04:08.726286Z",
+  "closed_at": "2026-10-05T14:04:08.726238Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Related audio cards await adapter acceptance, with retry, disposal, playback, and race checks still pending.",
-  "right_now_updated_at": "2026-10-05T13:39:41.524139Z",
+  "right_now_summary": "The feature is integrated and verified, but listening quality and production or cloud gates still need review.",
+  "right_now_updated_at": "2026-10-05T14:04:11.005240Z",
   "custom": {}
 }

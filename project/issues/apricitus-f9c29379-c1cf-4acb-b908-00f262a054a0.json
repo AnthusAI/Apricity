@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-f9c29379-c1cf-4acb-b908-00f262a054a0",
+  "title": "Secure semantic HTTP transport and verified optional Cognito context",
+  "description": "Purpose: finish the public serverless transport boundary without bypassing current canonical visibility. Prerequisites: accepted search-service/canonical/related-service contracts and M2 ranking. Allowed files: new web/amplify/semantic/http-handler.ts, auth.ts and their tests; web/package.json/package-lock.json only for pinned aws-jwt-verify and explicit semantic test list; dedicated Gherkin HTTP feature/binding/config if needed. Exclusions: no deployment, CDK/backend wiring, cloud datastore adapters, browser token transport, model changes, public draft access, scans, Kanbus or git mutations by Terra. Root supervises.\n\nInterface: injectable createSemanticHttpHandler receives search and related services plus verified-access-token port, allowlisted origins and enabled operation flags. API Gateway HTTP v2 POST /semantic/search and /semantic/related return existing typed contracts. Valid OPTIONS preflight permits POST and Content-Type/Authorization, no credentials/cookies; configured allowed origins only, no untrusted Origin reflection. Reject unknown route404, wrong method405, malformed JSON/base64/content-type400 or415, decoded body over64KiB413 before service calls. Never accept role/group from body or arbitrary headers. No Authorization means trusted context curator:false; malformed or invalid Authorization401 and no query rather than guest fallback. Valid signed Cognito access token derives curator only from actual curators/admins group. Use aws-jwt-verify with configured userPoolId, exact clientId, tokenUse access, signature/issuer/expiry checks; never decode-only. Verification failure never logs tokens or returns private detail. Operational verifier failure is structured503 retryable; invalid token401. Flags disabled return503 unavailable without dependency/model calls. Existing400/409/503 domain errors preserve code/retryable; unknown failures503 sanitized. Request-local context only; no cross-user result/cache state. Responses never include stored source/query vectors.\n\nGherkin scenarios: public request keeps documented visibility; valid signed curator gets trusted context; forged role/wrong issuer/client/expired/signature token denied; failed request cannot contaminate next guest; strict route/method/body/type/size errors do not reach service; domain failures preserve structured state; disabled endpoint leaves lexical application unaffected; origin preflight only allowed origins. Fixtures: fixed vectors/current records, locally generated RSA keys and signed JWTs with injected JWKS, frozen clock, no live Cognito credentials/network. Stubbed verifier tests are not real signature acceptance.\n\nVerification: cd web && npx tsx --test amplify/semantic/http-handler.test.ts amplify/semantic/auth.test.ts && npx tsc --noEmit --project amplify/tsconfig.json && npm run test:semantic; PYTHONPATH=analysis analysis/.venv/bin/python -m pytest analysis/tests/test_semantic_ci.py. Write RED first. Handoff diff, RED/GREEN exact counts, auth/security/failure evidence and unresolved wiring/gates. Report blocker for unsupported pinned library/runtime, contract ambiguity or signing failure; never replace verified auth with decoded claims. Supervisor reruns and lands one task commit then closes. No production/API deployment or cloud ANN claim.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T14:06:00.370376Z",
+  "updated_at": "2026-10-05T14:07:00.733345Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The secure semantic HTTP transport and verified Cognito authentication are being implemented and tested.",
+  "right_now_updated_at": "2026-10-05T14:07:03.026273Z",
+  "custom": {}
+}

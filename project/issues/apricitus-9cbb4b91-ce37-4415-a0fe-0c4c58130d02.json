@@ -92,7 +92,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Work has resumed, but cloud integration, M0 parity, mobile/browser checks, listening tests, and M5 exploration still",
-  "right_now_updated_at": "2026-10-05T13:45:28.019548Z",
+  "right_now_summary": "Work has resumed, but cloud, mobile, listening, and M5 exploration gates still need verification.",
+  "right_now_updated_at": "2026-10-05T14:07:56.906580Z",
   "custom": {}
 }

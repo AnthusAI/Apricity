@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e2007c61-adc0-4e30-b5f0-980179d7d5a4",
+  "title": "Repair Node 22 clean-install lockfile for semantic CI",
+  "description": "Observed GitHub CI runs37321152153 and37318613548: npm ci fails before all Web/Gherkin tests with EUSAGE Missing @opentelemetry/core@2.0.0 from lock file (four occurrences). Existing local node_modules hides this clean-install defect. Purpose restore exact Node22/npm10 clean installation before closing e426b3. Allowed only web/package-lock.json and focused regression evidence if needed; package.json dependency version changes require root review. Exclude product behavior, model/browser download, AWS deploys, git/Kanbus mutations by Terra. Use Node22/npm10 matching Actions, first reproduce RED with npm ci --dry-run --ignore-scripts in isolated directory containing copied package manifests (do not erase live node_modules). Regenerate lock mechanically using matching package manager while preserving intended direct dependency versions; no blanket library upgrade or --legacy-peer-deps workaround. Verify GREEN clean npm ci in isolated copy, both typechecks, npm run test:semantic and node features/data/check-steps.mjs. Handoff exact Node/npm versions, RED/GREEN counts, lock diff summary and any unresolved package-engine/peer blockers. Root reruns checks, commits and pushes one scoped fix, then closes after hosted CI succeeds. Do not claim dependency vulnerability advisories resolved by this packet.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T14:06:53.986323Z",
+  "updated_at": "2026-10-05T14:07:51.837929Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The lockfile is being repaired and clean Node 22/npm 10 installation checks are being rerun.",
+  "right_now_updated_at": "2026-10-05T14:07:53.042940Z",
+  "custom": {}
+}

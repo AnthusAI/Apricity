@@ -34,17 +34,41 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "305acfc7-1ac5-4596-8182-0998c51b768a",
+      "author": "home",
+      "text": "CI packet landed50916bfe. Supervisor fresh narrow requirements-only Python environment162passed;104semantic TS tests0skip; frontend/Amplifytsc and contractcheck pass. Fresh WASM build then Flow270passed/1existing environment-gatedskip; fullnativeworkspace429passed/1existingignored. Original host rustdoc mismatch corrected by explicit matching RUSTDOC, not product workaround. Actual GitHub run37321565121 in_progress; await hosted result before closing. CDK old template-validator warnings remain explicit; no deployment proof.",
+      "created_at": "2026-10-05T14:04:35.000101Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "9fe4e608-4742-4b80-8499-9f3092627a5f",
+      "author": "home",
+      "text": "Hosted run37321565121 completed: Semantic ground contracts and Rust workspace green; Web/Gherkin fail at clean npm ci before tests due four missing @opentelemetry/core2.0.0 lock entries. This predates semantic CI (also37321152153/37318613548) and is hidden by existing local node_modules. Filed a bounded clean-install repair; do not close e426b3 or claim hosted CI green until repaired and rerun. Current user preview5181 remains working independently.",
+      "created_at": "2026-10-05T14:07:23.529187Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T22:43:03.807522Z",
-  "updated_at": "2026-10-05T13:39:56.037097Z",
+  "updated_at": "2026-10-05T14:07:23.529217Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "CI checks are prepared, but Amplify type errors still prevent landing the workflow.",
-  "right_now_updated_at": "2026-10-05T13:39:58.454111Z",
+  "right_now_summary": "Hosted CI still fails at clean npm ci because four OpenTelemetry lock entries are missing; repair and rerun are pending.",
+  "right_now_updated_at": "2026-10-05T14:07:26.019691Z",
   "custom": {}
 }

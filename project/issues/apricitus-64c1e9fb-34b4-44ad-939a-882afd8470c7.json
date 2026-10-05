@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Canonical records and local search work, but cloud retrieval, deployment, and recall evidence remain unfinished.",
-  "right_now_updated_at": "2026-10-05T13:40:00.744896Z",
+  "right_now_summary": "Semantic records and guards are verified, while cloud retrieval, recall, and clean CI still need fixes.",
+  "right_now_updated_at": "2026-10-05T14:07:54.858108Z",
   "custom": {}
 }
