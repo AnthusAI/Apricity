@@ -10,16 +10,29 @@
   "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "5642fb38-c1ba-4f12-b01b-a42909cd73e0",
+      "author": "home",
+      "text": "Supervisor reran focused browser search/related/transport tests:17 passed, zero skips. Tightened cancellation test with an explicit auth-entry barrier before abort, proving cancellation during pending auth rather than before it. Reverted unrelated global signed-in idToken/accessToken detection change; this task changes semantic access-token transport only. New helper tests still require root script registration before landing; concurrent runtime packet owns package line, so wait for terminal handoff before separate commits. Typechecks/integrated verification pending.",
+      "created_at": "2026-10-05T15:43:29.615501Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T15:33:38.711507Z",
-  "updated_at": "2026-10-05T15:34:14.477279Z",
+  "updated_at": "2026-10-05T15:43:29.615529Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "No recent activity is recorded; the authentication transport work remains specified but unimplemented.",
-  "right_now_updated_at": "2026-10-05T15:34:17.141823Z",
+  "right_now_summary": "Focused browser tests pass; typechecks and integrated verification are pending before landing the transport helper.",
+  "right_now_updated_at": "2026-10-05T15:43:31.762731Z",
   "custom": {}
 }
