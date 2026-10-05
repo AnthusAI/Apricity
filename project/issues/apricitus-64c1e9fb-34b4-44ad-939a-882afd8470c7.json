@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Publication and local search are verified; cloud retrieval and clean CI still need fixes.",
-  "right_now_updated_at": "2026-10-05T14:27:39.118122Z",
+  "right_now_summary": "Publication and record checks are verified, while cloud retrieval, recall evidence, and CI reproducibility remain",
+  "right_now_updated_at": "2026-10-05T14:32:01.999165Z",
   "custom": {}
 }

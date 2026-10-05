@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-79f22804-f8ad-4cba-81f3-86812d7ac7e5",
+  "title": "Make spectral clustering initialization reproducible across CI runs",
+  "description": "Observed hosted CI37324929131 semantic ground:161 passed1 failed actual algorithm repeated same8orthogonal512D corpus differs in2D display positions despite seed42/n_jobs1. Earlier local162passed is insufficient; M4 reproducibility gate must not be relaxed. Allowed analysis/apricity_analyze/audio_clusters.py and analysis/tests/test_audio_clusters.py plus focused clustering-version design provenance correction only if necessary. Investigate actual pinned UMAP/Scipy eigen/spectral initialization and globalRNG deterministic behavior primary local source. RED reproduce Linux/isolated process or deterministic seam capturing missing seed. Fix actual nondeterminism while retaining UMAP cosine10D min_dist0/display2D min_dist.1/HDBSCAN eom/seed42 and pinned dependency versions; explicit deterministic initialization from seed if mathematically appropriate and recorded provenance, no hiding coordinates from assertion, loosening contract, skip or snapshot fabricated output. Verify repeated calls with perturbed global RNG plus subprocess runs true pinned algorithms, existing suites; root CIvenv only, do not install global Python or upgrade libraries. Handoff rootcause/REDGREEN/nativeLinux ifavailable/evidence. Supervisor reruns and hostedCI before closure. Real currentdraft pendingreview may require recompute if algorithmmanifest changes; no automatic approval/publication.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-796bfa5b-4342-4648-8f7d-62fe3d66b02e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T14:31:01.369411Z",
+  "updated_at": "2026-10-05T14:31:49.265585Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The team is investigating nondeterministic UMAP clustering coordinates across CI runs.",
+  "right_now_updated_at": "2026-10-05T14:31:51.838278Z",
+  "custom": {}
+}

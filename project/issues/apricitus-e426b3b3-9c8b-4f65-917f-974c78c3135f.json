@@ -58,17 +58,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "fb2258be-5fc0-46a2-99d4-223faeeb0c2e",
+      "author": "home",
+      "text": "Clean-install fix is effective: hosted Gherkin vocabulary succeeded. CI now exposes a genuine M4 reproducibility failure (run37324929131:161 ground tests passed, repeated real clustering test differs in2D display coordinates). Filed79f228 for actual seeded-initialization repair; do not weaken test or close CI chore while ground gate red. Current real-library draft remains private pending listening/reproducibility review.",
+      "created_at": "2026-10-05T14:31:56.496963Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T22:43:03.807522Z",
-  "updated_at": "2026-10-05T14:07:23.529217Z",
+  "updated_at": "2026-10-05T14:31:56.496997Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Hosted CI still fails at clean npm ci because four OpenTelemetry lock entries are missing; repair and rerun are pending.",
-  "right_now_updated_at": "2026-10-05T14:07:26.019691Z",
+  "right_now_summary": "CI exposes a real clustering reproducibility failure: repeated seeded runs produce different 2D coordinates.",
+  "right_now_updated_at": "2026-10-05T14:31:58.723715Z",
   "custom": {}
 }
