@@ -116,7 +116,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The work is paused pending M0 parity and cloud, mobile, listening, and publication checks.",
-  "right_now_updated_at": "2026-10-05T16:20:44.237323Z",
+  "right_now_summary": "M0 parity, cloud integration, listening review, and cluster publication still need verification.",
+  "right_now_updated_at": "2026-10-05T16:24:45.268081Z",
   "custom": {}
 }
