@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The native serve route awaits adapter acceptance and focused Rust tests.",
-  "right_now_updated_at": "2026-10-05T15:52:55.151842Z",
+  "right_now_summary": "The native serve adapter awaits acceptance while Rust tests and runtime safety checks are prepared.",
+  "right_now_updated_at": "2026-10-05T15:53:33.634192Z",
   "custom": {}
 }

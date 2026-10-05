@@ -94,17 +94,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "e8b10fda-5cea-4727-8032-5d53327a5b70",
+      "author": "home",
+      "text": "Hosted run37335513390 at07d4adc4 completed all four jobs successfully: new cloud runtime/authenticated browser transport/public cluster projection verified with Rust workspace, Web, Semantic ground contracts, Gherkin vocabulary. Next bounded delivery4e468e browser /sounds routes+cards,853b7c current native library public projection adapter,1fb502 bounded native HTTPbridge. All three contracts recorded before coding, Terra remains implementation-only. Public visibility always mandatory; real591-cluster draft remains pending listening review, no automatic publication. Cloud deployment/ANN and mobile compatibility gates remain separate unfinished.",
+      "created_at": "2026-10-05T15:53:56.144620Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:38:52.978632Z",
-  "updated_at": "2026-10-05T14:41:21.463339Z",
+  "updated_at": "2026-10-05T15:53:56.144722Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Work has resumed, but key cloud, mobile, listening, and cluster review gates remain unverified.",
-  "right_now_updated_at": "2026-10-05T15:53:05.006371Z",
+  "right_now_summary": "Work is paused while M0 parity, cloud/ANN integration, listening review, and publication gates await verification.",
+  "right_now_updated_at": "2026-10-05T15:53:58.629188Z",
   "custom": {}
 }
