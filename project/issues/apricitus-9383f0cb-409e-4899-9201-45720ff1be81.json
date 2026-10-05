@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Local exact search is accepted, while cloud HTTP wiring and deployment checks still need work.",
-  "right_now_updated_at": "2026-10-05T15:08:37.757886Z",
+  "right_now_summary": "Cloud HTTP wiring and final deterministic acceptance checks remain before this issue is complete.",
+  "right_now_updated_at": "2026-10-05T15:13:08.922103Z",
   "custom": {}
 }

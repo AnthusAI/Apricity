@@ -10,16 +10,29 @@
   "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e8ed27b5-3b49-4a88-94aa-e42c66d5fee6",
+      "author": "home",
+      "text": "Supervisor preliminary runtime proof: nonempty invalid Cognito pool configuration causes createSemanticRuntime.handle to throw uncaught Error before HTTP boundary, instead of required sanitized503. Test exact invalid pool/origin/config plus disabled operations before verifier construction. Origins should parse exact URL.origin (no path/userinfo/wildcard), and runtime constructor/port failures must never escape raw. Also web/package.json was edited despite root-owned registration exclusion; root will reconcile exact lists after handoff, no dependency expansion accepted. Continue bounded scope; root waits for terminal handoff before edits.",
+      "created_at": "2026-10-05T15:13:05.596536Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T15:02:12.897924Z",
-  "updated_at": "2026-10-05T15:08:33.182142Z",
+  "updated_at": "2026-10-05T15:13:05.596595Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The semantic Lambda runtime is being wired to AWS storage, search, related audio, and verified HTTP services.",
-  "right_now_updated_at": "2026-10-05T15:08:35.208603Z",
+  "right_now_summary": "The team is fixing runtime config errors so invalid settings return safe 503 responses without any reads.",
+  "right_now_updated_at": "2026-10-05T15:13:07.632895Z",
   "custom": {}
 }
