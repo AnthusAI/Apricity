@@ -10,16 +10,29 @@
   "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "3b3c803b-43ec-4e32-96ff-3b125448fc7b",
+      "author": "home",
+      "text": "Terra native packet terminated with prerequisite evidence: apricity-cli existing Tokio features omit process/time. Supervisor approves only adding existing Tokio process/time features in crates/apricity-cli/Cargo.toml plus mechanical lock change if required, no library version/new dependency changes. Necessary for direct spawn, deadline and terminate/reap guarantee; scope now explicitly includes that manifest feature adjustment. Baseline focused test passed stable1.98.1; keep explicit matching RUSTC/RUSTDOC. No livepreviewrestart or broader dependency changes.",
+      "created_at": "2026-10-05T15:55:48.409060Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T15:52:53.430029Z",
-  "updated_at": "2026-10-05T15:53:31.800162Z",
+  "updated_at": "2026-10-05T15:55:48.409341Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The native serve adapter awaits acceptance while Rust tests and runtime safety checks are prepared.",
-  "right_now_updated_at": "2026-10-05T15:53:33.634192Z",
+  "right_now_summary": "The adapter awaits Tokio process/time features before focused tests can run.",
+  "right_now_updated_at": "2026-10-05T15:55:50.855175Z",
   "custom": {}
 }

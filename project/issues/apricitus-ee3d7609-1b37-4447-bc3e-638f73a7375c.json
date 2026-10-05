@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "UI routes remain unimplemented; data and serve-layer work await integration.",
-  "right_now_updated_at": "2026-10-05T15:55:20.516422Z",
+  "right_now_summary": "Route work is pending while the team finishes the data adapter and UI implementation.",
+  "right_now_updated_at": "2026-10-05T15:55:53.203480Z",
   "custom": {}
 }
