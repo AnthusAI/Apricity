@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is testing cluster views and reviewing worker fixes before approval and publication.",
-  "right_now_updated_at": "2026-10-05T15:10:57.305652Z",
+  "right_now_summary": "Tests pass, but library approval and publication are still pending.",
+  "right_now_updated_at": "2026-10-05T15:12:01.716556Z",
   "custom": {}
 }
