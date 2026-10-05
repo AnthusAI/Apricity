@@ -52,6 +52,7 @@ PYTHON_TESTS = (
     "analysis/tests/test_cluster_worker.py",
     "analysis/tests/test_semantic_worker_command.py",
     "analysis/tests/test_cluster_publication.py",
+    "analysis/tests/test_cluster_exploration.py",
     "analysis/tests/test_semantic_ci.py",
 )
 
