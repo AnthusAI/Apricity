@@ -10,6 +10,8 @@ from ...audio_clusters import AlgorithmDependencyError, cluster_snapshot
 from ...cluster_corpus import build_cluster_snapshot
 from ...cluster_runs import prepare_run, save_draft_run
 from ...cluster_summaries import build_cluster_summaries
+from ...cluster_jobs import ClusterJobService
+from ...cluster_worker import run_once
 
 
 def add_parser(subparsers):
@@ -22,6 +24,13 @@ def add_parser(subparsers):
     cluster.add_argument("--output", required=True, type=Path, help="draft artifact root (runs/ is created below it)")
     cluster.add_argument("--json", action="store_true", help="print the complete immutable manifest")
     cluster.set_defaults(func=run_cluster)
+    worker = commands.add_parser("worker", help="execute at most one leased local cluster job")
+    worker.add_argument("--control-root", required=True, type=Path, help="private local cluster-job control root")
+    worker.add_argument("--runs-root", required=True, type=Path, help="local immutable draft artifact root")
+    worker.add_argument("--corpus", required=True, type=Path, help="current published semantic corpus JSON")
+    worker.add_argument("--catalog", required=True, type=Path, help="current canonical catalog JSON")
+    worker.add_argument("--worker-id", required=True, help="server-configured ground worker identity")
+    worker.set_defaults(func=run_worker)
 
 
 def _read(path: Path, label: str) -> dict[str, Any]:
@@ -82,3 +91,28 @@ def run_cluster(args) -> int:
         print(json.dumps({"error": {"code": "cluster_failed", "message": str(error), "retryable": False}}, sort_keys=True)); return 2
     print(json.dumps(packet if args.json else {"runId": packet["runId"], "manifest": str(manifest), "state": "draft", "qualityReview": packet["qualityReview"]}, sort_keys=True))
     return 0
+
+
+class _GroundWorker:
+    """The CLI creates this trusted local capability; it is never request input."""
+    is_cluster_worker = True
+
+    def __init__(self, identifier: str): self.id = identifier
+
+
+def run_worker(args) -> int:
+    """Run one job only and emit a token-free JSON status line."""
+    try:
+        worker = _GroundWorker(args.worker_id)
+        service = ClusterJobService(args.control_root, args.runs_root)
+        vocabulary_path = Path(__file__).resolve().parents[4] / "fixtures" / "semantic-audio" / "concept-vocabulary-v1.json"
+        outcome = run_once(service, worker, lambda: _read(args.corpus, "corpus"),
+                           lambda: _catalog(_read(args.catalog, "catalog")), args.runs_root,
+                           _read(vocabulary_path, "concept vocabulary"))
+    except Exception:
+        # Startup/control failures must not disclose local paths, credentials,
+        # or tracebacks; they are retriable capacity failures to the operator.
+        print(json.dumps({"state": "unavailable", "error": "temporary_capacity"}, sort_keys=True)); return 2
+    # run_once deliberately returns only public state, job id, and allowlisted code.
+    print(json.dumps(outcome, sort_keys=True))
+    return 0 if outcome["state"] in {"idle", "draft"} else 2

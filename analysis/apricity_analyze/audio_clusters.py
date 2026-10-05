@@ -143,6 +143,7 @@ def _as_coordinates(values: Any, count: int, dimensions: int) -> list[list[float
 
 
 def cluster_snapshot(snapshot: Mapping[str, object], preset: str, *,
+                     parameters: Mapping[str, object] | None = None,
                      reducer_factory: Callable[..., Any] | None = None,
                      display_factory: Callable[..., Any] | None = None,
                      clusterer_factory: Callable[..., Any] | None = None,
@@ -155,7 +156,18 @@ def cluster_snapshot(snapshot: Mapping[str, object], preset: str, *,
     if preset not in PRESETS:
         raise ValueError("preset must be broad, useful, or fine")
     regions, _dimensions = _validate_snapshot(snapshot)
-    requested = dict(PRESETS[preset])
+    if parameters is None:
+        requested = dict(PRESETS[preset])
+    else:
+        limits = {"neighbors": (2, 200), "minClusterSize": (2, 500), "minSamples": (1, 100)}
+        if not isinstance(parameters, Mapping) or set(parameters) != set(limits):
+            raise ValueError("parameters must contain exactly neighbors, minClusterSize, and minSamples")
+        requested = {}
+        for name, (lower, upper) in limits.items():
+            value = parameters[name]
+            if isinstance(value, bool) or not isinstance(value, int) or not lower <= value <= upper:
+                raise ValueError(f"invalid {name}")
+            requested[name] = value
     dependency_versions = dict(versions) if versions is not None else _versions()
     required_versions = set(_VERSION_PACKAGES)
     if set(dependency_versions) != required_versions or not all(isinstance(value, str) and value for value in dependency_versions.values()):

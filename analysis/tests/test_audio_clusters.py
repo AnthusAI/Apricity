@@ -13,7 +13,7 @@ import sys
 import numpy
 import pytest
 
-from apricity_analyze.audio_clusters import ALGORITHM_REVISION, AlgorithmDependencyError, cluster_snapshot
+from apricity_analyze.audio_clusters import ALGORITHM_REVISION, AlgorithmDependencyError, PRESETS, cluster_snapshot
 from apricity_analyze.clap import EMBED_DIM, EMBEDDING_SPACE
 from apricity_analyze.cluster_runs import prepare_run, save_draft_run
 
@@ -152,6 +152,28 @@ def test_small_corpus_bypasses_invalid_algorithms_and_has_deterministic_uncluste
     assert all(math.isfinite(member["x"]) and math.isfinite(member["y"]) for member in result["members"])
 
 
+def test_exact_validated_parameter_overrides_are_recorded_without_mutating_presets():
+    before = copy.deepcopy(PRESETS)
+    result = cluster_snapshot(snapshot(), "fine", parameters={"neighbors": 7, "minClusterSize": 4, "minSamples": 2}, **seams())
+
+    assert result["requestedParams"] == {"neighbors": 7, "minClusterSize": 4, "minSamples": 2}
+    assert result["effectiveParams"]["neighbors"] == 5  # current corpus clamp
+    assert PRESETS == before
+
+
+@pytest.mark.parametrize("parameters", [
+    {}, {"neighbors": 2, "minClusterSize": 2},
+    {"neighbors": True, "minClusterSize": 2, "minSamples": 1},
+    {"neighbors": 1, "minClusterSize": 2, "minSamples": 1},
+    {"neighbors": 2, "minClusterSize": 501, "minSamples": 1},
+    {"neighbors": 2, "minClusterSize": 2, "minSamples": 101},
+    {"neighbors": 2, "minClusterSize": 2, "minSamples": 1, "unknown": 3},
+])
+def test_parameter_overrides_require_exact_nonboolean_bounded_keys(parameters):
+    with pytest.raises(ValueError):
+        cluster_snapshot(snapshot(), "fine", parameters=parameters, **seams())
+
+
 def test_snapshot_contract_rejects_unsorted_regions_duplicate_aliases_wrong_size_nonunit_and_non_numeric_vectors_and_wrong_space():
     for mutate in (
         lambda value: value["regions"].reverse(),
@@ -211,11 +233,11 @@ def test_actual_algorithm_is_reproducible_after_global_numpy_rng_perturbation():
 
 def _fresh_process_result() -> str:
     source_path = Path(__file__).resolve().parents[1]
-    environment = dict(os.environ, PYTHONPATH=str(source_path))
+    environment = dict(os.environ, PYTHONPATH=os.pathsep.join((str(source_path / "tests"), str(source_path))))
     program = """
 import json
 from apricity_analyze.audio_clusters import cluster_snapshot
-from tests.test_audio_clusters import snapshot
+from test_audio_clusters import snapshot
 print(json.dumps(cluster_snapshot(snapshot(8), 'fine'), sort_keys=True, separators=(',', ':')))
 """
     completed = subprocess.run(
@@ -245,7 +267,7 @@ def test_actual_algorithm_has_identical_pinned_dependency_output_in_fresh_proces
 
 
 def test_algorithm_revision_mapping_is_carried_into_immutable_run_identity(tmp_path: Path):
-    from tests.test_cluster_runs import packets
+    from test_cluster_runs import packets
 
     actual = cluster_snapshot(snapshot(), "fine", **seams())
     assert actual["algorithmVersions"]["apricity-audio-clusters"] == ALGORITHM_REVISION
