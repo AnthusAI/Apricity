@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Cloud search still needs HTTP wiring and auth checks, while local exact search is verified; sandbox recall remains",
-  "right_now_updated_at": "2026-10-05T14:49:12.557265Z",
+  "right_now_summary": "The team is fixing token expiry and disabled-endpoint checks before rerunning security tests.",
+  "right_now_updated_at": "2026-10-05T14:56:27.111076Z",
   "custom": {}
 }
