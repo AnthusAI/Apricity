@@ -47,6 +47,8 @@ export interface Route {
   run?: string;
   preset?: ClusterPreset;
   soundOrder?: "samples" | "clips";
+  /** Show the two-dimensional projection rather than the cluster leaderboard. */
+  soundMap?: boolean;
   /** A run-bound cluster id: `<runId>:<numeric label>`. */
   clusterId?: string;
   members?: "similarity" | "rating";
@@ -90,13 +92,14 @@ export function parse(pathname: string, search = "", hash = ""): Route {
   }
   if (page === "sounds") {
     const query = new URLSearchParams(search);
-    const allowed = new Set(["run", "preset", "order", "members"]);
+    const allowed = new Set(["run", "preset", "order", "members", "map"]);
     const run = query.get("run") ?? undefined;
     const preset = query.get("preset") ?? undefined;
     const order = query.get("order") ?? undefined;
     const members = query.get("members") ?? undefined;
+    const map = query.get("map") ?? undefined;
     const duplicate = [...allowed].some((key) => query.getAll(key).length > 1);
-    const invalidQuery = duplicate || [...query.keys()].some((key) => !allowed.has(key)) || (run !== undefined && !/^[0-9a-f]{64}$/.test(run)) || (preset !== undefined && !["broad", "useful", "fine"].includes(preset)) || (order !== undefined && !["samples", "clips"].includes(order)) || (members !== undefined && !["similarity", "rating"].includes(members)) || (rest.length === 0 && members !== undefined) || (rest.length === 1 && order !== undefined);
+    const invalidQuery = duplicate || [...query.keys()].some((key) => !allowed.has(key)) || (run !== undefined && !/^[0-9a-f]{64}$/.test(run)) || (preset !== undefined && !["broad", "useful", "fine"].includes(preset)) || (order !== undefined && !["samples", "clips"].includes(order)) || (members !== undefined && !["similarity", "rating"].includes(members)) || (map !== undefined && map !== "1") || (rest.length === 0 && members !== undefined) || (rest.length === 0 && map !== undefined && order !== undefined) || (rest.length === 1 && (order !== undefined || map !== undefined));
     if (rest.length > 1) return { page, invalidSoundCluster: true };
     if (rest.length === 1) {
       const clusterId = rest[0]!;
@@ -104,7 +107,7 @@ export function parse(pathname: string, search = "", hash = ""): Route {
       if (!match || (run !== undefined && run !== match[1])) return { page, invalidSoundCluster: true };
       return { page, clusterId, ...(run ? { run } : {}), ...(preset ? { preset: preset as ClusterPreset } : {}), ...(members ? { members: members as "similarity" | "rating" } : {}), ...(invalidQuery ? { invalidSoundQuery: true } : {}) };
     }
-    return { page, ...(run ? { run } : {}), ...(preset ? { preset: preset as ClusterPreset } : {}), ...(order ? { soundOrder: order as "samples" | "clips" } : {}), ...(invalidQuery ? { invalidSoundQuery: true } : {}) };
+    return { page, ...(run ? { run } : {}), ...(preset ? { preset: preset as ClusterPreset } : {}), ...(order ? { soundOrder: order as "samples" | "clips" } : {}), ...(map === "1" ? { soundMap: true } : {}), ...(invalidQuery ? { invalidSoundQuery: true } : {}) };
   }
   if (page === "listen") {
     if (rest.length === 1 && safe(rest)) return { page, listenCycle: rest[0] };
@@ -147,7 +150,8 @@ export function href(r: Route): string {
       if (r.members) query.set("members", r.members);
       return `/sounds/${enc([r.clusterId])}${query.size ? `?${query}` : ""}`;
     }
-    if (r.soundOrder) query.set("order", r.soundOrder);
+    if (r.soundMap) query.set("map", "1");
+    else if (r.soundOrder) query.set("order", r.soundOrder);
     return `/sounds${query.size ? `?${query}` : ""}`;
   }
   if (r.page === "listen" && r.listenCycle) return `/listen/${enc([r.listenCycle])}`;

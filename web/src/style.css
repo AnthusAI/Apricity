@@ -764,6 +764,19 @@ body.nav-open { overflow: hidden; }
 .cluster-card a { color: var(--fg); }
 .cluster-state { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--muted); }
 .cluster-state.unavailable { border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); color: var(--bad); }
+.cluster-map-summary { margin: 0 0 10px; color: var(--muted); }
+.cluster-map { margin: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: color-mix(in srgb, var(--accent) 5%, var(--panel)); }
+.cluster-map svg { display: block; width: 100%; height: min(62vw, 560px); min-height: 260px; background-image: linear-gradient(color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px); background-size: 10% 10%; }
+.cluster-map figcaption { padding: 10px 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.cluster-map-point { fill: var(--accent); opacity: .72; cursor: pointer; transition: opacity .12s ease, r .12s ease; }
+.cluster-map-point.outlier { fill: var(--muted); }
+.cluster-map-point:hover, .cluster-map-point.selected { opacity: 1; stroke: var(--fg); stroke-width: 2; }
+.cluster-map-selection, .cluster-map-alternative { display: grid; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.cluster-map-selection h2, .cluster-map-alternative h2, .cluster-map-alternative p { margin: 0; }
+.cluster-map-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.cluster-map-list-point { width: 100%; text-align: left; font: inherit; color: var(--fg); background: transparent; border: 1px solid transparent; border-radius: 7px; padding: 7px 9px; cursor: pointer; }
+.cluster-map-list-point:hover, .cluster-map-list li[aria-current="true"] .cluster-map-list-point { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.cluster-map-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 
 /* The one filter bar (ui/filter-bar.ts): stays in view as the cards scroll, with no rule under it (the cards' own
    edges are enough). */
