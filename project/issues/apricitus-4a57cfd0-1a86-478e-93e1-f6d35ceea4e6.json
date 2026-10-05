@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is defining isolated cluster jobs with secure storage, access controls, leases, retries, and draft results.",
-  "right_now_updated_at": "2026-10-05T14:10:30.016313Z",
+  "right_now_summary": "The team is fixing validation, storage, lease handling, failure safety, and retry history gaps.",
+  "right_now_updated_at": "2026-10-05T14:21:45.720924Z",
   "custom": {}
 }

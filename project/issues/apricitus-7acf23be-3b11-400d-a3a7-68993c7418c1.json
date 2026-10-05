@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is building and testing cluster publishing, curator jobs, access controls, and accessible map views.",
-  "right_now_updated_at": "2026-10-05T14:10:31.851082Z",
+  "right_now_summary": "The team is fixing validation, worker leases, failure safety, retries, and access checks.",
+  "right_now_updated_at": "2026-10-05T14:21:47.755755Z",
   "custom": {}
 }

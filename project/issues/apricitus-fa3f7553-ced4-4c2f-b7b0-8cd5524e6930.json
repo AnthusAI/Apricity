@@ -10,16 +10,29 @@
   "parent": "apricitus-4a57cfd0-1a86-478e-93e1-f6d35ceea4e6",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2ebe0182-8fb1-4f08-9b13-5824f704b504",
+      "author": "home",
+      "text": "Supervisor review found contract gaps before acceptance: completion test only exercises a missing draft, not a valid matching immutable run; private lease expiry bookkeeping leaks in curator responses; preset arrays raise raw TypeError; storage interruptions escape as raw OSError; failure includes arbitrary caller text without structured code/safe message; retries remember only the latest actor request ID. Returning child for RED-first corrections and complete observable coverage. Allowed integration expansion: .github/workflows/ci.yml plus analysis/tests/test_semantic_ci.py to register the new job test explicitly, with root owning those two files. No publication or trusted transport expansion.",
+      "created_at": "2026-10-05T14:21:42.038794Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:09:29.916753Z",
-  "updated_at": "2026-10-05T14:10:25.769251Z",
+  "updated_at": "2026-10-05T14:21:42.038823Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is defining isolated cluster jobs with atomic storage, trusted access, leases, retries, and draft completion.",
-  "right_now_updated_at": "2026-10-05T14:10:28.718667Z",
+  "right_now_summary": "The child is fixing contract gaps in validation, storage errors, lease handling, failure safety, and retry history.",
+  "right_now_updated_at": "2026-10-05T14:21:43.763657Z",
   "custom": {}
 }
