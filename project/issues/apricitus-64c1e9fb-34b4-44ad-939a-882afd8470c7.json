@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Publication and record guards pass, but cloud retrieval and clustering reproducibility still need fixes.",
-  "right_now_updated_at": "2026-10-05T15:13:13.593895Z",
+  "right_now_summary": "Semantic records and local search pass, while cloud retrieval and seeded clustering reproducibility still need fixes.",
+  "right_now_updated_at": "2026-10-05T15:15:04.841177Z",
   "custom": {}
 }
