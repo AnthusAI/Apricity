@@ -3,23 +3,31 @@
   "title": "Keep board-only pushes from canceling product CI verification",
   "description": "Observed frequent required Kanbus board commits cancel active product CI because every develop push shares cancel-in-progress concurrency. Purpose preserve actual product verification and reduce wasted runs. Allowed .github/workflows/ci.yml and analysis/tests/test_semantic_ci.py only. Push trigger keeps develop/main branches and adds paths-ignore exactly project/issues/** and project/events/**; all product or mixed changes still trigger. Pull-request and manual triggers unchanged; existing jobs/concurrency unchanged. No skip-ci commit messages or disabling tests, no releaseworkflow changes. Gherkin Given product verification running When board-only commit pushed Then no replacement CI run is triggered; Given any product change or mixed board/product push Then ordinary CI runs. RED regression YAML asserts exact narrow ignoredpaths/preservedbranches PRmanual/concurrency; GREEN same plus existing registrytest. Root implements small workflow change, runs isolatedCItests, reviews/pushes single scopedcommit beforeclosure. No reading or editing boardJSON, only Kanbus.",
   "type": "chore",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "4e595510-f8af-4027-98ff-99031136d84d",
+      "author": "home",
+      "text": "Landed8eb0a9e9 after meaningful RED assertion then2CIregistry tests green and diffreview. Only push ignores issue/event paths; mixed/product pushes still run and PR/manual/concurrency/jobs unchanged. Hosted result pending separateCI task.",
+      "created_at": "2026-10-05T15:20:13.103521Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-05T15:18:47.242807Z",
-  "updated_at": "2026-10-05T15:19:17.826096Z",
-  "closed_at": null,
+  "updated_at": "2026-10-05T15:20:19.763930Z",
+  "closed_at": "2026-10-05T15:20:19.763889Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is preparing a narrow CI workflow change to ignore board-only pushes.",
-  "right_now_updated_at": "2026-10-05T15:19:20.366481Z",
+  "right_now_summary": "The workflow change is landed, and a separate hosted CI check awaits its result.",
+  "right_now_updated_at": "2026-10-05T15:20:23.040585Z",
   "custom": {}
 }

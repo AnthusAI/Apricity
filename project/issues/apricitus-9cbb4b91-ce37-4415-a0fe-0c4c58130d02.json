@@ -104,7 +104,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The semantic audio work is unfinished, with browser parity, cloud retrieval, mobile checks, and review still pending.",
-  "right_now_updated_at": "2026-10-05T15:19:25.104600Z",
+  "right_now_summary": "Semantic audio work resumed, but cloud, mobile, listening, and cluster publication checks remain unfinished.",
+  "right_now_updated_at": "2026-10-05T15:20:27.166741Z",
   "custom": {}
 }

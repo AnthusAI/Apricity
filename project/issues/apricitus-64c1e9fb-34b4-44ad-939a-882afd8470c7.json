@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Semantic publication and local search pass, but cloud retrieval and ANN recall validation still need completion.",
-  "right_now_updated_at": "2026-10-05T15:19:23.278466Z",
+  "right_now_summary": "Core records and local search pass; cloud retrieval, deployment, recall evidence, and clustering reproducibility remain.",
+  "right_now_updated_at": "2026-10-05T15:20:25.535777Z",
   "custom": {}
 }
