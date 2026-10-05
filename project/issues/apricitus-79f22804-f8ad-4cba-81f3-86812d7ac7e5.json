@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "5f74ca83-ffdb-4a49-89df-32b7665282b7",
+      "author": "home",
+      "text": "Supervisor reviewed source and tests, reran clustering/summaries/immutable-run checks: 66 passed, zero skipped. Landed a200a5fc on develop with explicit seeded random initialization and carried algorithm version that changes immutable run identity; design updated. Existing real draft remains unchanged and unapproved. Issue remains in progress until hosted Linux verification succeeds.",
+      "created_at": "2026-10-05T14:49:26.448224Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T14:31:01.369411Z",
-  "updated_at": "2026-10-05T14:39:52.706817Z",
+  "updated_at": "2026-10-05T14:49:26.448252Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is fixing provenance so the reproducibility change updates run IDs before review.",
-  "right_now_updated_at": "2026-10-05T14:39:54.720879Z",
+  "right_now_summary": "Hosted Linux verification is still pending after the seeded initialization and provenance fixes landed.",
+  "right_now_updated_at": "2026-10-05T14:49:28.301822Z",
   "custom": {}
 }

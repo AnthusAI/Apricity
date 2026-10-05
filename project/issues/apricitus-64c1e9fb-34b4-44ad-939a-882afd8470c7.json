@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Semantic publishing and guards work, but cloud retrieval, ANN recall evidence, and clustering reproducibility need",
-  "right_now_updated_at": "2026-10-05T14:47:44.938922Z",
+  "right_now_summary": "Semantic records are verified, but cloud retrieval and recall evidence still await integration and reproducibility",
+  "right_now_updated_at": "2026-10-05T14:49:15.517658Z",
   "custom": {}
 }
