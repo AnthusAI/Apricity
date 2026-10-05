@@ -39,7 +39,8 @@ struct Shared {
 /// Build the whole application for a library served at `origin` (e.g. `http://127.0.0.1:5181`).
 pub fn app(library: Library, origin: &str, web: Option<PathBuf>) -> Result<Router, String> {
     let store = Box::new(FsFiles::new(library.path().join("files")));
-    app_with_store(library, origin, web, store)
+    let clusters = crate::cluster_bridge::ClusterConfig::disabled(library.path());
+    app_with_store_and_cluster_config(library, origin, web, store, clusters)
 }
 
 /// Like [`app`], serving `/files/*key` from any `Files` store (a folder, or S3).
@@ -48,6 +49,28 @@ pub fn app_with_store(
     origin: &str,
     web: Option<PathBuf>,
     store: Box<dyn Files>,
+) -> Result<Router, String> {
+    let clusters = crate::cluster_bridge::ClusterConfig::disabled(library.path());
+    app_with_store_and_cluster_config(library, origin, web, store, clusters)
+}
+
+/// Like [`app`], with the startup-only cluster bridge configuration explicitly supplied.
+pub fn app_with_cluster_config(
+    library: Library,
+    origin: &str,
+    web: Option<PathBuf>,
+    clusters: crate::cluster_bridge::ClusterConfig,
+) -> Result<Router, String> {
+    let store = Box::new(FsFiles::new(library.path().join("files")));
+    app_with_store_and_cluster_config(library, origin, web, store, clusters)
+}
+
+fn app_with_store_and_cluster_config(
+    library: Library,
+    origin: &str,
+    web: Option<PathBuf>,
+    store: Box<dyn Files>,
+    clusters: crate::cluster_bridge::ClusterConfig,
 ) -> Result<Router, String> {
     let mut library = library;
     let api_key = library.ensure_api_key().map_err(|e| e.to_string())?;
@@ -69,6 +92,7 @@ pub fn app_with_store(
         "custom": { "apricity": {
             "mode": "local",
             "semanticUrl": "/semantic",
+            "clusterEnabled": clusters.enabled_flag(),
             "identity": { "sub": metadata.identity.sub, "groups": metadata.identity.groups },
         }},
     });
@@ -115,6 +139,7 @@ pub fn app_with_store(
         )
         .fallback(static_file)
         .with_state(state)
+        .merge(crate::cluster_bridge::router(clusters))
         .merge(graphql)
         .layer(middleware::map_response(isolation_headers)))
 }
@@ -458,7 +483,12 @@ async fn static_file(
 }
 
 /// Open the library and serve it until the process is stopped.
-pub fn run(library: &Path, port: u16, web: Option<PathBuf>) -> Result<(), String> {
+pub fn run(
+    library: &Path,
+    port: u16,
+    web: Option<PathBuf>,
+    clusters: crate::cluster_bridge::ClusterConfig,
+) -> Result<(), String> {
     let lib = Library::open(library, None).map_err(|e| format!("{}: {e}", library.display()))?;
     let web = web.or_else(|| Some(PathBuf::from("web/dist")).filter(|p| p.is_dir()));
     let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
@@ -467,7 +497,7 @@ pub fn run(library: &Path, port: u16, web: Option<PathBuf>) -> Result<(), String
             .await
             .map_err(|e| format!("bind 127.0.0.1:{port}: {e}"))?;
         let addr = listener.local_addr().map_err(|e| e.to_string())?;
-        let app = app(lib, &format!("http://{addr}"), web.clone())?;
+        let app = app_with_cluster_config(lib, &format!("http://{addr}"), web.clone(), clusters)?;
         match &web {
             Some(w) => println!("web app: {}", w.display()),
             None => println!("web app: not built (web/dist missing); / will answer 404"),
@@ -951,5 +981,33 @@ mod tests {
         assert_eq!(parse_range(Some("bytes=0-0"), 10), Range::Bytes(0, 0));
         assert_eq!(parse_range(Some("bytes=0-0"), 0), Range::Unsatisfiable);
         assert_eq!(parse_range(Some("bytes=-5"), 3), Range::Bytes(0, 2));
+    }
+
+    #[tokio::test]
+    async fn cluster_route_is_disabled_by_default_and_rejects_bad_queries_before_a_child() {
+        let f = fixture(false);
+        let (status, _, _) = send(
+            &f.app,
+            req("GET", "/semantic/clusters?unknown=value", &[], b""),
+        )
+        .await;
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+        let (_, _, outputs) = send(&f.app, req("GET", "/amplify_outputs.json", &[], b"")).await;
+        let outputs: Value = serde_json::from_slice(&outputs).unwrap();
+        assert_eq!(outputs["custom"]["apricity"]["clusterEnabled"], false);
+
+        let config = crate::cluster_bridge::ClusterConfig::enabled(
+            f.root.clone(),
+            PathBuf::from("/usr/bin/true"),
+        )
+        .unwrap();
+        let lib = Library::open(&f.root, None).unwrap();
+        let app = app_with_cluster_config(lib, "http://127.0.0.1:5181", None, config).unwrap();
+        let (status, _, _) = send(
+            &app,
+            req("GET", "/semantic/clusters?unknown=value", &[], b""),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
     }
 }

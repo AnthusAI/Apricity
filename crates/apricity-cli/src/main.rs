@@ -2,6 +2,7 @@
 
 mod check;
 mod cloud;
+mod cluster_bridge;
 mod migrate;
 mod play;
 mod render;
@@ -98,6 +99,12 @@ enum Cmd {
         /// Built web app to serve at / (default: web/dist when it exists).
         #[arg(long)]
         web: Option<PathBuf>,
+        /// Enable the bounded local bridge for reviewed semantic cluster projections.
+        #[arg(long, default_value_t = false)]
+        semantic_clusters: bool,
+        /// Absolute trusted Python executable used only by --semantic-clusters.
+        #[arg(long)]
+        cluster_python: Option<PathBuf>,
     },
     /// Keep a library and a bucket (or folder) identical: push, pull, or show the plan.
     Sync {
@@ -446,8 +453,30 @@ fn main() -> ExitCode {
             }
         };
     }
-    if let Cmd::Serve { library, port, web } = &cli.cmd {
-        return match serve::run(library, *port, web.clone()) {
+    if let Cmd::Serve {
+        library,
+        port,
+        web,
+        semantic_clusters,
+        cluster_python,
+    } = &cli.cmd
+    {
+        let clusters = if *semantic_clusters {
+            let Some(python) = cluster_python.clone() else {
+                eprintln!("--cluster-python is required with --semantic-clusters");
+                return ExitCode::FAILURE;
+            };
+            match cluster_bridge::ClusterConfig::enabled(library.clone(), python) {
+                Ok(config) => config,
+                Err(e) => {
+                    eprintln!("{e}");
+                    return ExitCode::FAILURE;
+                }
+            }
+        } else {
+            cluster_bridge::ClusterConfig::disabled(library.clone())
+        };
+        return match serve::run(library, *port, web.clone(), clusters) {
             Ok(()) => ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("{e}");
