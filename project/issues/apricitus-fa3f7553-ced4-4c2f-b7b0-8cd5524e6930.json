@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-fa3f7553-ced4-4c2f-b7b0-8cd5524e6930",
+  "title": "Define leased cluster jobs and atomic local control storage",
+  "description": "Purpose: isolated ground/local M5 job domain and private control persistence, not public routes. Prerequisites: accepted M4 immutable draft command/run manifest and all-six specifications; public cloud integration remains gated. Allowed new analysis/apricity_analyze/cluster_jobs.py and test_cluster_jobs.py only; no server/browser/CDK/schema dependencies, no model changes, no automatic publication, no Kanbus/git/deploy actions by Terra. Root owns integration and security boundary.\n\nContract: request {requestId,embeddingSpace,preset,params:{neighbors,minClusterSize,minSamples},corpusRevision?}; strict keys/types, approved embedding space and broad/useful/fine presets. Integers exclude bool: neighbors2..200,minimum cluster size2..500,minimum samples1..100. Validation before persistence. Explicit server-trusted curator context required for enqueue/read/list/retry/draft status; browser-supplied role cannot be an authorization source. Worker methods require distinct injected trusted service identity; no guest controls. Root wires identities later. Idempotent requestId is scoped to requesting actor: identical normalized request reuses same job, conflicting request returns conflict. Job contains jobId/request/requestedBy,attempt,revision,history,queuedAt and state queued|running|failed|draft; published transition excluded.\n\nAtomic private local store uses lock + atomic replace, safe root/keys, no symlink traversal, no ordinary publicly-readable Job model. Offline leaves queued visibly; no scheduling execution on enqueue. claim one queued job or expired running lease atomically with new unpredictable token,workerId and10minute expiry. Racing workers only one wins; renewal/completion/failure require correct worker/token/revision and unexpired lease. Old token after reclaimed lease cannot mutate. Completion attaches an existing validated immutable draft run reference, not arbitrary URL/path or published pointer. Failure retains structured sanitized code/message/retryable + history and releases lease. Retry increments attempt, appends previous failure history, requeues retryable failed jobs idempotently using explicit retry requestId. Existing published runs/pointers untouched in every transition.\n\nObservability: explicit queued/running/error/draft state and revision/timestamps, no fake progress/completion; failed storage/CAS/safe-path operations structured retryable errors. No logging embeddings/audio/raw secrets. Deterministic clock/token fixtures test bounds/null/unknown types, invalid/guest/no writes, duplicate/conflicting requests, offline queue, multiprocessing claim race, renew/expiry/reclaim, stale token/revision, failed/retry history, draft completion guard and preserve published pointer, interruption/atomic replacement and unsafe roots/keys. Gherkin Offline queue and worker lease plus Retry and draft preview stories drive tests; binding integration follows in parent packet.\n\nVerification: PYTHONPATH=analysis analysis/.venv/bin/python -m pytest analysis/tests/test_cluster_jobs.py -q; existing cluster_run tests remain green. RED first, no skipped worker/auth claims. Handoff exact contracts, diff, RED/GREEN counts, concurrency evidence and unimplemented transport/worker/publication limitations. Supervisor reruns/lands child only; do not call M5 complete.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4a57cfd0-1a86-478e-93e1-f6d35ceea4e6",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T14:09:29.916753Z",
+  "updated_at": "2026-10-05T14:10:25.769251Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The team is defining isolated cluster jobs with atomic storage, trusted access, leases, retries, and draft completion.",
+  "right_now_updated_at": "2026-10-05T14:10:28.718667Z",
+  "custom": {}
+}
