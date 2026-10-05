@@ -3,7 +3,7 @@
   "title": "Wire semantic Lambda runtime to current AWS storage and verified HTTP services",
   "description": "Purpose: actual serverless runtime composition, not additional isolated service stubs. Prerequisites: accepted auth/HTTP, AWSstore and sampleGSI handoffs. Allowed new web/amplify/semantic/runtime.ts/runtime.test.ts and functions/semantic/handler.ts/resource.ts plus focused handler tests; backend.ts wiring and new semantic runtime CDK helper/tests if needed. Root owns package test registration. Exclusions browser transport, clustering, publisher changes, manual deploy or auth/model substitution; root reviews all IAM/dependency decisions.\n\nContract: runtime factory injectable DynamoDB SearchVectors/GetItem/Query send ports and bounded S3 reader; each invocation creates fresh AWSstore/cache, canonical hydrator with exact configured processingFingerprint, cloudsearch and relatedaudio services then verified HTTP handler. Module-level AWSclients/JWKS cache may be reused, canonical content/auth context may not. Environment trusted required semantic table/vector index/current Sample Recording Clip tables/storagebucket/Cognito poolclient/fingerprint/exact origin allowlist. Independent semanticSearchEnabled/semanticRelatedEnabled defaultfalse; invalid or absent required config structured503 no reads or inference. SearchVectors uses native index only, related uses sampleGSI, canonical GetItem consistent. S3 GetObject reads only configured bucket files/analysis prefix, stream cap16MiB enforced while reading not after unlimited materialization; NoSuchKey/404 null versus operational503. No external cloud inference/model download, no logging tokens/vectors/private data. Valid API Gateway v2 POST search/related uses current guarded metadata/playback and typed errors; disabled path no dependent operations. HTTPpublic guest never trusts request roles; signed access tokens verifier exact poolclient.\n\nInfrastructure: defineFunction matching repository Node runtime; HTTP API routes only POST /semantic/search and /semantic/related plus strict allowlist preflight, TLS managed API endpoint. Narrow Lambda IAM SearchVectors exactnativeindexARN; Query exactsampleGSIARN; GetItem only threecanonicaltableARNs; GetObject only files/analysis/* configuredbucket; no Scan/write/publicvector access or broad grantReadData. No DynamoDB streams. Add custom output semanticUrl and independent flags via existing outputs convention. Synthesize in tests and prove routeintegration/environment/indexARNactions/no excessivepermissions/no cycle; backend runtime exports no manualdeployment. Avoid package upgrades unless blocker returned with exact evidence.\n\nGherkin: Given published ANN candidate and current source When guestquery Then playable visible hit; Given hidden/retired/boundarychanged/incompatible source Then excluded; Given curator then guest sequentialinvocations Then no crosscontext/cache visibility leak; Given relatedsamplemultiplepassages Then stored sourceGSIquery and diversifiedresults; Given invalidtoken Then401 no stores; Given disabled/invalidconfig Then503 no stores; Given oversized/missing/outage S3 Then exact safe result; Given cloud infrastructure synth Then scoped routes/IAM/environment and defaultdisabled. Fixtures full real native AttributeValue/file SHA bytes plus deterministicSearchVectors results, locally signedRSA JWKS, no liveCognito credentials. Verify runtime/handler/CDK focusedtsx bothTS fullsemantic and CIregistry rootcwd, zero skips. Handoff REDGREENdiffcounts fullrequestflow explicit retainedlimits AWSsandboxANN/deployment/browser/mobile/listening not claims. Subagent no commitpushcloseKanbus/deploy.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -70,17 +70,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "60f90040-7c3b-4e53-a94e-3eb88b53c14c",
+      "author": "home",
+      "text": "Supervisor reviewed and reran real runtime/search/related/CDK tests and both TypeScript projects:135 semantic tests passed, zero skips; exact POST/OPTIONS routes, semantic base URL, disabled parameters, narrow IAM and acyclic standalone synth verified. Landed988c3c69 and pushed develop. Actual AWS deployment and ANN recall not evaluated; old CDK vector-schema warnings retained, no deployment proof.",
+      "created_at": "2026-10-05T15:46:40.863555Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T15:02:12.897924Z",
-  "updated_at": "2026-10-05T15:36:15.621543Z",
-  "closed_at": null,
+  "updated_at": "2026-10-05T15:46:47.778370Z",
+  "closed_at": "2026-10-05T15:46:47.778325Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The semantic runtime is being revised to fix endpoint wiring, prove real data flows, and tighten IAM tests.",
-  "right_now_updated_at": "2026-10-05T15:36:17.909220Z",
+  "right_now_summary": "Runtime wiring and tests passed; AWS deployment and ANN recall remain unverified, with existing CDK warnings retained.",
+  "right_now_updated_at": "2026-10-05T15:46:50.105311Z",
   "custom": {}
 }
