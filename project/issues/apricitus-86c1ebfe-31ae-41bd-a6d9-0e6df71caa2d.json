@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-86c1ebfe-31ae-41bd-a6d9-0e6df71caa2d",
+  "title": "Carry trusted current sign-in context on semantic browser requests",
+  "description": "Purpose: cloud search and related requests must carry current access-token authentication without trusting browser roles, caching a previous curator session, or leaking tokens to arbitrary origins. Existing M1 authenticated retrieval behavior applies. Allowed web/src/data/client.ts, web/src/data/semantic.ts, existing related client and focused client tests plus one shared transport helper/test. Exclude runtime/backend/outputs/flags/UI/model/dependencies and other agents files. Contract configured semanticUrl is API base including /semantic; server wiring must provide that base. Local requests never read Cognito or send Authorization. Cloud configured exact same-origin or HTTPS endpoint only; resolve current Amplify fetchAuthSession per request, send accessToken as Bearer only to validated configured semantic service. Anonymous session lacking tokens omits Authorization; actual auth/session retrieval failures produce retryable sanitized semantic error, not guest downgrade. Never send idToken, local identity/group strings or persist tokens. New request after sign-out obtains new session and cannot reuse old headers. Cancellation before/after asynchronous session resolution suppresses semantic fetch. Unconfigured/bootstrap failure never reuses stale endpoint; lexical results stay usable. Gherkin: Given local mode When search/related Then zero session reads and no Authorization; Given signed cloud curator Then current access token sent only to configured service; Given signout Then next request has no previous token; Given session outage Then sanitized retry state and no anonymous request; Given cancellation during auth Then no fetch. Deterministic injected auth/fetch fixtures no live credentials, RED then GREEN, both tsc and semantic tests. Terra no git/board/deploy; handoff diff/test counts/no-token evidence; root reruns and lands.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T15:33:38.711507Z",
+  "updated_at": "2026-10-05T15:34:14.477279Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "No recent activity is recorded; the authentication transport work remains specified but unimplemented.",
+  "right_now_updated_at": "2026-10-05T15:34:17.141823Z",
+  "custom": {}
+}
