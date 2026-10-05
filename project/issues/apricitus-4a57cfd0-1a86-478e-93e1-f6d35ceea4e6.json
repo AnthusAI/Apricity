@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The worker awaits handoff while heartbeat and failure-handling issues need review.",
-  "right_now_updated_at": "2026-10-05T15:06:44.667378Z",
+  "right_now_summary": "Work is underway on secure cluster job leases, retries, worker processing, and tests.",
+  "right_now_updated_at": "2026-10-05T15:16:17.612478Z",
   "custom": {}
 }

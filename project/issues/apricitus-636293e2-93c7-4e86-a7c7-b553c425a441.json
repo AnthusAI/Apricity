@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "eb6ae98c-9bdb-4a41-a5a8-e9b76d7426eb",
+      "author": "home",
+      "text": "Further current-source review: new broad BaseException handlers swallow KeyboardInterrupt/SystemExit and may mark an interrupted analysis as failed rather than leave its lease for expiry/reclaim. Required correction before acceptance: main-thread interruption propagates after bounded heartbeat shutdown; do not record failure/complete, no automatic retry. Add deterministic injected KeyboardInterrupt during compute/provider/save/claim and CLI interruption tests; daemon heartbeat may sanitize exceptional callback termination but must not swallow process cancellation at public worker boundary. Root will rerun after terminal handoff.",
+      "created_at": "2026-10-05T15:16:13.106349Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T14:55:13.865145Z",
-  "updated_at": "2026-10-05T15:06:40.104710Z",
+  "updated_at": "2026-10-05T15:16:13.106385Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The worker awaits handoff after review found heartbeat and failure-handling flaws.",
-  "right_now_updated_at": "2026-10-05T15:06:42.227374Z",
+  "right_now_summary": "Review found heartbeat and interruption flaws that can hide outages or stale results; fixes and tests are required.",
+  "right_now_updated_at": "2026-10-05T15:16:16.303931Z",
   "custom": {}
 }
