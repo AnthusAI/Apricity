@@ -46,17 +46,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "1cb9b2c8-b1fe-4958-a8fe-00ca4e7b0573",
+      "author": "home",
+      "text": "The reproducibility fix a200a5fc introduces carried algorithm version umap-random-init-seed42-v1. Recompute the current real local corpus into a separate immutable pending-review draft; preserve prior run bytes and leave publication pointer absent. This is ground analysis only, not curator approval or public rollout. Root will capture run identity, model/version, counts and pending quality state.",
+      "created_at": "2026-10-05T14:58:26.734097Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.287061Z",
-  "updated_at": "2026-10-05T14:14:49.494971Z",
+  "updated_at": "2026-10-05T14:58:26.734130Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The immutable draft run is restored, but quality review and explicit publication controls remain unfinished.",
-  "right_now_updated_at": "2026-10-05T14:14:52.423786Z",
+  "right_now_summary": "An immutable draft run was rebuilt from the current corpus; quality review and publication controls remain pending.",
+  "right_now_updated_at": "2026-10-05T14:58:29.358081Z",
   "custom": {}
 }

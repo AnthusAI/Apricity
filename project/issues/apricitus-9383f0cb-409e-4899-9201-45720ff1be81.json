@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Cloud search wiring and security tests continue; local search is accepted, but sandbox recall is not yet measured.",
-  "right_now_updated_at": "2026-10-05T14:57:36.210800Z",
+  "right_now_summary": "The typed cloud search service is ready, but HTTP integration and final validation remain.",
+  "right_now_updated_at": "2026-10-05T14:58:01.567502Z",
   "custom": {}
 }
