@@ -10,16 +10,29 @@
   "parent": "apricitus-4a57cfd0-1a86-478e-93e1-f6d35ceea4e6",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "58a92329-9dbc-4c51-afd6-611e4201c61f",
+      "author": "home",
+      "text": "Preliminary supervisor review of current worker: heartbeat catches LeaseError only, so storage outage can terminate the heartbeat thread without marking lease lost or reporting retryable failure. Broad execution Exception maps every outage/algorithm defect to nonretryable input_unavailable, contrary to explicit operational failure contract. Ensure storage/transient failures use existing safe allowlisted retryable worker_failed or lease_unavailable mapping as applicable, heartbeat exceptions cannot silently die, thread joins remain bounded, and original worker cannot adopt after heartbeat failure/reclaim. These are required handoff review points; do not weaken leases. Root waits for terminal handoff before correction edits.",
+      "created_at": "2026-10-05T15:06:40.104689Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:55:13.865145Z",
-  "updated_at": "2026-10-05T15:00:43.795633Z",
+  "updated_at": "2026-10-05T15:06:40.104710Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The ground worker contract is defined, but implementation and validation have not started.",
-  "right_now_updated_at": "2026-10-05T15:00:46.991939Z",
+  "right_now_summary": "The worker awaits handoff after review found heartbeat and failure-handling flaws.",
+  "right_now_updated_at": "2026-10-05T15:06:42.227374Z",
   "custom": {}
 }

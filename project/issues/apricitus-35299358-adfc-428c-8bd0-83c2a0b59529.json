@@ -46,17 +46,29 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "8772bd8c-13d5-49cb-83e9-8d82bec04777",
+      "author": "home",
+      "text": "Final verification: focused adapter suite is 8/8 green; web and Amplify TypeScript checks both pass; whitespace check passes. Added an explicit foreign embedding-space pre-query rejection after the prior log, so invalid source scope makes zero DynamoDB Query calls. The prior RED run hung at repeated `LastEvaluatedKey` until terminated, then passed after the fail-closed guard. No package/resource/GSI/deploy/Git changes made.",
+      "created_at": "2026-10-05T15:06:23.658709Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-10-05T14:26:14.459758Z",
-  "updated_at": "2026-10-05T15:04:37.531318Z",
+  "updated_at": "2026-10-05T15:06:23.658742Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "AWS adapter tests pass; runtime wiring, GSI integration, and root test registration remain.",
-  "right_now_updated_at": "2026-10-05T15:04:39.621529Z",
+  "right_now_summary": "AWS storage adapters are implemented and tested; TypeScript checks pass, but root test registration and GSI wiring",
+  "right_now_updated_at": "2026-10-05T15:06:25.218769Z",
   "custom": {}
 }

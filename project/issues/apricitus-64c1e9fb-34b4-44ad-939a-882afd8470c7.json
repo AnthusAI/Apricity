@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Semantic publication and retrieval work is nearly complete, but cloud deployment, recall evidence, and clustering fixes",
-  "right_now_updated_at": "2026-10-05T15:04:42.639295Z",
+  "right_now_summary": "Semantic publication and records pass checks, but cloud search integration, deployment, and recall evidence remain",
+  "right_now_updated_at": "2026-10-05T15:06:30.858782Z",
   "custom": {}
 }

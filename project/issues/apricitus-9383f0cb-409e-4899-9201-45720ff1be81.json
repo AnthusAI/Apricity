@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Cloud HTTP wiring and auth are underway; deterministic tests pass, but deployment and sandbox recall remain unfinished.",
-  "right_now_updated_at": "2026-10-05T15:04:41.100919Z",
+  "right_now_summary": "Local search works, but cloud HTTP wiring and sandbox recall testing are unfinished.",
+  "right_now_updated_at": "2026-10-05T15:06:28.159559Z",
   "custom": {}
 }
