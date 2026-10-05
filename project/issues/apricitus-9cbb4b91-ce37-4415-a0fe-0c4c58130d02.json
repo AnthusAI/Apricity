@@ -82,17 +82,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "c95cc93d-255e-481f-8a51-6e1a26294bb8",
+      "author": "home",
+      "text": "User acceptance observation2026-10-05: while viewing actual local Apricity /samples?q=conga+drums, user reports It seems to work. This confirms real-library search usability, not fixture harness acceptance or instrument-label/listening judgment. Preserve local preview for testing. Cloud runtime/ANN, designated mobile and cluster exploration/publication/listening gates remain unfinished; initiative stays in_progress.",
+      "created_at": "2026-10-05T14:41:21.463301Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:38:52.978632Z",
-  "updated_at": "2026-10-05T13:40:15.853172Z",
+  "updated_at": "2026-10-05T14:41:21.463339Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Implementation resumed, but cloud integration, browser compatibility, mobile checks, listening review, and exploration",
-  "right_now_updated_at": "2026-10-05T14:41:19.726092Z",
+  "right_now_summary": "Work has resumed, but cloud retrieval, browser parity, mobile checks, listening, and cluster publishing remain",
+  "right_now_updated_at": "2026-10-05T14:41:25.165854Z",
   "custom": {}
 }
