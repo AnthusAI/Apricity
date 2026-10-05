@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Local search is verified; cloud HTTP wiring and ANN sandbox validation remain.",
-  "right_now_updated_at": "2026-10-05T15:15:01.848074Z",
+  "right_now_summary": "The typed cloud search runtime and deployment wiring remain unfinished; local exact search is complete.",
+  "right_now_updated_at": "2026-10-05T15:30:41.747361Z",
   "custom": {}
 }
