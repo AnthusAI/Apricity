@@ -749,6 +749,22 @@ body.nav-open { overflow: hidden; }
 .sound-stage .playctl { flex-direction: row-reverse; }
 .sound-range { font: 12px var(--mono); color: var(--muted); }
 
+/* Published sound clusters: a separate, read-only exploration surface. */
+.cluster-head { display: grid; gap: 10px; margin-bottom: 18px; }
+.cluster-head h1, .cluster-head h2, .cluster-members h2, .cluster-row h2, .cluster-row h3 { margin: 0; }
+.cluster-head p, .cluster-count, .cluster-parent { margin: 0; color: var(--muted); }
+.cluster-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.cluster-controls label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.cluster-controls select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+.cluster-list { display: grid; gap: 14px; list-style: none; padding: 0; margin: 0; }
+.cluster-row, .cluster-members { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.cluster-representatives, .cluster-members { display: grid; gap: 8px; }
+.cluster-card { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.cluster-card .playctl { flex: none; }
+.cluster-card a { color: var(--fg); }
+.cluster-state { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--muted); }
+.cluster-state.unavailable { border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); color: var(--bad); }
+
 /* The one filter bar (ui/filter-bar.ts): stays in view as the cards scroll, with no rule under it (the cards' own
    edges are enough). */
 .filter-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0 8px; margin: -16px 0 10px; }

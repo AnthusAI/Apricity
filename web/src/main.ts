@@ -13,6 +13,7 @@ import { ActivityView } from "./ui/activity";
 import { TagsView } from "./ui/tags";
 import { mountSearch, SearchView } from "./ui/search";
 import { SectionView } from "./ui/section";
+import { SoundClustersView } from "./ui/sound-clusters";
 import { SECTIONS, type Section } from "./data/sections";
 import { parseView } from "./data/list-view";
 import { mountNav } from "./ui/nav";
@@ -77,7 +78,7 @@ document.addEventListener("apricity:global-search-submit", (event) => searchView
 // Scores, Beats, Chords and Melodies all show the score view, listing that kind of score.
 const KIND_OF_TAB = KIND_OF_PAGE as Record<string, ScoreKind>;
 const TAB_OF_KIND = PAGE_OF_KIND as Record<ScoreKind, string>;
-const TABS = ["home", "about", "how-it-works", "listen", "labs", "tags", "search", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
+const TABS = ["home", "about", "how-it-works", "listen", "labs", "sounds", "tags", "search", ...Object.keys(KIND_OF_TAB), "clips", "samples", "docs"];
 const tabs = [...document.querySelectorAll<HTMLAnchorElement>(".tabs a")];
 const brand = document.querySelector<HTMLAnchorElement>(".brand.link")!;
 // Lists load the first time their tab is shown (Clips lists every clip in the library).
@@ -86,6 +87,7 @@ let landing: Landing | null = null;
 let howItWorks: HowItWorks | null = null;
 let listen: ListenView | null = null;
 let labs: LabsView | null = null;
+let sounds: SoundClustersView | null = null;
 /** The transport's play button follows the page shown (set up below). */
 let syncTransport = () => {};
 /** Home's view from its URL (?order=recent&mine=1), for the next showTab. */
@@ -115,7 +117,7 @@ function showTab(name: string) {
   for (const v of document.querySelectorAll<HTMLElement>(".view")) v.hidden = v.dataset.view !== view;
   // The transport plays the score; it has no business on the landing or Docs pages.
   // (Cards on Activity and the tag pages have their own play buttons.)
-  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "how-it-works", "listen", "labs", "tags", "search"].includes(name) || atFront;
+  document.querySelector<HTMLElement>("#transport")!.hidden = ["docs", "home", "about", "how-it-works", "listen", "labs", "sounds", "tags", "search"].includes(name) || atFront;
   activity.show(name === "home", homeList);
   syncTransport();
   if (atFront) {
@@ -138,6 +140,7 @@ async function follow(r: Route) {
   // work must be invalidated explicitly before any transition as well.
   searchView.cancelSemantic();
   section.cancelSemantic();
+  if (r.page !== "sounds") sounds?.dispose();
   // An item named in the URL is opened below; the tab needn't open the top of its list first.
   if (r.sample) loaded.add("samples");
   if (r.clip) loaded.add("clips");
@@ -161,6 +164,7 @@ async function follow(r: Route) {
   else if (r.page === "search") await searchView.show(r.q);
   else if (r.page === "listen") await (listen ??= new ListenView(document.querySelector("#listen")!)).show(r.listenCycle ?? null, !!r.waiting);
   else if (r.page === "labs") await (labs ??= new LabsView(document.querySelector("#labs")!)).show(r.lab ?? null);
+  else if (r.page === "sounds") await (sounds ??= new SoundClustersView(document.querySelector("#sounds")!)).show(r);
   else document.title = titleOf(r); // an item's view titles the page with its name
 }
 /** Go somewhere: a new history entry (or, `replace`, this one), then show it. */

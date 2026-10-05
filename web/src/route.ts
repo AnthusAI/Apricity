@@ -16,7 +16,8 @@
 
 import type { ScoreKind } from "./data/catalog";
 
-export type Page = "home" | "about" | "how-it-works" | "listen" | "labs" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags" | "search";
+export type Page = "home" | "about" | "how-it-works" | "listen" | "labs" | "sounds" | "scores" | "beats" | "chords" | "melodies" | "clips" | "samples" | "help" | "tags" | "search";
+export type ClusterPreset = "broad" | "useful" | "fine";
 
 export interface Route {
   page: Page;
@@ -42,12 +43,22 @@ export interface Route {
   q?: string;
   /** A Help page (its file, "language.md") and a heading on it. */
   help?: { file: string; anchor?: string };
+  /** A published semantic-cluster run (a content-addressed 64-hex id). */
+  run?: string;
+  preset?: ClusterPreset;
+  soundOrder?: "samples" | "clips";
+  /** A run-bound cluster id: `<runId>:<numeric label>`. */
+  clusterId?: string;
+  members?: "similarity" | "rating";
+  /** The /sounds address was syntactically unsafe; show an explicit state, never a fallback. */
+  invalidSoundCluster?: boolean;
+  invalidSoundQuery?: boolean;
 }
 
 /** The pages whose list is narrowed by a query (a section, a tag). */
 const LISTED: Page[] = ["scores", "beats", "chords", "melodies", "clips", "samples", "tags"];
 
-export const PAGES: Page[] = ["home", "about", "how-it-works", "listen", "labs", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags", "search"];
+export const PAGES: Page[] = ["home", "about", "how-it-works", "listen", "labs", "sounds", "scores", "beats", "chords", "melodies", "clips", "samples", "help", "tags", "search"];
 export const KIND_OF_PAGE: Partial<Record<Page, ScoreKind>> = { scores: "song", beats: "beat", chords: "chords", melodies: "melody" };
 export const PAGE_OF_KIND: Record<ScoreKind, Page> = { song: "scores", beat: "beats", chords: "chords", melody: "melodies" };
 
@@ -76,6 +87,24 @@ export function parse(pathname: string, search = "", hash = ""): Route {
   if (page === "search") {
     const q = new URLSearchParams(search).get("q")?.trim();
     return q ? { page, q } : { page };
+  }
+  if (page === "sounds") {
+    const query = new URLSearchParams(search);
+    const allowed = new Set(["run", "preset", "order", "members"]);
+    const run = query.get("run") ?? undefined;
+    const preset = query.get("preset") ?? undefined;
+    const order = query.get("order") ?? undefined;
+    const members = query.get("members") ?? undefined;
+    const duplicate = [...allowed].some((key) => query.getAll(key).length > 1);
+    const invalidQuery = duplicate || [...query.keys()].some((key) => !allowed.has(key)) || (run !== undefined && !/^[0-9a-f]{64}$/.test(run)) || (preset !== undefined && !["broad", "useful", "fine"].includes(preset)) || (order !== undefined && !["samples", "clips"].includes(order)) || (members !== undefined && !["similarity", "rating"].includes(members)) || (rest.length === 0 && members !== undefined) || (rest.length === 1 && order !== undefined);
+    if (rest.length > 1) return { page, invalidSoundCluster: true };
+    if (rest.length === 1) {
+      const clusterId = rest[0]!;
+      const match = /^([0-9a-f]{64}):(\d+)$/.exec(clusterId);
+      if (!match || (run !== undefined && run !== match[1])) return { page, invalidSoundCluster: true };
+      return { page, clusterId, ...(run ? { run } : {}), ...(preset ? { preset: preset as ClusterPreset } : {}), ...(members ? { members: members as "similarity" | "rating" } : {}), ...(invalidQuery ? { invalidSoundQuery: true } : {}) };
+    }
+    return { page, ...(run ? { run } : {}), ...(preset ? { preset: preset as ClusterPreset } : {}), ...(order ? { soundOrder: order as "samples" | "clips" } : {}), ...(invalidQuery ? { invalidSoundQuery: true } : {}) };
   }
   if (page === "listen") {
     if (rest.length === 1 && safe(rest)) return { page, listenCycle: rest[0] };
@@ -110,6 +139,17 @@ export function href(r: Route): string {
     return `/${r.page}/${enc(parts)}${r.play ? "?play" : ""}`;
   }
   if (r.page === "search") return r.q ? `/search?${new URLSearchParams({ q: r.q })}` : "/search";
+  if (r.page === "sounds") {
+    const query = new URLSearchParams();
+    if (r.run) query.set("run", r.run);
+    if (r.preset) query.set("preset", r.preset);
+    if (r.clusterId) {
+      if (r.members) query.set("members", r.members);
+      return `/sounds/${enc([r.clusterId])}${query.size ? `?${query}` : ""}`;
+    }
+    if (r.soundOrder) query.set("order", r.soundOrder);
+    return `/sounds${query.size ? `?${query}` : ""}`;
+  }
   if (r.page === "listen" && r.listenCycle) return `/listen/${enc([r.listenCycle])}`;
   if (r.page === "listen") return r.waiting ? "/listen?waiting" : "/listen";
   if (r.page === "labs" && r.lab) return `/labs/${enc([r.lab])}`;
@@ -126,6 +166,6 @@ export const tabOf = (r: Route) => (r.page === "help" ? "docs" : r.page);
 
 /** The page title for a route and the name of what's open ("Salamander Beat · Beats · Apricity"). */
 export function titleOf(r: Route, name?: string): string {
-  const label: Record<Page, string> = { home: "", about: "About", "how-it-works": "How it works", listen: "Listen", labs: "Your labs", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags", search: "Search" };
+  const label: Record<Page, string> = { home: "", about: "About", "how-it-works": "How it works", listen: "Listen", labs: "Your labs", sounds: "Sounds", scores: "Scores", beats: "Beats", chords: "Chords", melodies: "Melodies", clips: "Clips", samples: "Samples", help: "Help", tags: "Tags", search: "Search" };
   return [name, label[r.page], "Apricity"].filter(Boolean).join(" · ");
 }

@@ -33,6 +33,8 @@ test("every page and item round-trips through its URL", () => {
     { page: "listen", waiting: true },
     { page: "labs" },
     { page: "labs", lab: "lab_0123456789abcdef" },
+    { page: "sounds", run: "a".repeat(64), preset: "fine", soundOrder: "clips" },
+    { page: "sounds", clusterId: `${"b".repeat(64)}:12`, run: "b".repeat(64), preset: "broad", members: "rating" },
   ];
   for (const r of routes) assert.deepEqual(url(r), r, href(r));
 });
@@ -48,6 +50,8 @@ test("the URLs read well", () => {
   assert.equal(href({ page: "listen", waiting: true }), "/listen?waiting");
   assert.equal(href({ page: "labs" }), "/labs");
   assert.equal(href({ page: "labs", lab: "lab_abc" }), "/labs/lab_abc");
+  assert.equal(href({ page: "sounds", run: "a".repeat(64), preset: "useful", soundOrder: "samples" }), `/sounds?run=${"a".repeat(64)}&preset=useful&order=samples`);
+  assert.equal(href({ page: "sounds", clusterId: `${"a".repeat(64)}:4`, members: "similarity" }), `/sounds/${"a".repeat(64)}%3A4?members=similarity`);
 });
 
 test("odd names survive; bad paths go to the page; unknown ones go home", () => {
@@ -64,6 +68,8 @@ test("odd names survive; bad paths go to the page; unknown ones go home", () => 
   assert.deepEqual(parse("/listen/cyc_abc/extra"), { page: "listen" });
   assert.equal(titleOf({ page: "labs" }), "Your labs · Apricity");
   assert.deepEqual(parse("/labs/lab_abc/extra"), { page: "labs" });
+  assert.deepEqual(parse("/sounds/not-a-cluster"), { page: "sounds", invalidSoundCluster: true });
+  assert.deepEqual(parse(`/sounds/${"a".repeat(64)}%3A4`, "?run=not-a-run&preset=nope&members=nope"), { page: "sounds", invalidSoundCluster: true });
 });
 
 test("search: its words in the query, and back", () => {
