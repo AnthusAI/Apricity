@@ -10,16 +10,29 @@
   "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "a28a414f-d7ac-4865-b265-8d76adc32610",
+      "author": "home",
+      "text": "Preliminary integration findings in active draft (not terminal acceptance): shared HTTP query contract uses cluster, not clusterId, so stdin dispatcher must match UI/native packet. Real unchanged preview corpus is about322MB; the current _corpus cap32MiB (output cap reused) would make every real query503. Use separate bounded corpus cap512MiB with bounded read(limit+1), retain output32MiB/metadata16MiB. Do not read entire arbitrary files before cap validation. Expected ratings test must use an actual valid corpus and real native metadata plus genuinely published registry; no-corpus _ratings returning{} would hide storage outage. Final handoff requires real positive query then freshness/privacy negative cases, not only disabled/invalid placeholders.",
+      "created_at": "2026-10-05T15:57:57.107454Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T15:52:02.449315Z",
-  "updated_at": "2026-10-05T15:52:52.312017Z",
+  "updated_at": "2026-10-05T15:57:57.107478Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is defining a safe adapter that reads fresh native cluster data and ratings for public views.",
-  "right_now_updated_at": "2026-10-05T15:52:53.696317Z",
+  "right_now_summary": "The adapter is being aligned with fresh native data, strict public privacy rules, and real end-to-end tests.",
+  "right_now_updated_at": "2026-10-05T15:57:58.696426Z",
   "custom": {}
 }

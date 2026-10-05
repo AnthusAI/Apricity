@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Route work is pending while the team finishes the data adapter and UI implementation.",
-  "right_now_updated_at": "2026-10-05T15:55:53.203480Z",
+  "right_now_summary": "The leaderboard routes are not yet integrated; UI, HTTP, and publication work still remain.",
+  "right_now_updated_at": "2026-10-05T15:58:00.911441Z",
   "custom": {}
 }
