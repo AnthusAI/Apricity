@@ -3,11 +3,14 @@ import { describe, it } from "node:test";
 import { App, Stack } from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
 import {
+  SEMANTIC_BY_SAMPLE_INDEX_NAME,
   SEMANTIC_VECTOR_INDEX_NAME,
   createSemanticAudioResources,
   semanticCanonicalReadPolicy,
   semanticPublisherPolicy,
+  semanticSamplePartition,
   semanticSearchVectorsPolicy,
+  semanticSourceLookupPolicy,
 } from "./resource";
 
 const synth = () => {
@@ -20,7 +23,7 @@ const synth = () => {
 };
 
 describe("semantic audio DynamoDB resource", () => {
-  it("synthesizes the dedicated retained on-demand table and its native vector index", () => {
+  it("synthesizes a retained table with a sample-scoped source GSI while keeping the native index narrow", () => {
     const { template } = synth();
     const tables = Object.values(template.Resources).filter(
       (resource: any) => resource.Type === "AWS::DynamoDB::Table",
@@ -41,8 +44,19 @@ describe("semantic audio DynamoDB resource", () => {
       { AttributeName: "semanticId", AttributeType: "S" },
       { AttributeName: "kind", AttributeType: "S" },
       { AttributeName: "sampleId", AttributeType: "S" },
+      { AttributeName: "samplePartition", AttributeType: "S" },
     ]);
     assert.equal(table.Properties.StreamSpecification, undefined);
+    assert.deepEqual(table.Properties.GlobalSecondaryIndexes, [
+      {
+        IndexName: SEMANTIC_BY_SAMPLE_INDEX_NAME,
+        KeySchema: [
+          { AttributeName: "samplePartition", KeyType: "HASH" },
+          { AttributeName: "semanticId", KeyType: "RANGE" },
+        ],
+        Projection: { ProjectionType: "ALL" },
+      },
+    ]);
 
     assert.deepEqual(table.Properties.VectorIndexes, [
       {
@@ -64,9 +78,11 @@ describe("semantic audio DynamoDB resource", () => {
     const { resources } = synth();
     const search = semanticSearchVectorsPolicy(resources.vectorIndexArn);
     const reads = semanticCanonicalReadPolicy(resources.tableArn);
-    const publisher = semanticPublisherPolicy(resources.tableArn);
+    const source = semanticSourceLookupPolicy(resources.sampleIndexArn);
+    const publisher = semanticPublisherPolicy(resources.tableArn, resources.sampleIndexArn);
 
     assert.equal(resources.indexName, SEMANTIC_VECTOR_INDEX_NAME);
+    assert.equal(resources.sampleIndexName, SEMANTIC_BY_SAMPLE_INDEX_NAME);
     assert.deepEqual(search, {
       actions: ["dynamodb:SearchVectors"],
       resources: [resources.vectorIndexArn],
@@ -75,14 +91,23 @@ describe("semantic audio DynamoDB resource", () => {
       actions: ["dynamodb:BatchGetItem", "dynamodb:GetItem"],
       resources: [resources.tableArn],
     });
-    assert.deepEqual(publisher, {
-      actions: ["dynamodb:DeleteItem", "dynamodb:PutItem", "dynamodb:Query"],
-      resources: [resources.tableArn],
-    });
+    assert.deepEqual(source, { actions: ["dynamodb:Query"], resources: [resources.sampleIndexArn] });
+    assert.deepEqual(publisher, [
+      { actions: ["dynamodb:DeleteItem", "dynamodb:PutItem"], resources: [resources.tableArn] },
+      { actions: ["dynamodb:Query"], resources: [resources.sampleIndexArn] },
+    ]);
     assert.equal(search.actions.includes("dynamodb:Scan"), false);
     assert.equal(reads.actions.includes("dynamodb:SearchVectors"), false);
     assert.equal(reads.actions.includes("dynamodb:Query"), false);
-    assert.equal(publisher.actions.includes("dynamodb:Scan"), false);
+    assert.equal(source.actions.includes("dynamodb:Scan"), false);
+    assert.equal(publisher.flatMap((statement) => statement.actions).includes("dynamodb:Scan"), false);
+  });
+
+  it("hashes the compact UTF-8 JSON source scope identically across publisher implementations", () => {
+    assert.equal(
+      semanticSamplePartition("cläp/é", "smp_音楽"),
+      "8ed4e143b7999b4a5595abb975057a51f01f511be1ad9d02f4c7067aad823740",
+    );
   });
 
   it("does not create guest permissions, stream consumers, or any attached IAM policy", () => {

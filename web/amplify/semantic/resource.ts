@@ -1,5 +1,6 @@
 import { CfnTable } from "aws-cdk-lib/aws-dynamodb";
 import { Fn, RemovalPolicy } from "aws-cdk-lib";
+import { createHash } from "node:crypto";
 import type { Construct } from "constructs";
 
 /**
@@ -8,6 +9,7 @@ import type { Construct } from "constructs";
  * retrieval integration so SearchVectors is always scoped to one index.
  */
 export const SEMANTIC_VECTOR_INDEX_NAME = "semantic-embedding-v1";
+export const SEMANTIC_BY_SAMPLE_INDEX_NAME = "semantic-by-sample";
 
 export type DynamoDbPolicy = Readonly<{
   actions: readonly string[];
@@ -20,7 +22,13 @@ export type SemanticAudioResources = Readonly<{
   tableArn: string;
   indexName: typeof SEMANTIC_VECTOR_INDEX_NAME;
   vectorIndexArn: string;
+  sampleIndexName: typeof SEMANTIC_BY_SAMPLE_INDEX_NAME;
+  sampleIndexArn: string;
 }>;
+
+/** Stable cross-runtime source partition: SHA256(UTF-8 JSON.stringify([space, sampleId])). */
+export const semanticSamplePartition = (embeddingSpace: string, sampleId: string): string =>
+  createHash("sha256").update(JSON.stringify([embeddingSpace, sampleId]), "utf8").digest("hex");
 
 /** Creates the isolated store for canonical semantic records; it intentionally creates no stream or grants. */
 export const createSemanticAudioResources = (scope: Construct): SemanticAudioResources => {
@@ -33,6 +41,17 @@ export const createSemanticAudioResources = (scope: Construct): SemanticAudioRes
       // CloudFormation requires all SearchSchema attributes to appear here.
       { attributeName: "kind", attributeType: "S" },
       { attributeName: "sampleId", attributeType: "S" },
+      { attributeName: "samplePartition", attributeType: "S" },
+    ],
+    globalSecondaryIndexes: [
+      {
+        indexName: SEMANTIC_BY_SAMPLE_INDEX_NAME,
+        keySchema: [
+          { attributeName: "samplePartition", keyType: "HASH" },
+          { attributeName: "semanticId", keyType: "RANGE" },
+        ],
+        projection: { projectionType: "ALL" },
+      },
     ],
     keySchema: [
       { attributeName: "embeddingSpace", keyType: "HASH" },
@@ -69,6 +88,8 @@ export const createSemanticAudioResources = (scope: Construct): SemanticAudioRes
     tableArn,
     indexName: SEMANTIC_VECTOR_INDEX_NAME,
     vectorIndexArn: Fn.join("", [tableArn, "/index/", SEMANTIC_VECTOR_INDEX_NAME]),
+    sampleIndexName: SEMANTIC_BY_SAMPLE_INDEX_NAME,
+    sampleIndexArn: Fn.join("", [tableArn, "/index/", SEMANTIC_BY_SAMPLE_INDEX_NAME]),
   };
 };
 
@@ -87,8 +108,14 @@ export const semanticCanonicalReadPolicy = (tableArn: string): DynamoDbPolicy =>
   resources: [tableArn],
 });
 
-/** Ground publication can reconcile a declared partition and upsert/delete its own semantic rows, never scan. */
-export const semanticPublisherPolicy = (tableArn: string): DynamoDbPolicy => ({
-  actions: ["dynamodb:DeleteItem", "dynamodb:PutItem", "dynamodb:Query"],
-  resources: [tableArn],
+/** Source resolution is restricted to the exact sample lookup index, never the base table. */
+export const semanticSourceLookupPolicy = (sampleIndexArn: string): DynamoDbPolicy => ({
+  actions: ["dynamodb:Query"],
+  resources: [sampleIndexArn],
 });
+
+/** Ground publication can reconcile a declared partition and upsert/delete its own semantic rows, never scan. */
+export const semanticPublisherPolicy = (tableArn: string, sampleIndexArn: string): readonly DynamoDbPolicy[] => [
+  { actions: ["dynamodb:DeleteItem", "dynamodb:PutItem"], resources: [tableArn] },
+  semanticSourceLookupPolicy(sampleIndexArn),
+];

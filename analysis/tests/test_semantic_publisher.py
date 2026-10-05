@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from apricity_analyze.semantic_contract import SemanticIdentity
-from apricity_analyze.semantic_publisher import DynamoCorpusPublisher, publish_catalog
+from apricity_analyze.semantic_publisher import DynamoCorpusPublisher, publish_catalog, sample_partition
 
 SPACE = "clap-htsat-unfused-512-v1"
 FINGERPRINT = "processing-v1"
@@ -159,21 +159,70 @@ def test_metadata_refresh_preserves_contract_and_fingerprint(tmp_path):
     publish_catalog(_catalog([refreshed]), output); saved = json.loads(output.read_text())
     assert saved["processingFingerprint"] == FINGERPRINT and saved["records"] == [refreshed]
 
-def test_injected_cloud_adapter_pages_queries_retains_full_record_and_checkpoints_only_after_success(tmp_path):
+def test_sample_partition_uses_compact_utf8_json_golden_unicode_fixture():
+    assert sample_partition("cläp/é", "smp_音楽") == "8ed4e143b7999b4a5595abb975057a51f01f511be1ad9d02f4c7067aad823740"
+
+def test_injected_cloud_adapter_pages_exact_sample_gsi_retains_full_record_and_checkpoints_only_after_success(tmp_path):
     calls = []; a, b = _record("smp_A"), _record("smp_A", kind="window", start=4, end=8)
     class Client:
         def query(self, **kwargs):
             calls.append(("Query", kwargs))
-            return ({"Items": [{"semanticId": {"S": "old"}, "sampleId": {"S": "smp_A"}}], "LastEvaluatedKey": {"semanticId": {"S": "old"}}}
-                    if "ExclusiveStartKey" not in kwargs else {"Items": [{"semanticId": {"S": "gone"}, "sampleId": {"S": "smp_A"}}]})
+            item = lambda semantic_id: {"semanticId": {"S": semantic_id}, "embeddingSpace": {"S": SPACE}, "sampleId": {"S": "smp_A"}, "samplePartition": {"S": sample_partition(SPACE, "smp_A")}}
+            return ({"Items": [item("old")], "LastEvaluatedKey": {"semanticId": {"S": "old"}}}
+                    if "ExclusiveStartKey" not in kwargs else {"Items": [item("gone")]})
         def put_item(self, **kwargs): calls.append(("PutItem", kwargs))
         def delete_item(self, **kwargs): calls.append(("DeleteItem", kwargs))
     checkpoint = tmp_path / "checkpoint.json"; DynamoCorpusPublisher(Client(), "Semantic", checkpoint=checkpoint).reconcile([a, b], sample_id="smp_A", embedding_space=SPACE)
     assert [name for name, _ in calls] == ["Query", "Query", "PutItem", "PutItem", "DeleteItem", "DeleteItem"]
+    for _, query in calls[:2]:
+        assert query["IndexName"] == "semantic-by-sample"
+        assert query["KeyConditionExpression"] == "samplePartition = :samplePartition"
+        assert query["ExpressionAttributeValues"] == {":samplePartition": {"S": sample_partition(SPACE, "smp_A")}}
+        assert "FilterExpression" not in query and "embeddingSpace" not in query["KeyConditionExpression"]
     assert set(calls[2][1]["Item"]) >= {"embeddingSpace", "semanticId", "sampleId", "kind", "processingFingerprint", "identity", "revision", "display", "playback", "metadataUpdatedAt", "vector"}
+    assert calls[2][1]["Item"]["samplePartition"] == {"S": sample_partition(SPACE, "smp_A")}
+    assert "samplePartition" not in calls[2][1]["Item"]["identity"]["M"]
     assert json.loads(checkpoint.read_text())["completedSamples"] == ["smp_A"]
     class Failing(Client):
         def put_item(self, **kwargs): raise RuntimeError("actual operation failed")
     failed = tmp_path / "failed.json"
     with pytest.raises(RuntimeError, match="actual operation"): DynamoCorpusPublisher(Failing(), "Semantic", checkpoint=failed).reconcile([a], sample_id="smp_A", embedding_space=SPACE)
     assert not failed.exists()
+
+def test_cloud_reconciliation_rejects_foreign_gsi_rows_before_any_mutation(tmp_path):
+    calls = []
+    class Client:
+        def query(self, **kwargs):
+            calls.append(("Query", kwargs))
+            if "ExclusiveStartKey" not in kwargs:
+                return {"Items": [{"semanticId": {"S": "declared"}, "embeddingSpace": {"S": SPACE}, "sampleId": {"S": "smp_A"}, "samplePartition": {"S": sample_partition(SPACE, "smp_A")}}], "LastEvaluatedKey": {"semanticId": {"S": "declared"}}}
+            return {"Items": [{"semanticId": {"S": "foreign"}, "embeddingSpace": {"S": "other-model"}, "sampleId": {"S": "smp_B"}, "samplePartition": {"S": sample_partition(SPACE, "smp_A")}}]}
+        def put_item(self, **kwargs): calls.append(("PutItem", kwargs))
+        def delete_item(self, **kwargs): calls.append(("DeleteItem", kwargs))
+    with pytest.raises(ValueError, match="foreign"):
+        DynamoCorpusPublisher(Client(), "Semantic", checkpoint=tmp_path / "checkpoint.json").reconcile([_record("smp_A")], sample_id="smp_A", embedding_space=SPACE)
+    assert [name for name, _ in calls] == ["Query", "Query"]
+
+def test_cloud_retry_is_idempotent_for_declared_sample():
+    calls = []
+    class Client:
+        def query(self, **kwargs):
+            calls.append(("Query", kwargs)); return {"Items": []}
+        def put_item(self, **kwargs): calls.append(("PutItem", kwargs))
+        def delete_item(self, **kwargs): calls.append(("DeleteItem", kwargs))
+    publisher = DynamoCorpusPublisher(Client(), "Semantic")
+    publisher.reconcile([_record("smp_A")], sample_id="smp_A", embedding_space=SPACE)
+    publisher.reconcile([_record("smp_A")], sample_id="smp_A", embedding_space=SPACE)
+    assert [name for name, _ in calls] == ["Query", "PutItem", "Query", "PutItem"]
+
+def test_cloud_retirement_deletes_only_the_declared_sample_gsi_rows():
+    calls = []
+    class Client:
+        def query(self, **kwargs):
+            calls.append(("Query", kwargs))
+            return {"Items": [{"semanticId": {"S": "retired"}, "embeddingSpace": {"S": SPACE}, "sampleId": {"S": "smp_A"}, "samplePartition": {"S": sample_partition(SPACE, "smp_A")}}]}
+        def put_item(self, **kwargs): calls.append(("PutItem", kwargs))
+        def delete_item(self, **kwargs): calls.append(("DeleteItem", kwargs))
+    DynamoCorpusPublisher(Client(), "Semantic").reconcile([], sample_id="smp_A", embedding_space=SPACE)
+    assert [name for name, _ in calls] == ["Query", "DeleteItem"]
+    assert calls[-1][1]["Key"] == {"embeddingSpace": {"S": SPACE}, "semanticId": {"S": "retired"}}

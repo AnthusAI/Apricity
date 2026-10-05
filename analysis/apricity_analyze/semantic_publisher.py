@@ -33,6 +33,12 @@ def _sample(row): return row["identity"]["sampleId"]
 def _sha(value): return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
 def _compact(value): return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
+def sample_partition(embedding_space: str, sample_id: str) -> str:
+    """SHA256 of the UTF-8 compact JSON source scope shared with the backend."""
+    if not isinstance(embedding_space, str) or not embedding_space or not isinstance(sample_id, str) or not sample_id:
+        raise ValueError("embedding_space and sample_id are required")
+    return hashlib.sha256(_compact([embedding_space, sample_id]).encode("utf8")).hexdigest()
+
 def _atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=".corpus-", dir=path.parent)
@@ -190,18 +196,24 @@ class DynamoCorpusPublisher:
         space, _ = _validate(records, allow_empty=True)
         if space is not None and space != embedding_space: raise ValueError("incoming records do not match embedding space")
         if any(_sample(row) != sample_id for row in records): raise ValueError("incoming record outside sample scope")
-        existing, last_key = {}, None
+        partition, existing, last_key = sample_partition(embedding_space, sample_id), {}, None
         while True:
-            query = {"TableName": self.table_name, "KeyConditionExpression": "embeddingSpace = :space", "FilterExpression": "sampleId = :sample", "ExpressionAttributeValues": {":space": {"S": embedding_space}, ":sample": {"S": sample_id}}}
+            query = {"TableName": self.table_name, "IndexName": "semantic-by-sample", "KeyConditionExpression": "samplePartition = :samplePartition", "ExpressionAttributeValues": {":samplePartition": {"S": partition}}}
             if last_key is not None: query["ExclusiveStartKey"] = last_key
             response = self.client.query(**query)
             for item in response.get("Items", []):
-                if item.get("sampleId", {}).get("S") == sample_id and isinstance(item.get("semanticId", {}).get("S"), str): existing[item["semanticId"]["S"]] = item
+                semantic_id = item.get("semanticId", {}).get("S")
+                if not isinstance(semantic_id, str) or not semantic_id:
+                    raise ValueError("foreign or malformed semantic row returned by sample index")
+                if (item.get("samplePartition", {}).get("S") != partition or item.get("embeddingSpace", {}).get("S") != embedding_space
+                        or item.get("sampleId", {}).get("S") != sample_id):
+                    raise ValueError("foreign scope or model row returned by sample index")
+                existing[semantic_id] = item
             last_key = response.get("LastEvaluatedKey")
             if not last_key: break
         wanted = {_id(row): row for row in records}
         for key, row in wanted.items():
-            item = {"embeddingSpace": {"S": embedding_space}, "semanticId": {"S": key}, "sampleId": {"S": sample_id}, "kind": {"S": _kind(row)}, "processingFingerprint": {"S": row["identity"]["processingFingerprint"]}, "vector": {"L": [{"N": str(x)} for x in row["vector"]]}, "identity": _ddb_value(row["identity"]), "revision": {"S": row["revision"]}, "display": _ddb_value(row["display"]), "playback": _ddb_value(row["playback"]), "metadataUpdatedAt": {"S": row["metadataUpdatedAt"]}}
+            item = {"embeddingSpace": {"S": embedding_space}, "semanticId": {"S": key}, "samplePartition": {"S": partition}, "sampleId": {"S": sample_id}, "kind": {"S": _kind(row)}, "processingFingerprint": {"S": row["identity"]["processingFingerprint"]}, "vector": {"L": [{"N": str(x)} for x in row["vector"]]}, "identity": _ddb_value(row["identity"]), "revision": {"S": row["revision"]}, "display": _ddb_value(row["display"]), "playback": _ddb_value(row["playback"]), "metadataUpdatedAt": {"S": row["metadataUpdatedAt"]}}
             self.client.put_item(TableName=self.table_name, Item=item)
         for key in existing.keys() - wanted.keys(): self.client.delete_item(TableName=self.table_name, Key={"embeddingSpace": {"S": embedding_space}, "semanticId": {"S": key}})
         if self.checkpoint:
