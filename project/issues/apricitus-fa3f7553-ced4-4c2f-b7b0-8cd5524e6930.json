@@ -3,7 +3,7 @@
   "title": "Define leased cluster jobs and atomic local control storage",
   "description": "Purpose: isolated ground/local M5 job domain and private control persistence, not public routes. Prerequisites: accepted M4 immutable draft command/run manifest and all-six specifications; public cloud integration remains gated. Allowed new analysis/apricity_analyze/cluster_jobs.py and test_cluster_jobs.py only; no server/browser/CDK/schema dependencies, no model changes, no automatic publication, no Kanbus/git/deploy actions by Terra. Root owns integration and security boundary.\n\nContract: request {requestId,embeddingSpace,preset,params:{neighbors,minClusterSize,minSamples},corpusRevision?}; strict keys/types, approved embedding space and broad/useful/fine presets. Integers exclude bool: neighbors2..200,minimum cluster size2..500,minimum samples1..100. Validation before persistence. Explicit server-trusted curator context required for enqueue/read/list/retry/draft status; browser-supplied role cannot be an authorization source. Worker methods require distinct injected trusted service identity; no guest controls. Root wires identities later. Idempotent requestId is scoped to requesting actor: identical normalized request reuses same job, conflicting request returns conflict. Job contains jobId/request/requestedBy,attempt,revision,history,queuedAt and state queued|running|failed|draft; published transition excluded.\n\nAtomic private local store uses lock + atomic replace, safe root/keys, no symlink traversal, no ordinary publicly-readable Job model. Offline leaves queued visibly; no scheduling execution on enqueue. claim one queued job or expired running lease atomically with new unpredictable token,workerId and10minute expiry. Racing workers only one wins; renewal/completion/failure require correct worker/token/revision and unexpired lease. Old token after reclaimed lease cannot mutate. Completion attaches an existing validated immutable draft run reference, not arbitrary URL/path or published pointer. Failure retains structured sanitized code/message/retryable + history and releases lease. Retry increments attempt, appends previous failure history, requeues retryable failed jobs idempotently using explicit retry requestId. Existing published runs/pointers untouched in every transition.\n\nObservability: explicit queued/running/error/draft state and revision/timestamps, no fake progress/completion; failed storage/CAS/safe-path operations structured retryable errors. No logging embeddings/audio/raw secrets. Deterministic clock/token fixtures test bounds/null/unknown types, invalid/guest/no writes, duplicate/conflicting requests, offline queue, multiprocessing claim race, renew/expiry/reclaim, stale token/revision, failed/retry history, draft completion guard and preserve published pointer, interruption/atomic replacement and unsafe roots/keys. Gherkin Offline queue and worker lease plus Retry and draft preview stories drive tests; binding integration follows in parent packet.\n\nVerification: PYTHONPATH=analysis analysis/.venv/bin/python -m pytest analysis/tests/test_cluster_jobs.py -q; existing cluster_run tests remain green. RED first, no skipped worker/auth claims. Handoff exact contracts, diff, RED/GREEN counts, concurrency evidence and unimplemented transport/worker/publication limitations. Supervisor reruns/lands child only; do not call M5 complete.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,17 +34,24 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "8dfb5d5c-019c-49ca-9ad8-0b2eebd9c5a3",
+      "author": "home",
+      "text": "Reviewed child landed8d1761b3 and pushed develop. Supervisor final64passed0skips (job+run+CIregistry); clean isolated CIvenv63passed0skips. Verified true concurrent claim one winner, lease/reclaim/stale guards, all retry idempotency, valid M4 draft completion, guest worker mutation no persistence,0700 private root, sanitized failures and interrupted storage preserves previous. Root interrupted out-of-scope broad all-analysis collection; it is not successful verification. Child only: no executingworker,HTTP/UI/cloud/publishing or M5complete.",
+      "created_at": "2026-10-05T14:40:56.589700Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-10-05T14:09:29.916753Z",
-  "updated_at": "2026-10-05T14:33:05.896385Z",
-  "closed_at": null,
+  "updated_at": "2026-10-05T14:41:04.171683Z",
+  "closed_at": "2026-10-05T14:41:04.171649Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The child is fixing authorization and storage handling before the supervisor accepts the lease work.",
-  "right_now_updated_at": "2026-10-05T14:33:10.104451Z",
+  "right_now_summary": "Focused checks pass, but worker execution, transport, publishing, and M5 integration remain out of scope.",
+  "right_now_updated_at": "2026-10-05T14:41:06.697920Z",
   "custom": {}
 }

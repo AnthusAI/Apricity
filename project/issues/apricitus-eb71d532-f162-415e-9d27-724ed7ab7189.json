@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "8823cdb6-081a-4e9d-9b78-8bb74b59cb45",
+      "author": "home",
+      "text": "Correction dispatch now excludes extra per-run rollout setter: flags must be server-configured and defaultdisabled, not curator review body fields. Keep immutable published coordinates internally for future current-visible map projection; private registry is NOT an external public content endpoint. Add review revision increments, publication/audit preservation, thorough safe storage failure and prior-run tests. No actual library approval/publication.",
+      "created_at": "2026-10-05T14:41:12.999816Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T14:23:25.959963Z",
-  "updated_at": "2026-10-05T14:34:51.279272Z",
+  "updated_at": "2026-10-05T14:41:12.999849Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The review is being returned for missing tests, safe errors, and preserved public map coordinates.",
-  "right_now_updated_at": "2026-10-05T14:34:53.743433Z",
+  "right_now_summary": "The work is back for fixes and tests; no library has been approved or published.",
+  "right_now_updated_at": "2026-10-05T14:41:14.936400Z",
   "custom": {}
 }

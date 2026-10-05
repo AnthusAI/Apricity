@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Authorization and storage fixes are underway before lease work can be accepted.",
-  "right_now_updated_at": "2026-10-05T14:34:57.381503Z",
+  "right_now_summary": "Checks are complete, but worker execution, publishing, and integration still need work.",
+  "right_now_updated_at": "2026-10-05T14:41:18.081682Z",
   "custom": {}
 }
