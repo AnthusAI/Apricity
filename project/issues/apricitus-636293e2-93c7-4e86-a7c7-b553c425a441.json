@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-636293e2-93c7-4e86-a7c7-b553c425a441",
+  "title": "Execute leased clustering jobs on the ground and save private drafts",
+  "description": "Purpose: execute accepted private queued jobs using the existing M4 pipeline, not cloud/browser clustering. Prerequisites: landed job leases, immutable runs, seeded versioned clustering and publication controls. Allowed: new analysis/apricity_analyze/cluster_worker.py and test_cluster_worker.py; audio_clusters.py/test_audio_clusters.py for validated requested parameter overrides; lab/commands/semantic.py and focused command tests for explicit worker CLI. Root owns CI registration. Exclusions: no HTTP/UI/cloud infrastructure, auth changes, publication/listening approval, model or dependency changes, git/board/deploy mutations by Terra.\n\nContract: run_once(service, trusted worker capability, corpus/catalog providers, runs root, pinned vocabulary, clock/heartbeat seams) claims at most one queued or expired job, returns idle if none, and uses claimed exact embeddingSpace/preset/parameters. Validate parameters neighbors2..200 minClusterSize2..500 minSamples1..100 as nonboolean integers; only these overrides accepted. Existing cluster_snapshot accepts optional parameters mapping, preserves defaults, records requested/effective clamps and unchanged seed42 algorithm revision. Build current valid deduplicated snapshot, reject wrong model or requested corpusDigest mismatch, run UMAP/HDBSCAN and summaries, prepare/save immutable pending-review draft. Renew lease in bounded background heartbeat shorter than600s while computation runs, serialize heartbeat revisions and final completion; lost lease cancels result adoption and never completes/fails with a stale token. Persisted unadopted immutable draft may remain for recovery, never publish. Before completing, re-read corpus/catalog and reject changed digest; complete only matching validated run and latest lease revision. Operational failures use existing safe allowlisted job errors and retryable flag; dependency absence explicitly not_evaluated rather than success. Service offline leaves jobs queued; interrupted worker allows expiry/reclaim. No jobs auto-retry and no automatic curator approval. CLI processes one job by default, explicit polling mode may be added only with interrupt handling and bounded waits; offline/idle/failure outputs structured and redact lease secrets. Providers are trusted injected ports, not request roles.\n\nGherkin: Given queued valid parameters When ground worker runs Then job becomes draft with exact parameters and pending review; Given offline worker Then remains queued; Given mismatched corpus or missing dependency Then structured failed not fabricated draft; Given long computation When heartbeat runs Then lease remains current; Given reclaimed lease Then old worker cannot adopt its result; Given changed corpus before completion Then stale draft is not adopted; Given repeated immutable inputs Then same artifact reused and publication pointer unchanged. Fixtures current fixed512D vectors, multiple recordings aliases/outliers, real prepare/save validation, fake controlled clock/algorithm seams and one pinned actual algorithm evaluation separately. RED first, deterministic threading/barrier tests no fragile sleeps. Verify focused worker/jobs/run/cluster pytest and command tests root cwd; zero skips; root supervisor reruns. Handoff diff exact RED/GREEN counts, heartbeat/reclaim/interruption evidence and unresolved API/UI/cloud gates. Report blocker rather than disable leases or substitute model.",
+  "type": "sub-task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4a57cfd0-1a86-478e-93e1-f6d35ceea4e6",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T14:55:13.865145Z",
+  "updated_at": "2026-10-05T14:55:13.865185Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The worker contract is defined, but implementation and focused tests have not started.",
+  "right_now_updated_at": "2026-10-05T14:55:16.392308Z",
+  "custom": {}
+}
