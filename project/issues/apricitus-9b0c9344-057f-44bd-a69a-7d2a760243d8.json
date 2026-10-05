@@ -34,17 +34,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "88dad57f-b998-4bc5-b31e-f8cf897251fd",
+      "author": "home",
+      "text": "Restored the real-library useful preset draft in persistent ignored preview storage on2026-10-05. CLI exited0 with runf54c7404c5a06f1158e02db2ab280e32c7d8987795efcd0a876f8d2a7f44d0b2:27219deduplicated regions,576clusters,5275outliers; qualityReview pending/state draft. Manifest under renders/semantic-audio-preview/library.apricity/semantic/clusters/runs/<runId>/manifest.json. No published pointer, no listening/coherence approval, and no public cluster UI yet. Prior temporary artifact was absent; this is a new current-corpus run, not a claimed recovery of old bytes.",
+      "created_at": "2026-10-05T14:14:49.494943Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.287061Z",
-  "updated_at": "2026-10-05T14:04:28.223990Z",
+  "updated_at": "2026-10-05T14:14:49.494971Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The immutable draft run pipeline works; publication controls and listening approval are still unfinished.",
-  "right_now_updated_at": "2026-10-05T14:04:30.614489Z",
+  "right_now_summary": "The immutable draft run is restored, but quality review and explicit publication controls remain unfinished.",
+  "right_now_updated_at": "2026-10-05T14:14:52.423786Z",
   "custom": {}
 }
