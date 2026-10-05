@@ -10,16 +10,29 @@
   "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "b9ef8ece-b615-4545-93d3-9d09afdc43cd",
+      "author": "home",
+      "text": "Contract correction from actual accepted manifest source: clusterId is runId + colon + numeric cluster label, not bare64hex. Use accepted cluster_runs validation and exact run binding. Preserve colon URL encoding/roundtrip; do not invent new stable cluster identity. Client/API request cluster must use this actual format.",
+      "created_at": "2026-10-05T15:50:50.992893Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T15:49:49.989238Z",
-  "updated_at": "2026-10-05T15:50:18.608808Z",
+  "updated_at": "2026-10-05T15:50:50.992916Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is defining bookmarkable sound leaderboards and cluster views with safe playback and strict published-data",
-  "right_now_updated_at": "2026-10-05T15:49:51.111869Z",
+  "right_now_summary": "The team is aligning bookmarkable sound leaderboards and cluster details with the accepted published data contract.",
+  "right_now_updated_at": "2026-10-05T15:50:52.885098Z",
   "custom": {}
 }
