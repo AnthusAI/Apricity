@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-233522b3-6756-4703-8039-b539abc1da18",
+  "title": "Keep board-only pushes from canceling product CI verification",
+  "description": "Observed frequent required Kanbus board commits cancel active product CI because every develop push shares cancel-in-progress concurrency. Purpose preserve actual product verification and reduce wasted runs. Allowed .github/workflows/ci.yml and analysis/tests/test_semantic_ci.py only. Push trigger keeps develop/main branches and adds paths-ignore exactly project/issues/** and project/events/**; all product or mixed changes still trigger. Pull-request and manual triggers unchanged; existing jobs/concurrency unchanged. No skip-ci commit messages or disabling tests, no releaseworkflow changes. Gherkin Given product verification running When board-only commit pushed Then no replacement CI run is triggered; Given any product change or mixed board/product push Then ordinary CI runs. RED regression YAML asserts exact narrow ignoredpaths/preservedbranches PRmanual/concurrency; GREEN same plus existing registrytest. Root implements small workflow change, runs isolatedCItests, reviews/pushes single scopedcommit beforeclosure. No reading or editing boardJSON, only Kanbus.",
+  "type": "chore",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T15:18:47.242807Z",
+  "updated_at": "2026-10-05T15:19:17.826096Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The team is preparing a narrow CI workflow change to ignore board-only pushes.",
+  "right_now_updated_at": "2026-10-05T15:19:20.366481Z",
+  "custom": {}
+}
