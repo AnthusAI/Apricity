@@ -3,7 +3,7 @@
   "title": "Integrate bookmarkable sound leaderboards and playable cluster details",
   "description": "Purpose: expose accepted0719dc published-only data through real Apricity /sounds views. Allowed web/src/route.ts main.ts index.html styles, new data/audio-clusters client and UI sound-clusters modules, focused tests; root registers scripts. No backend/native/Python/controls/actual publication/dependencies/model changes. Contract base configured semanticUrl including /semantic. GET base/clusters with view=leaderboard|detail, optional run64hex, preset broad|useful|fine defaultuseful, order samples|clips (leaderboard) or similarity|rating(detail), cluster(run-specific64hex cluster ID) for detail. This is the transport contract for forthcoming same-service adapter, not a claim that current backend implements it. Response exactly accepted ClusterExploration leaderboard/detail shapes, strict finite numeric safe canonical passage cards; reject vectors/audit fields and unsafe external/traversal links. Public GET sends no curator or local role, no draft endpoint/fallback. No endpoint => unavailable;404 => no published run/cluster;503 => retry state; never fake test data or implicit draft publication. Browser route /sounds?run=&preset=&order=samples|clips; detail /sounds/<clusterId>?run=&preset=&members=similarity|rating. Query parse/href stable, invalid selections show explicit invalid state or normalized safe defaults without path traversal. Leaderboard current counts, curated label preferred and suggested label marked suggested; representative passages playable. Detail reps first, remaining service ordering preserved, selected-run/back-link bookmarkable; no confidence percentages. Playback reconcile card.sampleId against current catalog sample and use canonical sample.path for playSample with exact card playback range; parent and clip navigation current canonical records, reject stale/hidden/missing boundary mismatch before playback. Lazy load views; no CLAP worker/model for exploration. Preset/order selection navigates URLs, loading/stale abort/dispose newer navigation wins; shared feed audio stopped on leave. Keyboard list and accessible controls, empty/no published/data-error distinct, previous good results must not appear under new selection. Initial UI excludes map/curator controls which are separate packets. Gherkin: Given published two-cluster fixture then counts/order/cards correct; Given preset switch/newer request then old responses cannot repaint; Given missing or draft then explicit unavailable no private metadata; Given playable passage then correct parent/range; Given no model initialization then navigation still works. RED executable tests before changes: route roundtrip, strict GET contract/failure/cancellation, jsdom view lifecycle/playback/ranking, integration existing routes not broken. Both tsc semantic+flow tests, build; root realbrowser verification after transport integration. Handoff files REDGREENcounts states unresolved endpoint/cloud/listening gates. Terra no git/board/deploy.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -34,17 +34,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "bb0ebf59-edd7-4848-88a4-e5f64ecaa4c3",
+      "author": "home",
+      "text": "Supervisor accepted and landed `3cceb80a`. The Sounds explorer has strict public payload parsing, bookmarkable leaderboard/detail routes, playback only after fresh catalog reconciliation, and loading/unavailable/retry/empty states. Verified `npm run test:semantic` (143 pass), `npm run test:flow` (270 pass, 1 pre-existing skip), and `npm run build`.",
+      "created_at": "2026-10-05T16:20:25.366488Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T15:49:49.989238Z",
-  "updated_at": "2026-10-05T15:55:17.698068Z",
-  "closed_at": null,
+  "updated_at": "2026-10-05T16:20:37.288109Z",
+  "closed_at": "2026-10-05T16:20:37.288062Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The UI work has not started because the prior session stopped after running out of disk space.",
-  "right_now_updated_at": "2026-10-05T15:55:19.087867Z",
+  "right_now_summary": "The Sounds explorer now has bookmarkable leaderboards, cluster details, safe playback, and passing builds.",
+  "right_now_updated_at": "2026-10-05T16:20:39.406729Z",
   "custom": {}
 }

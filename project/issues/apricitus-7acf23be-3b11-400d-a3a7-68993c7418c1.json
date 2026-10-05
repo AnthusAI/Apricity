@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Backend and ground processing pass, but curator review, publication, and UI route work remain.",
-  "right_now_updated_at": "2026-10-05T16:20:07.487792Z",
+  "right_now_summary": "Ground processing and routes pass, but curator review and publication are still pending.",
+  "right_now_updated_at": "2026-10-05T16:20:41.256337Z",
   "custom": {}
 }

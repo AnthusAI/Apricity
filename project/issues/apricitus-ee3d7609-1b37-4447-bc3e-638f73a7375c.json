@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "UI route work has not started; backend data and detail bridge changes passed tests and were accepted.",
-  "right_now_updated_at": "2026-10-05T16:20:06.323500Z",
+  "right_now_summary": "The published cluster leaderboard and detail routes are implemented, tested, and integrated.",
+  "right_now_updated_at": "2026-10-05T16:20:40.393940Z",
   "custom": {}
 }
