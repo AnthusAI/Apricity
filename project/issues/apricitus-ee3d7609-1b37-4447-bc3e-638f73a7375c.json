@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The leaderboard routes are not yet integrated; UI, HTTP, and publication work still remain.",
-  "right_now_updated_at": "2026-10-05T15:58:00.911441Z",
+  "right_now_summary": "Leaderboard routes are not integrated; UI work awaits adapter fixes and publication.",
+  "right_now_updated_at": "2026-10-05T16:13:14.356386Z",
   "custom": {}
 }

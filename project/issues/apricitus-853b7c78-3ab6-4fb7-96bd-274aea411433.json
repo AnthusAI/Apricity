@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "fe80ce1f-5b03-4ee2-b93a-65ec43f9d741",
+      "author": "home",
+      "text": "Supervisor review found the corpus path still uses the 32 MiB response cap, while the real local corpus is 308 MiB. I am correcting this within the assigned task: a distinct bounded corpus cap of at least 512 MiB, with size checked before allocation; the 32 MiB response cap remains unchanged.",
+      "created_at": "2026-10-05T16:13:10.297823Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-10-05T15:52:02.449315Z",
-  "updated_at": "2026-10-05T15:57:57.107478Z",
+  "updated_at": "2026-10-05T16:13:10.297853Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The adapter is being aligned with fresh native data, strict public privacy rules, and real end-to-end tests.",
-  "right_now_updated_at": "2026-10-05T15:57:58.696426Z",
+  "right_now_summary": "The adapter is being fixed to read the 308 MiB corpus with a separate 512 MiB cap.",
+  "right_now_updated_at": "2026-10-05T16:13:12.281234Z",
   "custom": {}
 }
