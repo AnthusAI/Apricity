@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is fixing authorization and storage while defining atomic publication and checking access and navigation.",
-  "right_now_updated_at": "2026-10-05T14:33:12.975429Z",
+  "right_now_summary": "Authorization, storage, and curator registry fixes are underway before lease work can be accepted.",
+  "right_now_updated_at": "2026-10-05T14:34:08.845027Z",
   "custom": {}
 }

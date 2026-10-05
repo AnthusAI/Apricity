@@ -10,16 +10,29 @@
   "parent": "apricitus-5b44025a-a339-4979-8505-38647d0fe5cc",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "bd0add1b-e1fc-4aba-81ba-c0f97d49d01c",
+      "author": "home",
+      "text": "Supervisor review found valid-representative alias approval blocked: current real draft contains representative semantic IDs from deduplicated aliases, but review allows only region root semanticId. Public envelope also discards published coordinates needed by map, though only draft/private coordinates must be protected; this boundary is an internal publication registry until current-visible external projection lands. Review needs monotonic revisions, complete invalid/missing review/storage interruption/prior-run/race tests (only6 new tests delivered), and no raw storage/schema errors. Return before acceptance; no actual quality approved or published.",
+      "created_at": "2026-10-05T14:34:04.237918Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-10-05T14:23:25.959963Z",
-  "updated_at": "2026-10-05T14:24:09.662880Z",
+  "updated_at": "2026-10-05T14:34:04.237945Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is defining private, atomic review and publication for immutable cluster runs.",
-  "right_now_updated_at": "2026-10-05T14:24:11.715768Z",
+  "right_now_summary": "The curator registry needs fixes to representative IDs, public coordinates, revision handling, and atomic publication",
+  "right_now_updated_at": "2026-10-05T14:34:05.482961Z",
   "custom": {}
 }
