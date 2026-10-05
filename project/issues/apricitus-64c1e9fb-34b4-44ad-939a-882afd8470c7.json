@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Core publication and local retrieval checks pass, while cloud retrieval, sandbox recall, and CI lockfile fixes remain.",
-  "right_now_updated_at": "2026-10-05T14:24:27.782986Z",
+  "right_now_summary": "Semantic records and local search work, but cloud retrieval, recall evidence, and CI lockfile fixes remain.",
+  "right_now_updated_at": "2026-10-05T14:26:21.206911Z",
   "custom": {}
 }

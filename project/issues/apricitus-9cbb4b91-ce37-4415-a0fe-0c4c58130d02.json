@@ -92,7 +92,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is fixing UI, native HTTP, and CI work; cloud, mobile, and listening checks still need review.",
-  "right_now_updated_at": "2026-10-05T14:24:30.544660Z",
+  "right_now_summary": "Work has resumed on related-audio fixes and checks; cloud, mobile, listening, and publication work remain unverified.",
+  "right_now_updated_at": "2026-10-05T14:26:22.766190Z",
   "custom": {}
 }

@@ -68,7 +68,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Secure cloud HTTP transport and verified Cognito authentication are being built and tested; local exact search is",
-  "right_now_updated_at": "2026-10-05T14:07:05.042862Z",
+  "right_now_summary": "Local search is verified; cloud HTTP wiring and sandbox recall checks remain.",
+  "right_now_updated_at": "2026-10-05T14:26:18.915225Z",
   "custom": {}
 }
