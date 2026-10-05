@@ -34,6 +34,7 @@ PYTHON_TESTS = (
     "analysis/tests/test_audio_clusters.py",
     "analysis/tests/test_cluster_summaries.py",
     "analysis/tests/test_cluster_runs.py",
+    "analysis/tests/test_cluster_jobs.py",
     "analysis/tests/test_semantic_ci.py",
 )
 
