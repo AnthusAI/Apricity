@@ -3,7 +3,7 @@
   "title": "Provision sample-scoped source lookup and publish its storage keys",
   "description": "Purpose actual related-audio source lookup without scanning model-wide partition; prerequisites semantic512 native index and publisher accepted. Allowed web/amplify/semantic/resource.ts/resource.test.ts and analysis/apricity_analyze/semantic_publisher.py/test_semantic_publisher.py only. No auth/backend/runtime/browser/dependency or deployment changes. Add dedicated GSI semantic-by-sample partition samplePartition:S, sort semanticId:S, projection ALL for server stored source vectors; leave existing native vector index narrow identity/revision and SearchSchema unchanged. samplePartition is SHA256 of UTF8 compact ordered JSON [embeddingSpace,sampleId] (ensure Unicode parity Python ensure_ascii=False/JS JSON.stringify). Ground PutItem adds samplePartition only at storage boundary; SemanticRecord/identity/revision contracts unchanged. Ground reconciliation Query exact source GSI samplePartition, no FilterExpression or wholeembeddingSpace partition scan; paginate all pages, existing scope/model/sample validation rejects foreign rows before deletion. Upsert idempotent; interrupted run repeat resumes, retire only declared sample, checkpoint after complete success. New policy helper only dynamodb:Query on exact GSIARN for source Lambda, separate from SearchVectors indexARN and canonical Get; publisher Put/Delete tableARN plus Query exactGSIARN. Never guest directvector grant, no stream. Tests REDfirst synth property/GSIprojection/no native index vectorprojection, exactIAMactions/resources, cross-languageUnicodepartition goldenfixture, idempotency/failure/retirement foreignscope and paginated GSIqueries noScan/Filter/wholepartition. Existing sourceauth/modeltests unchanged. Verify tsxresource, Amplifytsc, focused publisher pytest and full semantictests. Root reruns, one task commit then closes; do not claim deployed index/ANN. Block unsupported CDK/DDB property with exactofficialAPI evidence rather than fallbackscan.",
   "type": "sub-task",
-  "status": "open",
+  "status": "in_progress",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -12,14 +12,14 @@
   "dependencies": [],
   "comments": [],
   "created_at": "2026-10-05T14:27:33.057422Z",
-  "updated_at": "2026-10-05T14:27:33.057463Z",
+  "updated_at": "2026-10-05T14:54:03.657758Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is adding a sample-scoped DynamoDB lookup and publishing its storage keys.",
-  "right_now_updated_at": "2026-10-05T14:27:35.097936Z",
+  "right_now_summary": "The team is adding sample-scoped lookup and publishing storage keys with strict query and IAM tests.",
+  "right_now_updated_at": "2026-10-05T14:54:05.680217Z",
   "custom": {}
 }

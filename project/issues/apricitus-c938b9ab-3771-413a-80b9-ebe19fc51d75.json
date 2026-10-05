@@ -56,7 +56,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The team is adding a sample-scoped DynamoDB vector index and least-privilege access without deploying it.",
-  "right_now_updated_at": "2026-10-05T14:27:36.496552Z",
+  "right_now_summary": "The team is adding native DynamoDB vector retrieval with narrow IAM permissions and strict tests.",
+  "right_now_updated_at": "2026-10-05T14:54:06.936150Z",
   "custom": {}
 }

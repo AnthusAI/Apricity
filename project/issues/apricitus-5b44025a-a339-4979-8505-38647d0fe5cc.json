@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "A review fix is required to hide all published content when rollouts are disabled.",
-  "right_now_updated_at": "2026-10-05T14:50:58.134529Z",
+  "right_now_summary": "The fix landed and tests pass, but library approval and publication are still pending.",
+  "right_now_updated_at": "2026-10-05T14:53:59.293076Z",
   "custom": {}
 }
