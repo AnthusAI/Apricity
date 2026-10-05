@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Stored-vector retrieval is implemented; representative selection, diversity ranking, endpoint, UI, and integration",
-  "right_now_updated_at": "2026-10-05T13:39:54.572265Z",
+  "right_now_summary": "Stored-vector retrieval is built, while sample diversity, playback, HTTP integration, and UI work remain.",
+  "right_now_updated_at": "2026-10-05T13:45:25.398092Z",
   "custom": {}
 }

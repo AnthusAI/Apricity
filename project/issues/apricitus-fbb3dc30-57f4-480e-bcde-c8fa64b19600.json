@@ -34,17 +34,41 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "7633e535-5613-4425-acc1-801b1351ec80",
+      "author": "home",
+      "text": "Correction/review started. Reproducing the reported Amplify TypeScript failures, then auditing M2 representative selection and ranking contracts. No commit, push, status change, or closure will be performed.",
+      "created_at": "2026-10-05T13:43:06.847827Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "029d5dbb-3bcd-4822-b45c-d7a8b6811db9",
+      "author": "home",
+      "text": "Review outcome: reproduced the two reported TypeScript errors, then corrected the missing SemanticSearchRequest test import and replaced the unsafe Record-to-SemanticIdentity assertion with explicit runtime narrowing plus construction of a typed identity. Contract audit confirmed deterministic up-to-four farthest-point selection (smallest ID seed/ties), max-score merge, sample best-passage grouping, ungrouped clip results, source-sample exclusion, recording-first diversification, per-source cap 100, default 6/max 24, current-source/hydration validation, fingerprint/space checks, and safe playback keys. No additional genuine behavioral contract defect found; therefore no new RED test was added. GREEN: npx tsx --test amplify/semantic/related-service.test.ts = 11/11 pass; npx tsc --noEmit --project amplify/tsconfig.json = pass; targeted Cucumber = 2/2 scenarios, 6/6 steps pass. No commit, push, deployment, status change, or closure performed.",
+      "created_at": "2026-10-05T13:45:22.089545Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:41.694543Z",
-  "updated_at": "2026-10-05T13:39:45.153539Z",
+  "updated_at": "2026-10-05T13:45:22.089590Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Representative selection and diversity ranking are implemented, but type errors and integration checks still need",
-  "right_now_updated_at": "2026-10-05T13:39:53.338376Z",
+  "right_now_summary": "Implementation passes targeted tests and type checks; native HTTP, playback, parity, and final integration still need",
+  "right_now_updated_at": "2026-10-05T13:45:23.719902Z",
   "custom": {}
 }
