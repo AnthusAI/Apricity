@@ -45,4 +45,12 @@ describe("semantic client", () => {
     const after = new AbortController(); globalThis.fetch = (async (url) => { if (String(url) === "/amplify_outputs.json") { after.abort(); return outputs(); } return ok(); }) as typeof fetch;
     await assert.rejects(searchAudio({ queryVector: vector, embeddingSpace: "clap-htsat-unfused-512-v1" }, { signal: after.signal }), { name: "AbortError" }); globalThis.fetch = realFetch;
   });
+
+  it("clears an earlier semantic endpoint when a later bootstrap fails", async () => {
+    const { bootstrap, semanticUrl } = await import("../src/data/client.ts"); const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () => outputs()) as typeof fetch;
+    await bootstrap(); assert.equal(semanticUrl(), "/semantic");
+    globalThis.fetch = (async () => new Response("unavailable", { status: 503, statusText: "unavailable" })) as typeof fetch;
+    try { await bootstrap(); assert.equal(semanticUrl(), null); } finally { globalThis.fetch = realFetch; }
+  });
 });

@@ -1,4 +1,5 @@
-import { bootstrap, semanticUrl } from "./client";
+import { bootstrap, mode, semanticAuthSession, semanticUrl } from "./client";
+import { SemanticTransportError, createSemanticTransport } from "./semantic-transport";
 import {
   SEMANTIC_EMBEDDING_SPACE,
   type SemanticSearchRequest,
@@ -13,6 +14,14 @@ export class SemanticSearchError extends Error {
   }
 }
 
+const transport = createSemanticTransport({
+  bootstrap,
+  semanticUrl,
+  mode,
+  fetchAuthSession: semanticAuthSession,
+  fetch: (...args) => globalThis.fetch(...args),
+});
+
 /**
  * Query the configured semantic service. Configuration is bootstrapped lazily so opening a
  * normal lexical view never starts semantic work. A cloud deployment without a configured URL
@@ -21,20 +30,12 @@ export class SemanticSearchError extends Error {
 export async function searchAudio(request: SemanticSearchRequest, options: { signal?: AbortSignal } = {}): Promise<SemanticSearchResponse> {
   const normalized = validateSearchRequest(request);
   if (options.signal?.aborted) throw new DOMException("The operation was aborted", "AbortError");
-  await bootstrap();
-  if (options.signal?.aborted) throw new DOMException("The operation was aborted", "AbortError");
-  const base = semanticUrl();
-  if (!base) throw new SemanticSearchError("semantic_unavailable", "Semantic search is not configured for this deployment", true);
   let response: Response;
   try {
-    response = await fetch(`${base.replace(/\/$/, "")}/search`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(normalized),
-      signal: options.signal,
-    });
+    response = await transport.post("search", normalized, options);
   } catch (cause) {
     if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
+    if (cause instanceof SemanticTransportError) throw new SemanticSearchError(cause.code, cause.message, cause.retryable);
     throw new SemanticSearchError("semantic_unavailable", "Semantic search is temporarily unavailable", true);
   }
   let body: unknown;

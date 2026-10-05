@@ -1,4 +1,5 @@
-import { bootstrap, semanticUrl } from "./client";
+import { bootstrap, mode, semanticAuthSession, semanticUrl } from "./client";
+import { SemanticTransportError, createSemanticTransport, type SemanticAuthSession } from "./semantic-transport";
 import { SEMANTIC_EMBEDDING_SPACE, type SemanticSearchHit } from "../semantic/contracts";
 
 export const DEFAULT_RELATED_AUDIO_LIMIT = 6;
@@ -11,22 +12,35 @@ export class RelatedAudioError extends Error {
   constructor(readonly code: string, message: string, readonly retryable: boolean, readonly status?: number) { super(message); this.name = "RelatedAudioError"; }
 }
 
-type ClientDeps = { bootstrap: () => Promise<unknown>; semanticUrl: () => string | null; fetch: typeof globalThis.fetch };
+type ClientDeps = {
+  bootstrap: () => Promise<unknown>;
+  semanticUrl: () => string | null;
+  fetch: typeof globalThis.fetch;
+  /** Test-only clients default to local behavior; the production client explicitly injects cloud mode and Cognito. */
+  mode?: () => "local" | "cloud";
+  fetchAuthSession?: () => Promise<SemanticAuthSession>;
+  origin?: () => string;
+};
 
 /** Related retrieval is storage-only: it never imports a browser vector producer or sends vectors. */
 export function createRelatedAudioClient(deps: ClientDeps) {
+  const transport = createSemanticTransport({
+    bootstrap: deps.bootstrap,
+    semanticUrl: deps.semanticUrl,
+    fetch: deps.fetch,
+    mode: deps.mode ?? (() => "local"),
+    fetchAuthSession: deps.fetchAuthSession ?? (async () => { throw new Error("cloud auth was not configured"); }),
+    origin: deps.origin,
+  });
   return async (request: RelatedAudioRequest, options: { signal?: AbortSignal } = {}): Promise<RelatedAudioResponse> => {
     const normalized = validateRequest(request);
     throwIfAborted(options.signal);
-    await deps.bootstrap();
-    throwIfAborted(options.signal);
-    const base = deps.semanticUrl();
-    if (!base) throw new RelatedAudioError("semantic_unavailable", "Related sound is not configured for this deployment", true);
     let response: Response;
     try {
-      response = await deps.fetch(`${base.replace(/\/$/, "")}/related`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(normalized), signal: options.signal });
+      response = await transport.post("related", normalized, options);
     } catch (cause) {
       if (isAbort(cause)) throw cause;
+      if (cause instanceof SemanticTransportError) throw new RelatedAudioError(cause.code, cause.message, cause.retryable);
       throw new RelatedAudioError("semantic_unavailable", "Related sound is temporarily unavailable", true);
     }
     let body: unknown;
@@ -42,7 +56,7 @@ export function createRelatedAudioClient(deps: ClientDeps) {
 }
 
 /** Lazily bootstraps the configured endpoint, just as semantic search does. */
-export const relatedAudio = createRelatedAudioClient({ bootstrap, semanticUrl, fetch: (...args) => globalThis.fetch(...args) });
+export const relatedAudio = createRelatedAudioClient({ bootstrap, semanticUrl, mode, fetchAuthSession: semanticAuthSession, fetch: (...args) => globalThis.fetch(...args) });
 
 function validateRequest(value: RelatedAudioRequest): Required<Omit<RelatedAudioRequest, "clipId">> & Pick<RelatedAudioRequest, "clipId"> {
   if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["embeddingSpace", "sampleId", "clipId", "limit"].includes(key)) || value.embeddingSpace !== SEMANTIC_EMBEDDING_SPACE || !nonempty(value.sampleId) || (value.clipId !== undefined && !nonempty(value.clipId))) throw new TypeError("invalid related sound request");

@@ -55,6 +55,7 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     cachedMode = outputs.custom?.apricity?.mode ?? "cloud";
     cachedSemanticUrl = outputs.custom?.apricity?.semanticUrl ?? null;
     cachedIdentity = outputs.custom?.apricity?.identity ?? null;
+    failure = null;
     // Who is signed in decides how the cloud API is called; forget it whenever that changes. (Registered here, before
     // any view listens for the same event, so a view that reloads on it already reads with the new session.)
     if (typeof document !== "undefined") document.addEventListener("apricity:auth-changed", () => (signedIn = null));
@@ -64,6 +65,10 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     console.error("Failed to bootstrap data layer:", error);
     failure = error instanceof Error ? error.message : String(error);
     cachedMode = "cloud";
+    // A failed refresh must never leave an earlier deployment's endpoint or identity usable.
+    cachedSemanticUrl = null;
+    cachedIdentity = null;
+    cachedClient = null;
     return cachedMode;
   }
 }
@@ -99,6 +104,12 @@ function isSignedIn(): Promise<boolean> {
     .then((s) => !!s.tokens?.idToken)
     .catch(() => false);
   return signedIn;
+}
+
+/** Current Cognito session for a semantic request. This is deliberately never cached. */
+export async function semanticAuthSession() {
+  const { fetchAuthSession } = await import("aws-amplify/auth");
+  return fetchAuthSession();
 }
 
 /**
