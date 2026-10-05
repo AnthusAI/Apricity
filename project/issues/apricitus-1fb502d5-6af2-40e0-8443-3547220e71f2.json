@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-1fb502d5-6af2-40e0-8443-3547220e71f2",
+  "title": "Serve published cluster reads through a bounded ground adapter",
+  "description": "Purpose native Apricity serve GET /semantic/clusters bridges accepted Python public projection with trusted native config, preserving exact application origin and no cloud inference. Prereq0719dc accepted;853b7c protocol frozen; integration waits adapter acceptance. Allowed crates/apricity-cli/src/serve.rs, new cluster route/bridge module, CLI serve arguments/module declaration and focused Rust tests; no Python/UI/model/deps/board/git/deploy. Trusted startup --cluster-python absolute executable path and --semantic-clusters flag defaultfalse; controls root fixed library/semantic/clusters/control and runs root fixed library/semantic/clusters, no query-supplied paths. Python module apricity_analyze.cluster_http installed or PYTHONPATH configured by trusted launcher, no guessed sibling checkout. Route GET /semantic/clusters (and optional /<runId> alias) strict querykeys view=leaderboard|detail|map|list/run/preset/order/cluster/limit; duplicatesunknown malformed400 before spawn. Allpublic operations no auth-role bypass, disabled503 before process/files. Enabled spawn executable directly no shell with -m module trusted root args and --enabled; compact query stdin64KiB, stdout strict {statusCode,body} no leaks, deadline30s and outputcap32MiB, bounded concurrent children max2 or explicit503 capacity. Stop/reap child on timeout/overflow/cancellation; stderr discarded/sanitized, no childdiagnostics public. Adapter exitfailure/missingpython/malformedresponse/outage503, bodyallowed200400404503 only; no partial results, redirects, drafts or vectors; no broad-file static export of controls/manifests. Origin no-store/isolation existing middleware; outputs clustersEnabled boolean from trusted flag only. Existing app/app_with_store API callers keep defaultdisabled via extended config construction, not global env mutable tests. Fresh native catalog done in adapter per request, no native cache of auth/content. Gherkin Axum disabled zero spawn, strict queryerrors, real injected process/runner safeenvelope200/404/error cases, timeout overflow reap/capacity and newer cancellation, real Pythonadapter integration separately after acceptance; lexical/search/related/files/GraphQL routes unchanged. REDfirst Rust tests deterministic runner seam and actual harmless bounded child test if platform independent. RUSTC/RUSTDOC matching stable; focusedserve/bridge then fullnativeworkspace root reruns, no restart live5181. Handoff CLI/protocol/security/reap/concurrency tests and missing runtime gates. No real publication approval.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T15:52:53.430029Z",
+  "updated_at": "2026-10-05T15:53:31.800162Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The native serve route awaits adapter acceptance and focused Rust tests.",
+  "right_now_updated_at": "2026-10-05T15:52:55.151842Z",
+  "custom": {}
+}

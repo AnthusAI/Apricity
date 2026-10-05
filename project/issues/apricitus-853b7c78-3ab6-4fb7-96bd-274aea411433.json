@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-853b7c78-3ab6-4fb7-96bd-274aea411433",
+  "title": "Adapt public cluster reads to fresh native library data",
+  "description": "Purpose: real local cluster transport reuses accepted Python ClusterExploration without duplicating its privacy rules in Rust. Allowed new analysis/apricity_analyze/cluster_http.py and test_cluster_http.py plus shared static deterministic public-provenance/rating parity fixture if needed; no UI/native/runtime/backend/registry/manifests/model/deps/board/git/deploy. Trusted startup config absolute native library, controls root, runs root, enabledbool defaultfalse; query cannot set paths roles flag or policy. One stdin JSON query <=64KiB, stdout one strictJSON envelope {statusCode,body}; CLI -m apricity_analyze.cluster_http --library --controls-root --runs-root [--enabled]. No raw query/vector/path/error logging. Contract GET adapter query view=leaderboard|detail|map|list defaultleaderboard, run optional64hex, preset broad|useful|fine, order matchingview, cluster actualrunId:label detail, limit maponly1..10000; reject unknown/duplicate fields at future HTTP boundary. Disabled503 before any reads. Fresh corpus native library/semantic/corpus.json and export_catalog(library) everycall; failures sanitized503 not empty, no old external catalog snapshots. Registry uses only trustedcontrols/runs roots publishedread; no initialize/review/publish/worker/clustering mutation. Mandatory publicvisibility reproduces current canonical TS documented(recording) license/author policy plus sample.status ready; no curator bypass for public API. Match explicitlicense and rights fallback, CC-BY author credit, noncleared reject, false strings never authorize. Exact identity/current freshness delegated accepted ClusterExploration. Current rating adapter matches existing local Ratings native Rating rows with canonical rating IDs (targetType#targetId#owner) and valid0..5 finite integer stars/ratedAt, aggregate existing all-time Bayesian score prior/default from rank-window.ts. Savedclip semanticIds map clip target, windows sample target; unrated absent => null not fabricated score. Never expose individual private Rating rows or authors. Native root files read only safe exact known table filenames no symlink escapes. Structured400 request/404 missingdraft/503corruptoutage, valid200safeDTO finiteJSON; up to32MiB output, explicit unavailable if exhausted not partial results. Gherkin real synthetic native tables/files/corpus and genuinely reviewedpublishedrun; publiclicensed currentvisibleleaderboard/playback, undocumented excluded despite local curator identity, corpus/boundary/visibility changes fresh, draft404, disabled no reads, ratings parityprivacy, malformedinput finiteJSONerror never traceback. REDfirst tests; verify focusedadapter/projection/publication/catalog suites isolatedCIvenv no skips. Handoff exact command/protocol/states counts; root registers CI and supervises native subprocess integration separately; no real run approval.",
+  "type": "sub-task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-05T15:52:02.449315Z",
+  "updated_at": "2026-10-05T15:52:52.312017Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The team is defining a safe adapter that reads fresh native cluster data and ratings for public views.",
+  "right_now_updated_at": "2026-10-05T15:52:53.696317Z",
+  "custom": {}
+}
