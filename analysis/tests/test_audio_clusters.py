@@ -2,12 +2,20 @@
 from __future__ import annotations
 
 import copy
+from concurrent.futures import ThreadPoolExecutor
+import json
 import math
+import os
+from pathlib import Path
+import subprocess
+import sys
 
+import numpy
 import pytest
 
-from apricity_analyze.audio_clusters import AlgorithmDependencyError, cluster_snapshot
+from apricity_analyze.audio_clusters import ALGORITHM_REVISION, AlgorithmDependencyError, cluster_snapshot
 from apricity_analyze.clap import EMBED_DIM, EMBEDDING_SPACE
+from apricity_analyze.cluster_runs import prepare_run, save_draft_run
 
 
 def _vector(index: int, dimensions: int = EMBED_DIM) -> list[float]:
@@ -112,6 +120,11 @@ def test_accepted_presets_are_reproducible_and_record_requested_effective_parame
     assert first == second
     assert source == before
     assert first["schemaVersion"] == "apricity.clustering-result/1"
+    assert first["algorithmVersions"] == {
+        "umap-learn": "test", "hdbscan": "test", "numpy": "test", "scipy": "test",
+        "scikit-learn": "test", "numba": "test", "pynndescent": "test",
+        "apricity-audio-clusters": ALGORITHM_REVISION,
+    }
     assert first["requestedParams"] == requested
     assert first["effectiveParams"] == {
         "neighbors": 5, "dimensions": 4,
@@ -121,10 +134,9 @@ def test_accepted_presets_are_reproducible_and_record_requested_effective_parame
     assert [member["semanticId"] for member in first["members"]] == [f"region-{index:02d}" for index in range(6)]
     assert [member["clusterLabel"] for member in first["members"]] == [0, 0, None, 1, 1, None]
     assert first["outliers"] == ["region-02", "region-05"]
-    assert first["algorithmVersions"]["umap-learn"] == "test"
     assert first["members"][0]["x"] == 0.0 and first["members"][0]["y"] == 0.0
-    assert Reducer.calls == [{"n_neighbors": 5, "n_components": 4, "metric": "cosine", "min_dist": 0, "random_state": 42, "n_jobs": 1}]
-    assert Display.calls == [{"n_neighbors": 5, "n_components": 2, "metric": "cosine", "min_dist": 0.1, "random_state": 42, "n_jobs": 1}]
+    assert Reducer.calls == [{"n_neighbors": 5, "n_components": 4, "metric": "cosine", "min_dist": 0, "init": "random", "random_state": 42, "n_jobs": 1}]
+    assert Display.calls == [{"n_neighbors": 5, "n_components": 2, "metric": "cosine", "min_dist": 0.1, "init": "random", "random_state": 42, "n_jobs": 1}]
     assert len(Clusterer.values[0][0]) == 4
     first["members"][0]["aliases"][0]["sample"]["id"] = "changed"
     assert source == before
@@ -181,4 +193,74 @@ def test_actual_algorithm_run_twice_is_reproducible_or_reports_missing_dependenc
     assert first["algorithmVersions"] == {
         "umap-learn": "0.5.12", "hdbscan": "0.8.44", "numpy": "2.2.6",
         "scipy": "1.18.1", "scikit-learn": "1.9.1", "numba": "0.67.0", "pynndescent": "0.6.0",
+        "apricity-audio-clusters": ALGORITHM_REVISION,
     }
+
+
+def test_actual_algorithm_is_reproducible_after_global_numpy_rng_perturbation():
+    source = snapshot(8)
+    numpy.random.seed(1)
+    numpy.random.random(4096)
+    first = cluster_snapshot(source, "fine")
+    numpy.random.seed(999)
+    numpy.random.random(4096)
+    second = cluster_snapshot(source, "fine")
+
+    assert first == second
+
+
+def _fresh_process_result() -> str:
+    source_path = Path(__file__).resolve().parents[1]
+    environment = dict(os.environ, PYTHONPATH=str(source_path))
+    program = """
+import json
+from apricity_analyze.audio_clusters import cluster_snapshot
+from tests.test_audio_clusters import snapshot
+print(json.dumps(cluster_snapshot(snapshot(8), 'fine'), sort_keys=True, separators=(',', ':')))
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", program],
+        cwd=source_path,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert completed.returncode == 0, completed.stderr
+    return completed.stdout
+
+
+def test_actual_algorithm_has_identical_pinned_dependency_output_in_fresh_processes():
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first, second = list(executor.map(lambda _: _fresh_process_result(), range(2)))
+
+    assert first == second
+    result = json.loads(first)
+    assert result["algorithmVersions"] == {
+        "umap-learn": "0.5.12", "hdbscan": "0.8.44", "numpy": "2.2.6",
+        "scipy": "1.18.1", "scikit-learn": "1.9.1", "numba": "0.67.0", "pynndescent": "0.6.0",
+        "apricity-audio-clusters": ALGORITHM_REVISION,
+    }
+
+
+def test_algorithm_revision_mapping_is_carried_into_immutable_run_identity(tmp_path: Path):
+    from tests.test_cluster_runs import packets
+
+    actual = cluster_snapshot(snapshot(), "fine", **seams())
+    assert actual["algorithmVersions"]["apricity-audio-clusters"] == ALGORITHM_REVISION
+
+    snapshot_packet, result, summaries = packets()
+    result["algorithmVersions"] = dict(actual["algorithmVersions"])
+    summaries["algorithmVersions"] = dict(actual["algorithmVersions"])
+    first = prepare_run(snapshot_packet, result, summaries, "2026-09-30T12:00:00Z")
+    repeated = prepare_run(snapshot_packet, result, summaries, "2026-09-30T13:00:00Z")
+    assert first["runId"] == repeated["runId"]
+    assert save_draft_run(tmp_path, first) == save_draft_run(tmp_path, repeated)
+
+    changed_result = copy.deepcopy(result)
+    changed_summaries = copy.deepcopy(summaries)
+    changed_result["algorithmVersions"]["apricity-audio-clusters"] = "umap-random-init-seed42-v2"
+    changed_summaries["algorithmVersions"]["apricity-audio-clusters"] = "umap-random-init-seed42-v2"
+    changed = prepare_run(snapshot_packet, changed_result, changed_summaries, "2026-09-30T12:00:00Z")
+    assert changed["runId"] != first["runId"]

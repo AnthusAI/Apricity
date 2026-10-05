@@ -20,6 +20,8 @@ from .clap import EMBED_DIM, EMBEDDING_SPACE
 CORPUS_SCHEMA = "apricity.cluster-corpus/1"
 RESULT_SCHEMA = "apricity.clustering-result/1"
 SEED = 42
+ALGORITHM_REVISION = "umap-random-init-seed42-v1"
+ALGORITHM_VERSION_KEY = "apricity-audio-clusters"
 PRESETS = {
     "broad": {"neighbors": 50, "minClusterSize": 40, "minSamples": 10},
     "useful": {"neighbors": 30, "minClusterSize": 15, "minSamples": 5},
@@ -154,10 +156,11 @@ def cluster_snapshot(snapshot: Mapping[str, object], preset: str, *,
         raise ValueError("preset must be broad, useful, or fine")
     regions, _dimensions = _validate_snapshot(snapshot)
     requested = dict(PRESETS[preset])
-    algorithm_versions = dict(versions) if versions is not None else _versions()
+    dependency_versions = dict(versions) if versions is not None else _versions()
     required_versions = set(_VERSION_PACKAGES)
-    if set(algorithm_versions) != required_versions or not all(isinstance(value, str) and value for value in algorithm_versions.values()):
+    if set(dependency_versions) != required_versions or not all(isinstance(value, str) and value for value in dependency_versions.values()):
         raise ValueError("algorithmVersions must contain each pinned algorithm package")
+    algorithm_versions = {**dependency_versions, ALGORITHM_VERSION_KEY: ALGORITHM_REVISION}
     count = len(regions)
     result: dict[str, object] = {
         "schemaVersion": RESULT_SCHEMA,
@@ -186,9 +189,9 @@ def cluster_snapshot(snapshot: Mapping[str, object], preset: str, *,
     }
     vectors = [row["vector"] for row in regions]
     reduced = _as_coordinates(reducer_factory(n_neighbors=effective["neighbors"], n_components=effective["dimensions"],
-                                               metric="cosine", min_dist=0, random_state=SEED, n_jobs=1).fit_transform(vectors), count, effective["dimensions"])
+                                               metric="cosine", min_dist=0, init="random", random_state=SEED, n_jobs=1).fit_transform(vectors), count, effective["dimensions"])
     display = _as_coordinates(display_factory(n_neighbors=effective["neighbors"], n_components=2, metric="cosine",
-                                               min_dist=0.1, random_state=SEED, n_jobs=1).fit_transform(vectors), count, 2)
+                                               min_dist=0.1, init="random", random_state=SEED, n_jobs=1).fit_transform(vectors), count, 2)
     fitted = clusterer_factory(metric="euclidean", cluster_selection_method="eom", min_cluster_size=effective["minClusterSize"],
                                min_samples=effective["minSamples"]).fit(reduced)
     labels, probabilities = list(fitted.labels_), list(fitted.probabilities_)
