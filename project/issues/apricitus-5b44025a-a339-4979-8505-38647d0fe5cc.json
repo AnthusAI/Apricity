@@ -10,9 +10,22 @@
   "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "8919b642-0dec-48fc-a969-1389c1891f3a",
+      "author": "home",
+      "text": "Supervisor accepted and landed the private local curator backend/bridge. It is disabled by default, has a startup-injected curator identity, separates public reads from private review/publish, and never auto-approves/publishes. Focused Python review/publication/exploration suite: 52 pass. Browser/cloud curator UI remains unfinished and this parent remains open.",
+      "created_at": "2026-10-05T16:49:47.420247Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:43:43.975920Z",
-  "updated_at": "2026-10-05T14:24:17.275062Z",
+  "updated_at": "2026-10-05T16:49:47.420549Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
