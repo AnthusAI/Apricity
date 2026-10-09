@@ -34,17 +34,53 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "4ae7ed19-5dc9-4b58-89df-783b167da858",
+      "author": "home",
+      "text": "Local-only curator review UI implementation started. Scope: a gated /sounds/review route that requires the startup-injected clusterCuratorEnabled flag, uses only the private bridge, previews draft representatives for listening, submits explicit review, label overrides, and explicit publish. No public/draft exposure or automatic publication.",
+      "created_at": "2026-10-09T20:10:31.504181Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "151761ea-d105-4b9a-907b-779e40009a31",
+      "author": "home",
+      "text": "Implemented local-only curator review UI (uncommitted for supervisor review): `/sounds/review?run=<64-hex>` is gated by `custom.apricity.clusterCuratorEnabled` and local mode, with no public navigation or cloud enablement. It uses only POST `/semantic/cluster-curator`, strict response parsing (rejects vectors/audit fields), reconciles representatives against current catalog before auditioning, supports label overrides, explicit all-representative listening review with notes, and a separately confirmed publish action. Normal current preview reports `clusterCuratorEnabled:false`, so the route safely says unavailable. Verification: `npm exec -- tsx --test test/cluster-curator.test.ts test/route.test.ts test/data/client.test.ts` 11 pass; `npm run test:semantic` 146 pass; `npm run build` pass. Existing CDK/vector-index warnings only. No commit/push/close.",
+      "created_at": "2026-10-09T20:15:41.705683Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "f0ca8c24-54e9-444e-8f5a-f952287be4fd",
+      "author": "home",
+      "text": "Supervisor accepted and landed the local-only curator review UI. It is gated on `clusterCuratorEnabled`, has no public navigation/cloud enablement, reconciles draft representatives with current catalog before audition, requires explicit review/notes and separately confirmed publish. Focused tests: 10 pass; full semantic suite: 146 pass; production build: pass.",
+      "created_at": "2026-10-09T20:16:16.808Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.975920Z",
-  "updated_at": "2026-10-09T20:10:05.301986Z",
+  "updated_at": "2026-10-09T20:16:16.808043Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The local curator review surface is being built, while approval and publication remain manual.",
-  "right_now_updated_at": "2026-10-09T20:10:06.961172Z",
+  "right_now_summary": "The curator review UI is landed and tested, but library approval and publication still await action.",
+  "right_now_updated_at": "2026-10-09T20:16:19.182353Z",
   "custom": {}
 }
