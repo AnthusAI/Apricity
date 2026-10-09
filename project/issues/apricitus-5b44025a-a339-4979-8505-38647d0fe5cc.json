@@ -22,17 +22,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "6a0d7ba3-3233-4f13-8f4b-8803e55caa29",
+      "author": "home",
+      "text": "User correctly identified the public unavailable state is not a review experience. Dispatching the explicitly local-only browser curator review surface, gated on startup `clusterCuratorEnabled`; it will not expose drafts publicly or publish automatically.",
+      "created_at": "2026-10-09T20:10:05.301683Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
     }
   ],
   "created_at": "2026-09-30T18:43:43.975920Z",
-  "updated_at": "2026-10-05T16:49:47.420549Z",
+  "updated_at": "2026-10-09T20:10:05.301986Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "The fix landed and tests pass, but library approval and publication are still pending.",
-  "right_now_updated_at": "2026-10-05T14:53:59.293076Z",
+  "right_now_summary": "The local curator review surface is being built, while approval and publication remain manual.",
+  "right_now_updated_at": "2026-10-09T20:10:06.961172Z",
   "custom": {}
 }
