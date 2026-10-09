@@ -778,6 +778,21 @@ body.nav-open { overflow: hidden; }
 .cluster-map-list-point:hover, .cluster-map-list li[aria-current="true"] .cluster-map-list-point { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
 .cluster-map-pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 
+/* Deliberately local-only curator draft review.  There is no public navigation entry. */
+.cluster-review-open, .cluster-review-list, .cluster-review-cluster, .cluster-review-action { display: grid; gap: 10px; }
+.cluster-review-open { grid-template-columns: minmax(0, 1fr) auto; align-items: end; max-width: 720px; }
+.cluster-review-open label, .cluster-review-label, .cluster-review-action > label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; }
+.cluster-review-open input, .cluster-review-label input, .cluster-review-action textarea { box-sizing: border-box; width: 100%; font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
+.cluster-review-run { font-family: var(--mono); }
+.cluster-review-action textarea { min-height: 92px; resize: vertical; }
+.cluster-review-cluster, .cluster-review-action { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.cluster-review-cluster h2, .cluster-review-action h2, .cluster-review-action p { margin: 0; }
+.cluster-review-passage { display: flex; align-items: center; gap: 8px; }
+.cluster-review-passage > .cluster-card { flex: 1; }
+.cluster-review-check { display: flex !important; align-items: start; gap: 7px; }
+.cluster-review-hint { margin: 0; color: var(--muted); font-size: 13px; }
+@media (max-width: 560px) { .cluster-review-open { grid-template-columns: 1fr; } }
+
 /* The one filter bar (ui/filter-bar.ts): stays in view as the cards scroll, with no rule under it (the cards' own
    edges are enough). */
 .filter-bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 10px 0 8px; margin: -16px 0 10px; }

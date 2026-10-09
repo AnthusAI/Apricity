@@ -49,6 +49,8 @@ export interface Route {
   soundOrder?: "samples" | "clips";
   /** Show the two-dimensional projection rather than the cluster leaderboard. */
   soundMap?: boolean;
+  /** Local-only, explicitly configured curator draft review (never a public route). */
+  soundReview?: boolean;
   /** A run-bound cluster id: `<runId>:<numeric label>`. */
   clusterId?: string;
   members?: "similarity" | "rating";
@@ -100,6 +102,11 @@ export function parse(pathname: string, search = "", hash = ""): Route {
     const map = query.get("map") ?? undefined;
     const duplicate = [...allowed].some((key) => query.getAll(key).length > 1);
     const invalidQuery = duplicate || [...query.keys()].some((key) => !allowed.has(key)) || (run !== undefined && !/^[0-9a-f]{64}$/.test(run)) || (preset !== undefined && !["broad", "useful", "fine"].includes(preset)) || (order !== undefined && !["samples", "clips"].includes(order)) || (members !== undefined && !["similarity", "rating"].includes(members)) || (map !== undefined && map !== "1") || (rest.length === 0 && members !== undefined) || (rest.length === 0 && map !== undefined && order !== undefined) || (rest.length === 1 && (order !== undefined || map !== undefined));
+    if (rest.length === 1 && rest[0] === "review") {
+      const onlyRun = [...query.keys()].every((key) => key === "run") && query.getAll("run").length <= 1;
+      if (!onlyRun || (run !== undefined && !/^[0-9a-f]{64}$/.test(run))) return { page, soundReview: true, invalidSoundQuery: true };
+      return { page, soundReview: true, ...(run ? { run } : {}) };
+    }
     if (rest.length > 1) return { page, invalidSoundCluster: true };
     if (rest.length === 1) {
       const clusterId = rest[0]!;
@@ -146,6 +153,7 @@ export function href(r: Route): string {
     const query = new URLSearchParams();
     if (r.run) query.set("run", r.run);
     if (r.preset) query.set("preset", r.preset);
+    if (r.soundReview) return `/sounds/review${r.run ? `?${new URLSearchParams({ run: r.run })}` : ""}`;
     if (r.clusterId) {
       if (r.members) query.set("members", r.members);
       return `/sounds/${enc([r.clusterId])}${query.size ? `?${query}` : ""}`;

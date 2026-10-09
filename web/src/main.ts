@@ -14,6 +14,7 @@ import { TagsView } from "./ui/tags";
 import { mountSearch, SearchView } from "./ui/search";
 import { SectionView } from "./ui/section";
 import { SoundClustersView } from "./ui/sound-clusters";
+import { SoundClusterReviewView } from "./ui/sound-cluster-review";
 import { SECTIONS, type Section } from "./data/sections";
 import { parseView } from "./data/list-view";
 import { mountNav } from "./ui/nav";
@@ -88,6 +89,7 @@ let howItWorks: HowItWorks | null = null;
 let listen: ListenView | null = null;
 let labs: LabsView | null = null;
 let sounds: SoundClustersView | null = null;
+let soundReview: SoundClusterReviewView | null = null;
 /** The transport's play button follows the page shown (set up below). */
 let syncTransport = () => {};
 /** Home's view from its URL (?order=recent&mine=1), for the next showTab. */
@@ -140,7 +142,8 @@ async function follow(r: Route) {
   // work must be invalidated explicitly before any transition as well.
   searchView.cancelSemantic();
   section.cancelSemantic();
-  if (r.page !== "sounds") sounds?.dispose();
+  if (r.page !== "sounds" || r.soundReview) sounds?.dispose();
+  if (r.page !== "sounds" || !r.soundReview) soundReview?.dispose();
   // An item named in the URL is opened below; the tab needn't open the top of its list first.
   if (r.sample) loaded.add("samples");
   if (r.clip) loaded.add("clips");
@@ -164,7 +167,10 @@ async function follow(r: Route) {
   else if (r.page === "search") await searchView.show(r.q);
   else if (r.page === "listen") await (listen ??= new ListenView(document.querySelector("#listen")!)).show(r.listenCycle ?? null, !!r.waiting);
   else if (r.page === "labs") await (labs ??= new LabsView(document.querySelector("#labs")!)).show(r.lab ?? null);
-  else if (r.page === "sounds") await (sounds ??= new SoundClustersView(document.querySelector("#sounds")!)).show(r);
+  else if (r.page === "sounds") {
+    if (r.soundReview) await (soundReview ??= new SoundClusterReviewView(document.querySelector("#sounds")!)).show(r);
+    else await (sounds ??= new SoundClustersView(document.querySelector("#sounds")!)).show(r);
+  }
   else document.title = titleOf(r); // an item's view titles the page with its name
 }
 /** Go somewhere: a new history entry (or, `replace`, this one), then show it. */

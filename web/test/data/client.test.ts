@@ -33,6 +33,23 @@ describe("local identity", () => {
   });
 });
 
+describe("local curator review gate", () => {
+  it("is enabled only by the explicit local startup output", async () => {
+    const { bootstrap, clusterCuratorEnabled } = await import("../../src/data/client.ts");
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () => new Response(JSON.stringify({ version: "1.4", custom: { apricity: { mode: "local", clusterCuratorEnabled: true } } }))) as typeof fetch;
+    try {
+      await bootstrap();
+      assert.equal(clusterCuratorEnabled(), true);
+      globalThis.fetch = (async () => new Response(JSON.stringify({ version: "1.4", custom: { apricity: { mode: "cloud", clusterCuratorEnabled: true } } }))) as typeof fetch;
+      await bootstrap();
+      assert.equal(clusterCuratorEnabled(), false, "cloud config must never enable the local bridge");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+});
+
 describe("a site configuration that won't load", () => {
   it("is remembered with its reason, so the page can say so", async () => {
     const { bootstrap, bootstrapError } = await import("../../src/data/client.ts");
