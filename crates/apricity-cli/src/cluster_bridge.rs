@@ -29,6 +29,10 @@ const MAX_INPUT: usize = 64 * 1024;
 const MAX_OUTPUT: usize = 32 * 1024 * 1024;
 const MAX_CHILDREN: usize = 2;
 const DEADLINE: Duration = Duration::from_secs(30);
+// Curator preview validates the full local corpus before showing a draft.
+// Keep the public nearest-neighbor endpoint at 30 seconds, but give this
+// explicitly local-only review path enough time to complete honestly.
+const CURATOR_DEADLINE: Duration = Duration::from_secs(120);
 
 /// Startup-only configuration for the public cluster projection.
 ///
@@ -194,17 +198,17 @@ impl Bridge {
         };
         let Some(_active) = self.try_acquire() else { return unavailable(); };
         let Some(curator_id) = self.config.curator_id.as_deref() else { return unavailable(); };
-        match self.invoke_module(value, "apricity_analyze.cluster_curator_http", Some(curator_id)).await {
+        match self.invoke_module(value, "apricity_analyze.cluster_curator_http", Some(curator_id), CURATOR_DEADLINE).await {
             Ok((status, body)) => (status, axum::Json(body)).into_response(),
             Err(()) => (StatusCode::SERVICE_UNAVAILABLE, axum::Json(json!({"error": "service unavailable"}))).into_response(),
         }
     }
 
     async fn invoke(&self, query: Value) -> Result<(StatusCode, Value), ()> {
-        self.invoke_module(query, "apricity_analyze.cluster_http", None).await
+        self.invoke_module(query, "apricity_analyze.cluster_http", None, self.config.deadline).await
     }
 
-    async fn invoke_module(&self, query: Value, module: &str, curator_id: Option<&str>) -> Result<(StatusCode, Value), ()> {
+    async fn invoke_module(&self, query: Value, module: &str, curator_id: Option<&str>, deadline: Duration) -> Result<(StatusCode, Value), ()> {
         let stdin = serde_json::to_vec(&query).map_err(|_| ())?;
         if stdin.len() > MAX_INPUT {
             return Err(());
@@ -226,7 +230,7 @@ impl Bridge {
             .kill_on_drop(true)
             .spawn()
             .map_err(|_| ())?;
-        let ends_at = Instant::now() + self.config.deadline;
+        let ends_at = Instant::now() + deadline;
         let write = async {
             let mut pipe = child.stdin.take().ok_or(())?;
             pipe.write_all(&stdin).await.map_err(|_| ())?;
