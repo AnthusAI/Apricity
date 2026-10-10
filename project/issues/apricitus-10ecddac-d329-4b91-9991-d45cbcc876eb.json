@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-10ecddac-d329-4b91-9991-d45cbcc876eb",
+  "title": "Play cluster passages without AudioWorklet support",
+  "description": "As a curator, I want to audition a cluster passage in browsers without AudioWorklet support so that reviewing a draft is still possible.\n\nFeature: direct passage audition\n\nScenario: Browser without AudioWorklet\n  Given a browser where AudioContext.audioWorklet is unavailable\n  When I select Play the passage on a cluster representative\n  Then the decoded sample passage plays through a supported AudioContext route\n  And the score-rendering engine is not required\n  And a failure is presented as a playback failure rather than an addModule exception\n\nExclusions: this does not change score playback or the worklet renderer.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "f845df07-c65a-4d10-9655-ff4a8a830af0",
+      "author": "home",
+      "text": "Reproduced the failure boundary from the browser error: sample/clip passage playback calls the score engine initializer, which assumes AudioContext.audioWorklet.addModule exists. I will bypass that renderer for decoded passage audition and verify the actual Play control in the browser.",
+      "created_at": "2026-10-10T18:32:03.892172Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    }
+  ],
+  "created_at": "2026-10-10T18:31:41.469673Z",
+  "updated_at": "2026-10-10T18:32:03.892199Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Semantic-Audio-Supervisor"
+  },
+  "right_now_summary": "The team is bypassing the score renderer so decoded passages can play without AudioWorklet support.",
+  "right_now_updated_at": "2026-10-10T18:32:05.494222Z",
+  "custom": {}
+}
