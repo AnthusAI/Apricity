@@ -71,12 +71,25 @@ class CuratorClusterService:
         control = self.control(actor, run_id)
         manifest = self.registry.draft_manifest(actor, run_id)
         # Reuse exactly the current-canonical card construction used by the
-        # public boundary, but never call its published lookup.
+        # public boundary, but only revalidate the representatives a curator
+        # can actually audition.  Rebuilding every 512-D region here makes a
+        # listening review wait minutes without improving its evidence.
         explorer = ClusterExploration(self.registry, self.corpus_provider, self.catalog_provider,
                                       visibility=self.visibility, ratings=lambda: {}, enabled=True)
         try:
-            _envelope, catalog, snapshot = explorer._current(manifest)
+            envelope, catalog = self.corpus_provider(), self.catalog_provider()
+            if not isinstance(envelope, Mapping) or not isinstance(catalog, Mapping):
+                raise CuratorPreviewError("current cluster data is unavailable")
+            representatives = {item.get("semanticId") for cluster in manifest["clusters"]
+                               for item in cluster.get("representatives", []) if isinstance(item, Mapping)}
+            records = [record for record in envelope.get("records", [])
+                       if isinstance(record, Mapping) and isinstance(record.get("identity"), Mapping)
+                       and record["identity"].get("semanticId") in representatives]
+            snapshot = build_cluster_snapshot(records, dict(catalog), embedding_space=envelope.get("embeddingSpace"),
+                                              processing_fingerprint=envelope.get("processingFingerprint"), visibility=self.visibility)
         except ExplorationStorageUnavailable as error:
+            raise CuratorPreviewError("current cluster data is unavailable") from error
+        except Exception as error:
             raise CuratorPreviewError("current cluster data is unavailable") from error
         samples, clips = explorer._catalog_rows(catalog)
         current_cards: dict[str, dict[str, Any]] = {}
