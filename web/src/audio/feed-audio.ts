@@ -73,30 +73,36 @@ export function decodeSample(path: string): Promise<AudioBuffer> {
  */
 export async function playSample(key: string, path: string, range: [number, number] | null, report: Report, at?: (t: number | null) => void): Promise<void> {
   let src: AudioBufferSourceNode | null = null;
+  // Passage audition does not need the score renderer. In particular, embedded
+  // browsers may implement AudioContext but not AudioWorklet.
+  let ctx: AudioContext | null = null;
   let stopped = false;
   claim(key, () => {
     stopped = true;
     src?.stop();
+    void ctx?.close();
     at?.(null);
     report({ kind: "idle" });
   });
   try {
     report({ kind: "loading", label: "Loading the recording" });
-    const buf = await decodeSample(path);
-    await player.init();
-    if (stopped) return;
-    const ctx = player.ctx!;
+    // Create and resume in the user-gesture turn, before waiting for the
+    // recording download, so browsers with strict autoplay policies permit it.
+    ctx = new AudioContext({ latencyHint: "interactive" });
     await ctx.resume();
+    const buf = await decodeSample(path);
+    if (stopped) return;
+    const playbackCtx = ctx;
     const [from, to] = range ?? [0, buf.duration];
-    src = ctx.createBufferSource();
+    src = playbackCtx.createBufferSource();
     src.buffer = buf;
-    src.connect(ctx.destination);
-    const t0 = ctx.currentTime;
+    src.connect(playbackCtx.destination);
+    const t0 = playbackCtx.currentTime;
     src.start(t0, from, to - from);
     report({ kind: "playing" });
     const tick = () => {
       if (stopped) return;
-      at?.(from + (ctx.currentTime - t0));
+      at?.(from + (playbackCtx.currentTime - t0));
       requestAnimationFrame(tick);
     };
     tick();
@@ -104,11 +110,13 @@ export async function playSample(key: string, path: string, range: [number, numb
       if (stopped) return;
       stopped = true;
       if (current?.key === key) current = null;
+      void ctx?.close();
       at?.(null);
       report({ kind: "idle" });
     };
   } catch (e) {
     if (current?.key === key) current = null;
+    void ctx?.close();
     report({ kind: "error", message: reasonOf(e) });
   }
 }
