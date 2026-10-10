@@ -3,7 +3,7 @@
   "title": "Play cluster passages without AudioWorklet support",
   "description": "As a curator, I want to audition a cluster passage in browsers without AudioWorklet support so that reviewing a draft is still possible.\n\nFeature: direct passage audition\n\nScenario: Browser without AudioWorklet\n  Given a browser where AudioContext.audioWorklet is unavailable\n  When I select Play the passage on a cluster representative\n  Then the decoded sample passage plays through a supported AudioContext route\n  And the score-rendering engine is not required\n  And a failure is presented as a playback failure rather than an addModule exception\n\nExclusions: this does not change score playback or the worklet renderer.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
@@ -22,17 +22,29 @@
         "model": "GPT-5",
         "name": "Semantic-Audio-Supervisor"
       }
+    },
+    {
+      "id": "0750c024-f5dd-422f-82c9-e10f461da85a",
+      "author": "home",
+      "text": "Verification complete: built the web client and ran `npm run test:semantic` (146 passing). I opened a fresh LAN browser page for draft a66b94482498f1db3d411e6822c048caa6a98662bb0c51117b97749f9faffca1, waited for the representative cards, clicked Play the passage, and observed the active control change to “Stop the passage.” Browser console contained no errors, including no addModule/AudioWorklet failure. The local listener remains bound to 0.0.0.0:5181 and serves the required Wasm asset with HTTP 200.",
+      "created_at": "2026-10-10T18:34:16.617417Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
     }
   ],
   "created_at": "2026-10-10T18:31:41.469673Z",
-  "updated_at": "2026-10-10T18:32:03.892199Z",
-  "closed_at": null,
+  "updated_at": "2026-10-10T18:34:21.841776Z",
+  "closed_at": "2026-10-10T18:34:21.841332Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
     "name": "Semantic-Audio-Supervisor"
   },
-  "right_now_summary": "The team is bypassing the score renderer so decoded passages can play without AudioWorklet support.",
-  "right_now_updated_at": "2026-10-10T18:32:05.494222Z",
+  "right_now_summary": "Cluster passage playback now works in browsers without AudioWorklet support.",
+  "right_now_updated_at": "2026-10-10T18:34:22.727480Z",
   "custom": {}
 }
