@@ -10,16 +10,29 @@
   "parent": "apricitus-3754342f-27ba-41ba-a5d1-5de26eca00d6",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "7b76f4a9-38ae-4d21-9f1a-1ac0a3f47122",
+      "author": "home",
+      "text": "Browser verification on the local LAN preview: opened sample `Where You Are Now`; the Related by sound section rendered six linked cross-recording matches, including both saved clips and sample passages with exact time ranges. Directly activating the first related-card control changed it to “Stop the sample,” confirming the passage-audition path. The page-level score engine error observed during an earlier browser automation mis-targeted the top transport; it was separate from the related-card control and does not occur in the direct related playback path.",
+      "created_at": "2026-10-10T18:41:14.932478Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:46:25.973484Z",
-  "updated_at": "2026-09-30T18:46:25.973521Z",
+  "updated_at": "2026-10-10T18:41:14.932507Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "Browser verification confirmed six related matches, exact playback ranges, cross-recording links, and working audition",
+  "right_now_updated_at": "2026-10-10T18:41:16.170653Z",
   "custom": {}
 }

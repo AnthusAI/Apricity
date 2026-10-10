@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Related audio passes native tests, but cloud integration, listening quality, and final review remain.",
-  "right_now_updated_at": "2026-10-05T14:04:13.378144Z",
+  "right_now_summary": "Related samples work is integrated and verified, but cloud checks and final quality review remain.",
+  "right_now_updated_at": "2026-10-10T18:41:17.279265Z",
   "custom": {}
 }
