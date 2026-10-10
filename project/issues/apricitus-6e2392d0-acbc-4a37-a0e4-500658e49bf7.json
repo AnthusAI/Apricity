@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-6e2392d0-acbc-4a37-a0e4-500658e49bf7",
+  "title": "Add explicit LAN bind option for local review",
+  "description": "Purpose: allow an explicitly requested local Apricity review server to bind a validated host such as 0.0.0.0 while preserving 127.0.0.1 default. Allowed CLI/serve tests/docs only. Reject malformed host values; no automatic LAN exposure.",
+  "type": "task",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-10T09:53:31.512393Z",
+  "updated_at": "2026-10-10T09:53:31.512446Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Work is focused on adding a validated LAN bind option while keeping localhost as the default.",
+  "right_now_updated_at": "2026-10-10T09:53:34.285302Z",
+  "custom": {}
+}
