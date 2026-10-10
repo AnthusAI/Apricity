@@ -13,6 +13,7 @@ mod steer;
 mod sync;
 
 use clap::{Parser, Subcommand};
+use std::net::IpAddr;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
@@ -93,7 +94,10 @@ enum Cmd {
         /// Library folder.
         #[arg(long)]
         library: PathBuf,
-        /// Port on 127.0.0.1 (0 picks a free one).
+        /// Interface address to bind (default: loopback; use 0.0.0.0 only when intentionally sharing on a LAN).
+        #[arg(long, default_value = "127.0.0.1")]
+        host: IpAddr,
+        /// Port on the selected interface (0 picks a free one).
         #[arg(long, default_value_t = 5181)]
         port: u16,
         /// Built web app to serve at / (default: web/dist when it exists).
@@ -462,6 +466,7 @@ fn main() -> ExitCode {
     }
     if let Cmd::Serve {
         library,
+        host,
         port,
         web,
         semantic_clusters,
@@ -498,7 +503,7 @@ fn main() -> ExitCode {
         } else {
             cluster_bridge::ClusterConfig::disabled(library.clone())
         };
-        return match serve::run(library, *port, web.clone(), clusters) {
+        return match serve::run(library, *host, *port, web.clone(), clusters) {
             Ok(()) => ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("{e}");

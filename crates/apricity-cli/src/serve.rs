@@ -16,6 +16,7 @@ use axum::{
     routing::{get, post},
 };
 use serde_json::{Value, json};
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
@@ -486,6 +487,7 @@ async fn static_file(
 /// Open the library and serve it until the process is stopped.
 pub fn run(
     library: &Path,
+    host: IpAddr,
     port: u16,
     web: Option<PathBuf>,
     clusters: crate::cluster_bridge::ClusterConfig,
@@ -494,9 +496,9 @@ pub fn run(
     let web = web.or_else(|| Some(PathBuf::from("web/dist")).filter(|p| p.is_dir()));
     let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
     rt.block_on(async {
-        let listener = tokio::net::TcpListener::bind(("127.0.0.1", port))
+        let listener = tokio::net::TcpListener::bind((host, port))
             .await
-            .map_err(|e| format!("bind 127.0.0.1:{port}: {e}"))?;
+            .map_err(|e| format!("bind {host}:{port}: {e}"))?;
         let addr = listener.local_addr().map_err(|e| e.to_string())?;
         let app = app_with_cluster_config(lib, &format!("http://{addr}"), web.clone(), clusters)?;
         match &web {
