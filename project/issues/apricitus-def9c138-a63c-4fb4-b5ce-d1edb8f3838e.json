@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "Hybrid search works in local browser checks, but first-use browser acceptance is still pending.",
+  "right_now_updated_at": "2026-10-10T19:35:45.802701Z",
   "custom": {}
 }

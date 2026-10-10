@@ -116,7 +116,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Implementation is paused while CLAP compatibility, cloud retrieval, mobile checks, and cluster review remain unfinished.",
-  "right_now_updated_at": "2026-10-10T18:41:18.531067Z",
+  "right_now_summary": "Implementation is paused while CLAP parity, cloud checks, listening review, and mobile gates remain unverified.",
+  "right_now_updated_at": "2026-10-10T19:35:47.840552Z",
   "custom": {}
 }
