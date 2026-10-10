@@ -32,8 +32,8 @@
     "model": "Opus 5.5",
     "name": "auritus-voice-integration"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The new generated announcer is deployed; an admin import must update four score references.",
+  "right_now_updated_at": "2026-10-10T18:50:10.151360Z",
   "custom": {
     "project_label": "apricitus",
     "source": "shared"
