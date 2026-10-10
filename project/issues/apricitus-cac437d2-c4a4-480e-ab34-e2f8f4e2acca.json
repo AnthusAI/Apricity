@@ -34,18 +34,30 @@
         "model": "GPT-6",
         "name": "Sol"
       }
+    },
+    {
+      "id": "cc1252b4-fea7-4693-9823-f08e2189986a",
+      "author": "home",
+      "text": "Using the investigation diagnostics for a listening trial: select LibertyBell hold-12 (B) for expected-pitch support and lower broadband content than original C, without treating the old harmony objective as a timbre ranking. Re-run source/note diagnostics and audition the existing controlled B score bars1-3. No production analyzer change or cloud publish in this trial.",
+      "created_at": "2026-10-10T09:18:56.756763Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Sol"
+      }
     }
   ],
   "created_at": "2026-09-30T13:13:20.879697Z",
-  "updated_at": "2026-09-30T21:54:28.853639Z",
+  "updated_at": "2026-10-10T09:18:56.757043Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
     "name": "root"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The team is auditing controlled auditions and score components; no production analyzer changes have been made.",
+  "right_now_updated_at": "2026-10-10T09:18:58.810552Z",
   "custom": {
     "project_label": "apricitus",
     "source": "shared"
