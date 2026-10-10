@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-e2007c61-adc0-4e30-b5f0-980179d7d5a4",
+  "title": "Repair Node 22 clean-install lockfile for semantic CI",
+  "description": "Observed GitHub CI runs37321152153 and37318613548: npm ci fails before all Web/Gherkin tests with EUSAGE Missing @opentelemetry/core@2.0.0 from lock file (four occurrences). Existing local node_modules hides this clean-install defect. Purpose restore exact Node22/npm10 clean installation before closing e426b3. Allowed only web/package-lock.json and focused regression evidence if needed; package.json dependency version changes require root review. Exclude product behavior, model/browser download, AWS deploys, git/Kanbus mutations by Terra. Use Node22/npm10 matching Actions, first reproduce RED with npm ci --dry-run --ignore-scripts in isolated directory containing copied package manifests (do not erase live node_modules). Regenerate lock mechanically using matching package manager while preserving intended direct dependency versions; no blanket library upgrade or --legacy-peer-deps workaround. Verify GREEN clean npm ci in isolated copy, both typechecks, npm run test:semantic and node features/data/check-steps.mjs. Handoff exact Node/npm versions, RED/GREEN counts, lock diff summary and any unresolved package-engine/peer blockers. Root reruns checks, commits and pushes one scoped fix, then closes after hosted CI succeeds. Do not claim dependency vulnerability advisories resolved by this packet.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "ce8889cc-cdda-466b-8904-59fec4393742",
+      "author": "home",
+      "text": "Supervisor independently reran a fresh Node22/npm10 npm ci:1143 packages installed successfully (38s); accepted minimal68-line four-record lock fix committed0ceff5df and pushed develop. Both TypeScript projects,104 semantic tests0skips, Gherkin vocabulary and semantic CI registry pass. Hosted latest board head113cc077 run37324097002 is still in progress; leave e2007c and e426b3 open until hosted checks succeed. No advisory-resolution claim.",
+      "created_at": "2026-10-05T14:24:23.108447Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "8b35c098-35a0-4e0a-88c8-7f7bd0b634dc",
+      "author": "home",
+      "text": "Supervisor verified hosted run 37331912940 at product head 8eb0a9e9: Rust workspace, Semantic ground contracts, Web, and Gherkin step vocabulary all completed successfully. This closes the previously pending hosted verification for this landed task; mobile, listening quality, cloud ANN, and remaining initiative work are not implied complete.",
+      "created_at": "2026-10-05T15:28:11.033825Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-05T14:06:53.986323Z",
+  "updated_at": "2026-10-05T15:28:29.922851Z",
+  "closed_at": "2026-10-05T15:28:29.922805Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The lockfile fix is pushed, and hosted Rust, Web, semantic, and Gherkin checks now pass.",
+  "right_now_updated_at": "2026-10-05T15:28:31.458848Z",
+  "custom": {}
+}

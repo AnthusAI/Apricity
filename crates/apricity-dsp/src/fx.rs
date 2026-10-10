@@ -339,6 +339,232 @@ pub fn loudness_lufs(l: &[f32], r: &[f32], sr: f64) -> f64 {
     lufs(gated.iter().sum::<f64>() / gated.len().max(1) as f64)
 }
 
+// ------------------------------------------------------------------ harmonic (chord-following EQ)
+
+/// Which side of the chord `HarmonicBank` shapes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HarmonicMode {
+    /// Cut non-chord tones.
+    Cut,
+    /// Boost chord tones.
+    Boost,
+    /// Cut non-chord tones and boost chord tones together.
+    Both,
+}
+
+/// `HarmonicBank`'s parameters (the DSL's `harmonic` effect, see `docs/language.md`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HarmonicParams {
+    pub mode: HarmonicMode,
+    /// Cut depth in dB (0..24), applied as negative gain in `Cut`/`Both`.
+    pub depth_db: f64,
+    /// Boost amount in dB (0..18), used in `Boost`/`Both`.
+    pub boost_db: f64,
+    /// Half-width of every band in cents (5..100): the user's "notch tolerance".
+    pub tolerance_cents: f64,
+    /// Chord-tone partials protected from cutting, 0..8 (see `protected`).
+    pub harmonics: u8,
+    pub range_lo_hz: f64,
+    pub range_hi_hz: f64,
+    /// A4 reference (Hz) for the band grid.
+    pub tune_hz: f64,
+    /// Dry/wet, 0..1.
+    pub mix: f64,
+}
+
+impl Default for HarmonicParams {
+    fn default() -> Self {
+        Self { mode: HarmonicMode::Cut, depth_db: 9.0, boost_db: 6.0, tolerance_cents: 30.0, harmonics: 6, range_lo_hz: 80.0, range_hi_hz: 4000.0, tune_hz: 440.0, mix: 1.0 }
+    }
+}
+
+/// A peaking band's Q from its half-width in cents (a tighter tolerance is a narrower, higher-Q
+/// band): `Q = f / (f·(2^(tol/1200) − 2^(−tol/1200)))`, which doesn't depend on `f`.
+pub fn q_from_tolerance_cents(tolerance_cents: f64) -> f64 {
+    let ratio = 2f64.powf(tolerance_cents.max(1e-6) / 1200.0);
+    (1.0 / (ratio - 1.0 / ratio)).max(0.05)
+}
+
+/// The chord sounding in a span, as `HarmonicBank` needs it: which pitch classes (0 = C .. 11 = B)
+/// are chord tones, the bass's own frequency (for the boost register weighting, 4.5), and the
+/// fundamental frequencies (with octave, as actually voiced) whose harmonic partials are
+/// protected from cutting (4.2) — normally the bass plus the chord's other tones placed just
+/// above it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct HarmonicChord {
+    pub tones_pc: [bool; 12],
+    pub bass_hz: f64,
+    pub fundamentals_hz: Vec<f64>,
+}
+
+impl HarmonicChord {
+    pub fn is_tone(&self, pc: u8) -> bool {
+        self.tones_pc[(pc % 12) as usize]
+    }
+}
+
+/// True when `hz` lands within `tolerance_cents` of a partial `h·f` (`1..=harmonics`) of any
+/// fundamental in `fundamentals_hz` — a chord tone's own overtone, not a wrong note.
+fn is_protected_partial(hz: f64, fundamentals_hz: &[f64], harmonics: u8, tolerance_cents: f64) -> bool {
+    if harmonics == 0 {
+        return false;
+    }
+    for &f in fundamentals_hz {
+        if f <= 0.0 {
+            continue;
+        }
+        for h in 1..=harmonics {
+            let partial = f * h as f64;
+            if partial <= 0.0 {
+                continue;
+            }
+            let cents = 1200.0 * (hz / partial).log2();
+            if cents.abs() <= tolerance_cents {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// The target gain (dB) for one band at `hz` (pitch class `pc`) under `chord`/`params` — the
+/// band design of spec 4.5: `Cut` touches only non-chord tones (minus protected partials, 4.2);
+/// `Boost` touches only chord tones, full weight at/above the bass's own octave and half weight
+/// the octave below (a boosted sub-octave of the bass is mud); `Both` does both.
+fn target_db(pc: u8, hz: f64, chord: &HarmonicChord, p: &HarmonicParams) -> f64 {
+    let tone = chord.is_tone(pc);
+    let cut = || -> f64 {
+        if tone || is_protected_partial(hz, &chord.fundamentals_hz, p.harmonics, p.tolerance_cents) { 0.0 } else { -p.depth_db }
+    };
+    let boost = || -> f64 {
+        if !tone {
+            0.0
+        } else {
+            let weight = if hz >= chord.bass_hz { 1.0 } else { 0.5 };
+            weight * p.boost_db
+        }
+    };
+    match p.mode {
+        HarmonicMode::Cut => cut(),
+        HarmonicMode::Boost => boost(),
+        HarmonicMode::Both => cut() + boost(),
+    }
+}
+
+/// Up to this many bands (one per semitone across the widest sensible `range`, ≤ 96 as spec 4.3
+/// says: 8 octaves of 12 semitones).
+pub const MAX_HARMONIC_BANDS: usize = 96;
+
+#[derive(Debug, Clone, Copy)]
+struct HarmonicSlot {
+    hz: f64,
+    pc: u8,
+    filter: Biquad,
+    current_db: f64,
+}
+
+/// A bank of peaking biquads that re-targets itself to the chord sounding at any moment (the
+/// `harmonic` effect's DSP core, spec section 4). The band grid (one slot per note in `range`) is
+/// fixed once per `rebuild_range` call; a chord change only switches each slot's gain toward 0 or
+/// away from it, which is what makes the glide a click-free gain ramp rather than a coefficient
+/// jump — "bands common to both chords don't move" (4.5).
+#[derive(Debug, Clone)]
+pub struct HarmonicBank {
+    sr: f64,
+    q: f64,
+    slots: Vec<HarmonicSlot>,
+    bypassed: bool,
+}
+
+impl HarmonicBank {
+    pub fn new(sr: f64, p: &HarmonicParams) -> Self {
+        let mut bank = Self { sr, q: q_from_tolerance_cents(p.tolerance_cents), slots: Vec::new(), bypassed: true };
+        bank.rebuild_range(p);
+        bank
+    }
+
+    /// Rebuilds the note grid for `range`/`tolerance`/`tune` (not called per block — only when
+    /// those static parameters change).
+    pub fn rebuild_range(&mut self, p: &HarmonicParams) {
+        self.q = q_from_tolerance_cents(p.tolerance_cents);
+        self.slots.clear();
+        if !(p.range_lo_hz > 0.0 && p.range_hi_hz > p.range_lo_hz) {
+            self.bypassed = true;
+            return;
+        }
+        let midi_of_hz = |hz: f64| 69.0 + 12.0 * (hz / p.tune_hz).log2();
+        let lo = midi_of_hz(p.range_lo_hz).ceil() as i32;
+        let hi = midi_of_hz(p.range_hi_hz).floor() as i32;
+        for m in lo..=hi {
+            if self.slots.len() >= MAX_HARMONIC_BANDS {
+                break;
+            }
+            let hz = p.tune_hz * 2f64.powf((m as f64 - 69.0) / 12.0);
+            let pc = m.rem_euclid(12) as u8;
+            self.slots.push(HarmonicSlot { hz, pc, filter: Biquad::new(BiquadKind::Peak { hz, db: 0.0, q: self.q }, self.sr), current_db: 0.0 });
+        }
+        self.bypassed = true;
+    }
+
+    /// Re-targets every band for `chord` (`None`: no harmony, or the score has no `chords` — a
+    /// no-op) and steps each band's gain toward its new target by at most the fraction of a full
+    /// swing that `block_dur_s / glide_s` allows (an immediate jump when `glide_s` is 0). Call
+    /// once per block (e.g. every 32 frames, as the engine's other automated effects do).
+    pub fn update(&mut self, chord: Option<&HarmonicChord>, p: &HarmonicParams, glide_s: f64, block_dur_s: f64) {
+        let full_swing = p.depth_db.max(p.boost_db).max(1.0);
+        let max_step = if glide_s > 1e-9 { full_swing * (block_dur_s / glide_s).max(0.0) } else { f64::INFINITY };
+        let mut any = false;
+        for slot in &mut self.slots {
+            let target = chord.map_or(0.0, |c| target_db(slot.pc, slot.hz, c, p));
+            let d = (target - slot.current_db).clamp(-max_step, max_step);
+            if d != 0.0 {
+                slot.current_db += d;
+                slot.filter.set(BiquadKind::Peak { hz: slot.hz, db: slot.current_db, q: self.q }, self.sr);
+            }
+            if slot.current_db.abs() > 1e-9 {
+                any = true;
+            }
+        }
+        self.bypassed = !any;
+    }
+
+    /// Changes `tolerance` (Q) without touching the note grid or any band's current gain —
+    /// unlike `rebuild_range`, safe to call every block (`automate harmonic.tolerance`, sec 4.6):
+    /// active bands keep their gain and glide state, just narrower or wider.
+    pub fn set_tolerance(&mut self, tolerance_cents: f64) {
+        self.q = q_from_tolerance_cents(tolerance_cents);
+        for slot in &mut self.slots {
+            if slot.current_db.abs() > 1e-9 {
+                slot.filter.set(BiquadKind::Peak { hz: slot.hz, db: slot.current_db, q: self.q }, self.sr);
+            }
+        }
+    }
+
+    /// Whether every band is at 0 dB (a bit-exact identity pass — no filter is ticked).
+    pub fn is_bypassed(&self) -> bool {
+        self.bypassed
+    }
+
+    #[inline]
+    pub fn tick(&mut self, ch: usize, x: f64) -> f64 {
+        if self.bypassed {
+            return x;
+        }
+        let mut y = x;
+        for slot in &mut self.slots {
+            if slot.current_db.abs() > 1e-9 {
+                y = slot.filter.tick(ch, y);
+            }
+        }
+        y
+    }
+
+    /// Combined magnitude response in dB at `hz` (for tests and `explain`).
+    pub fn response_db(&self, hz: f64) -> f64 {
+        self.slots.iter().filter(|s| s.current_db.abs() > 1e-9).map(|s| s.filter.response_db(hz, self.sr)).sum()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -485,6 +711,127 @@ mod tests {
         assert!((both - 0.0).abs() < 0.15, "both channels: {both}");
         let quieter = loudness_lufs(&sine(997.0, 0.1, 3.0), &silence, SR);
         assert!((quieter - (-23.01)).abs() < 0.15, "−20 dB: {quieter}");
+    }
+
+    // ---------------------------------------------------------------- HarmonicBank
+
+    fn c_major(bass_pc: u8, tones: &[u8], bass_hz: f64, fundamentals_hz: Vec<f64>) -> HarmonicChord {
+        let mut tones_pc = [false; 12];
+        for &t in tones {
+            tones_pc[t as usize] = true;
+        }
+        let _ = bass_pc;
+        HarmonicChord { tones_pc, bass_hz, fundamentals_hz }
+    }
+
+    fn hz_of(pc_octave: i32) -> f64 {
+        // pc_octave is a MIDI note number.
+        440.0 * 2f64.powf((pc_octave as f64 - 69.0) / 12.0)
+    }
+
+    #[test]
+    fn cut_attenuates_non_chord_tones_and_spares_chord_tones() {
+        // Isolate a single active band (as the acceptance wording does: "a −9 dB cut AT a
+        // non-chord note") rather than the full 9-pitch-class comb `Cut` normally runs with —
+        // see `chromatic_comb_neighbors_add_up` below for what a full comb actually does to a
+        // semitone-adjacent chord tone (a separate, documented finding, not this criterion).
+        let p = HarmonicParams { mode: HarmonicMode::Cut, depth_db: 9.0, harmonics: 0, tolerance_cents: 30.0, range_lo_hz: 20.0, range_hi_hz: 20_000.0, ..HarmonicParams::default() };
+        let mut bank = HarmonicBank::new(SR, &p);
+        // Every pitch class is a "chord tone" except D: isolates D's own cut band.
+        let mut tones: Vec<u8> = (0..12).collect();
+        tones.retain(|&pc| pc != 2);
+        let chord = c_major(0, &tones, hz_of(45 /* A2 */), vec![]);
+        bank.update(Some(&chord), &p, 0.0, 32.0 / SR);
+
+        let d4 = hz_of(62); // D4, the one non-chord tone
+        let c4 = hz_of(60); // C4, a chord tone a semitone away
+        assert!(bank.response_db(d4) <= -8.0, "D4 attenuation: {} dB", bank.response_db(d4));
+        assert!(bank.response_db(c4).abs() <= 0.5, "C4 should be spared: {} dB", bank.response_db(c4));
+    }
+
+    #[test]
+    fn chromatic_comb_neighbors_add_up() {
+        // Documents a real consequence of the spec's tolerance→Q formula (0 decisions here are
+        // ours to change): cutting every non-chord semitone at once, as `Cut` normally does,
+        // sums each active band's skirt at a semitone-adjacent chord tone. At the 30 c default
+        // this is a few dB, not the ≤0.5 dB a single isolated band gives — worth knowing before
+        // trusting `Cut` to be inaudible on a chord tone right next to a busy non-chord semitone.
+        let p = HarmonicParams { mode: HarmonicMode::Cut, depth_db: 9.0, harmonics: 0, tolerance_cents: 30.0, range_lo_hz: 20.0, range_hi_hz: 20_000.0, ..HarmonicParams::default() };
+        let mut bank = HarmonicBank::new(SR, &p);
+        let chord = c_major(0, &[0, 4, 7], hz_of(45), vec![]);
+        bank.update(Some(&chord), &p, 0.0, 32.0 / SR);
+        let c4 = hz_of(60);
+        let leak = bank.response_db(c4);
+        assert!(leak < -0.5 && leak > -12.0, "expected noticeable but bounded comb leakage at C4, got {leak} dB");
+    }
+
+    #[test]
+    fn harmonics_protects_the_bass_fifth_partial_only_when_asked() {
+        let bass_hz = hz_of(45); // A2 ≈ 110 Hz
+        // A's 5th partial (h=5, +28 semitones from A) lands near C#. Isolate that one band by
+        // making every other pitch class a "chord tone" (as in the test above).
+        let chord_for = |harmonics: u8| {
+            let p = HarmonicParams { mode: HarmonicMode::Cut, depth_db: 9.0, harmonics, tolerance_cents: 30.0, range_lo_hz: 20.0, range_hi_hz: 20_000.0, ..HarmonicParams::default() };
+            let mut tones: Vec<u8> = (0..12).collect();
+            tones.retain(|&pc| pc != 1); // C# is the only non-chord tone
+            let chord = c_major(9, &tones, bass_hz, vec![bass_hz]);
+            (p, chord)
+        };
+        let fifth_partial_hz = bass_hz * 5.0;
+
+        let (p6, chord) = chord_for(6);
+        let mut bank = HarmonicBank::new(SR, &p6);
+        bank.update(Some(&chord), &p6, 0.0, 32.0 / SR);
+        assert!(bank.response_db(fifth_partial_hz).abs() <= 0.5, "harmonics 6: 5th partial should be untouched: {} dB", bank.response_db(fifth_partial_hz));
+
+        let (p0, chord0) = chord_for(0);
+        let mut bank0 = HarmonicBank::new(SR, &p0);
+        bank0.update(Some(&chord0), &p0, 0.0, 32.0 / SR);
+        // The partial (550 Hz) sits ~14 c off the nearest semitone grid band's own center (the
+        // grid is fixed to `tune`, not to the chord), so the measured cut is a bit shy of the
+        // band's own −9 dB peak; still solidly audible as a cut.
+        assert!(bank0.response_db(fifth_partial_hz) <= -6.0, "harmonics 0: 5th partial should be cut: {} dB", bank0.response_db(fifth_partial_hz));
+    }
+
+    #[test]
+    fn depth_zero_is_a_bit_exact_bypass() {
+        let p = HarmonicParams { mode: HarmonicMode::Both, depth_db: 0.0, boost_db: 0.0, ..HarmonicParams::default() };
+        let mut bank = HarmonicBank::new(SR, &p);
+        let chord = c_major(0, &[0, 4, 7], hz_of(45), vec![hz_of(45)]);
+        bank.update(Some(&chord), &p, 0.0, 32.0 / SR);
+        assert!(bank.is_bypassed());
+        let input = sine(440.0, 0.7, 0.05);
+        for &x in &input {
+            let y = bank.tick(0, x as f64);
+            assert_eq!(y, x as f64, "depth 0 must pass every sample through unchanged");
+        }
+    }
+
+    #[test]
+    fn no_chord_is_also_a_bypass() {
+        let p = HarmonicParams::default();
+        let mut bank = HarmonicBank::new(SR, &p);
+        bank.update(None, &p, 0.0, 32.0 / SR);
+        assert!(bank.is_bypassed());
+        assert_eq!(bank.tick(0, 0.42), 0.42);
+    }
+
+    #[test]
+    fn glide_ramps_gain_instead_of_jumping() {
+        let p = HarmonicParams { mode: HarmonicMode::Cut, depth_db: 9.0, harmonics: 0, tolerance_cents: 30.0, range_lo_hz: 20.0, range_hi_hz: 20_000.0, ..HarmonicParams::default() };
+        let mut bank = HarmonicBank::new(SR, &p);
+        let chord = c_major(0, &[0, 4, 7], hz_of(45), vec![]);
+        let block_s = 32.0 / SR;
+        let glide_s = 0.04; // 40 ms
+        bank.update(Some(&chord), &p, glide_s, block_s);
+        let d4 = hz_of(62);
+        let after_one_block = bank.response_db(d4);
+        assert!(after_one_block > -8.0 && after_one_block < 0.0, "one 32-frame block into a 40 ms glide shouldn't already be at full depth: {after_one_block} dB");
+        // Enough blocks to cover the glide: gain should reach (near) full depth.
+        for _ in 0..((glide_s / block_s) as usize + 2) {
+            bank.update(Some(&chord), &p, glide_s, block_s);
+        }
+        assert!(bank.response_db(d4) <= -8.0, "after the glide window: {} dB", bank.response_db(d4));
     }
 }
 

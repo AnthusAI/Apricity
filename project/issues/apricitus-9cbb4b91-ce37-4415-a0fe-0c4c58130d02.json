@@ -1,0 +1,122 @@
+{
+  "id": "apricitus-9cbb4b91-ce37-4415-a0fe-0c4c58130d02",
+  "title": "Semantic audio features",
+  "description": "Implement M0–M5 from the accepted semantic audio plan. Ground CLAP audio analysis and clustering; browser CLAP text encoding; serverless native DynamoDB vector retrieval; related audio; hybrid search; published cluster exploration. All six epic specifications precede implementation. Terra implements bounded packets; supervisor verifies and integrates. No cloud encoder, replacement embedding model, manual deployment, or release. Independent rollout gates and measured compatibility, relevance, latency, and visibility protection are required.",
+  "type": "initiative",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "213dd094-a7ef-4427-9c7f-edaaa206478f",
+      "author": "home",
+      "text": "Partial delivery on develop: all six epic specifications, stories and bounded task packets; reliable semantic region identities and deterministic ground sidecars; isolated browser/evaluation diagnostics. M0 actual q8 parity fails required 0.98 for bass 0.9776231 and metal 0.9740588, despite matching token IDs/masks. M1–M5 remain open and undispatched. No semantic search, related lists or clustering UI implemented yet. Await supervision direction on a same-model higher-precision browser evaluation; no substitute model, relaxed threshold, cloud inference or deployment authorized. Raw measurements and reproduction commands are in design/semantic-audio.md and fixtures/semantic-audio/browser-parity-preflight.json.",
+      "created_at": "2026-09-30T20:00:09.902932Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "d1197633-2570-4fe4-959c-847888fdd7b4",
+      "author": "home",
+      "text": "Goal resumed: complete the requested semantic audio initiative, not the harness. User should test real Apricity search with the existing library; supervisor handles all engineering fixtures/evaluations. Same-model fp32 WASM compatibility investigation is authorized as precision correction, thresholds unchanged. Canonical record/publication preparation runs in parallel read-only. Production release/deployment and mobile/listening/cloud sandbox acceptance remain explicit, not silently assumed.",
+      "created_at": "2026-09-30T20:27:38.746700Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "c97041b2-0626-47c4-bf55-1bf894de0649",
+      "author": "home",
+      "text": "Actual full CLAP backfill process57009 finished exit2:536samples processed,13826saved-clip vectors and13888window vectors, no fatal errors, one explicit source decode failure for Railing.oga sample smp_1123e38805ca33102e5d. Atomic full publication41178 is live; no restart or duplicate backfill. Runtime UI remains available on5181. Next bounded work is cloud typed adapter/current guards and related domain packets after prerequisites, plus algorithm validation review.",
+      "created_at": "2026-09-30T22:09:02.687265Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "92bafbbc-9d4d-4ee4-985f-0734f951fe70",
+      "author": "home",
+      "text": "Current handoff: actual Apricity localhost5181 semantic search uses full real27714-vector corpus535healthy sources,536sample canonical catalog; one existing Railing.oga libsndfile decode failure explicitly excluded, original audio untouched. Browser functional soundresults/playback verified and local cached warm retrieval28-30ms measured. Landed/reviewed current turn: ground algorithms7c4205ee; local performance6cb80614; cloud canonicalguard0abc106e; nativevectorcore6619ffed; ground summaries aaf18292. Goal remains active/fullscope: cloud HTTPintegration/deploymentANN gate, M2related endpoints/UI, M4immutable runs/real qualitylistening, allM5exploration/jobs/curatorcontrols, mobile/fullbrowserfailurematrix and CIintegration remain unfinished. Newly filed cloud compound-meter guard bugdd6041 and CIchoree426b3 are next bounded review work; no unfinished gate is counted passed. User-test link is actual /samples?q=the+sound+of+a+drum+beat, never semantic-eval harness.",
+      "created_at": "2026-09-30T22:45:26.864712Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e1a65f40-8260-4aac-84a0-827685334a7b",
+      "author": "home",
+      "text": "Paused at user request due quota. Search preview5181 remains running with real27714passages; fresh conga drums browser check returns38sound parents and0text matches. All Terra CLI handles terminal, no workers to restart. Accepted ground draft run completed9b93b212145610689bffc1a611ae20b52d5b0fdec8bef5a6950b1b3e2ed81a31 under /private/tmp/apricity-semantic-delivery.53NDAo/library.apricity/semantic/clusters; quality pending, not published. Save remaining product work as task-scoped WIP commits on codex/semantic-audio-checkpoint, not merged/released. Full initiative still unfinished: related real HTTP/UI review, cloud endpoint/publisher/auth/ANN, mobile/browser failure gates, relevance listening and M5 exploration/queue/curator controls. No new dispatch until user resumes.",
+      "created_at": "2026-09-30T23:59:50.128676Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "22bee71a-fee1-409d-b294-b7539ff8d247",
+      "author": "home",
+      "text": "Goal resumed by the user on 2026-10-05. Checkpoint product code is preserved; related UI retry/disposal corrections, Amplify typechecking, native HTTP integration and CI review resume before landing. Previous temporary preview library and servers are absent on this host, so restore real-library preview without claiming old runtime evidence is current. Mobile/listening/cloud gates remain unverified.",
+      "created_at": "2026-10-05T13:40:15.853124Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "c95cc93d-255e-481f-8a51-6e1a26294bb8",
+      "author": "home",
+      "text": "User acceptance observation2026-10-05: while viewing actual local Apricity /samples?q=conga+drums, user reports It seems to work. This confirms real-library search usability, not fixture harness acceptance or instrument-label/listening judgment. Preserve local preview for testing. Cloud runtime/ANN, designated mobile and cluster exploration/publication/listening gates remain unfinished; initiative stays in_progress.",
+      "created_at": "2026-10-05T14:41:21.463301Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e8b10fda-5cea-4727-8032-5d53327a5b70",
+      "author": "home",
+      "text": "Hosted run37335513390 at07d4adc4 completed all four jobs successfully: new cloud runtime/authenticated browser transport/public cluster projection verified with Rust workspace, Web, Semantic ground contracts, Gherkin vocabulary. Next bounded delivery4e468e browser /sounds routes+cards,853b7c current native library public projection adapter,1fb502 bounded native HTTPbridge. All three contracts recorded before coding, Terra remains implementation-only. Public visibility always mandatory; real591-cluster draft remains pending listening review, no automatic publication. Cloud deployment/ANN and mobile compatibility gates remain separate unfinished.",
+      "created_at": "2026-10-05T15:53:56.144620Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:38:52.978632Z",
+  "updated_at": "2026-10-05T15:53:56.144722Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Semantic audio work remains unfinished; browser parity, cloud integration, listening, and publication need review.",
+  "right_now_updated_at": "2026-10-10T18:32:10.263906Z",
+  "custom": {}
+}

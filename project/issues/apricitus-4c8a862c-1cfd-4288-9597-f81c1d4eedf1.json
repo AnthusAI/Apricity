@@ -1,0 +1,57 @@
+{
+  "id": "apricitus-4c8a862c-1cfd-4288-9597-f81c1d4eedf1",
+  "title": "Evaluate and adopt compatible same-model browser precision",
+  "description": "Purpose: resolve measured q8 incompatibility without changing CLAP embedding space, ground model, inference location or numerical gates. Supervisor authorizes pinned same-export fp32 WASM as candidate (larger static download). Own encoder manifest/runtime, browser evaluator and related tests only. Excludes app search, backend, cloud inference, board/git/release writes. Tests first: exact manifest fp32/text_model.onnx, same512 normalization/progress/cancel/cache contracts, measured missing/failure gates. Supervisor captures six real browser vectors against pinned Python and48 audio candidates and desktop warm timing, reruns tests/build. Missing mobile/listening remains explicit, never fabricated. Handoff: file inventory/red-green/evidence/blockers. No commit/push/close.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-5bb1f371-f22c-4f04-bb9f-61453183836c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "82286bfb-3448-49ba-9de8-f52e0bb6b21b",
+      "author": "home",
+      "text": "Supervisor real-browser evidence: pinned fp32 WASM text-only export, six fixed prompts,48 pinned Python audio references. Every cosine >=0.999999999997; every top20 retention1.0;20 cache-bypassed warm encodes desktop p95=58.819999993ms. Isolation headers verified; no browser errors.19 unit tests/build/contract check passed. Raw artifact /tmp/apricity-semantic-delivery.53NDAo/browser-fp32-desktop.json. Adopt fp32 same-model for supervised desktop development, static download ~502MB rather than original127MB q8 default. No mobile/listening/cloud gate claimed. Preserve q8 failure artifact; update accepted evidence bindings and design before landing.",
+      "created_at": "2026-09-30T20:31:17.712311Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "3af50232-e84d-4ca8-ab36-3b4dc44b10f5",
+      "author": "home",
+      "text": "Supervisor final review:19 deterministic worker/evaluator tests, build and contract check passed; two bound Gherkin scenarios/six steps passed. Desktop parity recomputes six actual raw vectors and top20 IDs against48 real CLAP-encoded syntheticaudio references. Complete desktop/mobile CLI correctly remains not_evaluated with nonzero exit, exactly for absent mobile. Preserve historicalq8 artifact, add durable raw fp32 fixture and updated spec. Land reviewed precision sub-task only, parentM0 acceptance remains open for mobile/listening.",
+      "created_at": "2026-09-30T20:39:17.357155Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "78b10dea-3895-4da2-895d-d3ecc3323064",
+      "author": "home",
+      "text": "Reviewed precision correction landed on develop in c1088e7e; actual desktop cosine/top20 gates pass,19 unit tests/build/contract and2 Gherkin scenarios pass. Same pinned model/space and thresholds preserved. Parent M0 remains unaccepted for absent mobile/listening evidence.",
+      "created_at": "2026-09-30T20:46:31.415127Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-30T20:25:38.380413Z",
+  "updated_at": "2026-09-30T20:46:31.561122Z",
+  "closed_at": "2026-09-30T20:46:31.561075Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

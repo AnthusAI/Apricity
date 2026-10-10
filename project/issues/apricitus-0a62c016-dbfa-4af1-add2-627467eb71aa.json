@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-0a62c016-dbfa-4af1-add2-627467eb71aa",
+  "title": "Restore Amplify-owned production deployment",
+  "description": "User correction: GitHub must run CI and trigger the original Amplify app after success. Amplify must retain deployment of the existing Gen 2 backend and frontend. Remove the GitHub backend deployment step, restore amplify.yml, verify the original app before restoring its custom domain, and retain replacement hosting until cutover is verified.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6841cc3b-1684-4e16-9562-6a78cdeadfe3",
+      "author": "home",
+      "text": "Restored amplify.yml and replaced GitHub backend/artifact deployment with a StartJob/GetJob trigger for original app d2n7w4kwqyfwn4. Removed GitHub backend provisioning permission. Correction committed on develop; isolated release PR #63 contains only this fix, excluding unrelated integration work. Local trigger checks prove success, failure propagation, and stale-CI rejection. Live domain cutover waits for original app deployment and smoke test.",
+      "created_at": "2026-09-30T21:07:52.933606Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Codex"
+      }
+    },
+    {
+      "id": "87e9b852-178c-4114-bcc0-4c278179fd98",
+      "author": "home",
+      "text": "Completed correction. PRs #63 and #64 released only the deployment fix already landed on develop. GitHub CI passed (36778538785); trigger workflow 36778848235 attempt 2 succeeded via OIDC. Original app d2n7w4kwqyfwn4 deployed backend and frontend successfully in jobs 133 and 134. Full production smoke passed on the original default URL and apricity.anth.us; public page hashes matched. Domain association AVAILABLE on original app; auto Git builds remain disabled. Deleted the erroneous static hosting app d164nik0r91btj and the unused backend/hosting deployment roles; retained only the restricted trigger role. User-level skill corrected to preserve the existing app and Amplify-owned backend deployment.",
+      "created_at": "2026-09-30T21:41:31.071009Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Codex"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T19:42:03.374512Z",
+  "updated_at": "2026-09-30T21:41:31.560898Z",
+  "closed_at": "2026-09-30T21:41:31.560812Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Codex"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

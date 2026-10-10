@@ -1,0 +1,74 @@
+{
+  "id": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
+  "title": "Implement typed cloud search and exact local adapter",
+  "description": "Purpose: one searchAudio endpoint at POST /semantic/search in both modes, configured URL in custom.apricity.semanticUrl. Prereq infra/recordcontract. Allowed: semantic lambda modules, web/src/data/semantic.ts, Rust local semantic route/module tests; native local engine must check canonical models, no sibling repo changes. Request normalized512 vector embeddingSpace optionalkind/sampleId limit24max100. Exact dot local tie semanticId asc; cloud SearchVectors capped100 no scan; reject unsupported versions/invalid input. Verify local Rust and TS handler tests; sandbox recall separate optional command nonzero if unavailable.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "eef2b320-98f9-40bc-8134-9e71910c7f01",
+      "author": "home",
+      "text": "Infrastructure packet accepted and landed796e3f9e: official native index512DOT_PRODUCT, identity/revision projection and narrowly scoped policy helpers. Next bounded cloud packet creates typed SearchVectors service with injected canonical hydration then actual server integration; no public placeholder that bypasses current guards. Queries must use one capped SearchVectors operation and noScan. Existing local route and user runtime must remain untouched.",
+      "created_at": "2026-09-30T22:10:07.104366Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "a40c6427-3198-44f2-aacc-c87a9aabf848",
+      "author": "home",
+      "text": "Supervisor review: cloud service and canonical hydrator return contracts do not compose: hydrate must return Omit<SemanticSearchHit, score>, since retrieval owns score. Plain Amplify TypeScript fails on newly introduced .ts import suffixes. filteredCount currently counts response-limit truncation as rejected/stale; align with local observable rejected-count semantics. Require shared canonical identity rounding with i64 bounds, constraint recheck on returned candidates, and deterministic tests before integration; no cloud deployment or sandbox recall claim.",
+      "created_at": "2026-09-30T22:25:30.029883Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e114bee0-31fc-4dfc-b4de-fb80ded2ca62",
+      "author": "home",
+      "text": "Local performance subtask reviewed and landed6cb80614, current localhost5181 restarted with accepted binary, real catalog/browser verified. Performance evidence pertains local exact engine only, not DynamoDBANN or browser model inference; cloud endpoint and sandbox recall still unfinished. Cloud core correction10tests/Amplifytsc pass; waiting type-aware current-window guard correction before wiring HTTP transport.",
+      "created_at": "2026-09-30T22:35:27.083719Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e3b20b23-d07c-406e-a1c7-7304aec8dd9c",
+      "author": "home",
+      "text": "Accepted cloud prerequisites landed separately: canonical guard0abc106e and native SearchVectors service6619ffed,20focused tests+plainAmplifytsc+contractcheck passed. Parent remains in_progress: must add real serverless HTTP runtime (current canonical strong reads/analysisbytes, trusted verified curator auth or public documented policy), narrowly wire IAM/API/outputs and runtime processing fingerprint configuration; sandboxANN recall still explicitly not_evaluated. Local preview confirmed noerrors, real27parent sound matches and exactbounded audition; no test-harness handoff.",
+      "created_at": "2026-09-30T22:40:56.403784Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:43:41.185927Z",
+  "updated_at": "2026-10-05T14:04:22.898833Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Cloud search runtime wiring and tests pass, but deployment and ANN recall remain unverified.",
+  "right_now_updated_at": "2026-10-05T15:47:06.715105Z",
+  "custom": {}
+}

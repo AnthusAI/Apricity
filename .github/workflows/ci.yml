@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [develop, main]
+    paths-ignore:
+      - 'project/issues/**'
+      - 'project/events/**'
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
@@ -55,11 +58,22 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
         working-directory: web
+      - name: Type-check Amplify backend
+        run: npx tsc --noEmit --project amplify/tsconfig.json
+        working-directory: web
+      - name: Semantic TypeScript tests
+        run: npm run test:semantic
+        working-directory: web
       - name: Flow tests
         run: npm run test:flow
         working-directory: web
       - name: Contract is up to date
         run: npm run contract:check
+        working-directory: web
+      - name: Build the production frontend
+        run: |
+          npm run build
+          cp .cache/apricity_web.wasm dist/apricity_web.wasm
         working-directory: web
 
   features:
@@ -76,3 +90,36 @@ jobs:
       - run: npm ci
         working-directory: web
       - run: node features/data/check-steps.mjs
+
+  semantic-ground:
+    name: Semantic ground contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Semantic ground contract tests
+        run: |
+          semantic_venv="$(mktemp -d)/venv"
+          python -m venv "$semantic_venv"
+          "$semantic_venv/bin/python" -m pip install -r analysis/requirements-semantic-tests.txt
+          PYTHONPATH=analysis "$semantic_venv/bin/python" -m pytest \
+            analysis/tests/test_semantic_contract.py \
+            analysis/tests/test_semantic_freshness.py \
+            analysis/tests/test_semantic_records.py \
+            analysis/tests/test_semantic_publisher.py \
+            analysis/tests/test_semantic_backfill.py \
+            analysis/tests/test_semantic_catalog.py \
+            analysis/tests/test_semantic_evaluation.py \
+            analysis/tests/test_cluster_corpus.py \
+            analysis/tests/test_audio_clusters.py \
+            analysis/tests/test_cluster_summaries.py \
+            analysis/tests/test_cluster_runs.py \
+            analysis/tests/test_cluster_jobs.py \
+            analysis/tests/test_cluster_worker.py \
+            analysis/tests/test_semantic_worker_command.py \
+            analysis/tests/test_cluster_publication.py \
+            analysis/tests/test_cluster_exploration.py \
+            analysis/tests/test_semantic_ci.py

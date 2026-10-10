@@ -4,6 +4,7 @@ compiles), and the whitelist has no mute/delete op."""
 from __future__ import annotations
 
 import pathlib
+import re
 import subprocess
 
 import pytest
@@ -117,6 +118,61 @@ def test_track_transpose_sets_auto_or_a_fixed_value():
     assert ok, err
 
 
+def test_track_transpose_span_splits_around_the_span_and_keeps_the_original_transpose_outside_it():
+    text = TINY  # `track bright  transpose 2` with no explicit `bars` -> needs total_bars
+    out = ops.apply(text, {"op": "track.transpose_span", "track": "bright", "bars": [2, 2], "value": -3, "total_bars": 4})
+    # A single-bar range prints "bars 1", not "bars 1-1" (`track.bars`/`track.transpose_span`
+    # both collapse a==b that way) -- `\b` word boundaries so "bars 1" doesn't match inside "bars 1-4".
+    assert re.search(r"\bbars 1\b(?!-)", out) and re.search(r"\bbars 1\b(?!-).*\btranspose 2\b", out)  # before the span: kept
+    assert re.search(r"\bbars 2\b(?!-).*\btranspose -3\b", out)  # the span itself
+    assert "bars 3-4" in out  # after the span: kept
+    assert out.count("track bright") == 3
+    assert out.count("as bright_") == 3
+    ok, err = compiles(out)
+    assert ok, err
+
+
+def test_track_transpose_span_uses_an_explicit_bars_range_without_total_bars():
+    text = TINY.replace("track bright  transpose 2", "track bright  bars 1-4  transpose 2")
+    out = ops.apply(text, {"op": "track.transpose_span", "track": "bright", "bars": [3, 4], "value": 0})
+    assert "bars 1-2" in out and "transpose 2" in out
+    assert "bars 3-4" in out and "transpose 0" in out
+    assert out.count("track bright") == 2  # the whole range is 1-4, so only 2 segments (no "after")
+    ok, err = compiles(out)
+    assert ok, err
+
+
+def test_track_transpose_span_rejects_a_span_outside_the_track_range():
+    text = TINY.replace("track bright  transpose 2", "track bright  bars 1-4  transpose 2")
+    with pytest.raises(ops.OpError):
+        ops.apply(text, {"op": "track.transpose_span", "track": "bright", "bars": [3, 8], "value": 0})
+    with pytest.raises(ops.OpError):
+        ops.apply(TINY, {"op": "track.transpose_span", "track": "bright", "bars": [2, 2], "value": 0})  # no total_bars, no explicit bars
+
+
+def test_track_transpose_span_is_idempotent_on_the_span_itself():
+    text = TINY.replace("track bright  transpose 2", "track bright  bars 1-4  transpose 2")
+    once = ops.apply(text, {"op": "track.transpose_span", "track": "bright", "bars": [3, 4], "value": 0})
+    twice = ops.apply(once, {"op": "track.transpose_span", "track": "bright", "bars": [3, 4], "value": 5})
+    assert "transpose 5" in twice
+    ok, err = compiles(twice)
+    assert ok, err
+
+
+def test_track_bars_sets_or_replaces_the_range():
+    # TINY is 4 bars (`chords I | IV | V | I`), so the ranges here must stay inside 1-4.
+    out = ops.apply(TINY, {"op": "track.bars", "track": "bright", "bars": [1, 2]})
+    assert "bars 1-2" in out
+    ok, err = compiles(out)
+    assert ok, err
+    out2 = ops.apply(TINY.replace("track bright  transpose 2", "track bright  bars 1-4  transpose 2"), {"op": "track.bars", "track": "bright", "bars": [3, 3]})
+    assert "bars 3" in out2 and "bars 1-4" not in out2
+    ok, err = compiles(out2)
+    assert ok, err
+    with pytest.raises(ops.OpError):
+        ops.apply(TINY, {"op": "track.bars", "track": "bright", "bars": [8, 5]})
+
+
 def test_clip_root_pins_a_new_note():
     out = ops.apply(TINY, {"op": "clip.root", "clip": "low", "note": "A1"})
     assert "root A1" in out and "root Ab1" not in out
@@ -151,6 +207,28 @@ def test_track_volume_nudges_relative_to_current():
     assert ok, err
     with pytest.raises(ops.OpError):
         ops.apply(TINY, {"op": "track.volume", "track": "bright", "delta": 3})
+
+
+def test_track_harmonic_toggles_a_preset_and_is_idempotent():
+    on = ops.apply(TINY, {"op": "track.harmonic", "track": "bright", "preset": "cleanup"})
+    assert ops.HARMONIC_PRESETS["cleanup"] in on
+    ok, err = compiles(on)
+    assert ok, err
+    # Applying a different preset replaces, doesn't stack.
+    on2 = ops.apply(on, {"op": "track.harmonic", "track": "bright", "preset": "resonant"})
+    assert on2.count("harmonic") == 1
+    assert ops.HARMONIC_PRESETS["resonant"] in on2
+    ok, err = compiles(on2)
+    assert ok, err
+    off = ops.apply(on2, {"op": "track.harmonic", "track": "bright", "preset": "resonant", "on": False})
+    assert "harmonic" not in off
+    ok, err = compiles(off)
+    assert ok, err
+
+
+def test_track_harmonic_rejects_an_unlisted_preset():
+    with pytest.raises(ops.OpError):
+        ops.apply(TINY, {"op": "track.harmonic", "track": "bright", "preset": "wild"})
 
 
 def test_unknown_op_raises():

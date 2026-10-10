@@ -18,8 +18,8 @@ from __future__ import annotations
 
 import dataclasses
 
-# Spec section 4's defaults (round 2: masking/rhythm added now that the surrogate reads the
-# fitfeat sidecar and shares term definitions with layer.py's L1 terms -- see surrogate.py).
+# Spec section 4's defaults (masking/rhythm use the surrogate's fitfeat-sidecar terms, shared
+# with layer.py's L1 terms -- see surrogate.py).
 # clash + chord + masking + rhythm + density + taste = 0.90, the penalty pool; contribution is
 # the separate positive term (w_c = 0.20).
 WEIGHTS = {"clash": 0.30, "chord": 0.10, "masking": 0.15, "rhythm": 0.10, "density": 0.15, "taste": 0.10}
@@ -79,26 +79,21 @@ def null_composite() -> Composite:
 
 DELTA_MARGIN_DEFAULT = 2.0
 
-# --------------------------------------------------------------------------- whole-mix gate (round 3)
+# --------------------------------------------------------------------------- whole-mix gate
 #
-# Kanbus apricitus-a9ad5b round 3 (reviewer decision, 2026-09-27): L1 gating and ranking moved from
-# `render_terms.render_composite` (a pairwise penalty score against `layer.check_layer`, whose null
-# is 100 by construction -- no addition could ever clear a positive margin against it, and it
-# charges a candidate's onset correlation with the stack as a rhythm *penalty* even when that
-# correlation is exactly the "locks into the groove" a listener wants) to the whole-mix objective:
-# `check.py`'s own objective (the same function `scripts/check-stems.py` calls, guards included),
-# computed once for the incumbent alone and once for stack+candidate together, over the same L1
-# bars window. `Δmix = obj(candidate) - obj(incumbent)`.
+# L1 gating and ranking work on the whole-mix objective: `check.py`'s own objective (the same
+# function `scripts/check-stems.py` calls), computed once for the incumbent alone and once for
+# stack+candidate together, over the same bars window (`audition_form.choose_window` / the
+# candidate's own entry bars when they're already window-length) -- `obj(candidate)` and
+# `obj(incumbent)` are both rendered over that same window (`audition_form.together_objective` /
+# `scene_baseline_objective`), so the two sides are always compared on identical material instead
+# of a full-song render standing in for a slice of it.
 #
-# The margin below is fit to one real listening data point, not guessed: the user's blind-unblind
-# verdict on `renders/optimize/ave-house-seed7-run2` (kind `listen-note`, logged in
-# `renders/log.jsonl` in the `example-scores-editing-deaa37` worktree, 2026-09-27T10:12:05):
-#   incumbent objective 84.38; A 84.1 (Δ=-0.28, "welcome"); B 82.21 (Δ=-2.17, "welcome");
-#   C 69.98 (Δ=-14.40, lowest-rated of the three, still "sound pretty good" but clearly the worst).
-# The user's own words: "They all sound pretty good. I generally agree with the quantifications
-# from the checker." -- i.e. a small negative Δ (a near-tie) is a welcome addition, and -14 is
-# where quality visibly drops. WHOLE_MIX_MARGIN=-2.0 sits at B's Δ (a tie-tolerance, not a
-# requirement that an addition strictly improve the mix), so B lands right at the boundary
-# ("borderline") rather than comfortably inside or outside it -- consistent with one data point,
-# not fit to make B pass or fail either way.
+# `Δmix = obj(stack+candidate) - obj(incumbent)` is not required to be positive: a small negative
+# Δ (a near-tie) still counts as a welcome addition, since adding a part can cost a little mix
+# quality while still being worth having. `WHOLE_MIX_MARGIN` is the tie-tolerance below which a
+# candidate is rejected as a net loss rather than a near-tie. It is calibrated against recorded
+# listening verdicts, not guessed or derived analytically -- see the verdict log
+# (`renders/log.jsonl`) and Kanbus apricitus-a9ad5b / apricitus-dbed5c for how it was set and
+# re-validated.
 WHOLE_MIX_MARGIN = -2.0

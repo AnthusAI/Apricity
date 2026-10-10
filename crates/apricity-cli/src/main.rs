@@ -1,18 +1,28 @@
 //! `apricity`: compile, explain and render Apricity scores.
 
+mod check;
+mod cloud;
+mod cluster_bridge;
 mod migrate;
 mod play;
 mod render;
+mod semantic;
 mod serve;
 mod sources;
+mod steer;
 mod sync;
 
 use clap::{Parser, Subcommand};
+use std::net::IpAddr;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
 #[derive(Parser)]
-#[command(name = "apricity", version, about = "Declarative, harmony-aware sample music")]
+#[command(
+    name = "apricity",
+    version,
+    about = "Declarative, harmony-aware sample music"
+)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -84,17 +94,69 @@ enum Cmd {
         /// Library folder.
         #[arg(long)]
         library: PathBuf,
-        /// Port on 127.0.0.1 (0 picks a free one).
+        /// Interface address to bind (default: loopback; use 0.0.0.0 only when intentionally sharing on a LAN).
+        #[arg(long, default_value = "127.0.0.1")]
+        host: IpAddr,
+        /// Port on the selected interface (0 picks a free one).
         #[arg(long, default_value_t = 5181)]
         port: u16,
         /// Built web app to serve at / (default: web/dist when it exists).
         #[arg(long)]
         web: Option<PathBuf>,
+        /// Enable the bounded local bridge for reviewed semantic cluster projections.
+        #[arg(long, default_value_t = false)]
+        semantic_clusters: bool,
+        /// Absolute trusted Python executable used only by --semantic-clusters.
+        #[arg(long)]
+        cluster_python: Option<PathBuf>,
+        /// Enable the separate local-only curator draft/review/publish bridge.
+        /// It is disabled by default and never trusts browser role fields.
+        #[arg(long, default_value_t = false)]
+        semantic_cluster_curator: bool,
+        /// Trusted local curator identifier injected into the private bridge.
+        #[arg(long)]
+        cluster_curator_id: Option<String>,
     },
     /// Keep a library and a bucket (or folder) identical: push, pull, or show the plan.
     Sync {
         #[command(subcommand)]
         action: sync::Action,
+    },
+    /// Harmony v2 objective (v1 and v2) for a `--stems` render: chord recognition, Q, guards.
+    Check {
+        /// A `--stems` render directory (holds stems.json and <track>.wav files).
+        stems_dir: PathBuf,
+        /// Print the full report as JSON instead of prose.
+        #[arg(long)]
+        json: bool,
+        /// Baseline file to compare against (written on first use).
+        #[arg(long)]
+        baseline: Option<PathBuf>,
+        /// Don't flag this track as suspiciously quiet vs the baseline (repeatable).
+        #[arg(long = "allow-mute")]
+        allow_mute: Vec<String>,
+        /// Append a summary line here.
+        #[arg(long)]
+        log: Option<PathBuf>,
+    },
+    /// Harmony v2 steering report for a `--stems` render: wrong notes, transposition maps, fit
+    /// regions and suggestions mapped to optimizer ops (`schema/steer.schema.json`).
+    Steer {
+        /// A `--stems` render directory (holds stems.json and <track>.wav files).
+        stems_dir: PathBuf,
+        /// Score wrong notes and the transposition map against the written chord (default) or
+        /// each span's heard chord.
+        #[arg(long, default_value = "written", value_parser = ["written", "heard"])]
+        against: String,
+        /// The score that produced `stems_dir` (optional): compiled to read each loop track's
+        /// solver-chosen shift per span (`Event.semitones`), so `track.transpose_span`
+        /// suggestions compare the transposition map against what the solver actually chose,
+        /// not a 0-semitone default.
+        #[arg(long)]
+        score: Option<PathBuf>,
+        /// Write here instead of stdout.
+        #[arg(short, long)]
+        out: Option<PathBuf>,
     },
     /// Import a repository's samples, manifests, candidates and scores into a library.
     Migrate {
@@ -108,23 +170,270 @@ enum Cmd {
         #[arg(long)]
         link: bool,
     },
+    /// Sign in through Apricity's hosted Google authorization page.
+    Login,
+    /// Revoke and remove the current Apricity CLI session.
+    Logout,
+    /// Display the signed-in Apricity identity.
+    Whoami,
+    /// Create, read, update, list, or delete cloud Scores.
+    Score {
+        #[command(subcommand)]
+        action: ScoreAction,
+    },
+    /// Curator/admin-only library-record import from cloud storage.
+    Sample {
+        #[command(subcommand)]
+        action: SampleAction,
+    },
+    /// Start, list or read your cloud labs (Kanbus apricitus-e59a0b: a sit-down with a scene).
+    Lab {
+        #[command(subcommand)]
+        action: LabAction,
+    },
+    /// Publish, list, pull or attach cloud listening cycles.
+    Cycle {
+        #[command(subcommand)]
+        action: CycleAction,
+    },
+}
+
+#[derive(Subcommand)]
+enum LabAction {
+    /// Start a lab: an existing cloud Score id (the scene), a title and an optional brief.
+    Start {
+        scene_score_id: String,
+        #[arg(long)]
+        title: String,
+        #[arg(long)]
+        brief: Option<String>,
+        /// Print machine-readable JSON instead of prose.
+        #[arg(long)]
+        json: bool,
+    },
+    /// List your labs, newest first.
+    List {
+        #[arg(long)]
+        json: bool,
+    },
+    /// Print one lab.
+    Get {
+        id: String,
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum CycleAction {
+    /// Publish a listening cycle: the incumbent plus one or more candidates, blind-lettered.
+    Publish {
+        /// The incumbent's .apr (used only to create a hidden cloud copy if `--incumbent-score-id` doesn't exist yet).
+        #[arg(long)]
+        score: PathBuf,
+        #[arg(long = "incumbent-score-id")]
+        incumbent_score_id: String,
+        #[arg(long = "incumbent-audio")]
+        incumbent_audio: PathBuf,
+        /// A candidate's .apr and its rendered audio (repeatable): `--candidate A.apr A.m4a`.
+        #[arg(long = "candidate", num_args = 2, value_names = ["APR", "AUDIO"])]
+        candidate: Vec<PathBuf>,
+        #[arg(long)]
+        question: Option<String>,
+        #[arg(long)]
+        title: Option<String>,
+        /// A Lab id to publish this cycle into (sets `labId`).
+        #[arg(long)]
+        lab: Option<String>,
+        #[arg(long)]
+        json: bool,
+    },
+    /// List open cycles.
+    List {
+        #[arg(long)]
+        json: bool,
+    },
+    /// Log a cycle's ratings and verdicts (your own visible ones), optionally closing it.
+    Pull {
+        cycle_id: String,
+        #[arg(long)]
+        close: bool,
+        #[arg(long)]
+        json: bool,
+    },
+    /// Attach an existing cycle to a lab (sets `labId`).
+    Attach {
+        cycle_id: String,
+        #[arg(long)]
+        lab: String,
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ScoreAction {
+    /// Create a cloud score from an .apr or YAML score file.
+    Create {
+        file: PathBuf,
+        #[arg(long)]
+        title: Option<String>,
+        #[arg(long)]
+        folder: Option<String>,
+        #[arg(long)]
+        kind: Option<String>,
+        #[arg(long = "tag")]
+        tags: Vec<String>,
+    },
+    /// Print a cloud score, or write it to a file.
+    Get {
+        id: String,
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
+    /// List visible cloud scores.
+    List,
+    /// Replace a cloud score's text and references from a score file.
+    Update {
+        id: String,
+        file: PathBuf,
+        #[arg(long)]
+        title: Option<String>,
+        #[arg(long)]
+        folder: Option<String>,
+        #[arg(long)]
+        kind: Option<String>,
+        #[arg(long = "tag")]
+        tags: Vec<String>,
+    },
+    /// Delete a cloud score.
+    Delete {
+        id: String,
+        #[arg(long)]
+        yes: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum SampleAction {
+    /// Import library records already staged in cloud storage, or synchronize a repository.
+    Import {
+        /// Repository root containing samples/ and their .apricity.json manifests.
+        #[arg(long)]
+        from: Option<PathBuf>,
+        /// Synchronize one sample path (relative to samples/) instead of the full repository.
+        #[arg(long)]
+        path: Option<String>,
+    },
 }
 
 /// Compile a score with its clips taken from a library.
-fn compile_from_library(score: &std::path::Path, library: &std::path::Path) -> Result<apricity_score::Timeline, Vec<String>> {
-    let text = std::fs::read_to_string(score).map_err(|e| vec![format!("{}: {e}", score.display())])?;
-    let mut lib = apricity_data::Library::open(library, None).map_err(|e| vec![format!("{}: {e}", library.display())])?;
-    let mut loader = apricity_data::loader::make(&mut lib, std::path::Path::new(".")).map_err(|e| vec![e])?;
+fn compile_from_library(
+    score: &std::path::Path,
+    library: &std::path::Path,
+) -> Result<apricity_score::Timeline, Vec<String>> {
+    let text =
+        std::fs::read_to_string(score).map_err(|e| vec![format!("{}: {e}", score.display())])?;
+    let mut lib = apricity_data::Library::open(library, None)
+        .map_err(|e| vec![format!("{}: {e}", library.display())])?;
+    let mut loader =
+        apricity_data::loader::make(&mut lib, std::path::Path::new(".")).map_err(|e| vec![e])?;
     apricity_score::compile_text(&text, score, &mut loader)
 }
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
-    if let Cmd::Sources { samples, action } = &cli.cmd {
-        return sources::main(action, samples);
-    }
-    if let Cmd::Play { score, no_audio, seconds, volume } = cli.cmd {
-        return match play::run(play::Options { score, no_audio, seconds, volume_db: volume }) {
+    if matches!(
+        cli.cmd,
+        Cmd::Login
+            | Cmd::Logout
+            | Cmd::Whoami
+            | Cmd::Score { .. }
+            | Cmd::Sample { .. }
+            | Cmd::Lab { .. }
+            | Cmd::Cycle { .. }
+    ) {
+        let command = match cli.cmd {
+            Cmd::Login => cloud::Command::Login,
+            Cmd::Logout => cloud::Command::Logout,
+            Cmd::Whoami => cloud::Command::Whoami,
+            Cmd::Score { action } => cloud::Command::Score(match action {
+                ScoreAction::Create {
+                    file,
+                    title,
+                    folder,
+                    kind,
+                    tags,
+                } => cloud::ScoreCommand::Create {
+                    file,
+                    title,
+                    folder,
+                    kind,
+                    tags,
+                },
+                ScoreAction::Get { id, out } => cloud::ScoreCommand::Get { id, out },
+                ScoreAction::List => cloud::ScoreCommand::List,
+                ScoreAction::Update {
+                    id,
+                    file,
+                    title,
+                    folder,
+                    kind,
+                    tags,
+                } => cloud::ScoreCommand::Update {
+                    id,
+                    file,
+                    title,
+                    folder,
+                    kind,
+                    tags,
+                },
+                ScoreAction::Delete { id, yes } => cloud::ScoreCommand::Delete { id, yes },
+            }),
+            Cmd::Sample {
+                action: SampleAction::Import { from, path },
+            } => cloud::Command::Import { from, path },
+            Cmd::Lab { action } => cloud::Command::Lab(match action {
+                LabAction::Start { scene_score_id, title, brief, json } => {
+                    cloud::LabCommand::Start { scene_score_id, title, brief, json }
+                }
+                LabAction::List { json } => cloud::LabCommand::List { json },
+                LabAction::Get { id, json } => cloud::LabCommand::Get { id, json },
+            }),
+            Cmd::Cycle { action } => cloud::Command::Cycle(match action {
+                CycleAction::Publish {
+                    score,
+                    incumbent_score_id,
+                    incumbent_audio,
+                    candidate,
+                    question,
+                    title,
+                    lab,
+                    json,
+                } => cloud::CycleCommand::Publish {
+                    score,
+                    incumbent_score_id,
+                    incumbent_audio,
+                    candidates: candidate
+                        .chunks_exact(2)
+                        .map(|pair| (pair[0].clone(), pair[1].clone()))
+                        .collect(),
+                    question,
+                    title,
+                    lab,
+                    json,
+                },
+                CycleAction::List { json } => cloud::CycleCommand::List { json },
+                CycleAction::Pull { cycle_id, close, json } => {
+                    cloud::CycleCommand::Pull { cycle_id, close, json }
+                }
+                CycleAction::Attach { cycle_id, lab, json } => {
+                    cloud::CycleCommand::Attach { cycle_id, lab, json }
+                }
+            }),
+            _ => unreachable!(),
+        };
+        return match cloud::run(command) {
             Ok(()) => ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("{e}");
@@ -132,8 +441,69 @@ fn main() -> ExitCode {
             }
         };
     }
-    if let Cmd::Serve { library, port, web } = &cli.cmd {
-        return match serve::run(library, *port, web.clone()) {
+    if let Cmd::Sources { samples, action } = &cli.cmd {
+        return sources::main(action, samples);
+    }
+    if let Cmd::Play {
+        score,
+        no_audio,
+        seconds,
+        volume,
+    } = cli.cmd
+    {
+        return match play::run(play::Options {
+            score,
+            no_audio,
+            seconds,
+            volume_db: volume,
+        }) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
+    if let Cmd::Serve {
+        library,
+        host,
+        port,
+        web,
+        semantic_clusters,
+        cluster_python,
+        semantic_cluster_curator,
+        cluster_curator_id,
+    } = &cli.cmd
+    {
+        let clusters = if *semantic_clusters || *semantic_cluster_curator {
+            let Some(python) = cluster_python.clone() else {
+                eprintln!("--cluster-python is required with semantic cluster bridges");
+                return ExitCode::FAILURE;
+            };
+            let config = match cluster_bridge::ClusterConfig::enabled(library.clone(), python) {
+                Ok(config) => config,
+                Err(e) => {
+                    eprintln!("{e}");
+                    return ExitCode::FAILURE;
+                }
+            };
+            let config = if *semantic_cluster_curator {
+                let Some(curator_id) = cluster_curator_id.clone() else {
+                    eprintln!("--cluster-curator-id is required with --semantic-cluster-curator");
+                    return ExitCode::FAILURE;
+                };
+                match config.with_curator_controls(curator_id) {
+                    Ok(config) => config,
+                    Err(e) => { eprintln!("{e}"); return ExitCode::FAILURE; }
+                }
+            } else { config };
+            // Preserve independent rollout gates: curator controls alone do
+            // not make the public cluster explorer readable.
+            if !*semantic_clusters { config.without_public_reads() } else { config }
+        } else {
+            cluster_bridge::ClusterConfig::disabled(library.clone())
+        };
+        return match serve::run(library, *host, *port, web.clone(), clusters) {
             Ok(()) => ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("{e}");
@@ -142,7 +512,9 @@ fn main() -> ExitCode {
         };
     }
     if let Cmd::Sync { .. } = &cli.cmd {
-        let Cmd::Sync { action } = cli.cmd else { unreachable!() };
+        let Cmd::Sync { action } = cli.cmd else {
+            unreachable!()
+        };
         return match sync::run(action) {
             Ok(code) => code,
             Err(e) => {
@@ -151,8 +523,45 @@ fn main() -> ExitCode {
             }
         };
     }
+    if let Cmd::Check {
+        stems_dir,
+        json,
+        baseline,
+        allow_mute,
+        log,
+    } = &cli.cmd
+    {
+        let opts = check::Options {
+            stems_dir: stems_dir.clone(),
+            json: *json,
+            baseline: baseline.clone(),
+            allow_mute: allow_mute.clone(),
+            log: log.clone(),
+        };
+        return match check::run(&opts) {
+            Ok(_) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
+    if let Cmd::Steer { stems_dir, against, score, out } = &cli.cmd {
+        let opts = steer::Options { stems_dir: stems_dir.clone(), against: against.clone(), score: score.clone(), out: out.clone() };
+        return match steer::run(&opts) {
+            Ok(_) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
     if let Cmd::Migrate { from, to, link } = &cli.cmd {
-        return match migrate::run(migrate::Options { from: from.clone(), to: to.clone(), link: *link }) {
+        return match migrate::run(migrate::Options {
+            from: from.clone(),
+            to: to.clone(),
+            link: *link,
+        }) {
             Ok(code) => code,
             Err(e) => {
                 eprintln!("{e}");
@@ -177,7 +586,11 @@ fn main() -> ExitCode {
         };
         let is_apr = score.extension().is_some_and(|e| e == "apr");
         let to_apr = to.as_deref().map_or(!is_apr, |t| t == "apr");
-        let body = if to_apr { apricity_score::dsl::format(&parsed) } else { serde_yaml::to_string(&parsed).unwrap() };
+        let body = if to_apr {
+            apricity_score::dsl::format(&parsed)
+        } else {
+            serde_yaml::to_string(&parsed).unwrap()
+        };
         match out {
             Some(p) => {
                 if let Err(e) = std::fs::write(p, body) {
@@ -191,17 +604,39 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let score = match &cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } => unreachable!(),
+        Cmd::Play { .. }
+        | Cmd::Fmt { .. }
+        | Cmd::Migrate { .. }
+        | Cmd::Serve { .. }
+        | Cmd::Sources { .. }
+        | Cmd::Sync { .. }
+        | Cmd::Check { .. }
+        | Cmd::Steer { .. }
+        | Cmd::Login
+        | Cmd::Logout
+        | Cmd::Whoami
+        | Cmd::Score { .. }
+        | Cmd::Sample { .. }
+        | Cmd::Lab { .. }
+        | Cmd::Cycle { .. } => unreachable!(),
         Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
     };
     let compiled = match &cli.cmd {
-        Cmd::Render { library: Some(library), .. } => compile_from_library(score, library),
+        Cmd::Render {
+            library: Some(library),
+            ..
+        } => compile_from_library(score, library),
         _ => apricity_score::compile_file(score),
     };
     let tl = match compiled {
         Ok(tl) => tl,
         Err(errors) => {
-            eprintln!("{} has {} problem{}:", score.display(), errors.len(), if errors.len() == 1 { "" } else { "s" });
+            eprintln!(
+                "{} has {} problem{}:",
+                score.display(),
+                errors.len(),
+                if errors.len() == 1 { "" } else { "s" }
+            );
             for e in errors {
                 eprintln!("  ✗ {e}");
             }
@@ -209,17 +644,38 @@ fn main() -> ExitCode {
         }
     };
     match cli.cmd {
-        Cmd::Play { .. } | Cmd::Fmt { .. } | Cmd::Migrate { .. } | Cmd::Serve { .. } | Cmd::Sources { .. } | Cmd::Sync { .. } => unreachable!(),
+        Cmd::Play { .. }
+        | Cmd::Fmt { .. }
+        | Cmd::Migrate { .. }
+        | Cmd::Serve { .. }
+        | Cmd::Sources { .. }
+        | Cmd::Sync { .. }
+        | Cmd::Check { .. }
+        | Cmd::Steer { .. }
+        | Cmd::Login
+        | Cmd::Logout
+        | Cmd::Whoami
+        | Cmd::Score { .. }
+        | Cmd::Sample { .. }
+        | Cmd::Lab { .. }
+        | Cmd::Cycle { .. } => unreachable!(),
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {
-                Some(p) => std::fs::write(&p, json).map(|_| eprintln!("wrote {}", p.display())).unwrap_or_else(|e| eprintln!("{e}")),
+                Some(p) => std::fs::write(&p, json)
+                    .map(|_| eprintln!("wrote {}", p.display()))
+                    .unwrap_or_else(|e| eprintln!("{e}")),
                 None => println!("{json}"),
             }
         }
         Cmd::Explain { .. } => print!("{}", tl.explain()),
-        Cmd::Render { out, bars, stems, .. } => {
-            let range = match bars.as_deref().map(|b| apricity_score::score::parse_bars(b, tl.meter)) {
+        Cmd::Render {
+            out, bars, stems, ..
+        } => {
+            let range = match bars
+                .as_deref()
+                .map(|b| apricity_score::score::parse_bars(b, tl.meter))
+            {
                 None => None,
                 Some(Ok(r)) => Some(r),
                 Some(Err(e)) => {
@@ -238,9 +694,20 @@ fn main() -> ExitCode {
                         return ExitCode::FAILURE;
                     }
                     let secs = r.mix[0].len() as f64 / render::OUT_SR as f64;
-                    eprintln!("wrote {} ({secs:.1} s) — {} unique events rendered in {:.1} s", out.display(), r.unique_events, t0.elapsed().as_secs_f64());
-                    eprintln!("  mix: {:.1} LUFS, peak {:.1} dBFS ({} stem{}, master make-up {:+.1} dB)",
-                        r.lufs, r.peak_db, r.stems, if r.stems == 1 { "" } else { "s" }, r.makeup_db);
+                    eprintln!(
+                        "wrote {} ({secs:.1} s) — {} unique events rendered in {:.1} s",
+                        out.display(),
+                        r.unique_events,
+                        t0.elapsed().as_secs_f64()
+                    );
+                    eprintln!(
+                        "  mix: {:.1} LUFS, peak {:.1} dBFS ({} stem{}, master make-up {:+.1} dB)",
+                        r.lufs,
+                        r.peak_db,
+                        r.stems,
+                        if r.stems == 1 { "" } else { "s" },
+                        r.makeup_db
+                    );
                     for line in &r.report {
                         eprintln!("    {line}");
                     }
@@ -271,11 +738,20 @@ fn main() -> ExitCode {
                             return ExitCode::FAILURE;
                         }
                         let manifest_path = dir.join("stems.json");
-                        if let Err(e) = std::fs::write(&manifest_path, render::stems_manifest(&tl, range, &tracks)) {
+                        if let Err(e) = std::fs::write(
+                            &manifest_path,
+                            render::stems_manifest(&tl, range, &tracks),
+                        ) {
                             eprintln!("  ✗ {}: {e}", manifest_path.display());
                             return ExitCode::FAILURE;
                         }
-                        eprintln!("wrote {} stem{} to {} in {:.1} s", tracks.len(), if tracks.len() == 1 { "" } else { "s" }, dir.display(), t1.elapsed().as_secs_f64());
+                        eprintln!(
+                            "wrote {} stem{} to {} in {:.1} s",
+                            tracks.len(),
+                            if tracks.len() == 1 { "" } else { "s" },
+                            dir.display(),
+                            t1.elapsed().as_secs_f64()
+                        );
                     }
                     Err(e) => {
                         eprintln!("  ✗ {e}");

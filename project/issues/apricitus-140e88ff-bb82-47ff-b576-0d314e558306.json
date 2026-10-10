@@ -1,0 +1,86 @@
+{
+  "id": "apricitus-140e88ff-bb82-47ff-b576-0d314e558306",
+  "title": "Retrieve related clips from stored vectors",
+  "description": "Purpose: selectedclip-to-clip search no text encoder. Prereq M1accepted. Allowed: semantic related module tests. Source embedding missing returns awaiting-analysis, stale source unavailable. Exclude source sample before final take; match clip/window playback. Verify e0 deterministic scores and no model imports.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-3754342f-27ba-41ba-a5d1-5de26eca00d6",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "39d99166-ae34-4686-bded-4f3eadf63b8a",
+      "author": "home",
+      "text": "Dispatch isolated stored-clip related service against accepted canonical/source/search ports for draft local integration. FullM1cloud deployment/ANN remains gated; accepted typed contracts may support isolated dependent implementation per design. Own service/tests/oneGherkinbinding only; no HTTP/UI/model loading or boardwrites. Current source rehydration mandatory, missing/stale/invalid vectors awaiting_analysis, onebounded savedclip search, source-sample exclusion before limit, stable score/identity order, storedvectoronly. Sample farthest-point/recordingdiversity follows fbb3dc before feature rollout.",
+      "created_at": "2026-09-30T22:47:54.762946Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "a88c5168-5b06-4dcc-a113-af8fce193af8",
+      "author": "home",
+      "text": "Implementation started. Scope is limited to the new related stored-vector service, its focused tests, and the stored-vector Gherkin binding; no text encoder or UI/endpoint work.",
+      "created_at": "2026-09-30T22:49:31.994856Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "6d2c9561-d7dc-481b-ba4b-e9006fb7e16e",
+      "author": "home",
+      "text": "Handoff: added only web/amplify/semantic/related-service.ts, related-service.test.ts, and web/test/semantic-audio/related-clips.steps.cjs. RED: cd web && npx tsx --test amplify/semantic/related-service.test.ts -> expected ERR_MODULE_NOT_FOUND for related-service (1 failed test file). GREEN: focused tsx suite 5 passed/0 failed; focused stored-vector Gherkin scenario 1 passed/3 steps; plain npx tsc --noEmit passed. Coverage: validated stored saved-clip source + canonical identity, current hydration before one exact saved_clip limit-100 search, awaiting_analysis/no query for missing/malformed/stale/unauthorized/incompatible source, source-sample exclusion before take, best-score semantic dedup + score/semanticId order, request 400/409 and retryable 503. No encoder/model imports. Unresolved: supervisor must register the new step binding; HTTP/UI/endpoint and next-task representative/diversification work are intentionally absent.",
+      "created_at": "2026-09-30T22:53:26.967445Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "d03be52f-cd68-417f-b454-c75dd5c6fb82",
+      "author": "home",
+      "text": "Supervisor review: validate malformed hydration and bounded search-response counts and safe playback metadata. Register and rerun BDD. No board writes from Terra; supervisor owns comments/landing. Sample diversification and local/UI integration follow separately.",
+      "created_at": "2026-09-30T23:00:13.173019Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "ec7f96b7-b254-4eb3-b705-ccabf173c22d",
+      "author": "home",
+      "text": "Supervisor accepted corrected bounded stored-clip service: independent focused6tests, registered Gherkin1scenario/3steps, frontend and Amplify plain typechecks pass; malformed hydration awaits analysis with no query, malformed candidate counts/fingerprint/keys produce typed503. No encoder imports or vector returned. Source exclusion precedes final take. Sample representatives/diversity, native endpoint and UI remain separate unfinished tasks. Landing service/tests/binding only.",
+      "created_at": "2026-09-30T23:04:34.402390Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:43:41.542643Z",
+  "updated_at": "2026-09-30T23:05:39.715953Z",
+  "closed_at": "2026-09-30T23:05:39.715888Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

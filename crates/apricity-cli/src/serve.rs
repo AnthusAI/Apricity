@@ -13,9 +13,10 @@ use axum::{
     http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode, Uri, header},
     middleware,
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
 };
 use serde_json::{Value, json};
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
@@ -39,7 +40,8 @@ struct Shared {
 /// Build the whole application for a library served at `origin` (e.g. `http://127.0.0.1:5181`).
 pub fn app(library: Library, origin: &str, web: Option<PathBuf>) -> Result<Router, String> {
     let store = Box::new(FsFiles::new(library.path().join("files")));
-    app_with_store(library, origin, web, store)
+    let clusters = crate::cluster_bridge::ClusterConfig::disabled(library.path());
+    app_with_store_and_cluster_config(library, origin, web, store, clusters)
 }
 
 /// Like [`app`], serving `/files/*key` from any `Files` store (a folder, or S3).
@@ -48,6 +50,28 @@ pub fn app_with_store(
     origin: &str,
     web: Option<PathBuf>,
     store: Box<dyn Files>,
+) -> Result<Router, String> {
+    let clusters = crate::cluster_bridge::ClusterConfig::disabled(library.path());
+    app_with_store_and_cluster_config(library, origin, web, store, clusters)
+}
+
+/// Like [`app`], with the startup-only cluster bridge configuration explicitly supplied.
+pub fn app_with_cluster_config(
+    library: Library,
+    origin: &str,
+    web: Option<PathBuf>,
+    clusters: crate::cluster_bridge::ClusterConfig,
+) -> Result<Router, String> {
+    let store = Box::new(FsFiles::new(library.path().join("files")));
+    app_with_store_and_cluster_config(library, origin, web, store, clusters)
+}
+
+fn app_with_store_and_cluster_config(
+    library: Library,
+    origin: &str,
+    web: Option<PathBuf>,
+    store: Box<dyn Files>,
+    clusters: crate::cluster_bridge::ClusterConfig,
 ) -> Result<Router, String> {
     let mut library = library;
     let api_key = library.ensure_api_key().map_err(|e| e.to_string())?;
@@ -68,12 +92,15 @@ pub fn app_with_store(
         },
         "custom": { "apricity": {
             "mode": "local",
+            "semanticUrl": "/semantic",
+            "clusterEnabled": clusters.enabled_flag(),
+            "clusterCuratorEnabled": clusters.controls_enabled_flag(),
             "identity": { "sub": metadata.identity.sub, "groups": metadata.identity.groups },
         }},
     });
     let engine = Arc::new(Mutex::new(library.into_engine()));
     let graphql = router(
-        engine,
+        engine.clone(),
         SDL,
         &contract,
         RouterOptions {
@@ -82,13 +109,28 @@ pub fn app_with_store(
         },
     )
     .map_err(|e| e.to_string())?;
+    let files = Arc::new(RwLock::new(store));
+    let semantic = crate::semantic::SemanticState {
+        corpus: scratch.join("semantic/corpus.json"),
+        engine,
+        files: files.clone(),
+        corpus_cache: Arc::default(),
+    };
     let state = Shared {
-        files: Arc::new(RwLock::new(store)),
+        files,
         scratch,
         outputs: Arc::new(outputs),
         web,
     };
     Ok(Router::new()
+        .route(
+            "/semantic/search",
+            post(crate::semantic::search).with_state(semantic.clone()),
+        )
+        .route(
+            "/semantic/related",
+            post(crate::semantic::related).with_state(semantic),
+        )
         .route("/amplify_outputs.json", get(amplify_outputs))
         .route(
             "/files/*key",
@@ -99,6 +141,7 @@ pub fn app_with_store(
         )
         .fallback(static_file)
         .with_state(state)
+        .merge(crate::cluster_bridge::router(clusters))
         .merge(graphql.layer(middleware::from_fn(cloud_only_operations)))
         .layer(middleware::map_response(isolation_headers)))
 }
@@ -476,7 +519,11 @@ async fn static_file(
     // A page of the app (/samples/…, /beats/…) has no file: the app itself answers, as on the website. A missing
     // file with an extension (an asset) is still a 404.
     let is_page = !rel.rsplit('/').next().unwrap_or(rel).contains('.');
-    let rel = if is_page && !web.join(rel).is_file() { "index.html" } else { rel };
+    let rel = if is_page && !web.join(rel).is_file() {
+        "index.html"
+    } else {
+        rel
+    };
     serve_path(
         &web.join(rel),
         &headers,
@@ -487,16 +534,22 @@ async fn static_file(
 }
 
 /// Open the library and serve it until the process is stopped.
-pub fn run(library: &Path, port: u16, web: Option<PathBuf>) -> Result<(), String> {
+pub fn run(
+    library: &Path,
+    host: IpAddr,
+    port: u16,
+    web: Option<PathBuf>,
+    clusters: crate::cluster_bridge::ClusterConfig,
+) -> Result<(), String> {
     let lib = Library::open(library, None).map_err(|e| format!("{}: {e}", library.display()))?;
     let web = web.or_else(|| Some(PathBuf::from("web/dist")).filter(|p| p.is_dir()));
     let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
     rt.block_on(async {
-        let listener = tokio::net::TcpListener::bind(("127.0.0.1", port))
+        let listener = tokio::net::TcpListener::bind((host, port))
             .await
-            .map_err(|e| format!("bind 127.0.0.1:{port}: {e}"))?;
+            .map_err(|e| format!("bind {host}:{port}: {e}"))?;
         let addr = listener.local_addr().map_err(|e| e.to_string())?;
-        let app = app(lib, &format!("http://{addr}"), web.clone())?;
+        let app = app_with_cluster_config(lib, &format!("http://{addr}"), web.clone(), clusters)?;
         match &web {
             Some(w) => println!("web app: {}", w.display()),
             None => println!("web app: not built (web/dist missing); / will answer 404"),
@@ -621,8 +674,11 @@ mod tests {
         let f = fixture(false);
         let (status, _, _) = send(&f.app, gql(None, "{ listSamples { items { id } } }")).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
-        let (status, _, _) =
-            send(&f.app, gql(Some("wrong"), "{ listSamples { items { id } } }")).await;
+        let (status, _, _) = send(
+            &f.app,
+            gql(Some("wrong"), "{ listSamples { items { id } } }"),
+        )
+        .await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         let create = "mutation { createSample(input: {id: \"c1\", recordingId: \"r1\", path: \"p/a.wav\", collection: \"p\", title: \"A\", audio: {key: \"audio/c1/a.wav\", sha256: \"x\", size: 20}}) { id } }".to_string();
         let (status, _, body) = send(&f.app, gql(Some(&f.key), &create)).await;
@@ -692,6 +748,7 @@ mod tests {
         assert_eq!(v["data"]["authorization_types"], json!([]));
         assert!(v["data"]["model_introspection"]["models"]["Sample"].is_object());
         assert_eq!(v["custom"]["apricity"]["mode"], "local");
+        assert_eq!(v["custom"]["apricity"]["semanticUrl"], "/semantic");
         assert_eq!(v["custom"]["apricity"]["identity"]["sub"], "local");
         assert!(v.get("auth").is_none() && v.get("storage").is_none());
     }
@@ -880,9 +937,17 @@ mod tests {
         let (s, _, _) = send(&f.app, req("GET", "/assets/missing.js", &[], b"")).await;
         assert_eq!(s, StatusCode::NOT_FOUND);
         // A page of the app (a deep link) is the app itself; a missing asset is still missing.
-        for page in ["/samples/marine-band/Thunderer", "/beats/examples/salamander-beat", "/help/language"] {
+        for page in [
+            "/samples/marine-band/Thunderer",
+            "/beats/examples/salamander-beat",
+            "/help/language",
+        ] {
             let (s, _, b) = send(&f.app, req("GET", page, &[], b"")).await;
-            assert_eq!((s, b.as_slice()), (StatusCode::OK, &b"<html>app</html>"[..]), "{page}");
+            assert_eq!(
+                (s, b.as_slice()),
+                (StatusCode::OK, &b"<html>app</html>"[..]),
+                "{page}"
+            );
         }
         let (s, _, _) = send(&f.app, req("GET", "/../secret.txt", &[], b"")).await;
         assert!(s == StatusCode::BAD_REQUEST || s == StatusCode::NOT_FOUND);
@@ -995,5 +1060,33 @@ mod tests {
         assert_eq!(parse_range(Some("bytes=0-0"), 10), Range::Bytes(0, 0));
         assert_eq!(parse_range(Some("bytes=0-0"), 0), Range::Unsatisfiable);
         assert_eq!(parse_range(Some("bytes=-5"), 3), Range::Bytes(0, 2));
+    }
+
+    #[tokio::test]
+    async fn cluster_route_is_disabled_by_default_and_rejects_bad_queries_before_a_child() {
+        let f = fixture(false);
+        let (status, _, _) = send(
+            &f.app,
+            req("GET", "/semantic/clusters?unknown=value", &[], b""),
+        )
+        .await;
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+        let (_, _, outputs) = send(&f.app, req("GET", "/amplify_outputs.json", &[], b"")).await;
+        let outputs: Value = serde_json::from_slice(&outputs).unwrap();
+        assert_eq!(outputs["custom"]["apricity"]["clusterEnabled"], false);
+
+        let config = crate::cluster_bridge::ClusterConfig::enabled(
+            f.root.clone(),
+            PathBuf::from("/usr/bin/true"),
+        )
+        .unwrap();
+        let lib = Library::open(&f.root, None).unwrap();
+        let app = app_with_cluster_config(lib, "http://127.0.0.1:5181", None, config).unwrap();
+        let (status, _, _) = send(
+            &app,
+            req("GET", "/semantic/clusters?unknown=value", &[], b""),
+        )
+        .await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
     }
 }

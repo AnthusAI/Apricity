@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-dd60414b-ffa3-45a3-a44d-e502fe039a7b",
+  "title": "Accept canonical compound-meter analysis in cloud window guards",
+  "description": "Current ground semantic_records supports meter as either scalar or existing [numerator, denominator] analysis values (deterministic records tests use [4,4]); cloud canonical parser accepts only scalar and incorrectly hides valid compound-meter windows. Preserve rawbytes/sourceSHA/revision/currentfourbar checks and Python typednumber serialization. Add executable RED compound-meter Python-produced golden fixture, valid same revision succeeds; edited meter or malformed meter fails. Do not change producercontract or bypass guard. Verify canonical/core tests, plain Amplifytsc, contractcheck, real window sample reference check. No endpoint/deploy changes.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "cc50aa03-5f09-4199-97fc-bf33b837d02f",
+      "author": "home",
+      "text": "Supervisor RED canonical test reproduced legitimate [4,4] meter rejected:10passed1failed. Fix preserves typed Python JSON digest for scalar or numerator/denominator pair;21cloudcore+guard tests now pass, plainAmplifytsc and contractcheck pass. Real rawanalysis window integration483distinct samples still483/483 accepted. Edited/malformed meter fails existing revision, no staleness/visibility/hash weakening. Landing reviewed bug only; local user runtime unchanged.",
+      "created_at": "2026-09-30T22:50:56.121733Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T22:44:28.726888Z",
+  "updated_at": "2026-09-30T22:52:59.126172Z",
+  "closed_at": "2026-09-30T22:52:59.126139Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

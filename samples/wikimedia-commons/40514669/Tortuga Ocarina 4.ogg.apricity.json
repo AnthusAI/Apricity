@@ -1,0 +1,136 @@
+{
+ "apricity_manifest": 2,
+ "source": {
+  "path": "Tortuga Ocarina 4.ogg",
+  "sha256": "0a5244ab8cd6c324c197cfcd3c91258daa6dc4f7bff09959c791f582fdfad4f1",
+  "sample_rate": 44100,
+  "channels": 2,
+  "duration": 8.046
+ },
+ "analysis": {
+  "analyzed_at": "2026-09-28T04:52:30+00:00",
+  "tools": {
+   "apricity-analyze": "0.2.0",
+   "essentia": "2.1b6.dev1389",
+   "beat_this": "final0",
+   "librosa": "1.0.0 (HPSS margin 2.0 before chroma)"
+  }
+ },
+ "rhythm": {
+  "bpm": null,
+  "bpm_stability": 0.0,
+  "beats": [
+   0.06
+  ],
+  "downbeats": [
+   0.06
+  ],
+  "meter": null,
+  "warp_markers": [
+   {
+    "seconds": 0.06,
+    "beat": 0.0
+   }
+  ],
+  "beat_loudness": [],
+  "loudness": [
+   -15.7,
+   -15.5,
+   -15.5,
+   -15.7,
+   -15.0,
+   -14.9,
+   -14.9,
+   -14.9,
+   -15.7,
+   -15.5,
+   -15.6,
+   -15.7,
+   -15.0,
+   -14.9,
+   -14.9,
+   -14.9,
+   -82.8
+  ]
+ },
+ "tonal": {
+  "key": {
+   "tonic": "Ab",
+   "mode": "minor",
+   "strength": 0.438,
+   "camelot": "1A",
+   "profile": "temperley"
+  },
+  "alternatives": [
+   {
+    "tonic": "Eb",
+    "mode": "minor",
+    "strength": 0.2435,
+    "camelot": "2A",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Eb",
+    "mode": "major",
+    "strength": 0.2284,
+    "camelot": "5B",
+    "profile": "temperley"
+   },
+   {
+    "tonic": "Ab",
+    "mode": "major",
+    "strength": 0.2064,
+    "camelot": "4B",
+    "profile": "temperley"
+   }
+  ],
+  "tuning_hz": 448.6,
+  "tuning_cents": 33.5,
+  "pitch_class_profile": [
+   0.1371,
+   0.2683,
+   0.148,
+   0.2419,
+   0.6445,
+   0.0618,
+   0.1307,
+   0.2371,
+   0.6009,
+   0.2966,
+   1.0,
+   0.174
+  ],
+  "segments": [
+   {
+    "start": 0.0,
+    "end": 8.034,
+    "key": {
+     "tonic": "Ab",
+     "mode": "minor",
+     "strength": 0.4359,
+     "camelot": "1A",
+     "profile": "temperley"
+    },
+    "pitch_class_profile": [
+     0.135,
+     0.2663,
+     0.1477,
+     0.2416,
+     0.6387,
+     0.0614,
+     0.1295,
+     0.2321,
+     0.5942,
+     0.2948,
+     1.0,
+     0.1707
+    ]
+   }
+  ],
+  "beat_chroma": []
+ },
+ "annotations": {
+  "clips": [],
+  "markers": []
+ }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "apricitus-9996a139-74f9-459b-8aed-ccd6fbc17f9e",
+  "title": "Compose an experimental mixed-source Big Beat sketch",
+  "description": "Create and audition a fresh Big Beat score that deliberately departs from both Fence Signal and Circuit Breaker through a new source world, drum identity, and 16-bar sectional logic. Render and measure for listener review before cloud publication.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-d5612b1c-4069-4a43-9f7d-bff10ef72a73",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6e101d6a-5c96-43bf-9bcb-12cba4e33d7e",
+      "author": "home",
+      "text": "Recast the experimental score around two actual St. Patrick’s parade recordings: the long E-minor scene from 001 supplies the main hook and the E-minor loop from 002 supplies the tighter counter-groove. The rolling-break drum identity was auditioned first. Full render is 103.49 objective_v2 with no v2 guard violations; steering offered only a narrow F2 notch on the raw parade texture, intentionally not applied before listener review.",
+      "created_at": "2026-09-28T03:57:12.934162Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
+    },
+    {
+      "id": "0bb23184-36b0-4726-a83a-6cb7d8a69868",
+      "author": "home",
+      "text": "Listener identified the long parade source as “The Halls of Montezuma” and preferred it over the other brass scene. Replaced the second parade sample with the same Halls loop, preserving contrast only through filtering and changed drum patterns. Rendered objective_v2 103.49.",
+      "created_at": "2026-09-28T03:59:48.360389Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
+    },
+    {
+      "id": "1af31884-5ce0-44ad-b084-8279f887a9fa",
+      "author": "home",
+      "text": "Listener found the four-bar repeated chop irritating and the halftime outro unintentionally collapsed. Reduced the untransposed Halls teaser to four eighth-note hits in bar 5, released the full phrase at bar 6, and rewrote bars 13–16 as a stable rolling-kit outro with clear backbeat and hats. Rendered objective_v2 remains 104.00.",
+      "created_at": "2026-09-28T04:07:48.637365Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
+    },
+    {
+      "id": "f81a9af5-b616-4e4c-a6d9-6bc28a95fd08",
+      "author": "home",
+      "text": "Published the approved Sidewalk Rattle score. Production preflight initially found the Halls of Montezuma loop-4 annotation missing; synchronized only citizen-dj/loc-tony-schwartz/St-Patricks-parade_144941_001_00-01-11.clean.wav (9 created, 3 updated, 0 skipped), then created scr_scores_Sidewalk Rattle_apr. Fetched cloud text exactly matches the approved local score.",
+      "created_at": "2026-09-28T04:21:35.884423Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
+    }
+  ],
+  "created_at": "2026-09-28T03:52:26.518905Z",
+  "updated_at": "2026-09-28T04:21:36.055409Z",
+  "closed_at": "2026-09-28T04:21:36.055361Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Music"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

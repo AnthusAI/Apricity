@@ -1,0 +1,38 @@
+{
+  "id": "apricitus-6e2392d0-acbc-4a37-a0e4-500658e49bf7",
+  "title": "Add explicit LAN bind option for local review",
+  "description": "Purpose: allow an explicitly requested local Apricity review server to bind a validated host such as 0.0.0.0 while preserving 127.0.0.1 default. Allowed CLI/serve tests/docs only. Reject malformed host values; no automatic LAN exposure.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6482447d-f03b-4b65-88dd-a9cd06c69729",
+      "author": "home",
+      "text": "Implemented explicit typed `--host` with safe loopback default; `--host 0.0.0.0` is now opt-in. Verified Rust test compilation.",
+      "created_at": "2026-10-10T09:54:26.317943Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-10T09:53:31.512393Z",
+  "updated_at": "2026-10-10T09:54:32.942217Z",
+  "closed_at": "2026-10-10T09:54:32.942144Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The typed `--host` option is implemented with a loopback default and verified by Rust test compilation.",
+  "right_now_updated_at": "2026-10-10T09:54:34.825214Z",
+  "custom": {}
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Apricity semantic encoder feasibility</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding: 0 1rem; color: #17202a; }
+      label { display: block; margin: 1rem 0 .25rem; font-weight: 600; } input, select, button { font: inherit; padding: .45rem; }
+      #progress { min-height: 1.5rem; } #result { white-space: pre-wrap; border: 1px solid #b8c2cc; padding: .75rem; }
+      .warning { color: #8a3b00; } button { margin-top: 1rem; } [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Semantic encoder feasibility evidence</h1>
+      <p>This isolated harness runs the approved text encoder worker. It is not search UI.</p>
+      <label for="reference">Python reference JSON</label>
+      <input id="reference" type="file" accept="application/json,.json" />
+      <label for="previous">Optional prior evidence JSON (to combine desktop and mobile)</label>
+      <input id="previous" type="file" accept="application/json,.json" />
+      <label for="device">Measurement class</label>
+      <select id="device"><option value="desktop">Desktop</option><option value="mobile">Mobile</option></select>
+      <p id="cache-warning" class="warning" hidden></p>
+      <button id="run" type="button" disabled>Run browser inference</button>
+      <p id="progress" role="status" aria-live="polite">Choose a Python reference JSON to begin.</p>
+      <section aria-labelledby="result-heading"><h2 id="result-heading">Result</h2><pre id="result">not_evaluated</pre></section>
+      <button id="download" type="button" hidden>Download raw evidence JSON</button>
+    </main>
+    <script type="module" src="/scripts/semantic-eval-browser.ts"></script>
+  </body>
+</html>

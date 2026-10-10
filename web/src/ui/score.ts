@@ -167,18 +167,16 @@ export class ScoreView {
       const beat = ((e.clientX - r.left) / r.width) * this.timeline.length_beats;
       player.seekBeat(Math.floor(beat / this.timeline.meter) * this.timeline.meter);
     });
+    // An item's page is only that score: its list is the section's front page (ui/section.ts), not a sidebar.
     root.append(
-      this.list.el,
       el("div", { className: "editor" }, el("div", { className: "bar" }, this.nameEl, this.kindSel, this.stars.el, el("span", { style: "flex:1" }), this.statusEl, this.stepsBtn, this.harpBtn, this.rollBtn, this.flowBtn, this.forkBtn, this.saveBtn), this.tagEditor.root, this.lineageEl, el("div", { className: "code-tabs", role: "tablist" }, this.codeTab, this.solvedTab), el("div", { className: "cm-host" }, this.view.dom), this.solvedEl),
       this.sideEl,
       ...this.dockPanels(),
     );
-    // The list and the side panel are as wide as you drag them.
-    // Neither may squeeze the editor below its minimum (--editor-min in style.css), so its buttons always fit.
+    // The side panel is as wide as you drag it, but never squeezes the editor below its minimum (--editor-min in
+    // style.css), so its buttons always fit.
     const editorMin = () => parseFloat(getComputedStyle(root).getPropertyValue("--editor-min")) || 440;
-    const widthOf = (e: HTMLElement) => e.getBoundingClientRect().width;
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: "score-list", min: 180, max: (w) => Math.min(480, w - widthOf(this.sideEl) - editorMin()) });
-    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 280, max: (w) => w - widthOf(this.list.el) - editorMin() });
+    columnSplitter({ view: root, panel: this.sideEl, edge: "left", prop: "--side-w", key: "score-side", min: 280, max: (w) => w - editorMin() });
     player.onTransport((t) => this.drawHead(t.position / t.framesPerBeat));
     document.addEventListener("apricity:auth-changed", () => this.loadList());
     this.list.rename(KIND_LABEL[this.kind].many, `New ${KIND_LABEL[this.kind].one}`);
@@ -265,6 +263,12 @@ export class ScoreView {
   /** The list's top of the week (where signing in lands). */
   topOfWeek() {
     this.list.setWindow("week");
+  }
+
+  /** Start a new score of the kind on show (a section's "+ New beat"): its name is asked for, then it opens. */
+  async createNew() {
+    await this.loadList();
+    await this.create();
   }
 
   /** Show another kind of score (the Scores, Beats, Chords and Melodies tabs share this view). */

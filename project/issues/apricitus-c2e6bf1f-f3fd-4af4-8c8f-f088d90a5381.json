@@ -1,0 +1,98 @@
+{
+  "id": "apricitus-c2e6bf1f-f3fd-4af4-8c8f-f088d90a5381",
+  "title": "Wire semantic Lambda runtime to current AWS storage and verified HTTP services",
+  "description": "Purpose: actual serverless runtime composition, not additional isolated service stubs. Prerequisites: accepted auth/HTTP, AWSstore and sampleGSI handoffs. Allowed new web/amplify/semantic/runtime.ts/runtime.test.ts and functions/semantic/handler.ts/resource.ts plus focused handler tests; backend.ts wiring and new semantic runtime CDK helper/tests if needed. Root owns package test registration. Exclusions browser transport, clustering, publisher changes, manual deploy or auth/model substitution; root reviews all IAM/dependency decisions.\n\nContract: runtime factory injectable DynamoDB SearchVectors/GetItem/Query send ports and bounded S3 reader; each invocation creates fresh AWSstore/cache, canonical hydrator with exact configured processingFingerprint, cloudsearch and relatedaudio services then verified HTTP handler. Module-level AWSclients/JWKS cache may be reused, canonical content/auth context may not. Environment trusted required semantic table/vector index/current Sample Recording Clip tables/storagebucket/Cognito poolclient/fingerprint/exact origin allowlist. Independent semanticSearchEnabled/semanticRelatedEnabled defaultfalse; invalid or absent required config structured503 no reads or inference. SearchVectors uses native index only, related uses sampleGSI, canonical GetItem consistent. S3 GetObject reads only configured bucket files/analysis prefix, stream cap16MiB enforced while reading not after unlimited materialization; NoSuchKey/404 null versus operational503. No external cloud inference/model download, no logging tokens/vectors/private data. Valid API Gateway v2 POST search/related uses current guarded metadata/playback and typed errors; disabled path no dependent operations. HTTPpublic guest never trusts request roles; signed access tokens verifier exact poolclient.\n\nInfrastructure: defineFunction matching repository Node runtime; HTTP API routes only POST /semantic/search and /semantic/related plus strict allowlist preflight, TLS managed API endpoint. Narrow Lambda IAM SearchVectors exactnativeindexARN; Query exactsampleGSIARN; GetItem only threecanonicaltableARNs; GetObject only files/analysis/* configuredbucket; no Scan/write/publicvector access or broad grantReadData. No DynamoDB streams. Add custom output semanticUrl and independent flags via existing outputs convention. Synthesize in tests and prove routeintegration/environment/indexARNactions/no excessivepermissions/no cycle; backend runtime exports no manualdeployment. Avoid package upgrades unless blocker returned with exact evidence.\n\nGherkin: Given published ANN candidate and current source When guestquery Then playable visible hit; Given hidden/retired/boundarychanged/incompatible source Then excluded; Given curator then guest sequentialinvocations Then no crosscontext/cache visibility leak; Given relatedsamplemultiplepassages Then stored sourceGSIquery and diversifiedresults; Given invalidtoken Then401 no stores; Given disabled/invalidconfig Then503 no stores; Given oversized/missing/outage S3 Then exact safe result; Given cloud infrastructure synth Then scoped routes/IAM/environment and defaultdisabled. Fixtures full real native AttributeValue/file SHA bytes plus deterministicSearchVectors results, locally signedRSA JWKS, no liveCognito credentials. Verify runtime/handler/CDK focusedtsx bothTS fullsemantic and CIregistry rootcwd, zero skips. Handoff REDGREENdiffcounts fullrequestflow explicit retainedlimits AWSsandboxANN/deployment/browser/mobile/listening not claims. Subagent no commitpushcloseKanbus/deploy.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "e8ed27b5-3b49-4a88-94aa-e42c66d5fee6",
+      "author": "home",
+      "text": "Supervisor preliminary runtime proof: nonempty invalid Cognito pool configuration causes createSemanticRuntime.handle to throw uncaught Error before HTTP boundary, instead of required sanitized503. Test exact invalid pool/origin/config plus disabled operations before verifier construction. Origins should parse exact URL.origin (no path/userinfo/wildcard), and runtime constructor/port failures must never escape raw. Also web/package.json was edited despite root-owned registration exclusion; root will reconcile exact lists after handoff, no dependency expansion accepted. Continue bounded scope; root waits for terminal handoff before edits.",
+      "created_at": "2026-10-05T15:13:05.596536Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "ec63c835-eb90-4170-b187-9af5a9c6de42",
+      "author": "home",
+      "text": "Terminal handoff is incomplete: three runtime tests are not full current-visible signed request flow and backend/API/IAM/output wiring absent. Missing deployed origin is not a reason to omit infrastructure: supervisor decision use trusted deployment parameter SemanticAllowedOrigins String default empty, independent enable parameters default false, fingerprint parameter default empty; runtime returns503 until valid exact origins/fingerprint configured. No guessed host or automatic enable. Return correct invalidpool uncaught error, strict origins URL.origin/no path/userinfo/wildcard, full signedRSA candidate-to-current-hit/hidden-retired-boundary/hash/curatorguest integration fixtures, streamingfailure tests, narrow CDK routes/IAM/env/customoutputs and dependency-cycle proof. Preserve defaultdisabled and no deployment.",
+      "created_at": "2026-10-05T15:14:58.364606Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "9576abb5-a69b-49ab-a4fd-bacd3b9a7748",
+      "author": "home",
+      "text": "Second terminal handoff is not accepted yet. Runtime.test has only four tests and still no actual SearchVectors -> canonical DDB/S3 SHA validation -> playable hit nor curator-to-guest isolation proof requested in prior review. Backend routes/IAM are untested because direct Amplify import needs context; this is not a blocker for extracting a narrowly typed CDK wiring helper and synthesizing it with genuine stacks/resources. Require full exact route/default-disabled/env/IAM/output tests and dependency-cycle assertion. Preserve warnings and no deploy. Add actual signed offline JWT runtime fixtures, current/hidden/retired/edited/wrong-version results and related multi-passage GSI evidence. Supervisor will rerun and inspect before landing.",
+      "created_at": "2026-10-05T15:30:38.521775Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "ff69f8ac-e640-475d-96b7-78c4b63976a3",
+      "author": "home",
+      "text": "Integration finding: frontend searchAudio and related client append /search or /related to custom.apricity.semanticUrl. Current runtime output uses bare API endpoint, so it must return endpoint + /semantic to match canonical base contract. Record a CDK output assertion; root will review at terminal handoff. Separate 86c1eb handles browser current access-token transport and does not edit runtime files.",
+      "created_at": "2026-10-05T15:34:24.611089Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e53be9ea-dd0b-4e35-8b34-66f2daac7b9b",
+      "author": "home",
+      "text": "Third handoff reviewed: typed synth helper and actual search pipeline are useful, but helper still outputs bare API endpoint instead of endpoint+/semantic. IAM test checks action names without exact resources; curator response checks200 without checking its private hit (false-positive empty result). Related test only empty GSI and does not prove multi-passage retrieval. Add targeted assertions and independent lifecycle cases before final acceptance.",
+      "created_at": "2026-10-05T15:36:15.621506Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "60f90040-7c3b-4e53-a94e-3eb88b53c14c",
+      "author": "home",
+      "text": "Supervisor reviewed and reran real runtime/search/related/CDK tests and both TypeScript projects:135 semantic tests passed, zero skips; exact POST/OPTIONS routes, semantic base URL, disabled parameters, narrow IAM and acyclic standalone synth verified. Landed988c3c69 and pushed develop. Actual AWS deployment and ANN recall not evaluated; old CDK vector-schema warnings retained, no deployment proof.",
+      "created_at": "2026-10-05T15:46:40.863555Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-05T15:02:12.897924Z",
+  "updated_at": "2026-10-05T15:46:47.778370Z",
+  "closed_at": "2026-10-05T15:46:47.778325Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Runtime wiring and tests passed; AWS deployment and ANN recall remain unverified, with existing CDK warnings retained.",
+  "right_now_updated_at": "2026-10-05T15:46:50.105311Z",
+  "custom": {}
+}

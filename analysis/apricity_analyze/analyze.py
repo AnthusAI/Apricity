@@ -62,11 +62,20 @@ _beat_tracker = None
 
 def rhythm(path: pathlib.Path) -> dict:
     global _beat_tracker
-    from beat_this.inference import File2Beats
+    from beat_this.inference import Audio2Beats, File2Beats
 
     if _beat_tracker is None:
         _beat_tracker = File2Beats(checkpoint_path="final0", device="cpu", dbn=False)
-    beats, downbeats = _beat_tracker(str(path))
+    try:
+        beats, downbeats = _beat_tracker(str(path))
+    except RuntimeError:
+        # File2Beats delegates to torchaudio/libsndfile, which do not read every
+        # container Essentia supports (notably Ogg-FLAC). Feed the decoded signal
+        # to the same beat model instead of rejecting otherwise valid audio.
+        import essentia.standard as es
+
+        signal, sr, *_ = es.AudioLoader(filename=str(path))()
+        beats, downbeats = Audio2Beats.__call__(_beat_tracker, signal, sr)
     beats, downbeats = np.asarray(beats, float), np.asarray(downbeats, float)
 
     bpm = stability = meter = None

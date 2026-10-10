@@ -5,6 +5,7 @@ import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
+import { cycleUploadPolicy } from "./storage/cycle-upload-policy";
 import { tally } from "./functions/tally/resource";
 import { activity } from "./functions/activity/resource";
 import { voiceRequest } from "./functions/voice-request/resource";
@@ -14,6 +15,9 @@ import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 import { SpeechRenderer } from "@anthusai/auritus-construct";
 import { ranking } from "./functions/ranking/resource";
+import { semantic } from "./functions/semantic/resource";
+import { createSemanticAudioResources } from "./semantic/resource";
+import { createSemanticRuntimeDeployment } from "./semantic/runtime-resource";
 
 export const backend = defineBackend({
   auth,
@@ -24,7 +28,43 @@ export const backend = defineBackend({
   voiceRequest,
   voiceIngest,
   ranking,
+  semantic,
 });
+
+// This stack contains only the private semantic-record table. Retrieval and publisher grants are intentionally
+// exported as pure helpers by semantic/resource and are attached only when their real server-side integrations land.
+export const semanticAudio = createSemanticAudioResources(backend.createStack("semanticAudio"));
+
+const semanticFn = backend.semantic.resources.lambda;
+const semanticTables = backend.data.resources.tables;
+const semanticRuntime = createSemanticRuntimeDeployment(Stack.of(semanticFn), {
+  lambda: semanticFn,
+  addEnvironment: backend.semantic.addEnvironment.bind(backend.semantic),
+  semanticTableName: semanticAudio.tableName, vectorIndexName: semanticAudio.indexName, vectorIndexArn: semanticAudio.vectorIndexArn, sampleIndexArn: semanticAudio.sampleIndexArn,
+  sampleTableName: semanticTables["Sample"].tableName, sampleTableArn: semanticTables["Sample"].tableArn,
+  recordingTableName: semanticTables["Recording"].tableName, recordingTableArn: semanticTables["Recording"].tableArn,
+  clipTableName: semanticTables["Clip"].tableName, clipTableArn: semanticTables["Clip"].tableArn,
+  bucketName: backend.storage.resources.bucket.bucketName, bucketArn: backend.storage.resources.bucket.bucketArn,
+  userPoolId: backend.auth.resources.userPool.userPoolId, userPoolClientId: backend.auth.resources.userPoolClient.userPoolClientId,
+});
+backend.addOutput({ custom: { apricity: { semanticUrl: semanticRuntime.url, semanticSearchEnabled: semanticRuntime.searchEnabled, semanticRelatedEnabled: semanticRuntime.relatedEnabled } } });
+
+// Cognito group users assume their group role instead of the authenticated identity-pool role. Put these policies in
+// the storage stack: attaching them directly to the auth-stack role makes auth depend on storage, while storage
+// already depends on auth, which prevents CloudFormation from deploying the backend.
+const cycleBucketArn = backend.storage.resources.bucket.bucketArn;
+const storageStack = Stack.of(backend.storage.resources.bucket);
+for (const group of ["members", "curators"] as const) {
+  new Policy(storageStack, `CycleUploadFor${group}`, {
+    roles: [backend.auth.resources.groups[group].role],
+    statements: [
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        ...cycleUploadPolicy(cycleBucketArn),
+      }),
+    ],
+  });
+}
 
 // Ratings are private; their public tallies are kept by the tally Lambda, fed by the Rating table's stream (Amplify
 // model tables stream new and old images). Only the Lambda writes the Tally table.

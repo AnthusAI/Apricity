@@ -1,0 +1,36 @@
+{
+  "id": "apricitus-31b4db61-254e-4689-a008-1855259cc079",
+  "title": "Eligible new Commons audio appears as attributed Apricity samples",
+  "description": "Feature: Additional Commons sound and electronic audio\n\nScenario: Import eligible direct audio members from focused sound categories\n  Given Commons categories cover ambient music, drum and bass, sound effects, drum patterns, drum sounds, musical instrument sounds, and synthesizer sounds\n  And the existing Commons catalog may already contain files from those categories\n  When the curated import runs\n  Then each Commons file is represented once by stable page identity\n  And every admitted file has analyzed sample audio and Recording and Sample links in production\n  And supported licenses, creator credits, source URLs, and file revisions remain visible and auditable\n  And video, unsupported, or incomplete-rights candidates are reported with a reason and excluded",
+  "type": "story",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ae5d40c8-280a-499a-af8c-0bba0cd85607",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "ba8807d2-c27e-4147-a0de-c0143d0e189f",
+      "author": "home",
+      "text": "Acceptance verified against the production Samples page and one imported detail page: total is 1,004, imported Commons sample has visible credits/license/source/download provenance, and analyzed clips are present. All candidates were either admitted or recorded in the review report.",
+      "created_at": "2026-09-30T18:40:04.519376Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-30T16:12:14.687613Z",
+  "updated_at": "2026-09-30T18:40:04.578158Z",
+  "closed_at": "2026-09-30T18:40:04.578127Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Commons expansion"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}

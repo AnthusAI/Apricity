@@ -1,0 +1,74 @@
+{
+  "id": "apricitus-79f22804-f8ad-4cba-81f3-86812d7ac7e5",
+  "title": "Make spectral clustering initialization reproducible across CI runs",
+  "description": "Observed hosted CI37324929131 semantic ground:161 passed1 failed actual algorithm repeated same8orthogonal512D corpus differs in2D display positions despite seed42/n_jobs1. Earlier local162passed is insufficient; M4 reproducibility gate must not be relaxed. Allowed analysis/apricity_analyze/audio_clusters.py and analysis/tests/test_audio_clusters.py plus focused clustering-version design provenance correction only if necessary. Investigate actual pinned UMAP/Scipy eigen/spectral initialization and globalRNG deterministic behavior primary local source. RED reproduce Linux/isolated process or deterministic seam capturing missing seed. Fix actual nondeterminism while retaining UMAP cosine10D min_dist0/display2D min_dist.1/HDBSCAN eom/seed42 and pinned dependency versions; explicit deterministic initialization from seed if mathematically appropriate and recorded provenance, no hiding coordinates from assertion, loosening contract, skip or snapshot fabricated output. Verify repeated calls with perturbed global RNG plus subprocess runs true pinned algorithms, existing suites; root CIvenv only, do not install global Python or upgrade libraries. Handoff rootcause/REDGREEN/nativeLinux ifavailable/evidence. Supervisor reruns and hostedCI before closure. Real currentdraft pendingreview may require recompute if algorithmmanifest changes; no automatic approval/publication.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-796bfa5b-4342-4648-8f7d-62fe3d66b02e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "e5f43db1-2746-4de2-a5a1-8a970d1c2a6b",
+      "author": "home",
+      "text": "Root review: explicit randominit remains UMAP and fixes degenerate spectral solver locally, but new top-level algorithmRevision is discarded by cluster_summaries/cluster_runs and does NOT change immutable runId (targeted two-packet proof sameID=true). Return correction: add Apricity algorithm revision to carried algorithmVersions mapping so summaries and prepare_run digest already preserve it; tests prove new revision changes run identity and unchanged revision repeats same ID. Remove importorskip from required pinned algorithm gate. Do not land incomplete provenance correction.",
+      "created_at": "2026-10-05T14:39:52.706798Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "5f74ca83-ffdb-4a49-89df-32b7665282b7",
+      "author": "home",
+      "text": "Supervisor reviewed source and tests, reran clustering/summaries/immutable-run checks: 66 passed, zero skipped. Landed a200a5fc on develop with explicit seeded random initialization and carried algorithm version that changes immutable run identity; design updated. Existing real draft remains unchanged and unapproved. Issue remains in progress until hosted Linux verification succeeds.",
+      "created_at": "2026-10-05T14:49:26.448224Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "77c6ee06-e5ff-426b-b201-77c283447492",
+      "author": "home",
+      "text": "Additional supervisor evidence: isolated narrow CI dependency environment ran all 12 established semantic ground suites (contract/freshness/records/publisher/backfill/catalog/evaluation/corpus/clustering/summaries/runs/jobs), 206 passed, zero skips in25.55s. Two existing multiprocessing fork warnings remain; neither is suppressed. Hosted run37328055254 is currently in progress, so Linux gate remains unproven and issue stays open for verification.",
+      "created_at": "2026-10-05T14:52:55.055819Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "d1d5d8ac-b095-44ad-b85c-fc8ef96be7ed",
+      "author": "home",
+      "text": "Supervisor verified hosted run 37331912940 at product head 8eb0a9e9: Rust workspace, Semantic ground contracts, Web, and Gherkin step vocabulary all completed successfully. This closes the previously pending hosted verification for this landed task; mobile, listening quality, cloud ANN, and remaining initiative work are not implied complete.",
+      "created_at": "2026-10-05T15:27:55.523848Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-05T14:31:01.369411Z",
+  "updated_at": "2026-10-05T15:28:17.385080Z",
+  "closed_at": "2026-10-05T15:28:17.385039Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Hosted Linux verification passed for the reproducible clustering fix, with existing drafts unchanged and unapproved.",
+  "right_now_updated_at": "2026-10-05T15:28:19.198482Z",
+  "custom": {}
+}

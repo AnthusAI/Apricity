@@ -1,0 +1,69 @@
+{
+  "id": "apricitus-76ed00a6-0438-4939-a01b-74283900935d",
+  "title": "Backfill canonical clip and window embeddings for the real local library",
+  "description": "Purpose: regenerate stale v1 embeddings from actual audio for canonical current library clips and four-bar windows, not relabel old vectors. Ground-only pinned CLAP/reproducible preprocessing; never cloud inference. Implement safe CLI consuming canonical export {samples,clips,recordings,analyses}, resolving sample files/aliases within declared repo root and verifying audio SHA. Read clip IDs directly, include current clips not only old manifest annotations, exclude retired/invalid and reconcile removed windows. Atomic v2 sidecar writes, bounded batch inference with per-region failures, resumable unchanged-input reuse, coverage report. Excludes tracked manifest edits, source audio edits, models/thresholdchanges, broad deletes, commits/push/close by Terra. Deterministic synthetic fixtures + real selected recording backfill supervisor-run; loading/progress reports current sample, interrupted run keeps completed sidecars, no fake vectors. Handoff RED/GREEN/fileinventory and remaining exclusions. Registration/runtime final integration by supervisor.",
+  "type": "task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4fe60ff6-4eae-454c-bd8f-dd6ec7b1d915",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "3eca59ae-83d5-4093-9565-50d5845d2f5f",
+      "author": "home",
+      "text": "Terra file ownership: analysis/apricity_analyze/semantic_backfill.py, analysis/tests/test_semantic_backfill.py, scripts/semantic-backfill.py only. Consume catalogdict directly, share pinned clap sidecar API, bounded4 batch with single-region fallback on error, verify source audio SHA actual bytes before cache reuse. Explicit --catalog --samples --report [--sample-id repeat] [--batch-size <=8]. Output next to source manifest only; refuse roots/path escapes/symlink escapes and missing manifests. Never mutate canonical catalog/tracked manifests/audio. Supervisor generates export from migrated real library, runs first selected sample then full corpus. Validate canonical clipIDs/startend, currentanalyses manifest sourceSHA, gridfingerprint; atomics preserve oldsidecar when no valid current source; reports include reused/recomputed/excluded per-kind. Fixture tests first and no real model inference in ordinary tests. No board/git/close by Terra.",
+      "created_at": "2026-09-30T20:34:00.001376Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "94ffc49c-45ed-49c4-b99f-6483503ce1fc",
+      "author": "home",
+      "text": "Supervisor review requires corrections before real data writes: reject duplicate/invalid canonical IDs and boolean batch-size; refuse source manifest symlinks outside declared root; catch per-sample hash/read failures with structured exclusions so other sources continue. CLI currently returns0 for source-fatal exclusions (wrongSHA/unsafepath/decode/writefailure); return nonzero for these while retirement/partial valid per-region coverage remains explicit. Do not claim persisted coverage if atomic sidecar write fails. Add deterministic regression tests before corrections. Never edit source audio/manifests and keep completed sidecars resumable.",
+      "created_at": "2026-09-30T20:43:01.499256Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "5266619d-34b0-499d-8017-019e2f89db76",
+      "author": "home",
+      "text": "Supervisor reviewed source-failure reporting, canonical-ID preflight, source/manifest root checks and atomic persistence. Reran combined record/contract/backfill/freshness suite: 54 passed, no skips; affected backfill/freshness portion 25 passed. Accepted bounded ground backfill implementation; actual library generation follows canonical export and publication. No audio source or catalog edits, model change, or production deployment.",
+      "created_at": "2026-09-30T20:53:01.814864Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "6d59362f-36e4-4a71-a703-4806710f8faa",
+      "author": "home",
+      "text": "Reviewed implementation landed on develop as b7b547ad; supervisor reran 54 combined affected tests (25 backfill/freshness), no skips. Actual corpus generation is ongoing under M1 publisher/export, not claimed by this bounded task.",
+      "created_at": "2026-09-30T20:54:04.037671Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-30T20:32:35.679935Z",
+  "updated_at": "2026-09-30T20:54:04.104811Z",
+  "closed_at": "2026-09-30T20:54:04.104776Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

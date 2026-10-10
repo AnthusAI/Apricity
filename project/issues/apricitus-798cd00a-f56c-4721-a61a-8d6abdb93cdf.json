@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-798cd00a-f56c-4721-a61a-8d6abdb93cdf",
+  "title": "Labs deploy fails: cycle storage path under files/*",
+  "description": "Amplify rejects files/cycles/{entity_id}/* beneath the blanket files/* rule (InvalidStorageAccessPathError), so PR #51's deploy failed and Labs isn't live. Grant files/ folder by folder and test the paths with Amplify's own validator.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T03:27:38.843953Z",
+  "updated_at": "2026-09-28T04:06:22.125482Z",
+  "closed_at": "2026-09-28T04:06:22.125421Z",
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "Claude"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

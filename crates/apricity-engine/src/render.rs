@@ -554,6 +554,7 @@ mod tests {
             velocity: None,
             attack_s: None,
             release_s: None,
+            midi: None,
         }
     }
 

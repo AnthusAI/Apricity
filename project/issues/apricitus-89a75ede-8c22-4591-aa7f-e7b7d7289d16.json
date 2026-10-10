@@ -1,0 +1,81 @@
+{
+  "id": "apricitus-89a75ede-8c22-4591-aa7f-e7b7d7289d16",
+  "title": "Implement lazy text encoder worker and model cache",
+  "description": "Purpose: promote parity-approved harness to browserworker client. Prereq M0browsergate and M1. Allowed encoder/clientworker/cache modules/tests; packagepin. Never WebGPU/cloudencoder. Protocol requestId/encode/cancel/progress/result/error. Dynamic import only nonemptysearch; IndexedDB/CacheStorage preferred; memoryfallback displays cache unavailable; bounded128 queryvector LRU includes model+normalizedtext. Verify lazy/progress/retry/storagefailure/out-of-order tests.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-def9c138-a63c-4fb4-b5ce-d1edb8f3838e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "ca65e1ae-c2d1-4698-b0d1-4ca9d0c4c4bc",
+      "author": "home",
+      "text": "Supervisor authorizes bounded draft worker/client development using the desktop parity-approved pinned fp32 WASM text tower. Mobile/listening and cloud gates remain explicitly unevaluated; public rollout stays off. Task must promote engineering harness into reusable lazy client/cache without modifying search UI or retrieval. fp32 model first-use download approximately 502 MB; do not restore failed q8.",
+      "created_at": "2026-09-30T20:57:06.675989Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "04cd14a0-1db7-46a5-8c8b-5b183a189f31",
+      "author": "home",
+      "text": "Supervisor reran six client/cache tests, all pass. Review found concurrent lifecycle gap: one model error terminates the worker without settling other active requests; wrong-space/malformed worker events can be accepted or hang; IndexedDB blocked/open and transaction abort paths can stall cache fallback. Bounded corrective tests/fixes required before task acceptance, while runtimepins remain unchanged.",
+      "created_at": "2026-09-30T21:03:51.123991Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "f102073b-65d9-4b91-9fc9-08818d3ef14e",
+      "author": "home",
+      "text": "Supervisor specification alignment: M3 executable feature still described historical failed q8/127MB weights despite landed fp32 decision. Correcting the two asset-description scenarios to pinned parity-approved fp32/502MB, preserving all lazy-download/progress/cache and numeric gates. Same model/revision/embedding space, not cloud inference or a replacement model.",
+      "created_at": "2026-09-30T21:09:41.127821Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "5a178661-f53e-4ed4-be36-03acfea8c438",
+      "author": "home",
+      "text": "Supervisor accepted bounded worker/client/cache implementation: 30 combined encoder/evaluation/client/cache tests passed, zero skips/cancellations; web typecheck/build passed. Reviewed concurrent errors settle all requests, wrong spaces/protocol failures, cache timeout/blocked IndexedDB/transaction abort, retry and disposal. This proves data-layer worker behavior, not M3 UI/mobile/browser first-use acceptance; those remain separate tasks. Precision decision aligned in M3 specifications.",
+      "created_at": "2026-09-30T21:12:00.760092Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "2f9fbc6b-0331-4988-8f6c-3d06bbb3f724",
+      "author": "home",
+      "text": "Reviewed lazy browser worker/client/cache landed on develop as8c22609c. Supervisor reran30 tests zero skips/cancellations and web build. This bounded data-layer task is complete; M3 hybrid UI and actual browser/mobile gates remain unfinished.",
+      "created_at": "2026-09-30T21:13:01.007772Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-30T18:43:42.030301Z",
+  "updated_at": "2026-09-30T21:13:01.161945Z",
+  "closed_at": "2026-09-30T21:13:01.161907Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

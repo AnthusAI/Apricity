@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-e6bd95f7-c493-42e0-98d2-c524698eb1fa",
+  "title": "Verified Commons recordings are imported with complete provenance",
+  "description": "As an Apricity curator, I want audio from the selected Wikimedia Commons categories imported with complete credits and license provenance, so that I can use verified material in scores.\n\nFeature: Import licensed Commons audio\n\nScenario: A category member has a supported license and complete attribution\n  Given a direct member is an audio-only file and its Commons page has a supported license and required creator information\n  When the Commons collection is imported\n  Then Apricity stores the original audio, analyzed sample, normalized attribution, license details, and a revisioned metadata snapshot\n  And the sample is available for browsing and scores\n\nScenario: A file is duplicated across categories\n  Given the same Commons file belongs to more than one selected category\n  When the categories are imported\n  Then one recording and sample are created with all selected category memberships preserved\n\nScenario: A file has incomplete or unsupported rights metadata\n  Given a Commons file lacks a required creator or uses a license Apricity cannot classify\n  When its metadata is checked\n  Then it is excluded from the production library and listed in the review report\n\nScenario: An entry is not audio-only\n  Given a direct category member is a video container or unsupported media type\n  When the category is imported\n  Then it is excluded and reported",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ae5d40c8-280a-499a-af8c-0bba0cd85607",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-28T01:53:17.049955Z",
+  "updated_at": "2026-09-28T01:53:17.050003Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Commons-import"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

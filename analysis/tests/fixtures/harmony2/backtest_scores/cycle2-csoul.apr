@@ -1,0 +1,93 @@
+# Ave House — deep house built on Alex Beroza's "Ave" (ccMixter, CC BY 3.0), with the groove loop from
+# spinningmerkaba's "260809 Funky Nurykabe" (ccMixter, CC BY 3.0; chosen by the checker's swap audition)
+# and the Salamander Drumkit (CC BY-SA 3.0, Alexander Holm), in A minor: Am7, Fmaj7,
+# Dm7, G, two bars each (the key Ave's own loops are in). Apricity fits Ave's loops to every chord and retunes them to A440; its
+# clean low A♭ (pinned: the checker caught it) becomes the bass on each chord's root. A classic shape in eight-bar phrases:
+#   1–8    intro: the dark loop, a low-pass opening; the kick from bar 5
+#   9–24   groove: the bright loop, bass and clap; the open hat and the pump from 17
+#   25–32  breakdown: the beat drops out, the music closes to a resonant low-pass and swims in
+#          reverb; a clap roll and a reversed crash build from 29, the filter singing higher
+#   33–40  drop: everything back at once, the filter snapped fully open, a crash on the one
+tempo 120
+key A minor
+samples ../../../../../samples
+
+clip dark   = ccmixter/AlexBeroza/Ave_34409.mp3  loop-1          # the quiet opening texture
+clip bright = ccmixter/CSoul/we-lived-and-learned-and-loved-and-chose_32859.mp3  loop-2
+clip low    = ccmixter/AlexBeroza/Ave_34409.mp3  hold-4  root Ab1  # a clean low note: really A-flat (the checker heard it)
+clip kick   = salamander-drumkit/OH/kick_OH_F_1.wav         warp repitch  speed 0.8
+clip clap   = salamander-drumkit/OH/snare_OH_F_1.wav        warp repitch  speed 1.2
+clip open   = salamander-drumkit/OH/hihatOpen_OH_F_1.wav    warp repitch
+clip crash  = salamander-drumkit/OH/crash1_OH_FF_1.wav      warp repitch  seconds 0..2
+
+kit drums
+  kick = kick
+  clap = clap
+  open = open
+
+chords (i7*2 VImaj7*2 iv7*2 VII*2)*5
+
+# ---- The music, all through one group, so the breakdown can filter it as one.
+
+# The dark loop: the intro, and again under the breakdown.
+track dark  bars 1-32  transpose 0  filter lp 20000  volume 3  group music
+  filter hp 180  24dB                                  # Ave's own bass out: ours owns the low end
+  eq    peak -9@156 q4                                 # Ave's sustained D#3, a tritone from A  # only:dark
+  eq    peak -8@208 q12  peak -8@233 q12  peak -8@277 q12  peak -6@370 q12   # notch Ave's off-key G#3, A#3, C#4, F#4  # only:dark
+  automate filter  1=300  5=20k
+  automate volume  step  1=0dB  9=-60dB  25=0dB
+
+# The bright loop from bar 9 to the end.
+track bright  bars 9-40  volume 4  group music
+  filter hp 180  24dB                                  # Ave's own bass out: ours owns the low end
+  send  plate 15%
+  automate send plate  25=15%  26=45%  33=45%  33=15%
+
+# Bass: the low A moved to each chord's root, one long note a bar; out for the breakdown.
+track low  voicing root  octave 2  steps "x _ _ _ _ _ . . . . . . . . . ."  attack 5ms  release 400ms  bars 9-40  volume -8  group music
+  eq    highcut 800
+  automate volume  step  9=0dB  25=-60dB  33=0dB
+
+group music
+  filter lp 20000  24dB
+  eq    lowcut 20  high 0@4k
+  comp  3:1  -18dB  attack 5ms  release 150ms  mix 0%
+  # Breakdown: a resonant low-pass closes over bar 25, sings higher through the build, and snaps
+  # open on the drop.
+  automate filter.cutoff  1=20k  25=20k  26=500  29=500  33=4k  33=20k
+  automate filter.res     1=0%  25=0%  26=20%  32=35%  33=35%  33=0%
+  automate eq.lowcut      1=20  25=20  26=250  33=250  33=20
+  automate eq.high        step  1=0dB  33=2dB
+  # A gentle pump in the grooves: the compressor comes in at 17 and 33 and leaves for the breakdown.
+  automate comp.mix       step  1=0%  17=60%  25=0%  33=60%
+
+# ---- The beat, one part at a time; out for the breakdown, back on the drop.
+track drums.kick  steps "x . . . x . . . x . . . x . . ."  bars 5-40
+  automate volume  step  5=0dB  25=-60dB  33=0dB
+track drums.clap  steps ". . . . x . . . . . . . x . . ."  bars 9-40  volume -5
+  send  plate 25%
+  automate volume  step  9=0dB  25=-60dB  33=0dB
+track drums.open  steps ". . x . . . x . . . x . . . x ."  velocity 70  bars 17-40  volume -9  release 80ms
+  eq    highcut 10k
+  automate volume  step  17=0dB  25=-60dB  33=0dB
+
+# The build: a clap roll doubling every bar and getting louder, into the drop.
+track drums.clap  as roll  steps "x@40 . . . x@45 . . . x@50 . . . x@55 . . . | x@55 . x@60 . x@62 . x@65 . x@68 . x@70 . x@72 . x@75 . | x@75 x@77 x@79 x@81 x@83 x@85 x@87 x@89 x@90 x@92 x@94 x@96 x@98 x@100 x@102 x@104 | x@104 x@106 x@108 x@110 x@112 x@114 x@116 x@118 x@119 x@120 x@121 x@122 x@123 x@124 x@126 x!"  bars 29-32  volume -6
+  eq    lowcut 200
+  send  plate 30%
+
+# A reversed crash swells into the drop; the crash itself lands on the one.
+track crash  as swell  reverse  at 32  volume -12
+  eq    highcut 9k
+  send  plate 30%
+track crash  at 33  volume -14
+  eq    highcut 10k
+
+return plate
+  eq      lowcut 300
+  reverb  plate  2.2s  predelay 20ms  damp 45%
+
+master
+  eq       lowcut 30
+  comp     2:1  -12dB  attack 30ms  release 200ms
+  loudness -12LUFS

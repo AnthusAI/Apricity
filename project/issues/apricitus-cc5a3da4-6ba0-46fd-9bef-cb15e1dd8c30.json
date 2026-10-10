@@ -1,0 +1,45 @@
+{
+  "id": "apricitus-cc5a3da4-6ba0-46fd-9bef-cb15e1dd8c30",
+  "title": "Specify all six epics and supervision contracts",
+  "description": "Purpose: finish initiative-wide contracts/Gherkin/task packets before dispatch. Allowed: design/semantic-audio.md, features/semantic-audio/*.feature; Kanbus through CLI. Excludes all product behavior. Verify: parse every feature with @cucumber/gherkin and audit task coverage/dependencies.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4fe60ff6-4eae-454c-bd8f-dd6ec7b1d915",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "06ae9978-5923-4dcd-9a96-c31c0bf33842",
+      "author": "home",
+      "text": "All six epics, six Gherkin stories, and 25 implementation packets recorded before dispatch. Added initiative-wide identity/search/worker/clustering/job/authorization contracts, pinned model/export/runtime revisions, deterministic fixtures, prerequisite and handoff rules. Terra availability verified read-only with gpt-5.6-terra via codex exec; no substitution. Initial Gherkin suite is deliberately red until actual bindings/implementation exist. No measured gates claimed.",
+      "created_at": "2026-09-30T18:51:23.431790Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "cba6d073-375d-438e-a586-a1df367067f3",
+      "author": "home",
+      "text": "All six epic contracts, six stories, 43 executable Gherkin scenarios, and bounded task packets landed on develop in d26b64d5. Initial runner returned 43 undefined scenarios as expected (RED); these are implementation acceptance obligations, not passed gates. Native/browser model revisions and supervision contracts pinned.",
+      "created_at": "2026-09-30T18:53:13.092064Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-30T18:43:39.839415Z",
+  "updated_at": "2026-09-30T18:53:13.238014Z",
+  "closed_at": "2026-09-30T18:53:13.237992Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

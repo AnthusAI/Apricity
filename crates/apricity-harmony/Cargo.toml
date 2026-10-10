@@ -1,0 +1,21 @@
+[package]
+name = "apricity-harmony"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Harmony v2: octave-aware note salience (CQT + NNLS) and chord recognition, ported from the Python reference (analysis/apricity_analyze/harmony2_ref.py)."
+
+[dependencies]
+# The only new dependency this crate introduces (sec 2.7 of spec-harmony-v2.md, Kanbus
+# apricitus-445cae): pure Rust, no C/C++ toolchain, builds for wasm32 and iOS. MIT OR Apache-2.0.
+# Not yet depending on `apricity-theory`: chord recognition here uses its own small root/quality
+# tables (a direct port of the Python reference) rather than `apricity_theory::Chord`, since the
+# design's extended qualities (9ths, add-chords) aren't in that crate's `Quality` yet (sec 2.7).
+rustfft = "6.4.1"
+# Already a workspace dependency (apricity-score, apricity-cli, apricity-web); wired into this
+# crate too so `steer` (Kanbus apricitus-c46688) can assemble `steer.json` without a second JSON
+# library. Not a new dependency to the workspace.
+serde_json = { workspace = true }
+
+[dev-dependencies]
+hound = "3.5"

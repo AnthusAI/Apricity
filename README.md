@@ -55,6 +55,24 @@ PYTHONPATH=analysis analysis/.venv/bin/python -m pytest analysis/tests
 
 iOS: `cargo build -p apricity-dsp --target aarch64-apple-ios[-sim]` builds as-is.
 
+## Production deployment
+
+GitHub Actions runs the Rust, web, and feature checks for every pull request and
+push. After CI passes for a push to `main`, GitHub triggers the original Apricity
+Amplify app to build and deploy. Pull requests and failed CI do not deploy.
+
+Apricity's Gen 2 backend remains attached to its original Amplify app. The
+backend deployment and frontend build run in Amplify using `amplify.yml`.
+GitHub only triggers and monitors that deployment; it does not provision the
+backend. Automatic Git-push builds are disabled so Amplify waits for successful
+CI. The remaining Amplify build still consumes build minutes.
+
+The production GitHub environment is restricted to `main`. Its only variables
+are `AWS_REGION`, `AMPLIFY_APP_ID`, and `AMPLIFY_BRANCH`; AWS access uses
+GitHub OIDC rather than stored credentials. The trigger role can only start and
+inspect deployment jobs for the original production app. `customHttp.yml`
+preserves the required cross-origin isolation and WebAssembly headers.
+
 ## The Apricity language
 
 Scores can be written as `.apr` text instead of YAML; both compile to the same score (a test keeps
@@ -147,6 +165,23 @@ Test material is real, public-domain march music, listed with credits and rights
 ```sh
 scripts/fetch-samples.py
 ```
+
+### Wikimedia Commons audio
+
+To refresh the direct members of Apricity's four configured Commons music categories, download
+eligible audio, and write a review report for excluded files:
+
+```sh
+PYTHONPATH=analysis analysis/.venv/bin/python scripts/import-commons.py --delay 1
+PYTHONPATH=analysis analysis/.venv/bin/python -m apricity_analyze.cli --no-notes --max-minutes 0 samples/wikimedia-commons
+```
+
+The importer deduplicates Commons page IDs, checks supported licenses and attribution, saves the
+revisioned source metadata in `samples/sources.json`, and writes `samples/commons-review.json`.
+It downloads one file at a time and resumes by verifying existing files against Commons checksums.
+Review the report before publishing. To add analyzed recordings to a library, run `apricity migrate`
+for that library, then `apricity sync push` and use the signed-in production app's **Import library**
+action to upsert its records into AppSync.
 
 - **Library of Congress, [Citizen DJ](https://citizen-dj.labs.loc.gov/):** 27 excerpts from Edison
   and National Jukebox recordings (1890s–1920s) plus a Tony Schwartz street recording of a St. Patrick's parade.

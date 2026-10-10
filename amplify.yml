@@ -11,15 +11,11 @@ applications:
       phases:
         preBuild:
           commands:
-            - npm ci --cache .npm --prefer-offline
-            # Rust + wasi-sdk, then the wasm module (from the repo root, one level above appRoot).
             - ../scripts/amplify-wasm.sh
         build:
           commands:
             - npm run build
-            # vite empties dist/, so the wasm is copied in afterwards; it is served at /apricity_web.wasm.
             - cp .cache/apricity_web.wasm dist/apricity_web.wasm
-            # The backend phase wrote amplify_outputs.json next to package.json; the app fetches it at /amplify_outputs.json.
             - cp amplify_outputs.json dist/amplify_outputs.json
       artifacts:
         baseDirectory: dist
@@ -27,7 +23,6 @@ applications:
           - '**/*'
       cache:
         paths:
-          - node_modules/**/*
           - .npm/**/*
           - .cache/cargo/registry/**/*
           - .cache/rustup/**/*

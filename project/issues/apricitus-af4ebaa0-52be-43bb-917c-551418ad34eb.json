@@ -1,0 +1,165 @@
+{
+  "id": "apricitus-af4ebaa0-52be-43bb-917c-551418ad34eb",
+  "title": "Cycle publish fails uploading third blind preview to production storage",
+  "description": "## Observed behavior\n\nAuthenticated `apricity cycle publish` creates/uses the incumbent and uploads preview options A and B, then deterministically fails while uploading option C with a generic `service error`. No `ListeningCycle` record is written, leaving the Lab unable to present the intended three-option blind comparison.\n\n## Reproducer\n\n1. Log in as a production user who can create Scores and Labs (`apricity whoami` returns `ryan@anth.us`).\n2. Run `apricity cycle publish` with an incumbent and two `--candidate <APR> <M4A>` options (three total blind options).\n3. Observe failure at `cycles/us-east-1:4e0950fc-fd10-cd29-df2a-3e6182f0d84b/cyc_<id>/C.m4a` with `could not upload ...: service error`.\n4. Repeat: the same third-option failure occurs with a new cycle ID.\n\nThe M4A files are valid, small (565–758 KB), and the failure is independent of their source recordings. Cognito/AppSync authentication is established: `whoami`, hidden incumbent Score creation, and `lab start` all succeed in the same session.\n\n## Expected behavior\n\nA cycle with an incumbent plus two candidates uploads all A/B/C preview audio, writes exactly one open `ListeningCycle` record, and can be attached to a Lab.\n\n## Definition of done\n\n- Surface the underlying storage error without exposing credentials.\n- Correct the production upload/configuration/authorization defect so A, B, C, and D option keys upload for authenticated authorized users.\n- Make publish atomic or perform compensating cleanup: on failure, do not leave orphan candidate Scores or uploaded objects.\n- Add an integration test using a fake/object-store boundary that proves a three-option cycle writes A/B/C and its `ListeningCycle`; add a failure-path test proving cleanup and actionable diagnostics.\n- Confirm a production smoke test can publish and attach a three-option cycle to `lab_403470bc015eefd2`.\n\n## Out of scope\n\nThis is not a Cognito login issue and does not change the blind-lettered cycle design.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "f1ca10fd-8dad-43b9-8bdd-a7e96333bded",
+      "author": "home",
+      "text": "Bringing this production cycle-publish failure into the current work. I will trace the exact A/B/C object upload path, surface the storage cause, implement rollback for partially uploaded objects and candidate Scores, add fake-store success/failure coverage, then run the production smoke specified here using the provided Lab ID.",
+      "created_at": "2026-09-28T11:12:12.059605Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "Codex desktop"
+      }
+    },
+    {
+      "id": "6f9341cf-a01c-4b84-a721-e224b433ff5f",
+      "author": "home",
+      "text": "Reproduced the production failure with the authorized smoke publish on 2026-09-28. AWS returned AccessDenied for s3:PutObject under files/cycles/<identity>/<cycle>/A.wav: the signed-in user assumed the membersGroupReadOnly role, which had no write policy for cycle files. The publish compensation removed the partial candidate Scores; no ListeningCycle was created. Added code changes on codex/apricitus-af4eba to report safe S3 service details, stage local files before mutations, and compensate partial writes. Added an identity-scoped IAM grant for members/curators group roles (S3 object ARN uses cognito-identity.amazonaws.com:sub) so it does not grant cross-user writes. Focused Rust and policy tests pass. Post-fix production smoke is pending deployment; deploys run through the repository release flow.",
+      "created_at": "2026-09-28T11:40:24.546052Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
+    },
+    {
+      "id": "428e8233-ac09-43a9-b6e2-8c8775cea093",
+      "author": "home",
+      "text": "Implementation is ready for review in https://github.com/AnthusAI/Apricity/pull/57. Focused Rust rollback/publish tests and the identity-scoped IAM policy test pass. The production smoke is intentionally not repeated until the storage policy change is deployed.",
+      "created_at": "2026-09-28T11:44:50.386031Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
+    },
+    {
+      "id": "c006351e-afee-4276-95bc-85111202dc92",
+      "author": "home",
+      "text": "Updated CI result: all PR checks are green (Rust workspace, Web including contract:check, and Gherkin step vocabulary). PR remains open for review. The production smoke reproduced the pre-fix AccessDenied; rerun publish plus Lab attach after the storage policy deploys.",
+      "created_at": "2026-09-28T13:02:39.604313Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
+    },
+    {
+      "id": "bb05a16d-72a5-4c56-b6a4-3a6ded95dc5b",
+      "author": "home",
+      "text": "PR #57 merged into origin/develop at 037e28ead77893f5ea985a552b926b5b6d6bd2aa. All CI checks passed. The issue remains in progress pending the post-deployment publish-and-attach smoke test.",
+      "created_at": "2026-09-28T14:02:16.942070Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Apricity cycle storage fix"
+      }
+    },
+    {
+      "id": "7ab0787e-e4d4-4930-b28a-cdd2dc83671f",
+      "author": "home",
+      "text": "Retested after the reported possible fix using the same authenticated production user and unchanged three-option publish command. It still fails deterministically on option C: `could not upload cycles/us-east-1:4e0950fc-fd10-cd29-df2a-3e6182f0d84b/cyc_de5a49b4a8e156b0/C.m4a: service error`. No cycle appeared in `apricity cycle list` after the failed command.",
+      "created_at": "2026-09-28T14:22:22.624022Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
+    },
+    {
+      "id": "951c53b3-2ec8-427c-a038-feb09d08067e",
+      "author": "home",
+      "text": "2026-09-28 production retest after PR #58 merged to main and release v0.33.1: apricity whoami still returns ryan@anth.us. Published three options into lab_403470bc015eefd2 using a fresh cycle ID cyc_0a0d6c56bdb0ec43 and valid M4A inputs. Upload failed on option B with AWS AccessDenied: the assumed amplifyAuth membersGroupReadOnly role is not authorized for s3:PutObject on files/cycles/<identity>/cyc_0a0d6c56bdb0ec43/B.m4a because no identity-based policy allows it. Compensation also failed deleting B.m4a (S3 delete returned service error). CLI cycle list shows no newly created ListeningCycle. The production backend policy has therefore not taken effect despite the main merge/release; this is a deployment/runtime issue now. Investigate/redeploy the Amplify backend so members/curators receive the identity-scoped cycle object policy, clean any orphan object from this attempt, then rerun publish+Lab attach smoke.",
+      "created_at": "2026-09-28T19:23:12.709501Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6",
+        "name": "home"
+      }
+    },
+    {
+      "id": "5683931b-50d1-4f93-966d-26e1cb667009",
+      "author": "home",
+      "text": "Root cause confirmed from AWS Amplify build logs: automatic builds 126 (merge e21b9df) and 127 (release b964c1a) both failed during backend deploy with CloudformationStackCircularDependencyError among storage, auth, and data. The live members role policy remains read-only as a result. The cause is the first fix attaching an IAM policy directly to the auth-stack group role while referencing the storage bucket, creating auth → storage on top of existing storage → auth dependencies. Follow-up implementation moves the AWS::IAM::Policy resource into the storage stack and targets the group roles from there, preserving only the existing storage → auth direction. Focused cycle-policy test and TypeScript compilation pass; review/CI and a successful Amplify build remain required before retesting production.",
+      "created_at": "2026-09-28T22:00:57.094767Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-5",
+        "name": "home"
+      }
+    },
+    {
+      "id": "98180d3d-1c93-4ce2-bc32-4e4ab08fc81e",
+      "author": "home",
+      "text": "Resolved and verified in production. PR #59 moved the group-role cycle upload policy resource into the Amplify storage stack, eliminating the auth/storage/data circular dependency. PR #60 promoted it to main. CloudFormation successfully created CycleUploadFormembers and CycleUploadForcurators; the live members role policy grants scoped s3:PutObject and s3:DeleteObject at files/cycles/${cognito-identity.amazonaws.com:sub}/*. Production smoke publish succeeded on 2026-09-28: cycle cyc_4164776a0795bd32 uploaded A.m4a, B.m4a, and C.m4a, created an open ListeningCycle, and readback confirms labId lab_403470bc015eefd2. The semantic release completed successfully. Amplify job 128 is still finishing its frontend phase, but its CloudFormation backend update is complete and the production command has already succeeded.",
+      "created_at": "2026-09-28T22:12:32.619036Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-5",
+        "name": "home"
+      }
+    },
+    {
+      "id": "c2c0802e-df19-4a11-90d6-8d28ca141424",
+      "author": "home",
+      "text": "Production cycle publish and Lab attachment verified after the deployed IAM policy fix.",
+      "created_at": "2026-09-28T22:12:32.791480Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "8b3ca546-fbe0-43b4-8bec-f5c6f1061d37",
+      "author": "home",
+      "text": "Final deployment gate passed: Amplify job 128 completed successfully in BUILD, DEPLOY, and VERIFY after the production publish smoke succeeded.",
+      "created_at": "2026-09-28T22:14:55.891942Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-5",
+        "name": "home"
+      }
+    },
+    {
+      "id": "476abf85-5218-430b-81ce-8dcc20da7832",
+      "author": "home",
+      "text": "Production retest now passes. `apricity cycle publish` created open cycle `cyc_53345a82afd04ecc` with three complete blind options A/B/C; each audio FileRef has an audio/mp4 key, SHA-256, and nonzero size. `apricity cycle attach --lab lab_403470bc015eefd2 cyc_53345a82afd04ecc` succeeded, and `apricity cycle list --json` confirms the cycle is open with `labId: lab_403470bc015eefd2`. This verifies the deployed behavior; implementation/tests remain for the assignee to document before closure.",
+      "created_at": "2026-09-28T23:40:53.573710Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Music"
+      }
+    }
+  ],
+  "created_at": "2026-09-28T11:00:56.006818Z",
+  "updated_at": "2026-09-28T23:40:53.573770Z",
+  "closed_at": "2026-09-28T22:12:32.845653Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Music"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

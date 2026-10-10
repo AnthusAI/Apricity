@@ -20,12 +20,24 @@ OP_NAMES = frozenset({
     "track.eq_notch",
     "track.hp",
     "track.transpose",
+    "track.transpose_span",
+    "track.bars",
     "clip.root",
     "track.octave",
     "track.release",
     "track.volume",
     "track.add_part",
+    "track.harmonic",
 })
+
+# The chord-following EQ's presets (spec-harmony-v2.md sec 4.7, Kanbus apricitus-db34ad). The
+# optimizer may try any of them, the creative ones as well as the invisible cleanup.
+HARMONIC_PRESETS = {
+    "cleanup": "harmonic cut 6dB tolerance 20c harmonics 6 range 100..3k glide 60ms",
+    "autotune": "harmonic cut 14dB tolerance 40c harmonics 0 range 60..6k glide 15ms",
+    "resonant": "harmonic boost 10dB tolerance 12c range 80..2k glide 120ms mix 60%",
+    "comb": "harmonic both 18dB boost 14dB tolerance 8c harmonics 2 range 60..8k glide 250ms",
+}
 
 MAX_PEAKS_PER_EQ_LINE = 4
 MAX_NOTCHES_PER_TRACK = 8
@@ -152,12 +164,31 @@ def track_eq_notch(text: str, *, track: str, hz: float, gain: int, q: int) -> st
     return _join(lines)
 
 
+# --------------------------------------------------------------------------- track.harmonic
+
+def track_harmonic(text: str, *, track: str, preset: str = "cleanup", on: bool = True) -> str:
+    """Toggle a `harmonic` chain-effect line on `track`'s block: one of `HARMONIC_PRESETS`
+    (`cleanup` invisible touch-up, `autotune` the "autotune-ish" setting, `resonant` a tuned
+    resonance, `comb` the chord-comb pad). Replaces any `harmonic` line already on the track, so
+    re-proposing this op (a different preset, or `on=False`) is idempotent."""
+    if preset not in HARMONIC_PRESETS:
+        raise OpError(f"track.harmonic preset must be one of {sorted(HARMONIC_PRESETS)}, not {preset!r}")
+    lines = _lines(text)
+    start = _track_decl_index(lines, track)
+    end = _track_block_end(lines, start)
+    harmonic_idx = [i for i in range(start + 1, end) if _split_comment(lines[i])[0].strip().split(" ", 1)[0] == "harmonic"]
+    for i in sorted(harmonic_idx, reverse=True):
+        del lines[i]
+    if on:
+        lines.insert(start + 1, f"  {HARMONIC_PRESETS[preset]}")
+    return _join(lines)
+
+
 # --------------------------------------------------------------------------- track.hp
 
 def track_hp(text: str, *, track: str, hz: float, slope: str = "24dB", on: bool = True) -> str:
     """Toggle a highpass on `track`'s own declaration line (the inline `filter hp <hz> <slope>`
-    option, the same one Ave House already uses on `bright`/`h`), replacing any filter already
-    there. `slope` is `"12dB"` or `"24dB"`."""
+    option), replacing any filter already there. `slope` is `"12dB"` or `"24dB"`."""
     if slope not in ("12dB", "24dB"):
         raise OpError(f"track.hp slope must be 12dB or 24dB, not {slope}")
     lines = _lines(text)
@@ -179,6 +210,149 @@ def track_transpose(text: str, *, track: str, value: str | int) -> str:
     lines = _lines(text)
     start = _track_decl_index(lines, track)
     lines[start] = _set_inline_option(lines[start], "transpose", str(value))
+    return _join(lines)
+
+
+# --------------------------------------------------------------------------- track.transpose_span
+
+def _parse_bars_range(code: str) -> tuple[int, int] | None:
+    """The `bars a-b` (or bare `bars a`) an already-comment-stripped declaration line carries, or
+    `None` when it has no `bars` option at all (the whole piece)."""
+    m = re.search(r"\bbars\s+(\d+)(?:-(\d+))?\b", code)
+    if not m:
+        return None
+    a = int(m.group(1))
+    b = int(m.group(2)) if m.group(2) else a
+    return (a, b)
+
+
+def _track_decl_indices(lines: list[str], track: str) -> list[int]:
+    """Every `track <track> ...` declaration line's index, in file order (a role can have more
+    than one, e.g. after `track_transpose_span` has already split it once)."""
+    pat = re.compile(rf"^track\s+{re.escape(track)}(\s|$)")
+    return [i for i, line in enumerate(lines) if pat.match(line)]
+
+
+def track_transpose_span(text: str, *, track: str, bars: list[int] | tuple[int, int], value: str | int, total_bars: int | None = None) -> str:
+    """Give `track` a fixed transpose for ONE bar range only (both ends inclusive, matching the
+    DSL's own `bars a-b`), leaving the rest of its play range untouched (`spec-harmony-v2.md` sec
+    3.4/3.2: the steering report's per-span transposition-map suggestion).
+
+    The language has no per-span transpose statement -- `transpose` is one value for the whole
+    `track` line (`docs/language.md`'s Statements/track-option). This op expresses "transpose only
+    bars a-b" the way the language already supports the same clip on two different NAMED tracks
+    (`as <name>`) with two different `bars` ranges and `transpose` values: it narrows the
+    declaration that currently COVERS `bars` to exclude `[a, b]` and adds one or two more
+    `track <track> ... as <alias>` blocks -- cloned from it (every option, and every indented
+    effect/automation line) except `bars`/`transpose`/`as` -- covering the bars before/after the
+    span, each keeping that block's own transpose. The span itself becomes its own block with
+    `transpose value`.
+
+    Idempotent: a track can end up with several `track <track> ...` declarations (one per split);
+    this op finds the ONE whose own `bars` range contains the requested span (not just the first
+    line matching `track <track>`), so re-applying to a span that's already its own block updates
+    that block's `transpose` in place instead of re-splitting the first block it finds -- which,
+    after an earlier split, would usually be the "before" block, not the span itself.
+
+    When the covering block has an explicit `bars c-d` range, the split is computed against it.
+    Otherwise (no `bars` at all, "the whole piece", and only possible when `track` has exactly one
+    declaration so far) `total_bars` is REQUIRED: the language gives no "everywhere except a-b"
+    form for an unbounded range, so there's no way to compute the "after the span" range without
+    knowing where the piece ends. That's a real gap in the DSL, not something this op works around
+    -- the smallest fix would be a `bars <a>-<b> except <c>-<d>` grammar, or (closer to how
+    `transpose` itself reads) a per-span `transpose <n> bars <a>-<b>` sub-line under `track`;
+    neither exists today, so a caller with no `total_bars` and no explicit `bars` gets `OpError`
+    rather than a silently wrong split."""
+    if len(bars) != 2:
+        raise OpError(f"track.transpose_span bars must be [start, end], not {bars!r}")
+    span_a, span_b = int(bars[0]), int(bars[1])
+    if span_b < span_a:
+        raise OpError(f"track.transpose_span bars must have end >= start, not {bars}")
+
+    lines = _lines(text)
+    decl_indices = _track_decl_indices(lines, track)
+    if not decl_indices:
+        raise OpError(f"no `track {track}` line in the score")
+
+    # Each existing declaration's own bars range: explicit `bars a-b` on that line, or -- only
+    # when it's the sole declaration for this track -- the whole piece via `total_bars`.
+    blocks: list[tuple[int, int, int, int]] = []  # (decl_idx, block_end_idx, a, b)
+    for idx in decl_indices:
+        block_end = _track_block_end(lines, idx)
+        code, _ = _split_comment(lines[idx])
+        rng = _parse_bars_range(code)
+        if rng is None:
+            if len(decl_indices) > 1:
+                raise OpError(f"{track}: the block at line {idx + 1} has no `bars` range (unexpected once {track} has been split)")
+            if total_bars is None:
+                raise OpError(f"{track} has no explicit `bars` range; pass total_bars to split its (whole-piece) range around bars {span_a}-{span_b}")
+            rng = (1, int(total_bars))
+        blocks.append((idx, block_end, rng[0], rng[1]))
+
+    covering = next(((idx, block_end, a, b) for idx, block_end, a, b in blocks if a <= span_a and span_b <= b), None)
+    if covering is None:
+        ranges = ", ".join(f"{a}-{b}" for _, _, a, b in blocks)
+        raise OpError(f"bars {span_a}-{span_b} isn't inside any of {track}'s own ranges ({ranges})")
+    start, end, orig_a, orig_b = covering
+
+    orig_line = lines[start]
+    code, _comment = _split_comment(orig_line)
+
+    def make_line(a: int, b: int, transpose_value, name: str | None) -> str:
+        bars_txt = f"{a}" if a == b else f"{a}-{b}"
+        ln = _set_inline_option(orig_line, "bars", bars_txt)
+        ln = _set_inline_option(ln, "transpose", None if transpose_value is None else str(transpose_value))
+        ln = _set_inline_option(ln, "as", name)
+        return ln
+
+    body = lines[start + 1:end]  # indented effect/automation lines, cloned into every split block
+
+    if orig_a == span_a and orig_b == span_b:
+        # Idempotent re-apply: this block already IS the span -- update its transpose in place,
+        # keep its own `as` name and bars untouched, and leave every other block alone.
+        existing_as = re.search(r"\bas\s+(\S+)", code)
+        name = existing_as.group(1) if existing_as else None
+        new_lines = list(lines[:start])
+        new_lines.append(make_line(orig_a, orig_b, value, name))
+        new_lines.extend(body)
+        new_lines.extend(lines[end:])
+        return _join(new_lines)
+
+    m = re.search(r"\btranspose\s+(\S+)", code)
+    kept_transpose = m.group(1) if m else None
+
+    segments: list[tuple[int, int, str | int | None]] = []
+    if orig_a < span_a:
+        segments.append((orig_a, span_a - 1, kept_transpose))
+    segments.append((span_a, span_b, value))
+    if span_b < orig_b:
+        segments.append((span_b + 1, orig_b, kept_transpose))
+
+    new_lines = list(lines[:start])
+    for i, (a, b, tval) in enumerate(segments):
+        alias = f"{track}_{a}_{b}"
+        new_lines.append(make_line(a, b, tval, alias))
+        new_lines.extend(body)
+        if i != len(segments) - 1:
+            new_lines.append("")
+    new_lines.extend(lines[end:])
+    return _join(new_lines)
+
+
+# --------------------------------------------------------------------------- track.bars
+
+def track_bars(text: str, *, track: str, bars: list[int] | tuple[int, int]) -> str:
+    """Rewrite `track`'s own `bars a-b` play range (sec 3.4's "region shift" -- start or stop the
+    loop on different bars), replacing whatever range it already has (or adding one, if it had
+    none)."""
+    if len(bars) != 2:
+        raise OpError(f"track.bars bars must be [start, end], not {bars!r}")
+    a, b = int(bars[0]), int(bars[1])
+    if b < a:
+        raise OpError(f"track.bars end must be >= start, not {bars}")
+    lines = _lines(text)
+    start = _track_decl_index(lines, track)
+    lines[start] = _set_inline_option(lines[start], "bars", f"{a}" if a == b else f"{a}-{b}")
     return _join(lines)
 
 
@@ -328,11 +502,14 @@ APPLY = {
     "track.eq_notch": track_eq_notch,
     "track.hp": track_hp,
     "track.transpose": track_transpose,
+    "track.transpose_span": track_transpose_span,
+    "track.bars": track_bars,
     "clip.root": clip_root,
     "track.octave": track_octave,
     "track.release": track_release,
     "track.volume": track_volume,
     "track.add_part": track_add_part,
+    "track.harmonic": track_harmonic,
 }
 
 
@@ -365,6 +542,10 @@ def describe(op: dict) -> str:
         return f"{'highpass' if a.get('on', True) else 'remove highpass on'} {a['track']} at {a.get('hz', 0):g} Hz {a.get('slope', '24dB')}"
     if name == "track.transpose":
         return f"transpose {a['track']} to {a['value']}"
+    if name == "track.transpose_span":
+        return f"transpose {a['track']} to {a['value']} for bars {a['bars'][0]}-{a['bars'][1]} only"
+    if name == "track.bars":
+        return f"set {a['track']}'s bars to {a['bars'][0]}-{a['bars'][1]}"
     if name == "clip.root":
         return f"pin {a['clip']}'s root to {a['note']}"
     if name == "track.octave":
@@ -376,4 +557,7 @@ def describe(op: dict) -> str:
     if name == "track.add_part":
         verb = "recast" if a.get("recast") else "add"
         return f"{verb} part {a['track']}: {a['clip_line'].strip()}"
+    if name == "track.harmonic":
+        preset = a.get("preset", "cleanup")
+        return f"{'add' if a.get('on', True) else 'remove'} the harmonic EQ ({preset}) on {a['track']}"
     return f"{name}({a})"

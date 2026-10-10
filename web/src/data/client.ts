@@ -23,6 +23,10 @@ interface AmplifyOutputs {
   custom?: {
     apricity?: {
       mode?: "local" | "cloud";
+      /** POST base for semantic retrieval. Cloud deliberately has no local fallback. */
+      semanticUrl?: string;
+      /** Separate, local-only curator draft/review/publish bridge.  This is never inferred from identity. */
+      clusterCuratorEnabled?: boolean;
       identity?: LocalIdentity;
     };
   };
@@ -31,6 +35,8 @@ interface AmplifyOutputs {
 let cachedMode: "local" | "cloud" = "cloud";
 let cachedIdentity: LocalIdentity | null = null;
 let cachedClient: any = null;
+let cachedSemanticUrl: string | null = null;
+let cachedClusterCuratorEnabled = false;
 let signedIn: Promise<boolean> | null = null;
 
 /**
@@ -50,7 +56,10 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
 
     // Determine mode. Amplify.configure keeps only the parts of `custom` it knows, so the local identity is kept here.
     cachedMode = outputs.custom?.apricity?.mode ?? "cloud";
+    cachedSemanticUrl = outputs.custom?.apricity?.semanticUrl ?? null;
+    cachedClusterCuratorEnabled = outputs.custom?.apricity?.clusterCuratorEnabled === true;
     cachedIdentity = outputs.custom?.apricity?.identity ?? null;
+    failure = null;
     // Who is signed in decides how the cloud API is called; forget it whenever that changes. (Registered here, before
     // any view listens for the same event, so a view that reloads on it already reads with the new session.)
     if (typeof document !== "undefined") document.addEventListener("apricity:auth-changed", () => (signedIn = null));
@@ -60,8 +69,23 @@ export async function bootstrap(): Promise<"local" | "cloud"> {
     console.error("Failed to bootstrap data layer:", error);
     failure = error instanceof Error ? error.message : String(error);
     cachedMode = "cloud";
+    // A failed refresh must never leave an earlier deployment's endpoint or identity usable.
+    cachedSemanticUrl = null;
+    cachedClusterCuratorEnabled = false;
+    cachedIdentity = null;
+    cachedClient = null;
     return cachedMode;
   }
+}
+
+/** Configured semantic API base, if this deployment provides one. */
+export function semanticUrl(): string | null {
+  return cachedSemanticUrl;
+}
+
+/** Whether this *local* server deliberately enabled the private curator bridge. */
+export function clusterCuratorEnabled(): boolean {
+  return cachedMode === "local" && cachedClusterCuratorEnabled;
 }
 
 let failure: string | null = null;
@@ -90,6 +114,12 @@ function isSignedIn(): Promise<boolean> {
     .then((s) => !!s.tokens?.idToken)
     .catch(() => false);
   return signedIn;
+}
+
+/** Current Cognito session for a semantic request. This is deliberately never cached. */
+export async function semanticAuthSession() {
+  const { fetchAuthSession } = await import("aws-amplify/auth");
+  return fetchAuthSession();
 }
 
 /**

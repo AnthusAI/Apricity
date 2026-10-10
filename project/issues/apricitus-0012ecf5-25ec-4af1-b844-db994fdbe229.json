@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-0012ecf5-25ec-4af1-b844-db994fdbe229",
+  "title": "M5 Published cluster exploration and curator control",
+  "description": "As an Apricity visitor or curator, I want the specified semantic audio behavior so that I can find and explore playable sound safely.\n\n```gherkin\nFeature: M5 Published cluster exploration and curator control\n\n  Scenario: Bookmarkable published exploration\n    Given published runs and draft runs\n    When a visitor follows a run preset or cluster link\n    Then only published current-visible members are shown and selections survive URL round trips\n\n  Scenario: Leaderboard and member ordering\n    Given clusters with distinct sample counts clip counts and ratings\n    When the visitor switches leaderboard or member ordering\n    Then distinct sample count is default and alternatives are deterministic with representatives first\n\n  Scenario: Accessible map drill down\n    Given an interactive sound map and keyboard-accessible member list\n    When the visitor selects a cluster or passage\n    Then playable details and parent links are accessible without requiring map interaction\n\n  Scenario: Curator-only validated controls\n    Given a public reader and a curator with invalid or valid parameters\n    When a clustering job is requested or a draft is read\n    Then public mutations and draft access are denied while valid curator jobs enter the queue\n\n  Scenario: Offline queue and worker lease\n    Given queued jobs and an offline or competing ground worker\n    When workers claim or renew jobs\n    Then offline jobs remain queued and only one valid lease owns processing\n\n  Scenario: Retry and draft preview\n    Given a failed job or a completed draft\n    When a curator retries or previews it\n    Then failure evidence is retained and preview does not replace the published run\n\n  Scenario: Explicit atomic publication\n    Given a reviewed complete draft and a previous published run\n    When a curator publishes or publication fails\n    Then successful publication updates the selected pointer atomically and failure preserves the previous run\n\n  Scenario: Curator label overrides\n    Given a traceable suggested label and a current draft revision\n    When a curator sets a validated override\n    Then the override retains suggestion provenance and stale revisions are rejected\n\n  Scenario: Independent controlled rollout\n    Given unverified semantic features and existing lexical search\n    When rollout flags are disabled or approved independently\n    Then lexical search remains available and coverage lag latency failures and job states are observable\n```\n\nSpecifications and implementation ownership: design/semantic-audio.md. All model-backed gates require real evidence; no skipped gate is green.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T18:46:26.480490Z",
+  "updated_at": "2026-09-30T18:46:26.480521Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

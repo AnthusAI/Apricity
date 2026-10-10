@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-70063cc5-5c76-45f5-a21c-d1731d4059e8",
+  "title": "Bound exact local retrieval work for the complete audio corpus",
+  "description": "Purpose: make the accepted exact local semantic endpoint usable for the complete27714-region library without weakening current visibility/revision guards. Prereq accepted0bbbff and actual full publication. Allowed crates/apricity-cli/src/semantic.rs and route initialization plus native tests, dedicated performance verification script/docs only. Exclude cloud/browser/analysis/embedding changes and sibling Virtuus. Cache only immutable parsed+validated published vectors, keyed by authoritative file replacement metadata; changed/corrupt corpus must reload/failclosed, never return prior cached corpus. Current canonical entities remain checked every request; no cross-request sample/clip/visibility cache. Score all vectors exactly and tie semanticId ascending, but stop canonical hydration once requested valid hit limit is filled; filteredCount counts candidates actually rejected during this request, not a full-corpus freshness audit. Publication coverage remains authoritative corpus audit. Execute deterministic RED tests for repeated parse/cache invalidation/corrupt replacement/current edit and bounded canonical lookup work; compare exact results to fixed-vector full baseline. Real browser query against full real corpus before claiming performance; command must report errors/timeouts, no skipped model pass. Temporary local runtime restart must be announced and browser-verified; preserve user test assets, build verification to separate output directory. Terra cannot commit/push/close/deploy; supervisor reruns before landing. Loading/error/cancellation unchanged. Report exact diffs RED/GREEN counts real timing and unresolved states.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "9a58f0ff-6657-440f-b69a-348cb7242a04",
+      "author": "home",
+      "text": "Measured actual complete corpus current native service returns24real hits from27714candidates in6119ms, status200, no stale hits. Dispatch bounded cache/early-hydration optimization; preserve exact score ordering and current guards, filteredCount defined as actually rejected candidates. Use authoritative opened-file metadata/inode on Unix for replacement detection and never reuse a prior corpus on corrupt replacement. Runtime restart belongs to supervisor, not Terra.",
+      "created_at": "2026-09-30T22:17:45.207419Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e99c6d0e-06da-4853-9e0f-857efe05a49e",
+      "author": "home",
+      "text": "Supervisor reran18semantic tests and13serve tests plus optimized build. Added deterministic RED test: four parallel cold requests each parsed the corpus (observed4 versus required1), then single-flight load fix passed. Real27714-vector corpus: cold endpoint723ms, warm30/30/28ms versus previous6119ms baseline, all200/24hits with same first ranked real sample. Cache keeps current canonical reads perquery and corrupt replacement failsclosed. Second preview browser renders real536sample catalog, no errors/overlay, isolationheaders active, home navigation passes; testing actual semantic results before local server switch.",
+      "created_at": "2026-09-30T22:33:20.452871Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T22:14:15.228195Z",
+  "updated_at": "2026-09-30T22:35:26.826671Z",
+  "closed_at": "2026-09-30T22:35:26.826624Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

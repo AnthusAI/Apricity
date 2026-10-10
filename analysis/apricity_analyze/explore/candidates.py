@@ -114,11 +114,10 @@ def region_candidates(prefixes: tuple[str, ...], *, exclude_samples: set[str] | 
                        bpm_range: tuple[float, float] = (BPM_MIN, BPM_MAX)) -> list[Candidate]:
     """Every saved clip whose name starts with one of `prefixes` (e.g. `("hold-",)` for a pitched
     role, `("shot-",)` for a kit role, `("loop-", "sec-")` for a loop role), on any recording
-    catalogued in `sources.json` with an allowed license -- not ccMixter-only (round 2: widened
-    per review; the first pass scanned only `samples/ccmixter/`, which collapsed the MAP-Elites
-    archive's `source_family` axis to a single value). `sources.json` today covers ccmixter, loc,
-    citizen-dj and marine-band (confirmed by inspection); `salamander-drumkit/` and `voice/` have
-    no catalog entry and are silently excluded by the same `entries.get(sample_rel) is None`
+    catalogued in `sources.json` with an allowed license -- across every source family the catalog
+    covers, not restricted to a single one (an earlier pass scanned only one source subtree, which
+    collapsed the MAP-Elites archive's `source_family` axis to a single value). A sample subtree
+    with no `sources.json` entry is silently excluded by the same `entries.get(sample_rel) is None`
     check `ccmixter_candidates` already used -- this is the explorer's existing license filter,
     reused verbatim, not a new or looser one."""
     exclude_samples = exclude_samples or set()

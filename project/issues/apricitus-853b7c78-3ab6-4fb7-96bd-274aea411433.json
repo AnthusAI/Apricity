@@ -1,0 +1,62 @@
+{
+  "id": "apricitus-853b7c78-3ab6-4fb7-96bd-274aea411433",
+  "title": "Adapt public cluster reads to fresh native library data",
+  "description": "Purpose: real local cluster transport reuses accepted Python ClusterExploration without duplicating its privacy rules in Rust. Allowed new analysis/apricity_analyze/cluster_http.py and test_cluster_http.py plus shared static deterministic public-provenance/rating parity fixture if needed; no UI/native/runtime/backend/registry/manifests/model/deps/board/git/deploy. Trusted startup config absolute native library, controls root, runs root, enabledbool defaultfalse; query cannot set paths roles flag or policy. One stdin JSON query <=64KiB, stdout one strictJSON envelope {statusCode,body}; CLI -m apricity_analyze.cluster_http --library --controls-root --runs-root [--enabled]. No raw query/vector/path/error logging. Contract GET adapter query view=leaderboard|detail|map|list defaultleaderboard, run optional64hex, preset broad|useful|fine, order matchingview, cluster actualrunId:label detail, limit maponly1..10000; reject unknown/duplicate fields at future HTTP boundary. Disabled503 before any reads. Fresh corpus native library/semantic/corpus.json and export_catalog(library) everycall; failures sanitized503 not empty, no old external catalog snapshots. Registry uses only trustedcontrols/runs roots publishedread; no initialize/review/publish/worker/clustering mutation. Mandatory publicvisibility reproduces current canonical TS documented(recording) license/author policy plus sample.status ready; no curator bypass for public API. Match explicitlicense and rights fallback, CC-BY author credit, noncleared reject, false strings never authorize. Exact identity/current freshness delegated accepted ClusterExploration. Current rating adapter matches existing local Ratings native Rating rows with canonical rating IDs (targetType#targetId#owner) and valid0..5 finite integer stars/ratedAt, aggregate existing all-time Bayesian score prior/default from rank-window.ts. Savedclip semanticIds map clip target, windows sample target; unrated absent => null not fabricated score. Never expose individual private Rating rows or authors. Native root files read only safe exact known table filenames no symlink escapes. Structured400 request/404 missingdraft/503corruptoutage, valid200safeDTO finiteJSON; up to32MiB output, explicit unavailable if exhausted not partial results. Gherkin real synthetic native tables/files/corpus and genuinely reviewedpublishedrun; publiclicensed currentvisibleleaderboard/playback, undocumented excluded despite local curator identity, corpus/boundary/visibility changes fresh, draft404, disabled no reads, ratings parityprivacy, malformedinput finiteJSONerror never traceback. REDfirst tests; verify focusedadapter/projection/publication/catalog suites isolatedCIvenv no skips. Handoff exact command/protocol/states counts; root registers CI and supervises native subprocess integration separately; no real run approval.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "a28a414f-d7ac-4865-b265-8d76adc32610",
+      "author": "home",
+      "text": "Preliminary integration findings in active draft (not terminal acceptance): shared HTTP query contract uses cluster, not clusterId, so stdin dispatcher must match UI/native packet. Real unchanged preview corpus is about322MB; the current _corpus cap32MiB (output cap reused) would make every real query503. Use separate bounded corpus cap512MiB with bounded read(limit+1), retain output32MiB/metadata16MiB. Do not read entire arbitrary files before cap validation. Expected ratings test must use an actual valid corpus and real native metadata plus genuinely published registry; no-corpus _ratings returning{} would hide storage outage. Final handoff requires real positive query then freshness/privacy negative cases, not only disabled/invalid placeholders.",
+      "created_at": "2026-10-05T15:57:57.107454Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "fe80ce1f-5b03-4ee2-b93a-65ec43f9d741",
+      "author": "home",
+      "text": "Supervisor review found the corpus path still uses the 32 MiB response cap, while the real local corpus is 308 MiB. I am correcting this within the assigned task: a distinct bounded corpus cap of at least 512 MiB, with size checked before allocation; the 32 MiB response cap remains unchanged.",
+      "created_at": "2026-10-05T16:13:10.297823Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "7c616729-7fd8-47e9-8fb1-d3760674581e",
+      "author": "home",
+      "text": "Supervisor accepted and landed `d6db0f1d`. Verified 60 focused Python tests, including a real 308 MiB corpus read through the distinct 512 MiB corpus bound. The public response cap remains 32 MiB; malformed, missing, and disabled inputs fail closed.",
+      "created_at": "2026-10-05T16:19:25.587059Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-05T15:52:02.449315Z",
+  "updated_at": "2026-10-05T16:19:37.821114Z",
+  "closed_at": "2026-10-05T16:19:37.821076Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Supervisor accepted and landed the fix; focused tests pass, including the real 308 MiB corpus read.",
+  "right_now_updated_at": "2026-10-05T16:19:39.198723Z",
+  "custom": {}
+}

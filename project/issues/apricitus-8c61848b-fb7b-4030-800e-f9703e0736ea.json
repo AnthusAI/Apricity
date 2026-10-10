@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-8c61848b-fb7b-4030-800e-f9703e0736ea",
+  "title": "Add mushroom-jazz score-writing skill",
+  "description": "Create a discoverable companion skill for writing Apricity mushroom-jazz scores. Keep its genre-specific tempo, palette, groove, arrangement, and mix guidance separate from the general score-writing skill, and validate the new skill.",
+  "type": "chore",
+  "status": "closed",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-2101dd00-6066-44c8-b7fb-e2b8b8178865",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "2e458232-32bb-4a98-a4a8-4521f95460dc",
+      "author": "home",
+      "text": "Genre research confirms Mushroom Jazz as Mark Farina's downtempo, dancefloor-friendly blend of jazz, hip-hop, house, R&B, and dubby/organic Bay Area production. The companion skill will translate that identity into flexible score-making decisions, without treating any named artist's recordings as source material or imposing a fixed formula.",
+      "created_at": "2026-09-27T19:51:52.521601Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "a309782e-b28e-4fd7-8fef-7f4a73ff86d1",
+      "author": "home",
+      "text": "Implemented a new mushroom-jazz skill with flexible guidance for a warm downtempo blend of jazz, hip-hop, house, soul, and dub: its tempo and pocket, organic source casting, continuous-mix arrangement, restrained effects, and listening criteria. The new skill passes the skill validator and git diff --check.",
+      "created_at": "2026-09-27T19:52:37.391785Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    }
+  ],
+  "created_at": "2026-09-27T19:51:33.321604Z",
+  "updated_at": "2026-09-27T19:52:44.861533Z",
+  "closed_at": "2026-09-27T19:52:44.861499Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

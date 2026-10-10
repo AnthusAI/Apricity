@@ -1,0 +1,74 @@
+{
+  "id": "apricitus-92e4544a-1393-4b8e-a868-7fcc4621ce4f",
+  "title": "Serve related samples and clips from current local audio vectors",
+  "description": "Purpose: real native Apricity POST /semantic/related for current library sample/clip pages, stored vectors only. Prerequisites accepted M1 local retrieval/cache/hydration and M2 representative/ranking contract; isolated tests may precede upstream completion, rollout waits for supervision. Allowed crates/apricity-cli/src/semantic.rs and serve.rs tests plus one focused Cucumber binding. Excludes cloud HTTP, UI, encoder, schema changes, publication, deployment. Exact request {embeddingSpace,sampleId,clipId?,limit?}; strict types/unknown fields, default6,max24; 400 invalid,409 space,503 unavailable corpus with retryable. Response {state:ready|awaiting_analysis,hits}; no source vector exposed. Hydrate all eligible source regions against current canonical state; clip only own saved vector, never parent substitute. Sample up to4 deterministic farthest-point valid records seeded smallest semanticId, min(1-dot) maxima/ties ID. One bounded100 candidate search per representative; exclude source sample before final limit, rehydrate current candidates, best score by semanticId, sample suggestions group sampleId best passage, clip suggestions saved clips only. First strongest per recording then score remainder. Canonical playback boundaries and metadata, no retired/missing/changed/hidden results. Cache only immutable validated corpus, no crossquery canonical cache. Tests first RED on native route; deterministic e0/e1 fixtures multiple samples/recordings/source clips/windows, edited/retired/missing source, stale candidates, invalid/corrupt corpus, limits/ties and zero model loading. Commands stable explicit RUSTC cargo test -p apricity-cli semantic::tests and serve::tests then release build; supervisor reruns real library HTTP/playback. Preserve running preview and web/dist; no restarts by Terra. Handoff diff RED/GREEN counts and unresolved issues; no Kanbus/git/deploy/close actions by Terra.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-fbb3dc30-57f4-480e-bcde-c8fa64b19600",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "ebd14690-720f-4054-8170-92df1979f4b9",
+      "author": "home",
+      "text": "Dispatch native related service after stored clip port review landed79d79d3b; local exact corpus/cache/current canonical contracts already accepted. Implement clip own-vector and sample farthest-point/ranking in local adapter with immutable corpus but request-current guards. Cloud sample orchestration and UI integration remain separate. Do not restart live5181 or write web/dist; supervisor reruns then swaps accepted binary only.",
+      "created_at": "2026-09-30T23:05:39.955717Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "5ea4517b-f0be-47e4-a10e-464e66066e61",
+      "author": "home",
+      "text": "Supervisor review rejects current response contract: native implementation removed raw score although hits must match SemanticSearchHit consumed by browser client; scores stay hidden in cards, not removed from typed response. Clip suggestions were incorrectly grouped by parent sample, suppressing multiple clips. Also strict optional limit must reject explicit JSON null. Add RED regressions before correction; reverify native and real HTTP before preview integration.",
+      "created_at": "2026-09-30T23:13:44.066627Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "27eb5ad0-b082-4fb5-b666-b4572c190997",
+      "author": "home",
+      "text": "Paused checkpoint: native related endpoint corrected against supervisorRED3cases (finite score contract, distinct clip hits on one parent, null limit rejected). Supervisor23semantic+13serve Rust tests pass. Saved WIP on codex/semantic-audio-checkpoint; not installed on live5181. Real HTTP/performance/playback verification and final review remain before landing.",
+      "created_at": "2026-09-30T23:59:50.307024Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "36baf374-e631-46fd-9120-59d2449481cb",
+      "author": "home",
+      "text": "Supervisor accepted and landed 1fd38aba on develop after 23 semantic and 13 serve native tests, full native workspace 429 passed/1 existing ignored, and actual HTTP against the restored 27714-vector library. Sample and clip requests each return six diverse recordings with no source-sample hits, finite internal scores and exact playback bounds; missing source returns awaiting_analysis; null limit returns400. Identical repeated sample response; release warm sample response0.395-0.447s, cold10.207s and warm clip0.779s on this host. These are local measurements, not cloud ANN or browser inference gates.",
+      "created_at": "2026-10-05T14:03:31.928683Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T23:01:22.547335Z",
+  "updated_at": "2026-10-05T14:03:40.563579Z",
+  "closed_at": "2026-10-05T14:03:40.563541Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Native related requests pass tests and local HTTP checks; playback verification and final review remain.",
+  "right_now_updated_at": "2026-10-05T14:03:43.256786Z",
+  "custom": {}
+}

@@ -2,6 +2,96 @@
 
 <!-- version list -->
 
+## v0.26.0 (2026-09-27)
+
+### Documentation
+
+- **write-score**: Move the skill to .agents/skills, and teach it the search tools
+  ([#27](https://github.com/AnthusAI/Apricity/pull/27),
+  [`a19e42f`](https://github.com/AnthusAI/Apricity/commit/a19e42f16dd26645f13b18097943310680c57028))
+
+### Features
+
+- **apricitus-a164db**: Harmony v2 reference: chord recognition, chord quality, objective_v2
+  ([#28](https://github.com/AnthusAI/Apricity/pull/28),
+  [`a05d545`](https://github.com/AnthusAI/Apricity/commit/a05d5450b16b709216359fb61d83cd6ebf9daadb))
+
+
+## v0.25.1 (2026-09-27)
+
+
+## v0.25.0 (2026-09-27)
+
+
+## v0.24.0 (2026-09-27)
+
+
+## v0.23.0 (2026-09-27)
+
+
+## v0.22.0 (2026-09-27)
+
+### Bug Fixes
+
+- **apricitus-445cae**: The engine test's Event literal sets the new midi field
+  ([#25](https://github.com/AnthusAI/Apricity/pull/25),
+  [`f60596e`](https://github.com/AnthusAI/Apricity/commit/f60596e175001d34d5547bee6e1fca9ac48c39a3))
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`e206fb1`](https://github.com/AnthusAI/Apricity/commit/e206fb13ff1a97ed1b8810005e661a1a9f90c376))
+
+- **kanbus**: Commit board state (issues)
+  ([`dff4e42`](https://github.com/AnthusAI/Apricity/commit/dff4e42b4eb441851a6f75d3f478ee994fc452fa))
+
+- **kanbus**: Commit board state (issues)
+  ([`7bb3670`](https://github.com/AnthusAI/Apricity/commit/7bb3670095230f46bbf2ec0d87dc762c90e01fd3))
+
+### Features
+
+- **apricitus-445cae**: Harmony v2 phase 1: stems.json bass and events, the harmony2 reference, and
+  the apricity-harmony crate ([#25](https://github.com/AnthusAI/Apricity/pull/25),
+  [`f60596e`](https://github.com/AnthusAI/Apricity/commit/f60596e175001d34d5547bee6e1fca9ac48c39a3))
+
+
+## v0.21.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`36e8400`](https://github.com/AnthusAI/Apricity/commit/36e84003d030298f2aeb8790249f872ade2e8c2c))
+
+- **kanbus**: Commit board state (issues)
+  ([`e31b888`](https://github.com/AnthusAI/Apricity/commit/e31b8889dc806ec05b6205ba7ef928d243ff49b8))
+
+- **kanbus**: Commit board state (issues)
+  ([`3356021`](https://github.com/AnthusAI/Apricity/commit/335602158646682795e01b69b6d2f8474c99a963))
+
+### Features
+
+- **apricitus-dbed5c**: The optimizer judges and plays candidates as 16-bar auditions
+  ([#23](https://github.com/AnthusAI/Apricity/pull/23),
+  [`c0fd431`](https://github.com/AnthusAI/Apricity/commit/c0fd431d1450f1526d36006b4ea25d6d85d982cc))
+
+
+## v0.20.0 (2026-09-27)
+
+### Chores
+
+- **kanbus**: Commit board state (issues)
+  ([`6b929e7`](https://github.com/AnthusAI/Apricity/commit/6b929e7d4fb81def8ad7f0e78034a9a04c4036b7))
+
+### Features
+
+- **apricitus-dbed5c**: The 16-bar audition form, and the explorer stops filling the disk
+  ([#21](https://github.com/AnthusAI/Apricity/pull/21),
+  [`1ca57cb`](https://github.com/AnthusAI/Apricity/commit/1ca57cbcb62c51c10c6b588001fb1d15cefd9a51))
+
+
+## v0.19.1 (2026-09-27)
+
+
 ## v0.19.0 (2026-09-27)
 
 

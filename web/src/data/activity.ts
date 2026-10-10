@@ -34,17 +34,6 @@ export interface Line {
   otherTitle?: string | null;
 }
 
-/** The filter chips, and the `kind` each one lists. */
-export const FILTERS: { label: string; kind: string | null }[] = [
-  { label: "All", kind: null },
-  { label: "Scores", kind: "song" },
-  { label: "Beats", kind: "beat" },
-  { label: "Chords", kind: "chords" },
-  { label: "Melodies", kind: "melody" },
-  { label: "Samples", kind: "sample" },
-  { label: "Clips", kind: "clip" },
-];
-
 /** What a card is, as its label says: Score, Beat, Chords, Melody, Sample, Clip. */
 export function kindName(card: Pick<Card, "targetType" | "kind">): string {
   const k = card.kind ?? card.targetType;
@@ -77,7 +66,7 @@ export function lineText(line: Pick<Line, "what" | "stars"> & Partial<Pick<Line,
   }
 }
 
-/** A page of cards, newest activity first (`kind`: one of FILTERS). */
+/** A page of cards, newest activity first (`kind`: only cards of that kind). */
 export async function cards(kind: string | null, nextToken?: string | null): Promise<{ items: Card[]; nextToken: string | null }> {
   const r = await client().models.Activity.activityByFeed(
     { feed: "all" },

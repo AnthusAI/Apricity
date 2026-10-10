@@ -1,5 +1,5 @@
 {
-  "version": "ebad826795a0678a",
+  "version": "f28e8328cfb37b0b",
   "models": {
     "Recording": {
       "name": "Recording",
@@ -98,6 +98,13 @@
         "attribution": {
           "name": "attribution",
           "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sourceMetadata": {
+          "name": "sourceMetadata",
+          "type": "AWSJSON",
           "isRequired": false,
           "isArray": false,
           "kind": "scalar"
@@ -2786,6 +2793,136 @@
       ],
       "ownerFields": []
     },
+    "Lab": {
+      "name": "Lab",
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "title": {
+          "name": "title",
+          "type": "String",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "brief": {
+          "name": "brief",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "sceneScoreId": {
+          "name": "sceneScoreId",
+          "type": "ID",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "status": {
+          "name": "status",
+          "type": "LabStatus",
+          "isRequired": true,
+          "isArray": false,
+          "kind": "enum"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "String",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "AWSDateTime",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "cycles": {
+          "name": "cycles",
+          "type": "ListeningCycle",
+          "isRequired": false,
+          "isArray": true,
+          "kind": "model"
+        }
+      },
+      "primaryKey": [
+        "id"
+      ],
+      "indexes": [
+        {
+          "name": "labsByOwnerAndCreatedAt",
+          "queryField": "labsByOwner",
+          "partitionField": "owner",
+          "sortFields": [
+            "createdAt"
+          ],
+          "sortArgument": "createdAt"
+        }
+      ],
+      "relationships": [
+        {
+          "field": "cycles",
+          "kind": "hasMany",
+          "target": "ListeningCycle",
+          "references": "labId",
+          "childIndex": "cyclesByLab",
+          "implicit": false
+        }
+      ],
+      "authRules": [
+        {
+          "provider": "userPools",
+          "ownerField": "owner",
+          "allow": "owner",
+          "identityClaim": "cognito:username",
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "allow": "private",
+          "operations": [
+            "read"
+          ]
+        },
+        {
+          "provider": "userPools",
+          "groupClaim": "cognito:groups",
+          "allow": "groups",
+          "groups": [
+            "curators"
+          ],
+          "operations": [
+            "create",
+            "update",
+            "delete",
+            "read"
+          ]
+        }
+      ],
+      "ownerFields": [
+        "owner"
+      ]
+    },
     "ListeningCycle": {
       "name": "ListeningCycle",
       "fields": {
@@ -2845,6 +2982,20 @@
           "isArray": false,
           "kind": "scalar"
         },
+        "labId": {
+          "name": "labId",
+          "type": "ID",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "scalar"
+        },
+        "lab": {
+          "name": "lab",
+          "type": "Lab",
+          "isRequired": false,
+          "isArray": false,
+          "kind": "model"
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "AWSDateTime",
@@ -2863,8 +3014,22 @@
       "primaryKey": [
         "id"
       ],
-      "indexes": [],
-      "relationships": [],
+      "indexes": [
+        {
+          "name": "listeningCyclesByLabId",
+          "queryField": "cyclesByLab",
+          "partitionField": "labId",
+          "sortFields": []
+        }
+      ],
+      "relationships": [
+        {
+          "field": "lab",
+          "kind": "belongsTo",
+          "target": "Lab",
+          "references": "labId"
+        }
+      ],
       "authRules": [
         {
           "provider": "userPools",
@@ -3039,6 +3204,10 @@
       "score"
     ],
     "CycleStatus": [
+      "open",
+      "closed"
+    ],
+    "LabStatus": [
       "open",
       "closed"
     ],
@@ -3736,6 +3905,41 @@
         ]
       }
     ],
+    "Lab": [
+      {
+        "provider": "userPools",
+        "ownerField": "owner",
+        "allow": "owner",
+        "identityClaim": "cognito:username",
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "allow": "private",
+        "operations": [
+          "read"
+        ]
+      },
+      {
+        "provider": "userPools",
+        "groupClaim": "cognito:groups",
+        "allow": "groups",
+        "groups": [
+          "curators"
+        ],
+        "operations": [
+          "create",
+          "update",
+          "delete",
+          "read"
+        ]
+      }
+    ],
     "ListeningCycle": [
       {
         "provider": "userPools",
@@ -3800,25 +4004,26 @@
   "storage": {
     "paths": [
       {
+        "path": "files/cycles/{entity_id}/*",
+        "readable": [
+          "authenticated",
+          "members",
+          "curators",
+          "admins",
+          "owner"
+        ],
+        "writable": [
+          "admins",
+          "owner"
+        ]
+      },
+      {
         "path": "uploads/{entity_id}/*",
         "readable": [
           "owner"
         ],
         "writable": [
           "owner"
-        ]
-      },
-      {
-        "path": "files/*",
-        "readable": [
-          "guest",
-          "authenticated",
-          "members",
-          "curators",
-          "admins"
-        ],
-        "writable": [
-          "admins"
         ]
       },
       {
@@ -4042,6 +4247,18 @@
         "path": "Job/*",
         "readable": [
           "guest",
+          "authenticated",
+          "members",
+          "curators",
+          "admins"
+        ],
+        "writable": [
+          "admins"
+        ]
+      },
+      {
+        "path": "Lab/*",
+        "readable": [
           "authenticated",
           "members",
           "curators",

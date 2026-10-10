@@ -44,6 +44,8 @@ const schema = a.schema({
   RatingTarget: a.enum(["sample", "clip", "score"]),
   // A listening cycle: open while people can still save a verdict; the local runner closes it once it has pulled them.
   CycleStatus: a.enum(["open", "closed"]),
+  // A lab: open while its owner is still working the scene; closed once they're done with it.
+  LabStatus: a.enum(["open", "closed"]),
   // One blind option in a cycle: its letter (A-D; the incumbent is one of them), the candidate Score it plays, and
   // its cached render.
   CycleOption: a.customType({
@@ -76,6 +78,8 @@ const schema = a.schema({
       licenseUrl: a.url(),
       author: a.string(),
       attribution: a.string(),
+      /** Revisioned Wikimedia Commons file-page content and raw license/credit metadata, when imported from Commons. */
+      sourceMetadata: a.json(),
       documents: a.ref("FileRef").array(),
       samples: a.hasMany("Sample", "recordingId"),
     })
@@ -450,6 +454,25 @@ const schema = a.schema({
     .returns(a.ref("Job"))
     .authorization((allow) => [allow.group("curators")])
     .handler(a.handler.function(voiceRequest)),
+
+  // A lab: one person's sit-down with a scene (Kanbus apricitus-e59a0b) — a title and brief, the score being worked
+  // on, and every listening cycle published into it. Owner writes; signed-in people read (like ListeningCycle);
+  // curators manage. Published by the lab CLI (`scripts/lab start`); the web app only reads it (the "Your labs" page).
+  Lab: a
+    .model({
+      id: a.id().required(),
+      title: a.string().required(),
+      brief: a.string(),
+      sceneScoreId: a.id().required(),
+      status: a.ref("LabStatus").required(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+      cycles: a.hasMany("ListeningCycle", "labId"),
+    })
+    .secondaryIndexes((i) => [i("owner").sortKeys(["createdAt"]).queryField("labsByOwner")])
+    .authorization((allow) => [allow.owner(), allow.authenticated().to(["read"]), allow.group("curators")]),
+
   // A blind listening round: a few fork Scores of one incumbent, lettered and shuffled (the incumbent is one
   // option), published by the local explorer (scripts/cycle.py). Owner (the local runner's identity) writes;
   // signed-in people read and rate; curators manage. No guest read: the options must stay blind until someone signs
@@ -464,7 +487,11 @@ const schema = a.schema({
       status: a.ref("CycleStatus").required(),
       closedAt: a.datetime(),
       owner: a.string(),
+      // The lab this cycle was published into, if any (older cycles, and ones published without --lab, have none).
+      labId: a.id(),
+      lab: a.belongsTo("Lab", "labId"),
     })
+    .secondaryIndexes((i) => [i("labId").queryField("cyclesByLab")])
     .authorization((allow) => [allow.owner(), allow.authenticated().to(["read"]), allow.group("curators")]),
 
   // One person's verdict on a cycle: which lettered option they'd keep ("A".."D", or "same": can't tell them apart),

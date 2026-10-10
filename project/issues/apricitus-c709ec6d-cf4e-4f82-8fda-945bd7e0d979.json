@@ -1,0 +1,122 @@
+{
+  "id": "apricitus-c709ec6d-cf4e-4f82-8fda-945bd7e0d979",
+  "title": "Layer automatic hybrid results into global and section search",
+  "description": "Purpose: preserve lexical ranks while adding clearlylabelled sound groups. Prereqcontroller. Allowed web/src/ui/search.ts,section.ts,main.ts sharedsemanticcards/styles/tests. Global sound clips+regions; Samples groups sample maxpassage; Clips savedonly; existingkind/rating/mine/source/sample/length filters applied both. Candidatecap100; groupingdedup stable; Enter immediate even if lexicalcallback. Verify unchanged lexical regressions plus hybridtests/build.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-def9c138-a63c-4fb4-b5ce-d1edb8f3838e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "6e711b80-46d9-448c-bd32-1cf0ba091c5f",
+      "author": "home",
+      "text": "Dispatching Terra actual automatic hybrid UI after supervisor controller acceptance. Frozen API createHybridSearchController setQuery(query,{immediate,kind,sampleId}),onState. Own search.ts,section.ts,main.ts,new semantic sound cards/helpers/style additions and focused UI tests. Preserve lexical ranking; immediate lexical typing,600ms sound pause and Enter immediate. Semantic endpoint configured locally; no query download in disabled deployment. Global clip+region groups, Samples best passage by parent, Clips saved only, existing filters both sources without reordering sound relevance. Navigation cancellation includes same-tab detail transitions. Real library not synthetic corpus; card playback uses current matched boundaries. UI gate requires real-model browser query/playback under supervisor, not mocks alone.",
+      "created_at": "2026-09-30T21:26:04.762144Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "e3cd089b-c005-4b09-8337-34b38b29ef21",
+      "author": "home",
+      "text": "Started bounded UI implementation: will add deterministic RED hybrid display/filter fixtures before production changes; no controller/API/board-code edits.",
+      "created_at": "2026-09-30T21:27:21.317683Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "469ea7f0-fec3-4e0f-96c6-84aecbdc06c7",
+      "author": "home",
+      "text": "RED→GREEN evidence: `npx tsx --test test/semantic-sound.test.ts` initially failed because the UI reconciliation module was absent; now 4 deterministic fixture tests pass. Added global clips/passages grouping, Samples best-parent grouping, Clips saved-only canonical filter reconciliation without lexical matching or relevance re-sort, plus a focused M3 Gherkin binding. Integrated configured-URL-gated controller use in global and Samples/Clips search, immediate lexical typing/Enter semantics, status/retry, and explicit same-tab route cancellation. GREEN: focused cucumber 1 scenario/3 steps; hybrid+UI 11 tests; lexical regressions 15 tests; npm run build; git diff --check. No model/browser/mobile acceptance run, commit, push, close, or deploy.",
+      "created_at": "2026-09-30T21:35:49.781193Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "0ae57ce9-cfda-4b42-9b9e-1dbdc5929043",
+      "author": "home",
+      "text": "Supervisor review requests correction before acceptance: section Mine list toggle is not applied to sound entries; clearing query chip does not cancel controller; zero sound hits have no explicit empty state; SearchView initial me/handles await lacks generation guard and can repaint stale lexical skeleton; no clickable parent link on clip soundcards. New request must invalidate old host immediately and nav cancels pending lexical repaint too. Add focused regression fixtures and section filter scenario binding; rerun build/lexical matrix. Real-browser verification follows, not helper mocks as acceptance.",
+      "created_at": "2026-09-30T21:38:46.705569Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "cc33c6b1-41f3-48ac-874b-b735931ad665",
+      "author": "home",
+      "text": "Supervisor rejects current UI handoff: semantic progress still awaits the entire catalog render, clips lack a clickable parent sample link, and focused regressions for these states are missing. Actual Samples query fails with catalog network error. Rework is bounded to independent sound-status rendering and observable regression tests; real browser verification remains separate and required.",
+      "created_at": "2026-09-30T21:51:52.467792Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "a22dfa6b-bf38-40e2-9aec-efc48767ac8e",
+      "author": "home",
+      "text": "Further supervisor browser regression: real query POST succeeds in6307ms but ready sound host is blank. soundHostState maps nonempty ready hits to waiting with empty text, causing paintSound to return before cards. Adding a failing ready-results regression before correcting this state discriminator; handoff unit tests had omitted this essential branch.",
+      "created_at": "2026-09-30T21:57:35.096385Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "65b83c24-5e44-4863-aeec-78591a81352e",
+      "author": "home",
+      "text": "Supervisor evidence after corrections: real Apricity Samples drum-beat query renders21sound parents with matched time ranges; Clips renders100saved-clip matches with canonical parent links, progressively displayed by existing grid. Audition actually starts WebAudio at0.167seconds for19.073seconds, matching the first range0.167–19.24, no playback error. Clearing removes cards. Browser-aborted retrieval for drums leaves4lexical sample matches and visible Retry. Rerun18UI/controller tests,5Gherkin scenarios15steps,270flow tests passing with1explicit pre-existing unset live-server skip, build successful. Full browser/mobile acceptance remains e711eb; cloud/related/clusters are not claimed complete.",
+      "created_at": "2026-09-30T22:02:13.122544Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "db90e31c-dfc2-4a4c-8693-0ce7b5f412ca",
+      "author": "home",
+      "text": "Final integration evidence: global actual query renders54Sound clips and46Sound passages; scrolling expands the bounded grid beyond24cards (46passages observed), so all returned matches stay reachable. Retrieval Retry recovers to30sound parents while4text matches remain. Cold concurrent catalog/retrieval observed18.4second endpoint time; this is a functional local preview, not cloud/performance/mobile approval. Empty lexical copy now explicitly says No text matches to avoid contradicting sound hits. Supervisor accepts this bounded UI packet after rerunning tests/build and real route/audition verification.",
+      "created_at": "2026-09-30T22:05:10.207073Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:43:42.466679Z",
+  "updated_at": "2026-09-30T22:05:43.797716Z",
+  "closed_at": "2026-09-30T22:05:43.797665Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

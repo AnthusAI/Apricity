@@ -1,0 +1,15 @@
+# Narrow ordinary-CI dependencies for semantic contract, freshness, record,
+# publishing, catalog, evaluation, snapshot, clustering, and summary tests.
+# Deliberately excludes the analysis project's audio-model stack (Essentia,
+# BeatThis, transformers, torch, and Hugging Face checkpoint downloads).
+pytest==9.1.1
+jsonschema==4.26.0
+soundfile==0.14.0
+PyYAML==6.0.3
+umap-learn==0.5.12
+hdbscan==0.8.44
+numpy==2.2.6
+scipy==1.18.1
+scikit-learn==1.9.1
+numba==0.67.0
+pynndescent==0.6.0

@@ -1,0 +1,45 @@
+{
+  "id": "apricitus-5309e434-9a8d-4211-a66c-90f6e6834873",
+  "title": "Cloud-created score is missing from the hosted Mine results",
+  "description": "A score created through the authenticated production CLI is retrievable through AppSync, but does not appear on https://apricity.anth.us/scores with mine=1.\n\nExpected: a signed-in owner sees a newly created cloud score in the hosted Scores list.\n\nObserved: scr_scores_mushroom-jazz-drift_apr exists in production and is owned by google_101686548942916378620, which the web client recognizes as one of the signed-in user’s owner identities, but the hosted view omits it.\n\nInvestigate the web list query, filters, and display conversion; add a regression test and fix the incompatible CLI payload or web filtering behavior.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-f2fe8394-fc4b-45df-91e9-661081ef2560",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "78ac229b-a093-4275-8bee-f7139d9d7d0e",
+      "author": "home",
+      "text": "Verified the production record, handle, owner filter, and hidden-score list. The web session had loaded its in-memory score list before the external CLI mutation. A full reload of https://apricity.anth.us/scores/?q=mushroom&order=recent&mine=1 now shows 1 score, mushroom-jazz-drift, by @techjunkie. No schema, authorization, or payload defect reproduced; the hosted UI currently does not receive an external CLI mutation invalidation event.",
+      "created_at": "2026-09-27T22:57:44.326597Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "root"
+      }
+    },
+    {
+      "id": "03379f98-0cd6-4281-8c73-292b7f1075c8",
+      "author": "home",
+      "text": "Resolved as a stale pre-publish browser cache: the production score appears after reload under the requested Mine filter.",
+      "created_at": "2026-09-27T22:57:44.392823Z",
+      "comment_type": "default"
+    }
+  ],
+  "created_at": "2026-09-27T22:54:33.127385Z",
+  "updated_at": "2026-09-27T22:57:44.444625Z",
+  "closed_at": "2026-09-27T22:57:44.444600Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

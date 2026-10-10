@@ -16,11 +16,12 @@ import { opened, type Opened } from "./at";
 import { sampleKey } from "../route";
 import { applyClipFilter, CHOICES, CLIP_KINDS, DEFAULT_FILTER, filterQuery, kindOf, KIND_LABEL, parseFilter, type ClipFilter } from "../data/clip-filter";
 import { totals, type Standing } from "../data/rank-window";
-import { columnSplitter } from "./splitter";
 import { licensePanel } from "./credits";
 import { StarRating } from "./stars";
 import type { PlayState } from "./play-button";
 import { computePeaks, roughPeaks, Waveform } from "./waveform";
+import { RelatedAudio } from "./related-audio";
+import { clipEntry, sampleEntry } from "../data/sections";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
 const keyLabel = (k: string) => k.replace(/b/g, "♭");
@@ -40,7 +41,6 @@ export class Library {
   /** In the Clips tab: the clip that is open (selected on its sample's waveform). */
   private currentClip: ClipItem | null = null;
   private detailEl = el("div", { className: "detail" });
-  private jobsEl = el("div", { className: "jobs" });
   private decoded = new Map<string, Promise<AudioBuffer>>();
   private audition: AudioBufferSourceNode | null = null;
   /** What the top bar's play button plays here: the shown sample (a selection or a clip of it, else all of it). */
@@ -60,6 +60,8 @@ export class Library {
   /** What the audition playing now is (a clip's id, or a row on the sample page), and how its button resets. */
   private auditionKey: string | null = null;
   private auditionEnded: (() => void) | null = null;
+  /** The detail's related request is cancelled before this view changes sample or section. */
+  private related: RelatedAudio | null = null;
 
   constructor(
     root: HTMLElement,
@@ -72,7 +74,6 @@ export class Library {
       this.names = names;
       this.samples = r.samples;
       this.jobs = r.jobs;
-      this.renderJobs();
       return r.samples;
     };
     if (mode === "samples") {
@@ -115,14 +116,20 @@ export class Library {
       } catch {} // storage can be blocked (private browsing): nothing to report
       this.renderFilters();
     }
-    this.list.el.append(this.jobsEl);
-    root.append(this.list.el, this.detailEl);
-    columnSplitter({ view: root, panel: this.list.el, edge: "right", prop: "--list-w", key: `${mode}-list`, min: 200, max: (w) => Math.min(560, w - 420) });
+    // An item's page is only that sample or clip: its list is the section's front page (ui/section.ts), not a sidebar.
+    root.append(this.detailEl);
     // Your stars on clips, wherever you rated them (the other tab, a list row), for rows and "Not rated by me".
     document.addEventListener("apricity:rated", (e) => {
       if ((e as CustomEvent<{ type: string }>).detail.type === "clip") void this.loadMyStars().then((m) => (this.myStars = m));
     });
     document.addEventListener("apricity:auth-changed", () => ((this.current = null), this.decoded.clear(), this.refresh()));
+    // Library instances can remain attached while another section is shown. Do not leave a hidden
+    // detail request alive just because its DOM has not been removed yet.
+    document.addEventListener("apricity:at", (event) => {
+      const route = (event as CustomEvent<{ route?: { page?: string; sample?: string; clip?: unknown } }>).detail.route;
+      const staysOnDetail = this.mode === "samples" ? route?.page === "samples" && !!route.sample : route?.page === "clips" && !!route.clip;
+      if (!staysOnDetail) { this.related?.dispose(); this.related = null; }
+    });
   }
 
   private cloud() {
@@ -317,15 +324,6 @@ export class Library {
   }
   private jobs: { path: string; state: string; error?: string }[] = [];
 
-  /** Samples being analyzed (local uploads). */
-  private renderJobs() {
-    this.jobsEl.replaceChildren(
-      ...this.jobs
-        .filter((j) => j.state !== "done")
-        .map((job) => el("div", { className: "row" }, el("span", { className: "t" }, job.path.split("/").pop()!), el("span", { className: `pill ${job.state === "failed" ? "bad" : ""}` }, job.state === "failed" ? "failed" : "analyzing…"), el("span", { className: "sub" }, job.error ?? "beats, key, notes — about a minute"))),
-    );
-  }
-
   /** What the stars in the detail header rate: the open clip in the Clips tab, the sample otherwise. */
   private target(): { type: "sample" | "clip"; id: string } | null {
     if (this.mode === "clips") return this.currentClip ? { type: "clip", id: this.currentClip.id } : null;
@@ -372,6 +370,8 @@ export class Library {
   }
 
   async show(path: string, how: Opened = "user") {
+    this.related?.dispose();
+    this.related = null;
     this.current = path;
     // The address bar follows: the sample, or (in Clips) the clip open on it.
     const clipOpen = this.mode === "clips" ? this.currentClip : null;
@@ -659,6 +659,21 @@ export class Library {
     const stat = (label: string, value: string) => el("div", { className: "stat" }, el("b", {}, label), el("span", {}, value));
     const keysOverTime = c.keys_over_time.map(keyLabel).join(" → ");
     const clip = this.mode === "clips" ? this.currentClip : null;
+    // Retrieval order is useful, but returned card metadata is not trusted: each hit is resolved through
+    // the currently visible catalog before SemanticSoundCard gets a path, title, link, or playback source.
+    let relatedClips: ClipItem[] = [];
+    const related = new RelatedAudio({
+      active: () => this.current === path && this.detailEl.dataset.path === path && this.detailEl.isConnected,
+      resolve: (hit) => {
+        if (hit.identity.kind === "saved_clip" && hit.identity.clipId) {
+          const current = relatedClips.find((item) => item.id === hit.identity.clipId);
+          return current && current.sampleId === hit.parent.sampleId && current.start === hit.identity.start && current.end === hit.identity.end ? { hit, entry: clipEntry(current, this.names) } : null;
+        }
+        const current = this.samples.find((item) => item.id === hit.parent.sampleId);
+        return current ? { hit, entry: sampleEntry(current) } : null;
+      },
+    });
+    this.related = related;
     // Comments on the clip open in Clips, else on the sample.
     const thread = new CommentThread(clip ? { type: "clip", id: clip.id } : { type: "sample", id: c.id });
     // Where it came from and what its license asks (a clip shows its sample's); curators can write it down.
@@ -700,6 +715,7 @@ export class Library {
       ),
       license,
       waveCard,
+      related.root,
       el("p", { className: "hint" }, "Play (top right, or space) plays the selection or the selected clip, else the whole sample. Drag to select (snaps to beats; hold ⌥ for free), double-click to play from a point. Drag a clip's edges or body in the lower lane; Delete removes the selected clip."),
       el("div", { className: "toolbar" }, makeClip, save, snippet),
       errors,
@@ -709,6 +725,12 @@ export class Library {
     void thread.load();
     renderTable();
     this.paintStars();
+    related.load(
+      { sampleId: c.id, ...(clip ? { clipId: clip.id } : {}) },
+      async () => {
+        relatedClips = this.mode === "clips" ? this.clips : await api.clips();
+      },
+    );
     requestAnimationFrame(() => wave.draw());
     window.onbeforeunload = () => (dirty ? true : null);
   }

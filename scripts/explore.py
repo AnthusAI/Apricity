@@ -2,8 +2,8 @@
 """Explorer v0: cast a different clip for one role, then hill-climb its EQ/transpose/octave/
 release/highpass against the harmony checker, and report a leaderboard.
 
-    scripts/explore.py examples/ave-house.apr --role bright --candidates auto --workers 4
-    scripts/explore.py examples/ave-house.apr --role bright --candidates cands.txt
+    scripts/explore.py <score.apr> --role <track> --candidates auto --workers 4
+    scripts/explore.py <score.apr> --role <track> --candidates cands.txt
 
 `--candidates auto` uses the user's own rated loops first, then licensed ccMixter loop-/sec-
 clips at 90-130 bpm (see `apricity_analyze.explore.candidates`). A candidates FILE has one

@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-2dc2d0ad-0dbf-4890-abe5-6d03a04394c9",
+  "title": "M3 Automatic browser hybrid search",
+  "description": "As an Apricity visitor or curator, I want the specified semantic audio behavior so that I can find and explore playable sound safely.\n\n```gherkin\nFeature: M3 Automatic browser hybrid search\n\n  Scenario: Lexical results remain immediate\n    Given an unloaded browser encoder and a nonempty audio query\n    When the visitor types into existing search\n    Then lexical matches keep their existing ordering while sound search waits for a 600 millisecond pause\n\n  Scenario: Enter searches immediately\n    Given a pending semantic debounce timer\n    When the visitor presses Enter\n    Then sound encoding starts without waiting for the timer\n\n  Scenario: Lazy text-only model download\n    Given no previous audio query\n    When a nonempty audio query is made\n    Then only the pinned quantized WASM text model loads with visible progress\n\n  Scenario: Cache and storage failure\n    Given a completed model download and a repeated query\n    When persistent storage succeeds or is unavailable\n    Then cached assets and vectors are reused when possible and text search remains usable\n\n  Scenario: Section grouping and filters\n    Given semantic clips and windows matching samples with section filters\n    When Samples or Clips search is shown\n    Then Samples expose best passages per parent and Clips show saved clips only with all existing filters\n\n  Scenario: Clearing cancellation and stale responses\n    Given two overlapping queries and a pending response\n    When the query is cleared or navigation changes\n    Then older timers inference and retrieval cannot repaint the page\n\n  Scenario: Semantic failure isolation\n    Given download inference storage or retrieval fails\n    When the visitor continues lexical search and requests retry\n    Then text results remain usable with a visible semantic retry state\n\n  Scenario: First-use browser acceptance\n    Given a fresh cache and the pinned approximately 127 MB text weights\n    When browser acceptance runs\n    Then download progress caching cold and warm timings are reported with no skipped gate counted as success\n```\n\nSpecifications and implementation ownership: design/semantic-audio.md. All model-backed gates require real evidence; no skipped gate is green.",
+  "type": "story",
+  "status": "open",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-def9c138-a63c-4fb4-b5ce-d1edb8f3838e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-09-30T18:46:26.145768Z",
+  "updated_at": "2026-09-30T18:46:26.145814Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

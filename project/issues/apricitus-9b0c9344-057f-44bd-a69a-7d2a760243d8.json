@@ -1,0 +1,86 @@
+{
+  "id": "apricitus-9b0c9344-057f-44bd-a69a-7d2a760243d8",
+  "title": "Publish immutable cluster run manifests and ground commands",
+  "description": "Purpose: corpus/model/preset/params provenance, draftimmutable artifacts and explicitpublish. Prereqsummaries. Allowed groundcluster CLI/manifest/IO/tests. Runidsha256 digest corpus+config+algorithmversions; repeat does not overwrite; draft run creation never changes publishedpointer. Listeningreport unreviewed status required; verify CLI empty/small/missingdeps failures and artifact roundtrips.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-796bfa5b-4342-4648-8f7d-62fe3d66b02e",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "2b031de4-a62d-46dc-ab73-d79a44963f3b",
+      "author": "home",
+      "text": "Accepted summaries prerequisite aaf18292. Dispatch immutable draft ground-run pipeline: current semantic corpus+canonical catalog -> deduplicated snapshot -> actual pinnedalgorithms -> summaries -> deterministic runmanifest/artifacts. GroundCLI lab semantic cluster supports acceptedpresets; catalog required to revalidate current entities. Draft creation/repeat never writes publishedpointer or listeningapproval. Separate explicit publication control and customparams remain dependentM5 integration; parent cannot close for draft-only packet. No new audio/model/cloud/UI/no manualpublish.",
+      "created_at": "2026-09-30T22:47:54.924203Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "39789328-6a3a-4c32-bb51-0950e638596c",
+      "author": "home",
+      "text": "Ground draft pipeline landed5e5edbdb and subtask36e98e closed. Actual full-library useful-preset run succeeded9b93b212145610689bffc1a611ae20b52d5b0fdec8bef5a6950b1b3e2ed81a31, immutable manifest in local semantic/clusters/runs. First run exited2 only because /tmp is a system symlink; rerun with /private/tmp canonical path completed (handle82371terminal0). Qualitypending, no listening approval/publishedpointer. Explicit publication/M5 controls stillunfinished; paused byuser.",
+      "created_at": "2026-09-30T23:59:50.524575Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "88dad57f-b998-4bc5-b31e-f8cf897251fd",
+      "author": "home",
+      "text": "Restored the real-library useful preset draft in persistent ignored preview storage on2026-10-05. CLI exited0 with runf54c7404c5a06f1158e02db2ab280e32c7d8987795efcd0a876f8d2a7f44d0b2:27219deduplicated regions,576clusters,5275outliers; qualityReview pending/state draft. Manifest under renders/semantic-audio-preview/library.apricity/semantic/clusters/runs/<runId>/manifest.json. No published pointer, no listening/coherence approval, and no public cluster UI yet. Prior temporary artifact was absent; this is a new current-corpus run, not a claimed recovery of old bytes.",
+      "created_at": "2026-10-05T14:14:49.494943Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "1cb9b2c8-b1fe-4958-a8fe-00ca4e7b0573",
+      "author": "home",
+      "text": "The reproducibility fix a200a5fc introduces carried algorithm version umap-random-init-seed42-v1. Recompute the current real local corpus into a separate immutable pending-review draft; preserve prior run bytes and leave publication pointer absent. This is ground analysis only, not curator approval or public rollout. Root will capture run identity, model/version, counts and pending quality state.",
+      "created_at": "2026-10-05T14:58:26.734097Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "40da93d4-33e6-4122-b621-6b824028a829",
+      "author": "home",
+      "text": "Fresh real-library draft completed a66b94482498f1db3d411e6822c048caa6a98662bb0c51117b97749f9faffca1:27219deduplicatedregions,591clusters,5472outliers. Manifest carries apricity-audio-clusters=umap-random-init-seed42-v1 plus pinneddependencies. State draft qualityReview pending. Prior f54c7404 run preserved; no publication/listeningapproval performed.",
+      "created_at": "2026-10-05T15:04:34.543898Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:43:43.287061Z",
+  "updated_at": "2026-10-05T15:04:34.543929Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "An immutable draft run exists, but explicit publication and listening approval are still pending.",
+  "right_now_updated_at": "2026-10-05T15:04:36.465134Z",
+  "custom": {}
+}

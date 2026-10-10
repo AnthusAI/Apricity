@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-36e98e76-8c13-49e3-95bc-f0375ec28e91",
+  "title": "Persist immutable draft clustering runs and ground command",
+  "description": "Bounded current-corpus pipeline through accepted snapshot/algorithms/summaries, deterministic runId from corpus/model/config/pins, per-run unique clusterIds, complete model/preset/params/seed/versions/createdAt manifest, detached members/outliers/centroids/conceptlabels pending listening. lab semantic cluster --corpus --catalog --preset --output validates current canonical data and metadata; never changes publishedpointer. Atomic no-clobber run install, repeated samepacket reuses original createdAt; divergent content for sameID fails rather than overwrite. Empty/small inputs explicit unclustered validdraft, missingdependency nonzero not_evaluated. No UI/publication/customparams/queue/AWS. Tests first, focusedpytest plus immutableGherkin; supervisor reruns. Parent retains publication controls.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9b0c9344-057f-44bd-a69a-7d2a760243d8",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "c46d055b-0ca5-46f1-9fb7-c5d69075a6f1",
+      "author": "home",
+      "text": "Supervisor review requires corrections before acceptance: ancestor-symlink escape, POSIX rename no-clobber race and ENOTEMPTY handling, quadratic alias lookup, duplicate clusters and unit-centroid validation. Register and rerun BDD after handoff. Ground draft only, no publication/listening approval. Terra must not use Kanbus or git; supervisor owns board/landing.",
+      "created_at": "2026-09-30T23:00:12.934564Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "675d952d-59cc-4b54-93b1-5743c81543ee",
+      "author": "home",
+      "text": "Supervisor accepted corrected ground draft pipeline after70snapshot/actualpinnedalgorithms/summaries/run tests and registered immutable Gherkin1scenario3steps pass. Additional supervisor RED fourcases caught NUL playback key and wrong representative clip/model metadata; corrections preserve exactalias identity. Immutable mkdir/no-replace hardlink protects existing artifacts and publishedpointer. Draft quality stays pending, no publication/listening/mobile/cloudclaim. Parent9b0c93 retains explicit publication controls.",
+      "created_at": "2026-09-30T23:10:43.392961Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T22:47:55.088998Z",
+  "updated_at": "2026-09-30T23:11:42.123873Z",
+  "closed_at": "2026-09-30T23:11:42.123837Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

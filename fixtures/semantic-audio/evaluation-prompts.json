@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "referenceVersion": "apricity.semantic-evaluation/1",
+  "prompts": [
+    "the sound of a drum beat",
+    "the sound of rain falling",
+    "the sound of a bass guitar",
+    "the sound of a person singing",
+    "the sound of ambient music",
+    "the sound of metal being struck"
+  ]
+}

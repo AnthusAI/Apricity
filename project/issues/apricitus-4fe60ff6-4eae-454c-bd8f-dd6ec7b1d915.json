@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-4fe60ff6-4eae-454c-bd8f-dd6ec7b1d915",
+  "title": "M0 — Reliable embeddings and browser compatibility",
+  "description": "Reliable, versioned 512-dimensional CLAP vectors from saved clips and four-bar windows; deterministic preprocessing and freshness; pinned browser text-only feasibility harness and evaluation corpus. Completion: boundary invalidation, repeatability, invalid-vector reports, browser/Python cosine >=0.98 per prompt and average top-20 retention >=90%; proposed warm p95 desktop <=2s/mobile <=5s measured separately. No model substitution or cloud inference.",
+  "type": "epic",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9cbb4b91-ce37-4415-a0fe-0c4c58130d02",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "1d8256f8-5503-4cc1-8097-80b4a7dc74f0",
+      "author": "home",
+      "text": "Dispatching two bounded Terra assignments after all-six specification commit: identity/vector contract and isolated browser feasibility harness. Exclusive file ownership; no commit/push/close or deployment authority. Evaluation and downstream integration remain gated by measured compatibility.",
+      "created_at": "2026-09-30T18:53:13.442530Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "34371265-846f-4459-be3b-c5306d61fd86",
+      "author": "home",
+      "text": "M0 acceptance blocked: actual pinned q8 WASM parity is below required 0.98 for bass (0.9776231) and metal (0.9740588), with matching token IDs/masks. Story apricitus-e46692 and browser/evaluation tasks are blocked. Epic remains in_progress because epic workflow has no blocked status. No M1–M5 implementation dispatched; await direction on same-model precision evaluation, and designated mobile/listening/top20 evidence.",
+      "created_at": "2026-09-30T20:00:09.848939Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:40:00.366530Z",
+  "updated_at": "2026-09-30T20:00:09.848976Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

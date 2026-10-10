@@ -13,15 +13,28 @@ path = "src/main.rs"
 apricity-data = { workspace = true, features = ["storage"] }
 apricity-dsp.workspace = true
 apricity-engine = { workspace = true, features = ["decode"] }
+apricity-harmony.workspace = true
 apricity-score.workspace = true
 apricity-sources.workspace = true
 serde_json.workspace = true
+serde.workspace = true
 serde_yaml = "0.9"
 clap = { version = "4", features = ["derive"] }
+base64 = "0.22"
+keyring = "4.2"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+rand = "0.9"
+sha2 = "0.10"
+url = "2"
+webbrowser = "1.2"
 cpal = "0.18"
 hound = "3"
 axum = "0.7"
-tokio = { version = "1", features = ["rt-multi-thread", "net", "fs"] }
+chrono = "0.4"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "fs", "process", "time"] }
+aws-config = "1"
+aws-credential-types = "1"
+aws-sdk-s3 = "1"
 virtuus-amplify = { git = "https://github.com/AnthusAI/Virtuus.git", branch = "develop" }
 virtuus-appsync = { git = "https://github.com/AnthusAI/Virtuus.git", branch = "develop" }
 

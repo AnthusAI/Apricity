@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-86c1ebfe-31ae-41bd-a6d9-0e6df71caa2d",
+  "title": "Carry trusted current sign-in context on semantic browser requests",
+  "description": "Purpose: cloud search and related requests must carry current access-token authentication without trusting browser roles, caching a previous curator session, or leaking tokens to arbitrary origins. Existing M1 authenticated retrieval behavior applies. Allowed web/src/data/client.ts, web/src/data/semantic.ts, existing related client and focused client tests plus one shared transport helper/test. Exclude runtime/backend/outputs/flags/UI/model/dependencies and other agents files. Contract configured semanticUrl is API base including /semantic; server wiring must provide that base. Local requests never read Cognito or send Authorization. Cloud configured exact same-origin or HTTPS endpoint only; resolve current Amplify fetchAuthSession per request, send accessToken as Bearer only to validated configured semantic service. Anonymous session lacking tokens omits Authorization; actual auth/session retrieval failures produce retryable sanitized semantic error, not guest downgrade. Never send idToken, local identity/group strings or persist tokens. New request after sign-out obtains new session and cannot reuse old headers. Cancellation before/after asynchronous session resolution suppresses semantic fetch. Unconfigured/bootstrap failure never reuses stale endpoint; lexical results stay usable. Gherkin: Given local mode When search/related Then zero session reads and no Authorization; Given signed cloud curator Then current access token sent only to configured service; Given signout Then next request has no previous token; Given session outage Then sanitized retry state and no anonymous request; Given cancellation during auth Then no fetch. Deterministic injected auth/fetch fixtures no live credentials, RED then GREEN, both tsc and semantic tests. Terra no git/board/deploy; handoff diff/test counts/no-token evidence; root reruns and lands.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-9383f0cb-409e-4899-9201-45720ff1be81",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "5642fb38-c1ba-4f12-b01b-a42909cd73e0",
+      "author": "home",
+      "text": "Supervisor reran focused browser search/related/transport tests:17 passed, zero skips. Tightened cancellation test with an explicit auth-entry barrier before abort, proving cancellation during pending auth rather than before it. Reverted unrelated global signed-in idToken/accessToken detection change; this task changes semantic access-token transport only. New helper tests still require root script registration before landing; concurrent runtime packet owns package line, so wait for terminal handoff before separate commits. Typechecks/integrated verification pending.",
+      "created_at": "2026-10-05T15:43:29.615501Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "ddcd2817-bb13-44e6-b223-a5d554233088",
+      "author": "home",
+      "text": "Supervisor focused17 and integrated141 semantic tests pass, zero skips; frontend and Amplify typechecks pass. Tightened actual pending-auth cancellation barrier, preserved unrelated existing sign-in logic, registered transport suite. Landedea7d892c and pushed develop. Current access-token-only cloud requests, no local Cognito reads, no stale bearer reuse and no session-failure guest downgrade. Actual cloud deployment remains separate.",
+      "created_at": "2026-10-05T15:46:55.328883Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-05T15:33:38.711507Z",
+  "updated_at": "2026-10-05T15:47:03.052204Z",
+  "closed_at": "2026-10-05T15:47:03.052165Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "Tests pass for the transport change, while cloud deployment remains a separate step.",
+  "right_now_updated_at": "2026-10-05T15:47:05.488937Z",
+  "custom": {}
+}

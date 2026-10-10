@@ -69,6 +69,10 @@ def new_cycle_id() -> str:
     return f"cyc_{uuid.uuid4().hex[:16]}"
 
 
+def new_lab_id() -> str:
+    return f"lab_{uuid.uuid4().hex[:16]}"
+
+
 def score_id_for(folder: str, title: str, fmt: str = "apr") -> str:
     """The same id shape `apricity migrate` gives a score (crates/apricity-data/src/migration.rs):
     `scr_<folder, / -> _>_<title>_<format>`. Deterministic, so re-publishing the same candidate file
@@ -262,6 +266,36 @@ class LocalBackend:
         cyc = {**cyc, "status": "closed", "closedAt": closed_at, "updatedAt": now_iso()}
         self._write("ListeningCycle", cycle_id, cyc)
 
+    # ----------------------------------------------------------------------- labs (apricitus-e59a0b)
+
+    def create_lab(self, scene_score_id: str, title: str, brief: str | None = None) -> dict:
+        lab_id = new_lab_id()
+        now = now_iso()
+        rec = {"id": lab_id, "title": title, "brief": brief, "sceneScoreId": scene_score_id, "status": "open",
+               "owner": self.owner, "__typename": "Lab", "createdAt": now, "updatedAt": now}
+        self._write("Lab", lab_id, rec)
+        return rec
+
+    def get_lab(self, lab_id: str) -> dict | None:
+        return self._read("Lab", lab_id)
+
+    def list_labs(self) -> list[dict]:
+        """This backend's identity's own labs, newest first (matches the web's `labsByOwner`)."""
+        d = self.library / "Lab"
+        if not d.exists():
+            return []
+        labs = [rec for p in sorted(d.glob("*.json")) if (rec := json.loads(p.read_text())).get("owner") == self.owner]
+        labs.sort(key=lambda lab: lab.get("createdAt", ""), reverse=True)
+        return labs
+
+    def attach_lab(self, cycle_id: str, lab_id: str) -> dict:
+        cyc = self.get_cycle(cycle_id)
+        if cyc is None:
+            raise ValueError(f"no such cycle: {cycle_id}")
+        cyc = {**cyc, "labId": lab_id, "updatedAt": now_iso()}
+        self._write("ListeningCycle", cycle_id, cyc)
+        return cyc
+
 
 # --------------------------------------------------------------------------- cloud backend: DynamoDB + S3
 
@@ -410,6 +444,7 @@ def publish(
     candidates: list[Candidate],
     question: str | None = None,
     title: str | None = None,
+    lab_id: str | None = None,
     log_path: pathlib.Path,
     rng: random.Random | None = None,
 ) -> dict:
@@ -477,6 +512,7 @@ def publish(
         "options": options,
         "status": "open",
         "owner": backend.owner,
+        **({"labId": lab_id} if lab_id else {}),
     }
     backend.put_listening_cycle(cycle)
     append_log(log_path, {"kind": "listening-cycle", "at": now_iso(), "cycleId": cycle_id, "key": key})

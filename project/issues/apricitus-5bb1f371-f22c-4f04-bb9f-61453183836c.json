@@ -1,0 +1,122 @@
+{
+  "id": "apricitus-5bb1f371-f22c-4f04-bb9f-61453183836c",
+  "title": "Build pinned browser CLAP feasibility harness",
+  "description": "Purpose: prove approved browser text tower compatibility, not UI rollout. Prerequisite: identities/pins. Allowed: web/src/semantic/encoder*, web/test/semantic-encoder*, web/package*.json, web/scripts/semantic-eval*; no existing search UI. Transformers.js3.8.1 q8 WASM ClapTextModelWithProjection; Xenova revision c28f2883575e590e04d3146ff0713c2448d691ba and Python checkpoint revision8fa0f1c6d0433df6e97c127f64b2a1d6c0dcda8a. Handle progress/cache/retry and cancellation protocol. Verify: build; deterministic worker tests; explicit browser parity command.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-4fe60ff6-4eae-454c-bd8f-dd6ec7b1d915",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "fd8124d9-71d3-4a64-a91e-ab9378e66b80",
+      "author": "home",
+      "text": "Supervisor review: fixture tests and build pass, but submitted feasibility command only validates a supplied report and does not capture real browser inference. Rework required before acceptance: add isolated web/semantic-eval.html and browser runner using approved worker; capture actual vectors/timings/progress/runtime/device metadata; robust malformed/missing/negative/duplicate/empty report rejection; finite512 parity against Python references. Add cancellation-progress and bounded LRU regression tests. These isolated harness files are added to allowed scope; search UI remains excluded. No gate claimed.",
+      "created_at": "2026-09-30T18:59:29.003994Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "d4aafd9b-c077-490a-b979-499fa7b54fb1",
+      "author": "home",
+      "text": "Second supervisor review: harness is now real-browser executable, but its six one-word prompts conflict with the exact reference prompts agreed in evaluation packet. Align six full prompt texts and use vector512 interchange property with reference exporter. Add worker error/messageerror/finite timeout rejection so startup errors cannot leave harness permanently pending. Actual desktop browser verification follows once exporter is ready.",
+      "created_at": "2026-09-30T19:10:00.835447Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "ec8cdc2e-28fb-45b1-9736-aebfd85245b1",
+      "author": "home",
+      "text": "Real Chromium/WASM preflight under Apricity isolation headers failed per-prompt cosine gate: drums0.9862664185,rain0.9986884455,bass0.9776231031,vocals0.9959190595,ambient0.9918837443,metal0.9740587759. Browser/Python token IDs and masks matched for every prompt; bass/metal have no padding difference. 20 cache-bypassed warm encodes desktop p95=51.774999976ms;126603263-byte pinned quantized text weights downloaded with progress,512unit output. No mobile/top20/listening gate claimed. Persist raw preflight vectors/timings under fixtures/semantic-audio/browser-parity-preflight.json as added scope. M0 remains unaccepted; no dependent dispatch or model/gate substitution.",
+      "created_at": "2026-09-30T19:33:54.043983Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "2472c4c0-ff54-4ad1-8735-efc79eb9c272",
+      "author": "home",
+      "text": "Final harness review before landing diagnostic-only code: empty requests return before active-subscription cleanup, and cancelling an already settled/unknown request can leave unbounded tombstones. Terra correction required: validate nonempty text before subscription, cancel only active IDs, test completed/empty/unknown cancellations never receive later progress. Model blocker remains unchanged.",
+      "created_at": "2026-09-30T19:48:12.169681Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "6c348fc3-b68d-4206-9bed-cc3e1e7bb438",
+      "author": "home",
+      "text": "Supervisor reran final browser correction: 18 tests passed, zero skipped; production build and contract check passed. Raw desktop browser inference verified pinned q8 WASM download (126603263 bytes), normalized 512D vectors and matched tokenization. Actual parity gate FAILED for bass 0.9776231031 and metal 0.9740587759 vs 0.98. Twenty uncached warm encodings p95 51.775 ms; mobile/top20 still not evaluated. Diagnostic-only harness is reviewed for landing; task remains blocked, with no app search integration and no altered model/runtime/gates. Terra handoff browser-cleanup-handoff.md records red/green regression evidence.",
+      "created_at": "2026-09-30T19:57:10.792187Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "25bb9a9b-4d17-4b85-853c-d078adfae7e5",
+      "author": "home",
+      "text": "Diagnostic harness landed and pushed on develop in 965ab6ec. Task remains blocked on measured q8 parity; no product search UI enabled. Supervisor reran 18 unit tests, build, contract check, truthful unavailable-device scenario; recorded parity scenario remains deliberately failing acceptance evidence.",
+      "created_at": "2026-09-30T20:01:05.323171Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "d746d29c-5a5a-497e-bd9b-81b59ed19be6",
+      "author": "home",
+      "text": "User requested running the existing work locally for hands-on testing. Start the isolated q8 WASM harness, verify it in a browser, and provide a real locally generated Python/audio reference file. No model precision change, feature implementation, deployment, or gate relaxation. M0 acceptance remains blocked.",
+      "created_at": "2026-09-30T20:09:13.168807Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "a6d1fef5-c8fa-445a-93ba-3efa896300a5",
+      "author": "home",
+      "text": "User goal Make it work authorizes continuing delivery and resolving same-model browser precision mismatch. Supervisor authorizes a bounded fp32 WASM evaluation of the SAME pinned Xenova CLAP export, keeping ground checkpoint, 512D embedding space and cosine/top20 thresholds unchanged. Download-size default may change based on measured parity; no cloud inference or model substitution. Terra owns encoder/evaluator/tests only; supervisor reruns actual browser parity and integration. Mobile acceptance remains separately measured, never fabricated.",
+      "created_at": "2026-09-30T20:24:45.396832Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:43:40.349303Z",
+  "updated_at": "2026-09-30T20:24:45.396890Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

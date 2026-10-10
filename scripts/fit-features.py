@@ -43,6 +43,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import fnmatch
+import hashlib
 import itertools
 import json
 import pathlib
@@ -55,6 +56,12 @@ sys.path.insert(0, str(ROOT / "analysis"))
 
 DEFAULT_SAMPLES = pathlib.Path("/Users/home/Projects/Apricity/samples")
 DEFAULT_CHUNK_SIZE = 25
+
+
+def _window_grid_fingerprint(rhythm: dict) -> str:
+    """Fingerprint every source of window placement, including meter/grid metadata."""
+    grid = {key: rhythm.get(key) for key in ("bpm", "meter", "beats", "downbeats")}
+    return hashlib.sha256(json.dumps(grid, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 # --------------------------------------------------------------------------- per-sample work
@@ -99,24 +106,128 @@ def _process_one(args: tuple) -> dict:
     if do_clap:
         clap_path = clap_mod.sidecar_path_for(manifest_path)
         clap_bytes = clap_path.stat().st_size if clap_path.exists() else 0
-        if force or not clap_mod.is_up_to_date(clap_path, sha):
-            clips = manifest.get("annotations", {}).get("clips", [])
-            import essentia.standard as es
+        clips = manifest.get("annotations", {}).get("clips", [])
+        try:
+            import soundfile as sf
+            native_info = sf.info(str(audio_path))
+            native_sr = int(native_info.samplerate)
+            duration = native_info.frames / native_sr
+        except Exception as error:  # noqa: BLE001 -- no source-duration claim without native metadata
+            return {"name": name, "status": fit_status, "clap_status": "excluded",
+                    "clap_reports": [{"kind": "sample", "reason": f"decode_error: {error}"}],
+                    "fit_bytes": fit_bytes, "clap_bytes": clap_bytes, "seconds": time.time() - t0}
 
-            audio = es.MonoLoader(filename=str(audio_path), sampleRate=44100)()
-            sr = 44100
-            clip_arrays = [audio[int(c["start"] * sr):int(c["end"] * sr)] for c in clips]
-            clip_arrays = [a if len(a) else np.zeros(1, dtype=audio.dtype) for a in clip_arrays]
-            clip_embeddings = clap_mod.embed_audio_batch(clip_arrays, sr) if clip_arrays else np.zeros((0, clap_mod.EMBED_DIM), dtype=np.float32)
-            windows = clap_mod.bar_grid_windows(manifest["rhythm"].get("downbeats", []), beats)
-            window_embeddings = clap_mod.embed_windows(audio, sr, windows) if windows else np.zeros((0, clap_mod.EMBED_DIM), dtype=np.float32)
-            clap_mod.write_sidecar(clap_path, sha256=sha, checkpoint=clap_mod.CHECKPOINT,
-                                    clip_names=[c["name"] for c in clips], clip_embeddings=clip_embeddings,
-                                    windows=windows, window_embeddings=window_embeddings)
+        def within_native_frames(start, end) -> bool:
+            return end <= duration and int(end * native_sr) > int(start * native_sr)
+
+        # Retired clips are never analysis inputs or sidecar records.
+        valid_clips = [clip for clip in clips if clip.get("retired") is not True
+                       and clap_mod._valid_bounds(clip.get("start"), clip.get("end"))
+                       and within_native_frames(clip["start"], clip["end"])]
+        windows = clap_mod.bar_grid_windows(manifest["rhythm"].get("downbeats", []), beats)
+        valid_windows = [window for window in windows if clap_mod._valid_bounds(window.start_s, window.end_s)
+                         and within_native_frames(window.start_s, window.end_s)]
+        fingerprint = clap_mod.processing_fingerprint()
+        grid_fingerprint = _window_grid_fingerprint(manifest.get("rhythm", {}))
+        plan = clap_mod.sidecar_reuse_plan(clap_path, sha256=sha, clips=valid_clips, windows=valid_windows,
+                                           processing_fingerprint=fingerprint, window_grid_fingerprint=grid_fingerprint)
+        reports = list(plan.reports)
+        if any(report["reason"] == "invalid_audio_sha256" for report in reports):
+            return {"name": name, "status": fit_status, "clap_status": "excluded", "clap_reports": reports,
+                    "fit_bytes": fit_bytes, "clap_bytes": clap_bytes, "seconds": time.time() - t0}
+        for index, clip in enumerate(clips):
+            if clip.get("retired") is True:
+                reports.append({"kind": "saved_clip", "source_ref": clap_mod._clip_source_ref(clip, index),
+                                "reason": "retired"})
+            elif clip not in valid_clips:
+                reason = "invalid_boundary"
+                if clap_mod._valid_bounds(clip.get("start"), clip.get("end")):
+                    reason = ("boundary_past_source_duration" if clip["end"] > duration
+                              else "zero_length_after_frame_conversion")
+                reports.append({"kind": "saved_clip", "source_ref": clap_mod._clip_source_ref(clip, index),
+                                "reason": reason})
+        if force:
+            plan.clip_embeddings = [None] * len(valid_clips)
+            plan.window_embeddings = [None] * len(valid_windows)
+
+        missing_clips = [index for index, vector in enumerate(plan.clip_embeddings) if vector is None]
+        missing_windows = [index for index, vector in enumerate(plan.window_embeddings) if vector is None]
+        if missing_clips or missing_windows:
+            # Decode native frames exactly once. CLAP owns the sole deterministic soxr-HQ resample.
+            try:
+                import soundfile as sf
+                audio, sr = sf.read(str(audio_path), dtype="float32", always_2d=True)
+                duration = len(audio) / sr
+            except Exception as error:  # noqa: BLE001 -- report per region below, preserve reusable regions
+                audio, sr, duration = None, 0, 0.0
+                decode_error = f"decode_error: {error}"
+            else:
+                decode_error = None
+
+            def embed_one(kind, source_ref, segment):
+                if decode_error:
+                    reports.append({"kind": kind, "source_ref": source_ref, "reason": decode_error})
+                    return None
+                try:
+                    # One-region calls isolate malformed model output so other regions still publish.
+                    return clap_mod.embed_audio_batch([segment], sr)[0]
+                except Exception as error:  # noqa: BLE001 -- model/preprocessing failures are structured per region
+                    reports.append({"kind": kind, "source_ref": source_ref, "reason": f"embedding_error: {error}"})
+                    return None
+
+            for index in missing_clips:
+                clip = valid_clips[index]
+                if clip["end"] > duration:
+                    reports.append({"kind": "saved_clip", "source_ref": clap_mod._clip_source_ref(clip, index),
+                                    "reason": "boundary_past_source_duration"})
+                    continue
+                start, end = int(clip["start"] * sr), int(clip["end"] * sr)
+                if end <= start:
+                    reports.append({"kind": "saved_clip", "source_ref": clap_mod._clip_source_ref(clip, index),
+                                    "reason": "zero_length_after_frame_conversion"})
+                    continue
+                plan.clip_embeddings[index] = embed_one("saved_clip", clap_mod._clip_source_ref(clip, index), audio[start:end])
+            for index in missing_windows:
+                window = valid_windows[index]
+                if window.end_s > duration:
+                    reports.append({"kind": "window", "source_ref": f"window:{index}",
+                                    "reason": "boundary_past_source_duration"})
+                    continue
+                start, end = int(window.start_s * sr), int(window.end_s * sr)
+                if end <= start:
+                    reports.append({"kind": "window", "source_ref": f"window:{index}",
+                                    "reason": "zero_length_after_frame_conversion"})
+                    continue
+                plan.window_embeddings[index] = embed_one("window", f"window:{index}", audio[start:end])
+
+        # Failed vectors are never represented by zero placeholders; retain their structured report instead.
+        accepted_clips, accepted_clip_embeddings = [], []
+        for index, (clip, vector) in enumerate(zip(valid_clips, plan.clip_embeddings)):
+            if vector is None or not clap_mod._valid_embedding(vector):
+                reports.append({"kind": "saved_clip", "source_ref": clap_mod._clip_source_ref(clip, index),
+                                "reason": "invalid_vector"})
+            else:
+                accepted_clips.append(clip)
+                accepted_clip_embeddings.append(vector)
+        accepted_windows, accepted_window_embeddings = [], []
+        for index, (window, vector) in enumerate(zip(valid_windows, plan.window_embeddings)):
+            if vector is None or not clap_mod._valid_embedding(vector):
+                reports.append({"kind": "window", "source_ref": f"window:{index}", "reason": "invalid_vector"})
+            else:
+                accepted_windows.append(window)
+                accepted_window_embeddings.append(vector)
+        clip_matrix = np.stack(accepted_clip_embeddings).astype(np.float32) if accepted_clip_embeddings else np.zeros((0, clap_mod.EMBED_DIM), dtype=np.float32)
+        window_matrix = np.stack(accepted_window_embeddings).astype(np.float32) if accepted_window_embeddings else np.zeros((0, clap_mod.EMBED_DIM), dtype=np.float32)
+        changed = force or missing_clips or missing_windows or plan.metadata_changed or not clap_mod.is_up_to_date(clap_path, sha)
+        if changed:
+            clap_mod.write_sidecar_v2(clap_path, sha256=sha, clips=accepted_clips, clip_embeddings=clip_matrix,
+                                      windows=accepted_windows, window_embeddings=window_matrix,
+                                      processing_fingerprint=fingerprint, window_grid_fingerprint=grid_fingerprint,
+                                      reports=reports)
             clap_bytes = clap_path.stat().st_size
-            clap_status = "done"
+            clap_status = "done" if (missing_clips or missing_windows) else "reconciled"
 
-    return {"name": name, "status": fit_status, "clap_status": clap_status,
+    return {"name": name, "status": fit_status, "clap_status": clap_status, "clap_reports": reports if do_clap else [],
             "fit_bytes": fit_bytes, "clap_bytes": clap_bytes, "seconds": time.time() - t0}
 
 

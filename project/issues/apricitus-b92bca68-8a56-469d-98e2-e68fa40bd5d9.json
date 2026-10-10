@@ -1,0 +1,50 @@
+{
+  "id": "apricitus-b92bca68-8a56-469d-98e2-e68fa40bd5d9",
+  "title": "Restore local audio playback from cluster passages",
+  "description": "As a curator reviewing a cluster draft on the LAN, I want each representative passage to play so that I can complete an evidence-based listening review.\n\nFeature: local cluster passage playback\n\nScenario: opening the WebAssembly module from the standalone local server\nGiven Apricity is served by the standalone local server\nWhen a curator starts playback from a cluster representative card\nThen GET /apricity_web.wasm returns the WebAssembly module with a successful response\nAnd the audio engine starts and auditions the requested passage\n\nScope: restore the standalone server route and local build/serve artifact only. No changes to clustering membership, publication, or review approval.",
+  "type": "bug",
+  "status": "closed",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "16bef6df-2b13-4cbb-8a53-3e073b11ecee",
+      "author": "home",
+      "text": "Root cause confirmed: the standalone preview bundle omitted apricity_web.wasm, so the browser received a 404 during WebAssembly.compileStreaming. Installed the existing local 3.4 MB module into the preview web root. Verified GET /apricity_web.wasm returns 200 with application/wasm and compiled the returned bytes successfully with WebAssembly.compile.",
+      "created_at": "2026-10-10T17:33:04.442459Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    },
+    {
+      "id": "2d74f7ed-0d39-4e2a-8d74-261fc6420576",
+      "author": "home",
+      "text": "Eliminated the review-page stall: preview now validates only the current native rows and analyses referenced by the draft’s representative passages, rather than rebuilding the full library catalog. Verification: 11 targeted Python tests pass; the real local preview endpoint returned 591 clusters in 17.47 seconds; a fresh LAN browser tab completed the draft rendering.",
+      "created_at": "2026-10-10T18:01:16.658752Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    }
+  ],
+  "created_at": "2026-10-10T17:31:05.835082Z",
+  "updated_at": "2026-10-10T18:01:26.027673Z",
+  "closed_at": "2026-10-10T18:01:26.027625Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Semantic-Audio-Supervisor"
+  },
+  "right_now_summary": "The local preview now serves the WebAssembly module and loads cluster passages for playback.",
+  "right_now_updated_at": "2026-10-10T18:01:27.985171Z",
+  "custom": {}
+}

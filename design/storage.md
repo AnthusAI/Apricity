@@ -14,14 +14,14 @@ candidates, per-person verdicts, crates, scores, provenance). One data model, de
 
 Decisions (user, 2026-09-24): general engine work goes **upstream into Virtuus**
 (`~/Projects/Virtuus`); `resource.ts` is the **source of truth**; local and cloud are **separate
-modes** (export/import, no sync); the local web mode is the **Rust** server. Precedent: Plexus
+modes** (export/import, no sync); the local web mode is the **Rust** server. Precedent: Primus
 (`dashboard/scripts/generate-control-plane-contract.ts`, `services/private-graphql-proxy`).
 
 ## §0 Principles
 
 1. **One schema, three backends.** The web app uses the real `aws-amplify` `generateClient()` in
    both A and C; only the endpoint and `amplify_outputs.json` differ, so there's no stand-in data client.
-2. **Generic engine work lives upstream in Virtuus** (it can later replace Plexus's Python proxy).
+2. **Generic engine work lives upstream in Virtuus** (it can later replace Primus's Python proxy).
    Ripple keeps only `apricity-data`: models, domain operations, the compile loader, migration.
 3. **Records hold what's queried; attachments hold arrays and audio.** A sample's analysis arrays
    (notes, beats, beat_chroma, warp_markers, loudness) are one content-addressed JSON file.
@@ -55,6 +55,8 @@ const schema = a.schema({
     title: a.string().required(), collection: a.string().required(),   // "marine-band", "citizen-dj/loc-edison", "uploads"
     performer: a.string(), composed: a.integer(), recorded: a.string(),
     credit: a.string(), rights: a.string(), sourcePage: a.url(), url: a.url(),
+    license: a.string(), licenseUrl: a.url(), author: a.string(), attribution: a.string(),
+    sourceMetadata: a.json(), // revisioned Commons file-page source, raw credits and license metadata
     documents: a.ref('FileRef').array(),            // sheet-music PDFs (sources.json kind:"score")
     samples: a.hasMany('Sample', 'recordingId'),
   }).secondaryIndexes(i => [i('collection').sortKeys(['title']).queryField('recordingsByCollection')])
@@ -213,13 +215,13 @@ candidates; needs a server-side feed near 50k (§7).
 
 ### §2.1 Generation pipeline (`web/scripts/generate-contract.ts`)
 
-Adapts Plexus's generator but runs Amplify first; the static parser is only a fallback.
+Adapts Primus's generator but runs Amplify first; the static parser is only a fallback.
 
 1. Import `amplify/data/resource.ts` with tsx, call `schema.transform().schema` for the directive
    SDL, run `@aws-amplify/graphql-generator` `generateModels({ target: 'introspection' })` to get
    **model_introspection** (the structure the Amplify client uses at runtime, including index
    `queryField` names and associations).
-2. Post-process into `contract/apricity.contract.json`: Plexus's shape (models, fields,
+2. Post-process into `contract/apricity.contract.json`: Primus's shape (models, fields,
    primaryKey, indexes with `queryField`, `partitionField`, `sortFields`, `sortArgument`,
    relationships, authRules, customOperations, storage) plus `identifier` (composite keys), owner
    fields and `identityClaim`, implicit hasMany indexes, enum values, customType field types,
@@ -589,7 +591,7 @@ both endpoints and diffs normalized responses.
    more than two fields. Settle each against the sandbox and freeze as scenarios.
 2. **Realtime without TLS** may be refused by the Amplify client; fallback mkcert. Spike early.
 3. **Getting the SDL offline:** `schema.transform()` / `@aws-amplify/graphql-generator` are
-   semi-internal; the sandbox snapshot is the authority, Plexus's static parser the fallback.
+   semi-internal; the sandbox snapshot is the authority, Primus's static parser the fallback.
 4. **Multi-step operations aren't atomic in the cloud** (keep = Verdict → CrateItem → Clip);
    derived ids make them safe to repeat. If partial failures appear, move them into an AppSync JS
    pipeline resolver or a Lambda. Clip-name uniqueness per sample is enforced in domain code only.
@@ -600,8 +602,8 @@ both endpoints and diffs normalized responses.
    transfer; Batch/Fargate later. Open.
 8. **Synced folders** (iCloud, Dropbox) break file locking and the change log; iOS needs
    `NSFileCoordinator`. Libraries are local-disk only for now.
-9. **Upstream coordination:** Virtuus API changes (`Result`, token format) affect Plexus; semver
-   minor with a deprecation window; consider moving Plexus's proxy onto `virtuus-appsync`.
+9. **Upstream coordination:** Virtuus API changes (`Result`, token format) affect Primus; semver
+   minor with a deprecation window; consider moving Primus's proxy onto `virtuus-appsync`.
 10. **Multi-tenancy:** one catalog per deployment, no `libraryId` partition (adding one later needs
     a migration).
 11. **Stem ids** come from how the stem was made; re-separating with another model makes a new sample.

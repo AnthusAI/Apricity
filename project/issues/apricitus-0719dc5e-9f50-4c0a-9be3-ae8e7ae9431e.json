@@ -1,0 +1,74 @@
+{
+  "id": "apricitus-0719dc5e-9f50-4c0a-9be3-ae8e7ae9431e",
+  "title": "Project published cluster runs into current-visible leaderboard and passage data",
+  "description": "Purpose: shared public-data boundary for later local/API cluster pages and maps. Prerequisites accepted immutable runs and privatepublicationregistry. Allowed only new analysis/apricity_analyze/cluster_exploration.py and test_cluster_exploration.py; root registersCI. No registry/manifests/HTTP/UI/cloud/model/dependency changes or autoapprove/publish. Inject trusted published-only registry, current semantic corpus/catalog providers, mandatory canonical visibility policy callable and current ratings provider. Never use trusted-local visibility=None for publicdata. Providers freshly read per invocation; no crossrequest content cache. Independent trusted enabled=False blocks all publicoperations503 before providers; draft/missingrun404 structured, corrupt/outage503 sanitized no private content.\n\nContracts: leaderboard(runId optional,preset useful default,order samples|clips) resolves explicit publishedrun or latestpublished preset via registry, validates immutable manifest, rebuilds current-valid deduplicated snapshot with exact manifestspace/fingerprint and mandatoryvisibility using existing freshness validator. Only currentvalid member semanticIds/aliases present in that publishedrun are included; boundary/audio/model/gridrevision/deletion/hidden failures excluded. Never mix run membership across versions. Recompute eachcluster distinctsampleCount and savedclipCount over visiblealiases, exclude emptyclusters, order selected countdesc then clusterId stable. Return runId preset algorithmVersions safeclusterlabels/counts and up to4 current playable approvedrepresentatives percluster; curator labeloverride from reviewed publication audit takesprecedence, suggestedlabel remains clearlysuggested. No storedcentroid/vector/private reviewaudit/curatoridentity/raw draft data.\n\nDetail(runId optional,preset,clusterId,order similarity|rating): representatives first where stillvisible, no hiddenrepresentative titles or archivedplayback fallback. Current cards from canonicalmetadata matchedranges parentrecording/sample/cliplinks; remainingmembers similaritydescending (currentstoredvector dot immutablecentroid internal) or existing currentratingdescending stablesemanticIdties; scores ranking values not percentages. Include explicitoutlier grouping only as outliers notfabricatedcluster. Map(runId,preset,limit default10000 max10000) emits safe currentvisible coordinates and identitycardlinks with displayedCount/totalVisibleCount/truncated, deterministic selection and novectors; callerlistalternative uses same membership. Validate bounded integerlimit/enums safe64hex IDs, malformed unknown returns400/404. Regions dedup but all currentaliases contribute distinctcounts, eachrepresentativeplayback exacttime. Olderpublishedrun addressable when newerpointer changes; unrelated corpus changes must filter affectedmembers not hide all olderpublishedruns.\n\nGherkin: Given unpublisheddraft Then no publicleaderboard/detail/map; Given publishedrun withhiddenretirededited/missingversion members Then removed everywhere and countsupdated; Given currentaliasduplicate Then one region butcorrectdistinctsample/clipcounts; Given reviewed labeloverride Then curatedlabel returned and immutablemanifestunchanged; Given oldrunpointeradvanced Then explicitoldrun stillaccessible; Given similarity/rating choices Then representativefirststablememberorder; Given >10000currentmembers Then map explicitlytruncated listcomplete; Given disabled Then503 no providercalls; Given storagefailure Then sanitizedretryable503 not empty. Fixtures genuine prepare/save/publish syntheticcuratorapprovedtestonly plus fixed512vectors/currentcatalog/ratings, multirecordings windows/savedclips aliases/outliers malformedstates. REDfirst observabletests. Verify focusedexploration/publication/corpus/run pytest rootcwd allpassnoskips; noactualrealqualityapproval. Handoffdiff REDGREENcounts privacy/currentlifecycle/mapcap/order/override evidence and remaining routes/transport/listening/cloudgates. Terra never commits pushes closes board or deploys.",
+  "type": "sub-task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-ee3d7609-1b37-4447-bc3e-638f73a7375c",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "f7fc5fed-6ee9-4137-8f3a-642c82ff1cef",
+      "author": "home",
+      "text": "Preliminary supervisor proof: invalid runId ../invalid produces ExplorationStorageUnavailable503 because _safe_id runs inside broad registry try/catch. Validation must preserve structured400 before provider calls. Bookmark routes carry run AND preset; supervisor contract clarification accept matching explicit run/preset and reject mismatched preset400, rather than reject every combined selection. Published boundary must also validate approved review status/revision/representative coverage and not trust a malformed audit as publication. Root will review full lifecycle/alias/mapcap/order tests after terminal handoff; existing2test draft not sufficient final evidence.",
+      "created_at": "2026-10-05T15:21:04.262372Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "7c9428b0-7727-4a53-921c-5e7115844e8e",
+      "author": "home",
+      "text": "Terminal handoff reviewed but not accepted: only two new tests do not prove declared lifecycle/privacy/order/map contracts. Correct invalid run validation being converted to 503; accept matching run and preset bookmark selection; validate approved publication review and representative coverage. Missing ratings currently emit negative infinity as score, which is not valid JSON: define finite or null missing-rating representation and strict serialization test. Include canonical parent links and comprehensive deterministic fixtures, actual capped map versus uncapped list, aliases/outliers/current visibility and freshness, storage failures and old published runs. Return RED/GREEN and focused suite evidence; no actual real-run approval/publication.",
+      "created_at": "2026-10-05T15:28:35.882984Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "7db7c453-65f5-4b12-a81b-63550b7c8f79",
+      "author": "home",
+      "text": "Review of second handoff: fixes accepted in principle, but remaining declared behaviors still have no tests: visibility/retirement/deletion/boundary/grid/version filtering, count/order across multiple clusters and recordings, outliers, pointer advancement, storage/missing/draft failures. Corrupt audit test changes status/revision/coverage together so cannot prove independent guards. 10001 map test mocks _members and bypasses real current-visible projection; add real pipeline fixture. Return focused final verification pass; no requirement relaxation.",
+      "created_at": "2026-10-05T15:36:09.290641Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "9da4a56f-1460-46b6-9b01-65e62bf4ef5e",
+      "author": "home",
+      "text": "Supervisor reviewed complete current published boundary and independently ran exploration/publication/corpus/runs:80 passed, zero skips, including real10001 region published fixture. Added RED corrupt reviewed-ID object regression (1failed3passed), fixed type validation before set construction, GREENfull80. CI registration REDmissing exploration then GREEN2. Landed07d4adc4 and pushed develop. This completes data boundary only; public HTTP/native transports, pages/maps/curator UI and real listening/publication remain separate. No real draft approved or published.",
+      "created_at": "2026-10-05T15:47:12.149401Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-10-05T15:10:50.827267Z",
+  "updated_at": "2026-10-05T15:47:18.926434Z",
+  "closed_at": "2026-10-05T15:47:18.926347Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": "The data boundary passed 80 tests and was pushed; HTTP, UI, and real publication remain separate.",
+  "right_now_updated_at": "2026-10-05T15:47:21.597375Z",
+  "custom": {}
+}

@@ -1,0 +1,86 @@
+{
+  "id": "apricitus-142c1994-498a-4b75-8812-c3a648194013",
+  "title": "Publish and backfill semantic records idempotently",
+  "description": "Purpose: ground publish/upsert/delete metadata/coverage and resume. Prereq records. Allowed: new ground publisher/CLI commands and tests. Local atomic snapshot semantic/corpus.json; cloud table puts with explicit embeddingSpace+semanticId keys, reconcile scope per sample only with Query no Scan. Checkpoint saved after successful batches; retry idempotent keys; retire deleted/changed/hidden. Verify dryrun/repeat/interrupted/retirement tests, CLI --help. No publish to production.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
+  "type": "task",
+  "status": "closed",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "d535f191-efc9-4979-bd17-3f5faf073278",
+      "author": "home",
+      "text": "Dispatching bounded Terra publisher/export implementation using the accepted record API and frozen corpus envelope. Local atomic snapshots and canonical native-library export first; optional cloud publication adapter is tested without production writes. Current real-library copy is /tmp/apricity-semantic-delivery.53NDAo/library.apricity. Native records have Sample.analysis FileRef (not analysisFileRef). Final records string validation correction remains separate. No UI or runtime model change in this packet.",
+      "created_at": "2026-09-30T20:54:01.384092Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "c502aec8-06b8-427d-8f9d-4f05a605a8d8",
+      "author": "home",
+      "text": "Initial publisher handoff reviewed and not accepted yet. Export successfully resolves 536 canonical samples,13848 clips,473 recordings,536 SHA-verified analysis refs. Publisher defects: cannot retire final record or publish valid empty corpus; scope does not reject out-of-scope incoming rows; preserved fingerprint mismatch can create invalid mixed corpus; tests use fake noncanonical IDs/revisions; cloud adapter omits semantic metadata and Query pagination. Separate export is usable for real-library backfill while bounded corrections proceed.",
+      "created_at": "2026-09-30T21:01:07.483216Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "fd48f19b-c7b7-4344-aba2-1029b04a6d63",
+      "author": "home",
+      "text": "Current 13 publisher/catalog tests pass, but CLI still supplies incoming-only scope and cannot remove final/absent sources, and interruption Gherkin was rebound to a non-interruption test. Last integration correction must prove actual CLI full/scoped retirement and atomic failure/retry/checkpoint. Export --samples was assigned originally and may be corrected. Real-library export already verified by supervisor at stated temp path; no hardware/environment blocker here.",
+      "created_at": "2026-09-30T21:08:54.878546Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "64e93567-5ac0-4058-a607-a8c76e43dc1b",
+      "author": "home",
+      "text": "Final supervisor check: 21 publisher/catalog tests pass; reviewed actual atomic writer failure/retry with unchanged prior corpus/checkpoint, scoped/full retirement, first-empty snapshots, projected versus persisted dryrun coverage, schema-valid metadata and paginated cloud metadata writes. Real-library dryrun currently materializes 2813 saved clips+2647 windows;406 old sidecars explicitly excluded while ongoing backfill advances. Registering publication Cucumber binding; first mistargeted --name matched zero scenarios and is NOT verification, rerunning exact names.",
+      "created_at": "2026-09-30T21:17:20.582302Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    },
+    {
+      "id": "3a20804c-8052-4a65-8e45-7dac0671aeb1",
+      "author": "home",
+      "text": "Supervisor final verification: all 91 semantic Python tests passed; registered publication Gherkin 2 scenarios/6 steps passed (no skipped tests). Accepting bounded atomic publisher/export packet. Repeated canonical keys are idempotent; metadataUpdatedAt denotes publication refresh, not a no-op content timestamp. Cloud adapter was only injected-fixture tested, no live AWS publication. Ground corpus coverage and sandbox retrieval gates remain open under initiative.",
+      "created_at": "2026-09-30T21:22:38.571958Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Semantic Audio Features"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T18:43:40.872485Z",
+  "updated_at": "2026-09-30T21:23:43.917667Z",
+  "closed_at": "2026-09-30T21:23:43.917594Z",
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-6",
+    "name": "Semantic Audio Features"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

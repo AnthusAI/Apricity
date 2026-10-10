@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "Listening cycles now support cloud publishing, blind ratings, verdicts, and local pullback.",
+  "right_now_updated_at": "2026-10-10T17:52:44.889869Z",
   "custom": {}
 }
