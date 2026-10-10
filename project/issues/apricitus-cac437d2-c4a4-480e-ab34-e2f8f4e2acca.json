@@ -46,18 +46,30 @@
         "model": "GPT-6",
         "name": "Sol"
       }
+    },
+    {
+      "id": "fa0a22a0-2771-4456-9802-fec8ba2ccbe3",
+      "author": "home",
+      "text": "User requested Apricity-native previews because inline audio is not playable. Attempted scripts/lab list --target cloud before publishing a listening cycle. Read-only command stalled; process sample confirms apple_native_keyring_store CredentialApi get_password/get_secret waiting on macOS IPC. No cloud upload or cycle created. Need saved-login keychain access to complete native preview publishing; do not claim publication succeeded.",
+      "created_at": "2026-10-10T09:22:28.225071Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Sol"
+      }
     }
   ],
   "created_at": "2026-09-30T13:13:20.879697Z",
-  "updated_at": "2026-10-10T09:18:56.757043Z",
+  "updated_at": "2026-10-10T09:22:28.225098Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
     "name": "root"
   },
-  "right_now_summary": "The team is auditing controlled auditions and score components; no production analyzer changes have been made.",
-  "right_now_updated_at": "2026-10-10T09:18:58.810552Z",
+  "right_now_summary": "The team is running a controlled listening trial; native preview publishing awaits macOS keychain access.",
+  "right_now_updated_at": "2026-10-10T09:22:31.507959Z",
   "custom": {
     "project_label": "apricitus",
     "source": "shared"
