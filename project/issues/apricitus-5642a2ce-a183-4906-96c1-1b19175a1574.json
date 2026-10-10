@@ -3,23 +3,36 @@
   "title": "Keep draft review responsive for large cluster runs",
   "description": "As a curator opening a large draft over the LAN, I want the review page to show usable clusters promptly so that I can begin listening without the browser becoming unresponsive.\n\nFeature: progressive draft review\n\nScenario: opening a large draft\nGiven a draft contains hundreds of clusters\nWhen its review page opens\nThen the page renders an initial bounded set of clusters\nAnd offers a deliberate control to reveal additional clusters\nAnd approval remains unavailable until every current representative has been reviewed.\n\nScope: review-page rendering only; no change to membership, labels, or publication semantics.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 0,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "3ad897fd-7490-413d-8768-9376f70f6dcc",
+      "author": "home",
+      "text": "Implemented progressive review rendering: a fresh large draft renders 24 clusters initially and exposes a Show more clusters control; listening approval remains blocked until all clusters are revealed and their currently playable representatives are checked. Verification: npm run build; npm run test:semantic (146 passing). Browser verification at the exact LAN review URL completed and showed 24 clusters plus ‘Show 24 more clusters (24 of 591 shown)’.",
+      "created_at": "2026-10-10T18:13:30.354645Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    }
+  ],
   "created_at": "2026-10-10T18:11:04.698168Z",
-  "updated_at": "2026-10-10T18:11:04.698214Z",
-  "closed_at": null,
+  "updated_at": "2026-10-10T18:13:35.914476Z",
+  "closed_at": "2026-10-10T18:13:35.914437Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
     "name": "Semantic-Audio-Supervisor"
   },
-  "right_now_summary": "The review page will load clusters in batches while keeping approval gated until all representatives are reviewed.",
-  "right_now_updated_at": "2026-10-10T18:11:06.895057Z",
+  "right_now_summary": "Large draft reviews load 24 clusters first, offer Show more, and require checking all representatives before approval.",
+  "right_now_updated_at": "2026-10-10T18:13:37.753359Z",
   "custom": {}
 }
