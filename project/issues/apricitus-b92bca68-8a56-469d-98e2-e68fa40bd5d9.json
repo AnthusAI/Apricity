@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-b92bca68-8a56-469d-98e2-e68fa40bd5d9",
+  "title": "Restore local audio playback from cluster passages",
+  "description": "As a curator reviewing a cluster draft on the LAN, I want each representative passage to play so that I can complete an evidence-based listening review.\n\nFeature: local cluster passage playback\n\nScenario: opening the WebAssembly module from the standalone local server\nGiven Apricity is served by the standalone local server\nWhen a curator starts playback from a cluster representative card\nThen GET /apricity_web.wasm returns the WebAssembly module with a successful response\nAnd the audio engine starts and auditions the requested passage\n\nScope: restore the standalone server route and local build/serve artifact only. No changes to clustering membership, publication, or review approval.",
+  "type": "bug",
+  "status": "open",
+  "priority": 0,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-10T17:31:05.835082Z",
+  "updated_at": "2026-10-10T17:31:05.835133Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Semantic-Audio-Supervisor"
+  },
+  "right_now_summary": "Local cluster passage playback is being restored through the standalone server and WebAssembly build.",
+  "right_now_updated_at": "2026-10-10T17:31:07.689288Z",
+  "custom": {}
+}
