@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "Listening cycles now work end to end, from local candidate publishing to cloud ratings and pullback.",
-  "right_now_updated_at": "2026-10-10T09:22:35.579246Z",
+  "right_now_summary": "The listening-cycle system is deployed, verified in production, and ready for web-based candidate ratings.",
+  "right_now_updated_at": "2026-10-10T17:46:16.552423Z",
   "custom": {}
 }
