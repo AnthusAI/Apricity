@@ -18,7 +18,7 @@ from typing import Any, Mapping
 from .cluster_exploration import (ClusterExploration, ExplorationBadRequest,
                                   ExplorationError, ExplorationNotFound)
 from .cluster_publication import ClusterPublicationRegistry
-from .semantic_catalog import export_catalog
+from .semantic_catalog import _analysis, export_catalog
 
 
 _MAX_INPUT = 64 * 1024
@@ -149,6 +149,65 @@ class ClusterHttp:
             return catalog
         except _Unavailable: raise
         except Exception as error: raise _Unavailable("native catalog unavailable") from error
+
+    def _catalog_for_records(self, records: object) -> dict[str, Any]:
+        """Read the current native rows needed to validate a bounded card set.
+
+        Draft review only exposes representative passages.  Reading and hashing
+        every sample analysis before showing those passages makes a curator wait
+        for the whole library, while it adds no validation for an unrelated row.
+        The selected rows still go through the same rooted-file and analysis
+        integrity checks as the full catalog path.
+        """
+        if not isinstance(records, list):
+            raise _Unavailable("invalid representative records")
+        try:
+            root = self.library.resolve(strict=True)
+            if self.library.is_symlink() or not root.is_dir():
+                raise _Unavailable("unsafe native root")
+            wanted = {"Sample": set(), "Recording": set(), "Clip": set()}
+            window_samples: set[str] = set()
+            for record in records:
+                identity = record.get("identity") if isinstance(record, Mapping) else None
+                if not isinstance(identity, Mapping):
+                    raise _Unavailable("invalid representative record")
+                sample, recording, kind, clip = (identity.get("sampleId"), identity.get("recordingId"),
+                                                  identity.get("kind"), identity.get("clipId"))
+                if not all(isinstance(value, str) and value and "/" not in value and "\\" not in value
+                           and value not in {".", ".."} for value in (sample, recording)):
+                    raise _Unavailable("invalid representative record")
+                wanted["Sample"].add(sample); wanted["Recording"].add(recording)
+                if kind == "saved_clip":
+                    if not isinstance(clip, str) or not clip or "/" in clip or "\\" in clip or clip in {".", ".."}:
+                        raise _Unavailable("invalid representative record")
+                    wanted["Clip"].add(clip)
+                elif kind == "window":
+                    window_samples.add(sample)
+                else:
+                    raise _Unavailable("invalid representative record")
+            rows: dict[str, list[dict[str, Any]]] = {"Sample": [], "Recording": [], "Clip": []}
+            for table in ("Sample", "Recording", "Clip"):
+                directory = root / table
+                if not directory.is_dir() or directory.is_symlink():
+                    raise _Unavailable("native table unavailable")
+                for identifier in sorted(wanted[table]):
+                    row = _read(directory / f"{identifier}.json", directory)
+                    if not isinstance(row, dict) or row.get("id") != identifier:
+                        raise _Unavailable("invalid native row")
+                    rows[table].append(row)
+            analyses: dict[str, Any] = {}
+            samples = {row["id"]: row for row in rows["Sample"]}
+            for sample_id in sorted(window_samples):
+                analysis, reason = _analysis(root, samples[sample_id])
+                if reason or not isinstance(analysis, dict):
+                    raise _Unavailable("invalid representative analysis")
+                analyses[sample_id] = analysis
+            return {"samples": rows["Sample"], "clips": rows["Clip"],
+                    "recordings": rows["Recording"], "analyses": analyses}
+        except _Unavailable:
+            raise
+        except Exception as error:
+            raise _Unavailable("native catalog unavailable") from error
 
     def _ratings(self) -> dict[str, float]:
         corpus = self._corpus()

@@ -38,7 +38,8 @@ class CuratorHttp:
                                                    current_corpus_digest=self._current_digest,
                                                    enabled=enabled)
         self.service = CuratorClusterService(self.registry, self.data._corpus, self.data._catalog,
-                                             visibility=_public)
+                                             visibility=_public,
+                                             catalog_for_records=self.data._catalog_for_records)
 
     def _current_digest(self) -> str:
         corpus, catalog = self.data._corpus(), self.data._catalog()

@@ -18,6 +18,7 @@ import copy
 import pytest
 
 from apricity_analyze.cluster_http import ClusterHttp, run_query
+from test_cluster_corpus import FINGERPRINT, SPACE, catalog as fixture_catalog, record
 from test_cluster_exploration import _published_service
 
 
@@ -82,6 +83,20 @@ def test_rating_aggregate_uses_canonical_rows_and_never_returns_owner(tmp_path):
     http = ClusterHttp(library, tmp_path / "controls", tmp_path / "runs", enabled=True)
     assert http._ratings() == {"a" * 64: 3.125}
     # The aggregate has no owner or individual vote surface.
+
+
+def test_curator_representative_catalog_reads_only_current_representative_rows(tmp_path):
+    """A corrupt unrelated row must not make a bounded draft audition hang."""
+    current = fixture_catalog()
+    corpus = {"schemaVersion": "apricity.semantic-corpus/1", "embeddingSpace": SPACE,
+              "processingFingerprint": FINGERPRINT, "records": [record()]}
+    library = _native_library(tmp_path, corpus, current)
+    (library / "Sample" / "smp_B.json").write_text("not-json", encoding="utf8")
+    http = ClusterHttp(library, tmp_path / "controls", tmp_path / "runs", enabled=True)
+    selected = http._catalog_for_records(corpus["records"])
+    assert [row["id"] for row in selected["samples"]] == ["smp_A"]
+    assert [row["id"] for row in selected["recordings"]] == ["rec_R1"]
+    assert [row["id"] for row in selected["clips"]] == ["clp_a1"]
 
 
 def test_genuine_reviewed_publication_uses_fresh_native_visibility_and_ratings(tmp_path):

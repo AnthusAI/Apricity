@@ -28,12 +28,16 @@ class CuratorClusterService:
     """
 
     def __init__(self, registry: ClusterPublicationRegistry, corpus: Callable[[], object],
-                 catalog: Callable[[], object], *, visibility: Callable[..., object]):
+                 catalog: Callable[[], object], *, visibility: Callable[..., object],
+                 catalog_for_records: Callable[[object], object] | None = None):
         if not isinstance(registry, ClusterPublicationRegistry):
             raise TypeError("registry must be a ClusterPublicationRegistry")
         if not all(callable(value) for value in (corpus, catalog, visibility)):
             raise TypeError("current providers and visibility are required")
+        if catalog_for_records is not None and not callable(catalog_for_records):
+            raise TypeError("representative catalog provider must be callable")
         self.registry, self.corpus_provider, self.catalog_provider = registry, corpus, catalog
+        self.catalog_for_records = catalog_for_records
         self.visibility = visibility
 
     def _current_digest(self) -> str:
@@ -77,14 +81,18 @@ class CuratorClusterService:
         explorer = ClusterExploration(self.registry, self.corpus_provider, self.catalog_provider,
                                       visibility=self.visibility, ratings=lambda: {}, enabled=True)
         try:
-            envelope, catalog = self.corpus_provider(), self.catalog_provider()
-            if not isinstance(envelope, Mapping) or not isinstance(catalog, Mapping):
+            envelope = self.corpus_provider()
+            if not isinstance(envelope, Mapping):
                 raise CuratorPreviewError("current cluster data is unavailable")
             representatives = {item.get("semanticId") for cluster in manifest["clusters"]
                                for item in cluster.get("representatives", []) if isinstance(item, Mapping)}
             records = [record for record in envelope.get("records", [])
                        if isinstance(record, Mapping) and isinstance(record.get("identity"), Mapping)
                        and record["identity"].get("semanticId") in representatives]
+            catalog = (self.catalog_for_records(records) if self.catalog_for_records is not None
+                       else self.catalog_provider())
+            if not isinstance(catalog, Mapping):
+                raise CuratorPreviewError("current cluster data is unavailable")
             snapshot = build_cluster_snapshot(records, dict(catalog), embedding_space=envelope.get("embeddingSpace"),
                                               processing_fingerprint=envelope.get("processingFingerprint"), visibility=self.visibility)
         except ExplorationStorageUnavailable as error:
