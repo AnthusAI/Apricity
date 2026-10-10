@@ -3,7 +3,7 @@
   "title": "Strengthen Big Beat score skill against repetitive arrangements",
   "description": "Revise the Big Beat score-writing skill so it reliably produces varied drum-kit architectures, section-specific patterns, and distinct hook/form choices instead of repeating the same chopped-sample template.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -22,12 +22,19 @@
         "model": "gemini-3.8-flash",
         "name": "Antigravity"
       }
+    },
+    {
+      "id": "b16a62ea-0433-40ff-a1c9-56efdd41d190",
+      "author": "home",
+      "text": "Strengthened write-big-beat-score with a 16-bar form architecture table, section-specific acoustic drum variations, mandatory phrase turnarounds, filter breakdown edits, and low-end basslock discipline.",
+      "created_at": "2026-10-10T17:52:40.259375Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-28T02:46:44.698943Z",
-  "updated_at": "2026-10-10T17:46:13.872813Z",
-  "closed_at": null,
-  "right_now_summary": "The Big Beat skill is being revised to create more varied rhythms, hooks, bass lines, and song forms.",
-  "right_now_updated_at": "2026-10-10T17:46:15.522850Z",
+  "updated_at": "2026-10-10T17:52:42.616121Z",
+  "closed_at": "2026-10-10T17:52:42.616081Z",
+  "right_now_summary": "The Big Beat score skill is being refined with varied forms, drum patterns, hooks, and bass movement.",
+  "right_now_updated_at": "2026-10-10T17:52:43.585486Z",
   "custom": {}
 }
