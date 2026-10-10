@@ -11,6 +11,8 @@ import { PlayButton, type PlayState } from "./play-button";
 
 type CurrentCard = ClusterCard & { path: string; title: string; route: Route; parent: Route };
 const RUN = /^[0-9a-f]{64}$/;
+const INITIAL_CLUSTER_COUNT = 24;
+const CLUSTER_PAGE_SIZE = 24;
 const seconds = (value: number) => `${value.toFixed(value < 10 ? 2 : 1).replace(/\.0+$/, "")} s`;
 
 /** This view is only instantiated by main.ts after the trusted local flag is checked. */
@@ -92,7 +94,7 @@ export class SoundClusterReviewView {
     const status = el("p", { className: "cluster-review-hint", ariaLive: "polite" });
     const sections = el("div", { className: "cluster-review-list" });
     const reviewed = new Map<string, HTMLInputElement>();
-    for (const cluster of present) {
+    const renderCluster = (cluster: typeof present[number]) => {
       const label = el("input", { type: "text", value: cluster.curatedLabel ?? cluster.suggestedLabel ?? "", maxLength: 120, ariaLabel: `Label for ${cluster.clusterId}` }) as HTMLInputElement;
       const save = el("button", { type: "button", className: "btn", textContent: "Save label" });
       save.addEventListener("click", async () => {
@@ -111,12 +113,23 @@ export class SoundClusterReviewView {
         section.append(el("div", { className: "cluster-review-passage" }, checked, this.card(card)));
       }
       sections.append(section);
-    }
+    };
+    let shown = 0;
+    const more = el("button", { type: "button", className: "btn", textContent: "Show more clusters" });
+    const loadMore = () => {
+      const until = Math.min(present.length, shown + (shown ? CLUSTER_PAGE_SIZE : INITIAL_CLUSTER_COUNT));
+      for (; shown < until; shown++) renderCluster(present[shown]);
+      if (shown >= present.length) more.remove();
+      else more.textContent = `Show ${Math.min(CLUSTER_PAGE_SIZE, present.length - shown)} more clusters (${shown} of ${present.length} shown)`;
+    };
+    more.addEventListener("click", loadMore);
+    loadMore();
     const notes = el("textarea", { maxLength: 2000, placeholder: "What you listened for, and why this grouping is acceptable.", ariaLabel: "Listening review notes" }) as HTMLTextAreaElement;
     const affirm = el("input", { type: "checkbox" }) as HTMLInputElement;
     const reviewButton = el("button", { type: "button", className: "btn", textContent: "Approve listening review" });
-    const required = [...reviewed.keys()];
+    const required = present.flatMap((cluster) => cluster.representatives.map((card) => card.semanticId));
     reviewButton.addEventListener("click", async () => {
+      if (shown < present.length) { status.textContent = "Show every cluster and listen to every currently playable representative before approving."; return; }
       if (!affirm.checked || !notes.value.trim() || required.some((id) => !reviewed.get(id)?.checked)) { status.textContent = "Confirm that you listened to every listed representative and add review notes before approving."; return; }
       reviewButton.disabled = true;
       try { await curatorRequest({ op: "review", runId: preview.runId, reviewedSemanticIds: required, notes: notes.value.trim(), expectedRunRevision: preview.runRevision }); go({ page: "sounds", soundReview: true, run: preview.runId }); }
@@ -131,7 +144,7 @@ export class SoundClusterReviewView {
       catch (error) { status.textContent = (error as Error).message; publish.disabled = false; }
     });
     const publishAction = el("section", { className: "cluster-review-action" }, el("h2", { textContent: "Publish" }), preview.review?.status === "approved" ? el("p", { textContent: "This revision has an approved listening review. Publication is still a separate explicit action." }) : el("p", { textContent: "Publication stays disabled until this exact revision has an approved listening review." }), publish);
-    this.root.replaceChildren(top, status, sections, reviewForm, publishAction);
+    this.root.replaceChildren(top, status, sections, more, reviewForm, publishAction);
   }
 
   private card(card: CurrentCard) {
