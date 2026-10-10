@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-8adcb5f7-e3e5-4038-8b3e-41603b6ae162",
+  "title": "Publish reviewed local sound-cluster run",
+  "description": "Purpose: publish the curator-reviewed local cluster run after direct user approval and verify the public exploration routes.\n\nFeature: explicit local publication\n\nScenario: Approved draft publication\n  Given the curator has reviewed draft a66b94482498f1db3d411e6822c048caa6a98662bb0c51117b97749f9faffca1 and directly authorized publication\n  When the local curator publishes that exact current draft\n  Then the published pointer changes atomically only after success\n  And the public leaderboard and map show only the published run\n  And failed publication preserves the prior published run\n\nExclusions: no cloud deployment or automatic publication of later drafts.",
+  "type": "task",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-10T19:46:37.476063Z",
+  "updated_at": "2026-10-10T19:46:42.731074Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "Semantic-Audio-Supervisor"
+  },
+  "right_now_summary": "The reviewed local sound-cluster draft awaits direct publication and checks of its public routes.",
+  "right_now_updated_at": "2026-10-10T19:46:44.216271Z",
+  "custom": {}
+}

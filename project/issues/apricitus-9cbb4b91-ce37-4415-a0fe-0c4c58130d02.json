@@ -116,7 +116,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Semantic audio work awaits CLAP parity, cloud retrieval, mobile checks, relevance testing, and cluster review.",
-  "right_now_updated_at": "2026-10-10T19:36:59.713466Z",
+  "right_now_summary": "CLAP parity, cloud retrieval, mobile checks, and cluster review still need verification before release.",
+  "right_now_updated_at": "2026-10-10T19:46:47.553482Z",
   "custom": {}
 }
