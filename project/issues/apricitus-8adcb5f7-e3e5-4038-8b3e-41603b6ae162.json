@@ -3,23 +3,36 @@
   "title": "Publish reviewed local sound-cluster run",
   "description": "Purpose: publish the curator-reviewed local cluster run after direct user approval and verify the public exploration routes.\n\nFeature: explicit local publication\n\nScenario: Approved draft publication\n  Given the curator has reviewed draft a66b94482498f1db3d411e6822c048caa6a98662bb0c51117b97749f9faffca1 and directly authorized publication\n  When the local curator publishes that exact current draft\n  Then the published pointer changes atomically only after success\n  And the public leaderboard and map show only the published run\n  And failed publication preserves the prior published run\n\nExclusions: no cloud deployment or automatic publication of later drafts.",
   "type": "task",
-  "status": "in_progress",
+  "status": "open",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "5939fd2d-aa7d-46d1-917d-b7c3b6f5903a",
+      "author": "home",
+      "text": "Publication was intentionally not attempted. Inspection of the local curator guard confirms that publish requires an approved review whose recorded semantic IDs cover every representative in the immutable draft. The curator provided positive qualitative evidence, but did not claim that exhaustive coverage; the supervisor will not fabricate it. The draft remains private and this task stays open for a completed human review.",
+      "created_at": "2026-10-10T19:47:18.387196Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    }
+  ],
   "created_at": "2026-10-10T19:46:37.476063Z",
-  "updated_at": "2026-10-10T19:46:42.731074Z",
+  "updated_at": "2026-10-10T19:47:18.387240Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
     "name": "Semantic-Audio-Supervisor"
   },
-  "right_now_summary": "The reviewed local sound-cluster draft awaits direct publication and checks of its public routes.",
-  "right_now_updated_at": "2026-10-10T19:46:44.216271Z",
+  "right_now_summary": "The draft remains private because the curator has not confirmed review coverage for every representative.",
+  "right_now_updated_at": "2026-10-10T19:47:19.875432Z",
   "custom": {}
 }

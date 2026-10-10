@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Cluster routes and playback work, but drafts still await curator approval and publication.",
-  "right_now_updated_at": "2026-10-10T19:46:45.677572Z",
+  "right_now_summary": "Cluster maps, playback, and curator controls are built, but drafts still await review and publication.",
+  "right_now_updated_at": "2026-10-10T19:47:21.465345Z",
   "custom": {}
 }
