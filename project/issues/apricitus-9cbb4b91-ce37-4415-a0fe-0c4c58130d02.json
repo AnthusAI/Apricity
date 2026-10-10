@@ -106,17 +106,29 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "f29fa20a-9768-4f12-9246-ba12b51aae31",
+      "author": "home",
+      "text": "Weekly wind-down: local semantic search, related audio, draft cluster review, and curator controls are available in the LAN preview. The reviewed draft remains unpublished because exhaustive representative coverage has not been recorded. Live DynamoDB/ANN validation is pending AWS reauthentication; cold browser/mobile gates remain open. No release or cloud deployment was performed.",
+      "created_at": "2026-10-10T20:33:53.414788Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
     }
   ],
   "created_at": "2026-09-30T18:38:52.978632Z",
-  "updated_at": "2026-10-05T15:53:56.144722Z",
+  "updated_at": "2026-10-10T20:33:53.414823Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Implementation is paused while CLAP parity, cloud retrieval, mobile checks, and cluster review await verification.",
-  "right_now_updated_at": "2026-10-10T19:48:08.558074Z",
+  "right_now_summary": "Core features work locally, but parity, cloud, mobile, listening, and publication checks still need proof.",
+  "right_now_updated_at": "2026-10-10T20:33:54.951250Z",
   "custom": {}
 }

@@ -19,7 +19,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Browser search and playback work, but download, caching, mobile performance, and relevance still need verification.",
-  "right_now_updated_at": "2026-10-10T19:36:57.953510Z",
+  "right_now_summary": "Browser search and playback work, but cold-download, mobile performance, and failure recovery still need proof.",
+  "right_now_updated_at": "2026-10-10T20:33:51.810106Z",
   "custom": {}
 }
