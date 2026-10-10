@@ -435,6 +435,73 @@ enum JobState {
   failed
 }
 
+type Mutation {
+  requestVoiceLine(name: String!, text: String!, voice: String, speed: Float, seed: Int): Job
+  createRecording(input: CreateRecordingInput!, condition: ModelRecordingConditionInput): Recording
+  updateRecording(input: UpdateRecordingInput!, condition: ModelRecordingConditionInput): Recording
+  deleteRecording(input: DeleteRecordingInput!, condition: ModelRecordingConditionInput): Recording
+  createSample(input: CreateSampleInput!, condition: ModelSampleConditionInput): Sample
+  updateSample(input: UpdateSampleInput!, condition: ModelSampleConditionInput): Sample
+  deleteSample(input: DeleteSampleInput!, condition: ModelSampleConditionInput): Sample
+  createClip(input: CreateClipInput!, condition: ModelClipConditionInput): Clip
+  updateClip(input: UpdateClipInput!, condition: ModelClipConditionInput): Clip
+  deleteClip(input: DeleteClipInput!, condition: ModelClipConditionInput): Clip
+  createMarker(input: CreateMarkerInput!, condition: ModelMarkerConditionInput): Marker
+  updateMarker(input: UpdateMarkerInput!, condition: ModelMarkerConditionInput): Marker
+  deleteMarker(input: DeleteMarkerInput!, condition: ModelMarkerConditionInput): Marker
+  createCandidate(input: CreateCandidateInput!, condition: ModelCandidateConditionInput): Candidate
+  updateCandidate(input: UpdateCandidateInput!, condition: ModelCandidateConditionInput): Candidate
+  deleteCandidate(input: DeleteCandidateInput!, condition: ModelCandidateConditionInput): Candidate
+  createVerdict(input: CreateVerdictInput!, condition: ModelVerdictConditionInput): Verdict
+  updateVerdict(input: UpdateVerdictInput!, condition: ModelVerdictConditionInput): Verdict
+  deleteVerdict(input: DeleteVerdictInput!, condition: ModelVerdictConditionInput): Verdict
+  createCrate(input: CreateCrateInput!, condition: ModelCrateConditionInput): Crate
+  updateCrate(input: UpdateCrateInput!, condition: ModelCrateConditionInput): Crate
+  deleteCrate(input: DeleteCrateInput!, condition: ModelCrateConditionInput): Crate
+  createCrateItem(input: CreateCrateItemInput!, condition: ModelCrateItemConditionInput): CrateItem
+  updateCrateItem(input: UpdateCrateItemInput!, condition: ModelCrateItemConditionInput): CrateItem
+  deleteCrateItem(input: DeleteCrateItemInput!, condition: ModelCrateItemConditionInput): CrateItem
+  createScore(input: CreateScoreInput!, condition: ModelScoreConditionInput): Score
+  updateScore(input: UpdateScoreInput!, condition: ModelScoreConditionInput): Score
+  deleteScore(input: DeleteScoreInput!, condition: ModelScoreConditionInput): Score
+  createScoreRef(input: CreateScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
+  updateScoreRef(input: UpdateScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
+  deleteScoreRef(input: DeleteScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
+  createRating(input: CreateRatingInput!, condition: ModelRatingConditionInput): Rating
+  updateRating(input: UpdateRatingInput!, condition: ModelRatingConditionInput): Rating
+  deleteRating(input: DeleteRatingInput!, condition: ModelRatingConditionInput): Rating
+  createComment(input: CreateCommentInput!, condition: ModelCommentConditionInput): Comment
+  updateComment(input: UpdateCommentInput!, condition: ModelCommentConditionInput): Comment
+  deleteComment(input: DeleteCommentInput!, condition: ModelCommentConditionInput): Comment
+  createActivity(input: CreateActivityInput!, condition: ModelActivityConditionInput): Activity
+  updateActivity(input: UpdateActivityInput!, condition: ModelActivityConditionInput): Activity
+  deleteActivity(input: DeleteActivityInput!, condition: ModelActivityConditionInput): Activity
+  createActivityEvent(input: CreateActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
+  updateActivityEvent(input: UpdateActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
+  deleteActivityEvent(input: DeleteActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
+  createHandle(input: CreateHandleInput!, condition: ModelHandleConditionInput): Handle
+  updateHandle(input: UpdateHandleInput!, condition: ModelHandleConditionInput): Handle
+  deleteHandle(input: DeleteHandleInput!, condition: ModelHandleConditionInput): Handle
+  createTally(input: CreateTallyInput!, condition: ModelTallyConditionInput): Tally
+  updateTally(input: UpdateTallyInput!, condition: ModelTallyConditionInput): Tally
+  deleteTally(input: DeleteTallyInput!, condition: ModelTallyConditionInput): Tally
+  createRanked(input: CreateRankedInput!, condition: ModelRankedConditionInput): Ranked
+  updateRanked(input: UpdateRankedInput!, condition: ModelRankedConditionInput): Ranked
+  deleteRanked(input: DeleteRankedInput!, condition: ModelRankedConditionInput): Ranked
+  createJob(input: CreateJobInput!, condition: ModelJobConditionInput): Job
+  updateJob(input: UpdateJobInput!, condition: ModelJobConditionInput): Job
+  deleteJob(input: DeleteJobInput!, condition: ModelJobConditionInput): Job
+  createLab(input: CreateLabInput!, condition: ModelLabConditionInput): Lab
+  updateLab(input: UpdateLabInput!, condition: ModelLabConditionInput): Lab
+  deleteLab(input: DeleteLabInput!, condition: ModelLabConditionInput): Lab
+  createListeningCycle(input: CreateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
+  updateListeningCycle(input: UpdateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
+  deleteListeningCycle(input: DeleteListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
+  createCycleVerdict(input: CreateCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
+  updateCycleVerdict(input: UpdateCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
+  deleteCycleVerdict(input: DeleteCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
+}
+
 input AmplifyAIConversationTurnErrorInput {
   errorType: String!
   message: String!
@@ -767,72 +834,6 @@ input UpdateRecordingInput {
 
 input DeleteRecordingInput {
   id: ID!
-}
-
-type Mutation {
-  createRecording(input: CreateRecordingInput!, condition: ModelRecordingConditionInput): Recording
-  updateRecording(input: UpdateRecordingInput!, condition: ModelRecordingConditionInput): Recording
-  deleteRecording(input: DeleteRecordingInput!, condition: ModelRecordingConditionInput): Recording
-  createSample(input: CreateSampleInput!, condition: ModelSampleConditionInput): Sample
-  updateSample(input: UpdateSampleInput!, condition: ModelSampleConditionInput): Sample
-  deleteSample(input: DeleteSampleInput!, condition: ModelSampleConditionInput): Sample
-  createClip(input: CreateClipInput!, condition: ModelClipConditionInput): Clip
-  updateClip(input: UpdateClipInput!, condition: ModelClipConditionInput): Clip
-  deleteClip(input: DeleteClipInput!, condition: ModelClipConditionInput): Clip
-  createMarker(input: CreateMarkerInput!, condition: ModelMarkerConditionInput): Marker
-  updateMarker(input: UpdateMarkerInput!, condition: ModelMarkerConditionInput): Marker
-  deleteMarker(input: DeleteMarkerInput!, condition: ModelMarkerConditionInput): Marker
-  createCandidate(input: CreateCandidateInput!, condition: ModelCandidateConditionInput): Candidate
-  updateCandidate(input: UpdateCandidateInput!, condition: ModelCandidateConditionInput): Candidate
-  deleteCandidate(input: DeleteCandidateInput!, condition: ModelCandidateConditionInput): Candidate
-  createVerdict(input: CreateVerdictInput!, condition: ModelVerdictConditionInput): Verdict
-  updateVerdict(input: UpdateVerdictInput!, condition: ModelVerdictConditionInput): Verdict
-  deleteVerdict(input: DeleteVerdictInput!, condition: ModelVerdictConditionInput): Verdict
-  createCrate(input: CreateCrateInput!, condition: ModelCrateConditionInput): Crate
-  updateCrate(input: UpdateCrateInput!, condition: ModelCrateConditionInput): Crate
-  deleteCrate(input: DeleteCrateInput!, condition: ModelCrateConditionInput): Crate
-  createCrateItem(input: CreateCrateItemInput!, condition: ModelCrateItemConditionInput): CrateItem
-  updateCrateItem(input: UpdateCrateItemInput!, condition: ModelCrateItemConditionInput): CrateItem
-  deleteCrateItem(input: DeleteCrateItemInput!, condition: ModelCrateItemConditionInput): CrateItem
-  createScore(input: CreateScoreInput!, condition: ModelScoreConditionInput): Score
-  updateScore(input: UpdateScoreInput!, condition: ModelScoreConditionInput): Score
-  deleteScore(input: DeleteScoreInput!, condition: ModelScoreConditionInput): Score
-  createScoreRef(input: CreateScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
-  updateScoreRef(input: UpdateScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
-  deleteScoreRef(input: DeleteScoreRefInput!, condition: ModelScoreRefConditionInput): ScoreRef
-  createRating(input: CreateRatingInput!, condition: ModelRatingConditionInput): Rating
-  updateRating(input: UpdateRatingInput!, condition: ModelRatingConditionInput): Rating
-  deleteRating(input: DeleteRatingInput!, condition: ModelRatingConditionInput): Rating
-  createComment(input: CreateCommentInput!, condition: ModelCommentConditionInput): Comment
-  updateComment(input: UpdateCommentInput!, condition: ModelCommentConditionInput): Comment
-  deleteComment(input: DeleteCommentInput!, condition: ModelCommentConditionInput): Comment
-  createActivity(input: CreateActivityInput!, condition: ModelActivityConditionInput): Activity
-  updateActivity(input: UpdateActivityInput!, condition: ModelActivityConditionInput): Activity
-  deleteActivity(input: DeleteActivityInput!, condition: ModelActivityConditionInput): Activity
-  createActivityEvent(input: CreateActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
-  updateActivityEvent(input: UpdateActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
-  deleteActivityEvent(input: DeleteActivityEventInput!, condition: ModelActivityEventConditionInput): ActivityEvent
-  createHandle(input: CreateHandleInput!, condition: ModelHandleConditionInput): Handle
-  updateHandle(input: UpdateHandleInput!, condition: ModelHandleConditionInput): Handle
-  deleteHandle(input: DeleteHandleInput!, condition: ModelHandleConditionInput): Handle
-  createTally(input: CreateTallyInput!, condition: ModelTallyConditionInput): Tally
-  updateTally(input: UpdateTallyInput!, condition: ModelTallyConditionInput): Tally
-  deleteTally(input: DeleteTallyInput!, condition: ModelTallyConditionInput): Tally
-  createRanked(input: CreateRankedInput!, condition: ModelRankedConditionInput): Ranked
-  updateRanked(input: UpdateRankedInput!, condition: ModelRankedConditionInput): Ranked
-  deleteRanked(input: DeleteRankedInput!, condition: ModelRankedConditionInput): Ranked
-  createJob(input: CreateJobInput!, condition: ModelJobConditionInput): Job
-  updateJob(input: UpdateJobInput!, condition: ModelJobConditionInput): Job
-  deleteJob(input: DeleteJobInput!, condition: ModelJobConditionInput): Job
-  createLab(input: CreateLabInput!, condition: ModelLabConditionInput): Lab
-  updateLab(input: UpdateLabInput!, condition: ModelLabConditionInput): Lab
-  deleteLab(input: DeleteLabInput!, condition: ModelLabConditionInput): Lab
-  createListeningCycle(input: CreateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
-  updateListeningCycle(input: UpdateListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
-  deleteListeningCycle(input: DeleteListeningCycleInput!, condition: ModelListeningCycleConditionInput): ListeningCycle
-  createCycleVerdict(input: CreateCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
-  updateCycleVerdict(input: UpdateCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
-  deleteCycleVerdict(input: DeleteCycleVerdictInput!, condition: ModelCycleVerdictConditionInput): CycleVerdict
 }
 
 input ModelSubscriptionRecordingFilterInput {

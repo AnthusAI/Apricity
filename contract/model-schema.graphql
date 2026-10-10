@@ -459,3 +459,7 @@ enum JobState {
   done
   failed
 }
+
+type Mutation {
+  requestVoiceLine(name: String!, text: String!, voice: String, speed: Float, seed: Int): Job @function(name: "FnRequestVoiceLine") @auth(rules: [{allow: groups, groups: ["curators"]}])
+}

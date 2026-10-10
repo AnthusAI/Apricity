@@ -1,4 +1,5 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
+import { voiceRequest } from "../functions/voice-request/resource";
 
 // The site is public: anyone reads, guests included (the identity pool's unauthenticated role). Signing in is for
 // rating and making things.
@@ -438,6 +439,21 @@ const schema = a.schema({
     })
     .secondaryIndexes((i) => [i("state").queryField("jobsByState")])
     .authorization(catalog),
+
+  // Ask for a spoken line: rendered on a GPU by Auritus (the SpeechRenderer in backend.ts), it
+  // arrives as a generated Sample named voice/<name>.wav. Returns the queued voice Job to watch.
+  requestVoiceLine: a
+    .mutation()
+    .arguments({
+      name: a.string().required(),
+      text: a.string().required(),
+      voice: a.string(),
+      speed: a.float(),
+      seed: a.integer(),
+    })
+    .returns(a.ref("Job"))
+    .authorization((allow) => [allow.group("curators")])
+    .handler(a.handler.function(voiceRequest)),
 
   // A lab: one person's sit-down with a scene (Kanbus apricitus-e59a0b) — a title and brief, the score being worked
   // on, and every listening cycle published into it. Owner writes; signed-in people read (like ListeningCycle);

@@ -142,8 +142,57 @@ fn app_with_store_and_cluster_config(
         .fallback(static_file)
         .with_state(state)
         .merge(crate::cluster_bridge::router(clusters))
-        .merge(graphql)
+        .merge(graphql.layer(middleware::from_fn(cloud_only_operations)))
         .layer(middleware::map_response(isolation_headers)))
+}
+
+/// Custom operations only the cloud app implements: they call AWS services a local library doesn't
+/// have (`requestVoiceLine` renders on the cloud GPUs). The local engine has no resolver for them,
+/// so answer plainly instead of with an internal error.
+const CLOUD_ONLY_OPERATIONS: &[&str] = &["requestVoiceLine"];
+
+/// Whether `query` calls `op`: the name as a whole word, not inside a string literal's text.
+fn calls_operation(query: &str, op: &str) -> bool {
+    let is_word = |c: char| c.is_ascii_alphanumeric() || c == '_';
+    let mut in_string = false;
+    let chars: Vec<char> = query.chars().collect();
+    let name: Vec<char> = op.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        match chars[i] {
+            '\\' if in_string => i += 1,
+            '"' => in_string = !in_string,
+            _ if !in_string
+                && chars[i..].starts_with(&name)
+                && (i == 0 || !is_word(chars[i - 1]))
+                && chars.get(i + name.len()).is_none_or(|c| !is_word(*c)) =>
+            {
+                return true;
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    false
+}
+
+async fn cloud_only_operations(req: axum::extract::Request, next: middleware::Next) -> Response {
+    let (parts, body) = req.into_parts();
+    let Ok(bytes) = axum::body::to_bytes(body, 64 << 20).await else {
+        return (StatusCode::PAYLOAD_TOO_LARGE, "request too large").into_response();
+    };
+    let query = serde_json::from_slice::<Value>(&bytes)
+        .ok()
+        .and_then(|v| v["query"].as_str().map(str::to_owned))
+        .unwrap_or_default();
+    if let Some(op) = CLOUD_ONLY_OPERATIONS.iter().find(|op| calls_operation(&query, op)) {
+        return axum::Json(json!({ "data": null, "errors": [{
+            "errorType": "UnsupportedOperation",
+            "message": format!("{op} runs only in the cloud app (apricity.anth.us), which renders voice lines on AWS GPUs; a local library can't. Request the line there, then `apricity sync pull`."),
+        }]}))
+        .into_response();
+    }
+    next.run(axum::extract::Request::from_parts(parts, Body::from(bytes))).await
 }
 
 /// The contract as virtuus-appsync can route it. A hasMany relationship with no child index in
@@ -591,6 +640,33 @@ mod tests {
             req("GET", "/files/audio/c1/a.wav", &[("range", r)], b""),
         )
         .await
+    }
+
+    #[tokio::test]
+    async fn cloud_only_operations_say_so_instead_of_failing() {
+        let f = fixture(false);
+        let (status, _, body) = send(
+            &f.app,
+            gql(
+                Some(&f.key),
+                "mutation { requestVoiceLine(name: \"intro\", text: \"Hi\") { id } }",
+            ),
+        )
+        .await;
+        let v: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(status, StatusCode::OK, "{v}");
+        assert_eq!(v["errors"][0]["errorType"], "UnsupportedOperation", "{v}");
+        let message = v["errors"][0]["message"].as_str().unwrap();
+        assert!(message.contains("requestVoiceLine") && message.contains("cloud"), "{message}");
+        // Ordinary operations still reach the library, even ones that mention the name in text.
+        let (status, _, body) = send(
+            &f.app,
+            gql(Some(&f.key), "{ listJobs(filter: {kind: {eq: \"requestVoiceLineX\"}}) { items { id } } }"),
+        )
+        .await;
+        let v: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(status, StatusCode::OK, "{v}");
+        assert!(v.get("errors").is_none(), "{v}");
     }
 
     #[tokio::test]

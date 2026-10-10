@@ -39,7 +39,8 @@ async function main() {
 async function generate(outDir: string) {
   mkdirSync(outDir, { recursive: true });
 
-  const directiveSdl = schema.transform().schema;
+  const transformed = schema.transform() as { schema: string; lambdaFunctions?: Record<string, unknown> };
+  const directiveSdl = transformed.schema;
   const generateModels = (await import("@aws-amplify/graphql-generator")).generateModels;
   const introspectionOutput = await generateModels({ schema: directiveSdl, target: "introspection" });
 
@@ -65,6 +66,7 @@ async function generate(outDir: string) {
     const cdk = await import("aws-cdk-lib");
     const cognito = await import("aws-cdk-lib/aws-cognito");
     const iam = await import("aws-cdk-lib/aws-iam");
+    const lambda = await import("aws-cdk-lib/aws-lambda");
     const { AmplifyGraphqlApi, AmplifyGraphqlDefinition } = await import("@aws-amplify/graphql-api-construct");
 
     const tempOutDir = fs.mkdtempSync(path.join(os.tmpdir(), "apricity-contract-"));
@@ -74,8 +76,20 @@ async function generate(outDir: string) {
       const app = new cdk.App({ outdir: tempOutDir } as any);
       const stack = new cdk.Stack(app, "Contract", { env: { account: "000000000000", region: "us-east-1" } });
       const pool = new cognito.UserPool(stack, "Pool");
+      // Custom operations name their Lambda handlers; only the SDL matters here, so each gets a stub.
+      const functionNameMap = Object.fromEntries(
+        Object.keys(transformed.lambdaFunctions ?? {}).map((name) => [
+          name,
+          new lambda.Function(stack, `Stub${name}`, {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            handler: "index.handler",
+            code: lambda.Code.fromInline("exports.handler = async () => null;"),
+          }),
+        ]),
+      );
       new AmplifyGraphqlApi(stack, "Api", {
         definition: AmplifyGraphqlDefinition.fromString(directiveSdl),
+        functionNameMap,
         authorizationModes: {
           defaultAuthorizationMode: "AMAZON_COGNITO_USER_POOLS",
           userPoolConfig: { userPool: pool },

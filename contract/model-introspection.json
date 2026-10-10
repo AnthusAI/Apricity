@@ -4001,5 +4001,47 @@
         }
       }
     }
+  },
+  "mutations": {
+    "requestVoiceLine": {
+      "name": "requestVoiceLine",
+      "isArray": false,
+      "type": {
+        "model": "Job"
+      },
+      "isRequired": false,
+      "arguments": {
+        "name": {
+          "name": "name",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true
+        },
+        "text": {
+          "name": "text",
+          "isArray": false,
+          "type": "String",
+          "isRequired": true
+        },
+        "voice": {
+          "name": "voice",
+          "isArray": false,
+          "type": "String",
+          "isRequired": false
+        },
+        "speed": {
+          "name": "speed",
+          "isArray": false,
+          "type": "Float",
+          "isRequired": false
+        },
+        "seed": {
+          "name": "seed",
+          "isArray": false,
+          "type": "Int",
+          "isRequired": false
+        }
+      }
+    }
   }
 }
