@@ -116,7 +116,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": "Semantic audio work awaits browser parity, cloud retrieval, mobile checks, and cluster review.",
-  "right_now_updated_at": "2026-10-10T19:47:24.436145Z",
+  "right_now_summary": "Implementation is paused while CLAP parity, cloud retrieval, mobile checks, and cluster review await verification.",
+  "right_now_updated_at": "2026-10-10T19:48:08.558074Z",
   "custom": {}
 }

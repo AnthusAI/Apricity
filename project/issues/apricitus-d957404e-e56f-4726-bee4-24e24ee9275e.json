@@ -10,16 +10,29 @@
   "parent": "apricitus-64c1e9fb-34b4-44ad-939a-882afd8470c7",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2eb8e775-9148-40a4-9bdb-5dd50be69f42",
+      "author": "home",
+      "text": "Supervisor verification: focused DynamoDB resource/runtime/search tests passed (22/22), covering native SearchVectors, bounded retrieval, canonical-current guards, retryable failure mapping, and scoped IAM synthesis. Cloud acceptance cannot run on this host because the read-only AWS identity check returned: session expired; reauthenticate using aws login. No deployment, resource creation, or cloud mutation was attempted. The CDK synthesis emits known schema-validation warnings for VectorIndexes / unused AttributeDefinitions; tests treat the CloudFormation extension as the intended native-vector configuration, but live deployment remains unverified.",
+      "created_at": "2026-10-10T19:48:00.381912Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-5",
+        "name": "Semantic-Audio-Supervisor"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:46:25.813285Z",
-  "updated_at": "2026-09-30T18:46:25.813317Z",
+  "updated_at": "2026-10-10T19:48:00.381943Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "Local DynamoDB vector tests pass, but cloud acceptance awaits AWS reauthentication; no deployment was attempted.",
+  "right_now_updated_at": "2026-10-10T19:48:02.242339Z",
   "custom": {}
 }
