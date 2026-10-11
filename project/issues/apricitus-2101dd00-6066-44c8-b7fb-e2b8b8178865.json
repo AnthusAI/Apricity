@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "The cloud listening cycle is deployed, and production tests confirm blind candidate ratings work end to end.",
-  "right_now_updated_at": "2026-10-11T15:16:50.822984Z",
+  "right_now_summary": "Cycle publishing and listening are verified in production; only final documentation and test notes remain.",
+  "right_now_updated_at": "2026-10-11T15:17:00.603159Z",
   "custom": {}
 }
