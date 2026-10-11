@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "A mushroom-jazz cycle is ready for listener feedback after cleaner candidates replaced the rejected render.",
-  "right_now_updated_at": "2026-10-11T15:38:57.774881Z",
+  "right_now_summary": "The listening cycle is deployed and verified in production, with blind candidates ready for ratings and verdicts.",
+  "right_now_updated_at": "2026-10-11T15:39:30.743055Z",
   "custom": {}
 }
