@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "Production listening cycles are fully deployed, and publishing, audio uploads, attachment, and readback all pass.",
-  "right_now_updated_at": "2026-10-11T16:34:05.782770Z",
+  "right_now_summary": "The listening cycle is live in production, with blind audio choices and lab attachment verified.",
+  "right_now_updated_at": "2026-10-11T16:35:45.942901Z",
   "custom": {}
 }
