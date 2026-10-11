@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "Listening cycles are deployed and verified in production, with the web page and local publish/pull flow working.",
-  "right_now_updated_at": "2026-10-11T15:48:23.889444Z",
+  "right_now_summary": "Production listening cycles are fully deployed, and publishing, audio uploads, attachment, and readback all pass.",
+  "right_now_updated_at": "2026-10-11T16:34:05.782770Z",
   "custom": {}
 }
