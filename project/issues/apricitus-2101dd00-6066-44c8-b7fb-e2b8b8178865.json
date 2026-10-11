@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "Listening cycles are live end to end, with production publishing and blind candidate rating verified.",
-  "right_now_updated_at": "2026-10-11T15:44:57.229739Z",
+  "right_now_summary": "Listening cycles are deployed and verified in production, with the web page and local publish/pull flow working.",
+  "right_now_updated_at": "2026-10-11T15:48:23.889444Z",
   "custom": {}
 }
