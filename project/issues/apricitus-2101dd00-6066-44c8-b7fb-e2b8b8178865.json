@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "Listening cycles work in local and cloud modes, with publishing, blind rating, verdicts, and pullback verified.",
-  "right_now_updated_at": "2026-10-11T15:20:48.302875Z",
+  "right_now_summary": "Production cycle publishing and attachment now work, with the listening page verified locally and in production.",
+  "right_now_updated_at": "2026-10-11T15:32:46.419894Z",
   "custom": {}
 }
