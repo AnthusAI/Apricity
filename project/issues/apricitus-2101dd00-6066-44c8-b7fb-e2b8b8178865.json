@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "The cloud listening cycle flow works, with local publish/pull and the web listening page verified.",
-  "right_now_updated_at": "2026-10-11T15:14:27.440473Z",
+  "right_now_summary": "Listening cycles are live in production, with blind candidate audio, ratings, verdicts, and lab attachment verified.",
+  "right_now_updated_at": "2026-10-11T15:14:39.320401Z",
   "custom": {}
 }
