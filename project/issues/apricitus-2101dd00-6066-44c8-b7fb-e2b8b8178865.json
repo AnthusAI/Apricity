@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "The listening cycle is deployed and verified in production, with blind candidates ready for ratings and verdicts.",
-  "right_now_updated_at": "2026-10-11T15:39:30.743055Z",
+  "right_now_summary": "The listening-cycle workflow is deployed and verified, with blind candidate rating and local result pulling working.",
+  "right_now_updated_at": "2026-10-11T15:40:36.013183Z",
   "custom": {}
 }
