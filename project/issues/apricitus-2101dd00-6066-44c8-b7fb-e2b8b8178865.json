@@ -19,7 +19,7 @@
     "model": "claude-opus-5-5",
     "name": "Claude Code"
   },
-  "right_now_summary": "Production cycles work end to end, and the web listening page is live for rating blind candidates.",
-  "right_now_updated_at": "2026-10-11T14:20:12.709580Z",
+  "right_now_summary": "The cycle system is deployed and verified in production, with cloud listening, ratings, and audio uploads working end",
+  "right_now_updated_at": "2026-10-11T14:30:53.759151Z",
   "custom": {}
 }
