@@ -1,0 +1,28 @@
+{
+  "id": "apricitus-45bcc4d0-8c18-40b7-8570-d78ea59876bf",
+  "title": "Separate marketing and application with approved data migration",
+  "description": "Cross-project dependency: private Apricity-web kanbus-5798f7 and apricityweb-e02316. Source rendered through actual Papyrus/Markus/S3 is complete. Inventory5b6177f: no dedicated account; Legacy21tables/~37,704items +32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning. Marketing apricity.anth.us; app play.apricity.anth.us. Account/bootstrap and data/auth migration approval pending. Preserve source data, Cognito identity relationships, scores and existing app; no execution authorized.",
+  "type": "epic",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-16T20:46:54.289600Z",
+  "updated_at": "2026-10-16T20:46:54.289638Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6.1-sol",
+    "name": "unfinished-work-reconciliation",
+    "settings": {
+      "reasoning_effort": "medium"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

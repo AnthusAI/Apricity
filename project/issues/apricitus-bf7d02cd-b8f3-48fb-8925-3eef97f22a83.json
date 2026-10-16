@@ -1,0 +1,47 @@
+{
+  "id": "apricitus-bf7d02cd-b8f3-48fb-8925-3eef97f22a83",
+  "title": "Review recoverable target account data and identity migration",
+  "description": "As the owner, I want a concrete migration plan before moving the application.\n\nFeature: Review recoverable target account data and identity migration\n  Scenario: Observable acceptance\n    Given the read-only Legacy inventory and no approved dedicated account\n    When a migration plan is reviewed\n    Then target account backup/recovery identity continuity callbacks validation and rollback are explicitly approved while all existing data remains preserved\n\nPlanning only. No new implementation, deployment, paid call or permission is authorized by this record.",
+  "type": "story",
+  "status": "blocked",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": "apricitus-45bcc4d0-8c18-40b7-8570-d78ea59876bf",
+  "labels": [],
+  "dependencies": [],
+  "comments": [
+    {
+      "id": "ff5338a9-88ae-4404-945c-098c07293b3c",
+      "author": "home",
+      "text": "2026-10-16 reconciliation: Status describes remaining acceptance, not implementation authorization.",
+      "created_at": "2026-10-16T20:46:54.569952Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "unfinished-work-reconciliation",
+        "settings": {
+          "reasoning_effort": "medium"
+        }
+      }
+    }
+  ],
+  "created_at": "2026-10-16T20:46:54.377266Z",
+  "updated_at": "2026-10-16T20:46:54.569976Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "codex",
+    "model": "gpt-6.1-sol",
+    "name": "unfinished-work-reconciliation",
+    "settings": {
+      "reasoning_effort": "medium"
+    }
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
+}
