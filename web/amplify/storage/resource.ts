@@ -56,5 +56,6 @@ export const storageAccess = (allow: any) => ({
 export const storage = defineStorage({
   name: "apricityFiles",
   isDefault: true,
+  keepOnDelete: true,
   access: storageAccess,
 });

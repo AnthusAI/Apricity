@@ -1,26 +1,10 @@
 import { defineAuth, secret } from "@aws-amplify/backend";
 import { preSignUp } from "./pre-sign-up/resource";
 import { postConfirmation } from "./post-confirmation/resource";
+import { resolveAuthRedirectUrls } from "./redirect-urls";
 
-// Default OAuth redirect URLs for the Apricity web app
-// Overridable via APRICITY_OAUTH_REDIRECT_URLS env var (comma-separated)
-const DEFAULT_AUTH_REDIRECT_URLS = [
-  "http://localhost:5173/",
-  "http://127.0.0.1:5181/",
-];
-
-function resolveAuthRedirectUrls(): string[] {
-  let raw = "";
-  if (typeof process !== "undefined" && process.env.APRICITY_OAUTH_REDIRECT_URLS) {
-    raw = process.env.APRICITY_OAUTH_REDIRECT_URLS;
-  }
-  const trimmed = raw.trim();
-  if (!trimmed) return DEFAULT_AUTH_REDIRECT_URLS;
-  return trimmed
-    .split(",")
-    .map((url: string) => url.trim())
-    .filter((url: string) => url.length > 0);
-}
+const authRedirectUrlOverride =
+  typeof process !== "undefined" ? process.env.APRICITY_OAUTH_REDIRECT_URLS : undefined;
 
 function resolveCognitoDomainPrefix(): string | undefined {
   if (typeof process !== "undefined" && process.env.APRICITY_COGNITO_DOMAIN_PREFIX) {
@@ -43,8 +27,8 @@ function googleAuthEnabled(): boolean {
 }
 
 const oauthUrls = {
-  callbackUrls: resolveAuthRedirectUrls(),
-  logoutUrls: resolveAuthRedirectUrls(),
+  callbackUrls: resolveAuthRedirectUrls(authRedirectUrlOverride),
+  logoutUrls: resolveAuthRedirectUrls(authRedirectUrlOverride),
   ...(resolveCognitoDomainPrefix() ? { domainPrefix: resolveCognitoDomainPrefix() } : {}),
 };
 

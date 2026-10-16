@@ -1,5 +1,5 @@
 import { defineBackend } from "@aws-amplify/backend";
-import { Stack } from "aws-cdk-lib";
+import { RemovalPolicy, Stack } from "aws-cdk-lib";
 import { EventSourceMapping, StartingPosition } from "aws-cdk-lib/aws-lambda";
 import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { auth } from "./auth/resource";
@@ -247,3 +247,14 @@ for (const model of rankingFed) {
   });
   m.node.addDependency(rankingStreams);
 }
+
+// The library's records, identities and files are the product, so they must survive any stack deletion or replacement
+// (including a move to another account) and stay recoverable to a point in time.
+for (const amplifyModelTable of Object.values(backend.data.resources.cfnResources.amplifyDynamoDbTables)) {
+  amplifyModelTable.pointInTimeRecoveryEnabled = true;
+  amplifyModelTable.deletionProtectionEnabled = true;
+  amplifyModelTable.applyRemovalPolicy(RemovalPolicy.RETAIN);
+}
+backend.auth.resources.cfnResources.cfnUserPool.deletionProtection = "ACTIVE";
+backend.auth.resources.userPool.applyRemovalPolicy(RemovalPolicy.RETAIN);
+backend.storage.resources.cfnResources.cfnBucket.versioningConfiguration = { status: "Enabled" };
