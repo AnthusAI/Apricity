@@ -1,7 +1,7 @@
 {
   "id": "apricitus-45bcc4d0-8c18-40b7-8570-d78ea59876bf",
   "title": "Separate marketing and application with approved data migration",
-  "description": "Cross-project dependency: private Apricity-web kanbus-5798f7 and apricityweb-e02316. Source rendered through actual Papyrus/Markus/S3 is complete. Inventory5b6177f: no dedicated account; Legacy21tables/~37,704items +32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning. Marketing apricity.anth.us; app play.apricity.anth.us. Account/bootstrap and data/auth migration approval pending. Preserve source data, Cognito identity relationships, scores and existing app; no execution authorized.",
+  "description": "Cross-project dependency: private Apricity-web kanbus-5798f7 and apricityweb-e02316. Source rendered through actual Papyrus/Markus/S3 is complete. Inventory5b6177f: no dedicated account; Legacy21tables/~37,704items +32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning. Marketing apricity.anth.us; app play.apricity.anth.us. Account/bootstrap and data/auth migration approval pending. Preserve source data, Cognito identity relationships, scores and existing app; no execution authorized.\n\n## Current next-step plan — 2026-10-17\n\nPriority3: source backups/recovery first, then a reversible data/auth migration and narrowly scoped target account/pipeline decisions, then candidate verification and traffic changes. No dedicated Apricity account exists in prior inventory; current source remains Legacy. Targets: apricity.anth.us marketing/play.apricity.anth.us app.\n\nVerified https://github.com/AnthusAI/Apricity/pull/67 is OPEN/DRAFT at2546b7d446e54195a28578a6fd498f188c274f4f. Rust/Web/Gherkin checks pass; Semantic ground contracts fails. It proposes callback defaults, table PITR/deletion protection/retention, user-pool protection/retention and bucket versioning/retention. These are source proposals, NOT DEPLOYED protections. Main promotion would update Legacy and requires separate explicit approval of the protect-source-data step.\n\nAcceptance order: inventory source; approve and create recoverable backups under exact scope; verify a safe restoration/export and identity ownership mapping; approve target/bootstrap/access scope and reversible migration plan; prove counts/references/scores/auth callbacks/permission continuity on candidate; review rollback/cutover. Do not treat retention flags or passing source tests as backups or migration acceptance. No account creation data copy deletion or protection deployment occurs here.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
   "type": "epic",
   "status": "open",
   "priority": 2,
@@ -10,9 +10,25 @@
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "e347ca42-03fe-4c95-9868-aa1941993520",
+      "author": "home",
+      "text": "2026-10-17 next-step plan recorded in the description. Priority3: source backups/recovery first, then a reversible data/auth migration and narrowly scoped target account/pipeline decisions, then candidate verification and traffic changes. No dedicated Apricity account exists in prior inventory; current source remains Legacy. Targets: apricity.anth.us marketing/play.apricity.anth.us app.\n\nVerified https://github.com/AnthusAI/Apricity/pull/67 is OPEN/DRAFT at2546b7d446e54195a28578a6fd498f188c274f4f. Rust/Web/Gherkin checks pass; Semantic ground contracts fails. It proposes callback defaults, table PITR/deletion protection/retention, user-pool protection/retention and bucket versioning/retention. These are source proposals, NOT DEPLOYED protections. Main promotion would update Legacy and requires separate explicit approval of the protect-source-data step.\n\nAcceptance order: inventory source; approve and create recoverable backups under exact scope; verify a safe restoration/export and identity ownership mapping; approve target/bootstrap/access scope and reversible migration plan; prove counts/references/scores/auth callbacks/permission continuity on candidate; review rollback/cutover. Do not treat retention flags or passing source tests as backups or migration acceptance. No account creation data copy deletion or protection deployment occurs here.",
+      "created_at": "2026-10-17T06:22:48.358577Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "next-step-plan-reconciliation",
+        "settings": {
+          "reasoning_effort": "medium"
+        }
+      }
+    }
+  ],
   "created_at": "2026-10-16T20:46:54.289600Z",
-  "updated_at": "2026-10-16T20:46:54.289638Z",
+  "updated_at": "2026-10-17T06:22:48.358596Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
@@ -24,5 +40,8 @@
   },
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  }
 }

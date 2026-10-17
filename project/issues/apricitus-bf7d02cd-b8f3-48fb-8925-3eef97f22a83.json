@@ -1,7 +1,7 @@
 {
   "id": "apricitus-bf7d02cd-b8f3-48fb-8925-3eef97f22a83",
   "title": "Review recoverable target account data and identity migration",
-  "description": "As the owner, I want a concrete migration plan before moving the application.\n\nFeature: Review recoverable target account data and identity migration\n  Scenario: Observable acceptance\n    Given the read-only Legacy inventory and no approved dedicated account\n    When a migration plan is reviewed\n    Then target account backup/recovery identity continuity callbacks validation and rollback are explicitly approved while all existing data remains preserved\n\nPlanning only. No new implementation, deployment, paid call or permission is authorized by this record.",
+  "description": "As the owner, I want a concrete migration plan before moving the application.\n\nFeature: Review recoverable target account data and identity migration\n  Scenario: Observable acceptance\n    Given the read-only Legacy inventory and no approved dedicated account\n    When a migration plan is reviewed\n    Then target account backup/recovery identity continuity callbacks validation and rollback are explicitly approved while all existing data remains preserved\n\nPlanning only. No new implementation, deployment, paid call or permission is authorized by this record.\n\n## Current next-step plan — 2026-10-17\n\nBackups and reversibility precede migration. Prior inventory5b6177f reports21tables/~37,704items,32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning; no new live inspection is performed in this task. PR67 draft2546b7d proposes protections but remains unmerged/undeployed with a failing semantic-contract check.\n\nFeature: Recoverable migration planning\n  Scenario: Prove recovery before copying application data\n    Given an approved exact source-protection and backup scope\n    When the operator produces source backups and safely verifies restoration/export\n    Then a recoverable baseline and evidence exist before any target migration\n  Scenario: Preserve data and identity continuity\n    Given approved target account and reversible migration plan\n    When a candidate migration is evaluated\n    Then records object references score behavior identity-linked ownership callbacks and denied access are preserved\n    And rollback is concrete and no original source is removed\n\nAwait separate approval for source-protection deployment, backup/resource access, target bootstrap and actual migration; no full-admin proposal. Related marketing issueapricityweb-e02316.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
   "type": "story",
   "status": "blocked",
   "priority": 2,
@@ -25,10 +25,25 @@
           "reasoning_effort": "medium"
         }
       }
+    },
+    {
+      "id": "96d03291-fa9e-4178-a2f1-56150afaac59",
+      "author": "home",
+      "text": "2026-10-17 next-step plan recorded in the description. Backups and reversibility precede migration. Prior inventory5b6177f reports21tables/~37,704items,32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning; no new live inspection is performed in this task. PR67 draft2546b7d proposes protections but remains unmerged/undeployed with a failing semantic-contract check.\n\nFeature: Recoverable migration planning\n  Scenario: Prove recovery before copying application data\n    Given an approved exact source-protection and backup scope\n    When the operator produces source backups and safely verifies restoration/export\n    Then a recoverable baseline and evidence exist before any target migration\n  Scenario: Preserve data and identity continuity\n    Given approved target account and reversible migration plan\n    When a candidate migration is evaluated\n    Then records object references score behavior identity-linked ownership callbacks and denied access are preserved\n    And rollback is concrete and no original source is removed\n\nAwait separate approval for source-protection deployment, backup/resource access, target bootstrap and actual migration; no full-admin proposal. Related marketing issueapricityweb-e02316.",
+      "created_at": "2026-10-17T06:22:48.405075Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "gpt-6.1-sol",
+        "name": "next-step-plan-reconciliation",
+        "settings": {
+          "reasoning_effort": "medium"
+        }
+      }
     }
   ],
   "created_at": "2026-10-16T20:46:54.377266Z",
-  "updated_at": "2026-10-16T20:46:54.569976Z",
+  "updated_at": "2026-10-17T06:22:48.405098Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
