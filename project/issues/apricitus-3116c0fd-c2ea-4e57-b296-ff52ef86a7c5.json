@@ -3,7 +3,7 @@
   "title": "Blind surprise candidates and lab listening cycle",
   "description": "Create three contrasting score candidates from the newly added, unrated Commons catalog. Render and publish them as a blind listening cycle attached to a new Lab so the listener can select one to continue. No production score publication is implied by this preview cycle.",
   "type": "sub-task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -17,22 +17,35 @@
       "text": "Selected three un-rated Commons recordings, generated fresh local analysis manifests only for Bitpop, ElectrowaveZ-Ayahuasca and Chiptune2, and rendered three contrasting 16-bar candidates. Measurements: metallic 98 (minor chord-coverage guard), liquid 100 (source layer intentionally quiet), robot 89 (uneven-beat and +9c tuning guards). Created Lab lab_403470bc015eefd2 anchored to the hidden metallic incumbent. Cloud `cycle publish` failed twice, deterministically uploading A/B then returning `service error` for `cycles/.../C.m4a`; no ListeningCycle was written, so no cycle attached. Local M4A previews remain ready for listener choice.",
       "created_at": "2026-09-28T10:57:10.624303Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-5",
-        "name": "Music"
+        "name": "Music",
+        "settings": {}
       }
+    },
+    {
+      "id": "f1a2e645-351a-4953-840a-0ac8c6ccad6f",
+      "author": "unknown",
+      "text": "Closed in the 2026-10-17 work-in-progress review: Ryan confirmed this score work is done.",
+      "created_at": "2026-10-17T14:15:56.057319Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": null
     }
   ],
   "created_at": "2026-09-28T10:49:22.823213Z",
-  "updated_at": "2026-09-28T10:57:10.624330Z",
-  "closed_at": null,
+  "updated_at": "2026-10-17T14:15:56.545671Z",
+  "closed_at": "2026-10-17T14:15:56.545453Z",
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
-    "name": "Music"
+    "name": "Music",
+    "settings": {}
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {}
+  "agent_assignment": null
 }

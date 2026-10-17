@@ -3,7 +3,7 @@
   "title": "Compose a drum-first creative Big Beat score",
   "description": "Use the strengthened Big Beat workflow to create a drum-first, creatively distinct Big Beat score: audition a tom-led or otherwise new drum identity before adding a non-vocal sample hook, then render and measure it.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -16,20 +16,35 @@
       "author": "home",
       "text": "Built Fence Signal using the new drum-first gate. Auditioned an eight-bar tom-led drum sketch before adding Percussive Fences. Full score has six distinct phrase-level drum roles and 21 stems; full render measured objective_v2 101.49. Final audition audio is renders/fence-signal-audition/big-beat-fence-signal-bars-1-16.m4a.",
       "created_at": "2026-09-28T03:00:24.591423Z",
-      "comment_type": "default"
+      "comment_type": "default",
+      "data": {},
+      "agent": null
     },
     {
       "id": "f14651f7-237e-4cdb-9107-4d73ce681583",
       "author": "home",
       "text": "Published the user-approved Fence Signal revision to production as scr_scores_Fence Signal_apr. Authenticated CLI preflight passed; score was fetched back and is listed at scores/Fence Signal.apr.",
       "created_at": "2026-09-28T03:08:32.957174Z",
-      "comment_type": "default"
+      "comment_type": "default",
+      "data": {},
+      "agent": null
+    },
+    {
+      "id": "13101f5d-515a-4e7f-ad23-70d59df3783d",
+      "author": "unknown",
+      "text": "Closed in the 2026-10-17 work-in-progress review: Ryan confirmed this score work is done.",
+      "created_at": "2026-10-17T14:15:57.474460Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": null
     }
   ],
   "created_at": "2026-09-28T02:58:03.495313Z",
-  "updated_at": "2026-09-28T03:08:32.957209Z",
-  "closed_at": null,
+  "updated_at": "2026-10-17T14:15:57.760807Z",
+  "closed_at": "2026-10-17T14:15:57.760632Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {},
+  "agent": null,
+  "agent_assignment": null
 }

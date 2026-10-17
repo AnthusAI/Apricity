@@ -3,7 +3,7 @@
   "title": "Compose a Big Beat score with a rich drum-kit arrangement",
   "description": "Create and render a new Big Beat score whose sample hook is supported by a genuinely varied full drum-kit arrangement: distinct section patterns, fills, toms, cymbals, ghost notes, and no repeated template groove.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -16,13 +16,26 @@
       "author": "home",
       "text": "Built Break Dance Engine with a fully written acoustic-kit arrangement: kick, snare, rim, ghost notes, closed/open hats, ride, toms, crashes, and unique four-bar break/fill phrases. Main audition measured objective_v2 103.94 with no v2 guards. Updated Big Beat skill to require section-specific real-kit writing when a kit is available.",
       "created_at": "2026-09-28T02:46:30.329526Z",
-      "comment_type": "default"
+      "comment_type": "default",
+      "data": {},
+      "agent": null
+    },
+    {
+      "id": "605a50a3-3ca6-4160-93c4-989508c1660e",
+      "author": "unknown",
+      "text": "Closed in the 2026-10-17 work-in-progress review: Ryan confirmed this score work is done.",
+      "created_at": "2026-10-17T14:16:01.988359Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": null
     }
   ],
   "created_at": "2026-09-28T02:44:43.049775Z",
-  "updated_at": "2026-09-28T02:46:30.329544Z",
-  "closed_at": null,
+  "updated_at": "2026-10-17T14:16:02.379198Z",
+  "closed_at": "2026-10-17T14:16:02.378917Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {},
+  "agent": null,
+  "agent_assignment": null
 }

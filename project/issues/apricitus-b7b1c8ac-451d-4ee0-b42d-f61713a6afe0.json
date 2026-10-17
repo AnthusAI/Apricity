@@ -3,7 +3,7 @@
   "title": "Publish Lanterns and compose contrasting mushroom-jazz beat",
   "description": "Publish the validated Lanterns in the Ferns score through the authenticated production CLI, then compose and render a materially different mushroom-jazz beat using the score-writing workflow.",
   "type": "chore",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -16,13 +16,26 @@
       "author": "home",
       "text": "Published Lanterns in the Ferns to production as scr_scores_mushroom-jazz-lanterns_apr after CLI preflight succeeded. Beginning a contrasting mushroom-jazz sketch with non-Emerge material and a broken hip-hop pocket.",
       "created_at": "2026-09-28T02:19:10.876392Z",
-      "comment_type": "default"
+      "comment_type": "default",
+      "data": {},
+      "agent": null
+    },
+    {
+      "id": "ce91160c-d74b-43eb-ac0a-dbc3bac114c3",
+      "author": "unknown",
+      "text": "Closed in the 2026-10-17 work-in-progress review: Ryan confirmed this score work is done.",
+      "created_at": "2026-10-17T14:15:59.888359Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": null
     }
   ],
   "created_at": "2026-09-28T02:18:22.303221Z",
-  "updated_at": "2026-09-28T02:19:10.876449Z",
-  "closed_at": null,
+  "updated_at": "2026-10-17T14:16:00.165490Z",
+  "closed_at": "2026-10-17T14:16:00.165301Z",
   "right_now_summary": null,
   "right_now_updated_at": null,
-  "custom": {}
+  "custom": {},
+  "agent": null,
+  "agent_assignment": null
 }
