@@ -3,23 +3,35 @@
   "title": "Implement curator cluster job contracts and ground processing",
   "description": "Purpose: secure queue lease offline queued failure retry preview. PrereqM1 M4. Allowed newclusterjob service/localcloud endpoint/groundworker/tests and infra schema if supervisorapproval. Parametersneighbors2..200,mincluster2..500,minsamples1..100 with corpusclamps; curators only mutationanddraftreads. States queued/running/failed/draft/published; owner lease10minutes renew, reclaimexpiry;jobid stable request retry/revisions. Groundneverpublicbrowser clustering. Verify concurrentclaim/auth/offline/retry tests.\n\n## Assignment rules\nTerra implements only this packet after prerequisite handoff acceptance. Read AGENTS.md and CONTRIBUTING_AGENT.md. Never inspect project/ or issue JSON. Never commit, push, close tasks, deploy, switch embedding models, add cloud inference, or expand upstream Virtuus. Supervisor owns integration. Preserve unrelated edits.\nWrite observable executable Gherkin specifications and deterministic fixture tests FIRST; run them and record the expected failure before production changes. No skipped model evaluation counts as a passed gate.\nEach packet inherits design/semantic-audio.md contracts and features/semantic-audio/*.feature once the supervisor lands the all-six specification task.\n## Shared fixture\n512D basis vectors: e0, e1, (e0+e1)/sqrt(2), -e0; samples A/B share recording R1, sample C recording R2, sample D recording R3. A has saved clips a1[0,4),a2[4,8) and window w1[0,8); C has c1[1,5). Include boundary edit a1[0,3), renamed a2, retired a1, hidden D, wrong-space E, missing/zero/NaN vectors, identical source region aliases, outliers. Synthetic WAVs are generated in tests; no large data in git.\n## States and handoff\nLoading means progress without false empty results; empty means explicit no matches/coverage, not failure. Stale data is rejected using current audio hash, boundary, model/preprocessing and canonical visibility. Failures are structured, retryable when transient, and never silently fall back to another model.\nReport task ID, file/diff inventory, RED command/output, GREEN command/output/counts, integration observations, unresolved issues, and gate measurements. Report BLOCKED with exact evidence if pinned assets unavailable, parity/performance/quality gate fails, permissions/API unsupported, required hardware/cloud sandbox absent, or a contract needs changing. Do not invent measured evidence. Supervisor reruns checks before landing.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
   "parent": "apricitus-7acf23be-3b11-400d-a3a7-68993c7418c1",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "797e5eff-e212-4071-ba5b-5372aa328ca0",
+      "author": "unknown",
+      "text": "Closed in the 2026-10-17 work-in-progress review: both child stories (fa3f75, 636293) are closed and shipped on develop as 8d1761b and aeed73b.",
+      "created_at": "2026-10-17T13:45:36.320593Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": null
+    }
+  ],
   "created_at": "2026-09-30T18:43:43.799943Z",
-  "updated_at": "2026-10-05T14:09:25.750166Z",
-  "closed_at": null,
+  "updated_at": "2026-10-17T13:45:36.727857Z",
+  "closed_at": "2026-10-17T13:45:36.727585Z",
+  "right_now_summary": "Ground processing and CLI checks pass, but cluster drafts still await curator review and publication.",
+  "right_now_updated_at": "2026-10-05T15:34:59.876585Z",
+  "custom": {},
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
-    "name": "Semantic Audio Features"
+    "name": "Semantic Audio Features",
+    "settings": {}
   },
-  "right_now_summary": "Ground processing and CLI checks pass, but cluster drafts still await curator review and publication.",
-  "right_now_updated_at": "2026-10-05T15:34:59.876585Z",
-  "custom": {}
+  "agent_assignment": null
 }
