@@ -3,7 +3,7 @@
   "title": "M2 Related samples and clips",
   "description": "As an Apricity visitor or curator, I want the specified semantic audio behavior so that I can find and explore playable sound safely.\n\n```gherkin\nFeature: M2 Related samples and clips\n\n  Scenario: Clip related audio uses stored vectors\n    Given a clip with a valid stored vector\n    When its related audio is requested\n    Then sound matches are retrieved without loading any text encoder\n\n  Scenario: Sample representative selection\n    Given a sample with diverse passage vectors\n    When sample related audio is requested\n    Then at most four deterministic farthest-point representatives contribute candidates\n\n  Scenario: Diverse best-passage ranking\n    Given multiple matching clips from multiple samples sharing recordings\n    When six related suggestions are selected\n    Then the source sample is excluded and strongest matches from distinct recordings appear first\n\n  Scenario: Related playback boundaries\n    Given a related saved clip or unsaved window\n    When the visitor auditions the suggestion\n    Then playback uses the exact matched source time range with a parent sample link\n\n  Scenario: Related states remain truthful\n    Given missing embeddings empty matches or a retrieval failure\n    When the related list is opened\n    Then awaiting analysis empty or retry states are shown without confidence percentages\n\n  Scenario: Navigation discards stale related responses\n    Given a pending related request for one detail page\n    When the visitor navigates to another detail page\n    Then the older response cannot repaint the new page\n```\n\nSpecifications and implementation ownership: design/semantic-audio.md. All model-backed gates require real evidence; no skipped gate is green.",
   "type": "story",
-  "status": "open",
+  "status": "closed",
   "priority": 1,
   "assignee": null,
   "creator": null,
@@ -22,11 +22,18 @@
         "model": "GPT-5",
         "name": "Semantic-Audio-Supervisor"
       }
+    },
+    {
+      "id": "776ef8e2-2b18-4494-89f2-4a086ed81519",
+      "author": "home",
+      "text": "Closed 2026-10-19 with Ryan's approval: M2 shipped.",
+      "created_at": "2026-10-19T19:05:05.427847Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T18:46:25.973484Z",
-  "updated_at": "2026-10-10T18:41:14.932507Z",
-  "closed_at": null,
+  "updated_at": "2026-10-19T19:05:05.542193Z",
+  "closed_at": "2026-10-19T19:05:05.542163Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-6",

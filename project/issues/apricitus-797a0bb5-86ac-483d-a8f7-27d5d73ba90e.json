@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-797a0bb5-86ac-483d-a8f7-27d5d73ba90e",
+  "title": "Delete fully merged stale remote branches",
+  "description": "Ryan approved 2026-10-19: delete Apricity remote branches whose commits are all in develop or main; leave anything unmerged.",
+  "type": "chore",
+  "status": "open",
+  "priority": 3,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-19T19:05:14.267119Z",
+  "updated_at": "2026-10-19T19:05:19.753736Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

@@ -3,7 +3,7 @@
   "title": "Compose an original five-note signal sketch",
   "description": "Create and render a short original five-note call-and-response score using listener-rated library assets. Its contour, rhythm, harmony, and arrangement must be distinct from any recognizable film motif. Prepare a local audition and measured report; do not publish until the listener asks.",
   "type": "task",
-  "status": "in_progress",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -94,11 +94,18 @@
         "model": "GPT-5",
         "name": "root"
       }
+    },
+    {
+      "id": "2d9e5d26-feb7-48cf-9837-c465469dc430",
+      "author": "home",
+      "text": "Closed 2026-10-19 with Ryan's approval: experiment finished. Child bug apricitus-cac437 stays open on its own.",
+      "created_at": "2026-10-19T19:05:05.247436Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-29T02:18:28.534663Z",
-  "updated_at": "2026-09-30T13:06:43.890070Z",
-  "closed_at": null,
+  "updated_at": "2026-10-19T19:05:05.338954Z",
+  "closed_at": "2026-10-19T19:05:05.338919Z",
   "agent": {
     "platform": "codex",
     "model": "GPT-5",
