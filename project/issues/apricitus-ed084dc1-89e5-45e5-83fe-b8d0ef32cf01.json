@@ -17,10 +17,12 @@
       "text": "General rule added: no recording over 10 minutes enters the library (previews hide >8 min on all sources; catalog-add-loc.py refuses >10 min before touching catalogs; apricity_analyze skips >10 min; --max-minutes 0 overrides). ccMixter audio needs Referer ccmixter.org; previews cache copies in renders/preview/audio. Committed.",
       "created_at": "2026-09-26T19:14:53.805400Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "claude_code",
         "model": "Sonnet 5",
-        "name": "Library Expansion"
+        "name": "Library Expansion",
+        "settings": {}
       }
     },
     {
@@ -29,22 +31,40 @@
       "text": "2026-09-26: loc.gov answering again (no 429). Built renders/preview/Gershwin-National-Jukebox.html (24 items, all 1919-1925) and Lomax-1939-more-work-songs.html (13 items: Driving Levee, January February, Work Don't Bother Me, Track-linin' Holler, Cotton Picking Song, Boll Weevil, Who's Been Here Since I Been Gone, I Ain't Goin' Work on the Railroad, Dollar Mamie, Early in the Mornin', Cotton Needs Plowin' So Bad, When the Work's All Done Next Fall, We Don't Have No Payday Here). Streaming from tile.loc.gov verified with range requests. Awaiting the user's picks. Still open: Tony Schwartz games-and-play preview (Citizen DJ item 286021, LoC id not yet found), Internet Archive subset decision.",
       "created_at": "2026-09-27T01:35:39.395660Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "claude_code",
         "model": "Sonnet 5",
-        "name": "Library Expansion"
+        "name": "Library Expansion",
+        "settings": {}
+      }
+    },
+    {
+      "id": "fbf79214-364f-4017-be02-090548ee8c84",
+      "author": "unknown",
+      "text": "2026-10-19 status: unchanged since 2026-09-26; preview pages for the Gershwin and Lomax batches are waiting on Ryan's picks. A prior review proposed closing this (reopen when more samples are wanted); Ryan has not confirmed.\n",
+      "created_at": "2026-10-19T16:44:49.003124Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff",
+        "settings": {}
       }
     }
   ],
   "created_at": "2026-09-26T18:20:55.913710Z",
-  "updated_at": "2026-09-27T01:35:39.395916Z",
+  "updated_at": "2026-10-19T16:44:49.003340Z",
   "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {},
   "agent": {
     "platform": "claude_code",
     "model": "Sonnet 5",
-    "name": "Library Expansion"
+    "name": "Library Expansion",
+    "settings": {}
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {}
+  "agent_assignment": null
 }

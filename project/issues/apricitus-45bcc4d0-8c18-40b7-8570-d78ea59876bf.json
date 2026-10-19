@@ -1,7 +1,7 @@
 {
   "id": "apricitus-45bcc4d0-8c18-40b7-8570-d78ea59876bf",
   "title": "Separate marketing and application with approved data migration",
-  "description": "Cross-project dependency: private Apricity-web kanbus-5798f7 and apricityweb-e02316. Source rendered through actual Papyrus/Markus/S3 is complete. Inventory5b6177f: no dedicated account; Legacy21tables/~37,704items +32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning. Marketing apricity.anth.us; app play.apricity.anth.us. Account/bootstrap and data/auth migration approval pending. Preserve source data, Cognito identity relationships, scores and existing app; no execution authorized.\n\n## Current next-step plan — 2026-10-17\n\nPriority3: source backups/recovery first, then a reversible data/auth migration and narrowly scoped target account/pipeline decisions, then candidate verification and traffic changes. No dedicated Apricity account exists in prior inventory; current source remains Legacy. Targets: apricity.anth.us marketing/play.apricity.anth.us app.\n\nVerified https://github.com/AnthusAI/Apricity/pull/67 is OPEN/DRAFT at2546b7d446e54195a28578a6fd498f188c274f4f. Rust/Web/Gherkin checks pass; Semantic ground contracts fails. It proposes callback defaults, table PITR/deletion protection/retention, user-pool protection/retention and bucket versioning/retention. These are source proposals, NOT DEPLOYED protections. Main promotion would update Legacy and requires separate explicit approval of the protect-source-data step.\n\nAcceptance order: inventory source; approve and create recoverable backups under exact scope; verify a safe restoration/export and identity ownership mapping; approve target/bootstrap/access scope and reversible migration plan; prove counts/references/scores/auth callbacks/permission continuity on candidate; review rollback/cutover. Do not treat retention flags or passing source tests as backups or migration acceptance. No account creation data copy deletion or protection deployment occurs here.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
+  "description": "Cross-project dependency: private Apricity-web kanbus-5798f7 and apricityweb-e02316. Source rendered through actual Papyrus/Markus/S3 is complete. Inventory5b6177f: no dedicated account; Legacy21tables/~37,704items +32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning. Marketing apricity.anth.us; app play.apricity.anth.us. Account/bootstrap and data/auth migration approval pending. Preserve source data, Cognito identity relationships, scores and existing app; no execution authorized.\n\n## Current next-step plan \u2014 2026-10-17\n\nPriority3: source backups/recovery first, then a reversible data/auth migration and narrowly scoped target account/pipeline decisions, then candidate verification and traffic changes. No dedicated Apricity account exists in prior inventory; current source remains Legacy. Targets: apricity.anth.us marketing/play.apricity.anth.us app.\n\nVerified https://github.com/AnthusAI/Apricity/pull/67 is OPEN/DRAFT at2546b7d446e54195a28578a6fd498f188c274f4f. Rust/Web/Gherkin checks pass; Semantic ground contracts fails. It proposes callback defaults, table PITR/deletion protection/retention, user-pool protection/retention and bucket versioning/retention. These are source proposals, NOT DEPLOYED protections. Main promotion would update Legacy and requires separate explicit approval of the protect-source-data step.\n\nAcceptance order: inventory source; approve and create recoverable backups under exact scope; verify a safe restoration/export and identity ownership mapping; approve target/bootstrap/access scope and reversible migration plan; prove counts/references/scores/auth callbacks/permission continuity on candidate; review rollback/cutover. Do not treat retention flags or passing source tests as backups or migration acceptance. No account creation data copy deletion or protection deployment occurs here.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
   "type": "epic",
   "status": "open",
   "priority": 2,
@@ -17,6 +17,7 @@
       "text": "2026-10-17 next-step plan recorded in the description. Priority3: source backups/recovery first, then a reversible data/auth migration and narrowly scoped target account/pipeline decisions, then candidate verification and traffic changes. No dedicated Apricity account exists in prior inventory; current source remains Legacy. Targets: apricity.anth.us marketing/play.apricity.anth.us app.\n\nVerified https://github.com/AnthusAI/Apricity/pull/67 is OPEN/DRAFT at2546b7d446e54195a28578a6fd498f188c274f4f. Rust/Web/Gherkin checks pass; Semantic ground contracts fails. It proposes callback defaults, table PITR/deletion protection/retention, user-pool protection/retention and bucket versioning/retention. These are source proposals, NOT DEPLOYED protections. Main promotion would update Legacy and requires separate explicit approval of the protect-source-data step.\n\nAcceptance order: inventory source; approve and create recoverable backups under exact scope; verify a safe restoration/export and identity ownership mapping; approve target/bootstrap/access scope and reversible migration plan; prove counts/references/scores/auth callbacks/permission continuity on candidate; review rollback/cutover. Do not treat retention flags or passing source tests as backups or migration acceptance. No account creation data copy deletion or protection deployment occurs here.",
       "created_at": "2026-10-17T06:22:48.358577Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
@@ -25,11 +26,31 @@
           "reasoning_effort": "medium"
         }
       }
+    },
+    {
+      "id": "5de84940-5911-4014-a045-e17a6cb9a5f2",
+      "author": "unknown",
+      "text": "2026-10-19 handoff status (Claude project thread, taken over by another agent).\nDECIDED by Ryan: full migration (not the light path); reuse an EXISTING org account, not a new one; target is apricity-production, account 873363353715, AWS CLI profile \"Endymion\" on Ryan's M1 Mac; no Legacy backup step needed (Ryan has a local copy). Plan doc: https://claude.ai/code/artifact/4dfe5cad-f156-4437-87a8-532e42cd510c\nAWS ACCESS RULE: cloud sessions never get AWS credentials (key creation is blocked; CLI login is interactive with Ryan's thumbprint). Every AWS command must run on Ryan's M1 Mac in a Remote Control session (folder ~/Projects/Chattic.us). Cloud agents only write code, PRs and plans.\nDONE: draft PR AnthusAI/Apricity#67 (play callback URLs, retain/deletion-protection/PITR/versioning in CDK) and draft PR AnthusAI/Apricity-web#1 (marketing CloudFormation pipeline, publishing off by default). Neither is merged. Nothing in any AWS account has been changed.\nSTALLED: a read-only check of apricity-production on Ryan's Mac was started 2026-10-17 16:33Z; no result was ever reported (the Remote Control session flapped offline/online repeatedly through 2026-10-17 18:58Z and then the session record was lost). Treat the account contents (CDK bootstrap, existing resources, Amplify, CodeConnections) as UNKNOWN until re-inspected.\nOPEN PROBLEMS: (1) #67 had a failing Semantic ground contracts check and an unrelated Rust test failure; last known head 2546b7d, CI statuses currently report none. Re-run and fix. (2) Plan step 5 uses DynamoDB export-to-S3, which requires PITR on the source tables, but the plan dropped Legacy PITR/backups; resolve this contradiction (either enable PITR on Legacy with Ryan's approval, or use a scan/batch-writer copy). (3) #67 promoted to main deploys to Legacy; do not promote without Ryan's approval.\nNEXT: re-run the read-only inspection of 873363353715 on the Mac; fix CI on #67 and merge to develop only; then ask Ryan for explicit word approval of each AWS step, one at a time (plan steps 3-9). No AWS action without his explicit approval.\n",
+      "created_at": "2026-10-19T16:44:45.545964Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff",
+        "settings": {}
+      }
     }
   ],
   "created_at": "2026-10-16T20:46:54.289600Z",
-  "updated_at": "2026-10-17T06:22:48.358596Z",
+  "updated_at": "2026-10-19T16:44:45.546127Z",
   "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  },
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
@@ -38,10 +59,5 @@
       "reasoning_effort": "medium"
     }
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {
-    "project_label": "apricitus",
-    "source": "shared"
-  }
+  "agent_assignment": null
 }

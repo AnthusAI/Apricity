@@ -1,7 +1,7 @@
 {
   "id": "apricitus-bf7d02cd-b8f3-48fb-8925-3eef97f22a83",
   "title": "Review recoverable target account data and identity migration",
-  "description": "As the owner, I want a concrete migration plan before moving the application.\n\nFeature: Review recoverable target account data and identity migration\n  Scenario: Observable acceptance\n    Given the read-only Legacy inventory and no approved dedicated account\n    When a migration plan is reviewed\n    Then target account backup/recovery identity continuity callbacks validation and rollback are explicitly approved while all existing data remains preserved\n\nPlanning only. No new implementation, deployment, paid call or permission is authorized by this record.\n\n## Current next-step plan — 2026-10-17\n\nBackups and reversibility precede migration. Prior inventory5b6177f reports21tables/~37,704items,32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning; no new live inspection is performed in this task. PR67 draft2546b7d proposes protections but remains unmerged/undeployed with a failing semantic-contract check.\n\nFeature: Recoverable migration planning\n  Scenario: Prove recovery before copying application data\n    Given an approved exact source-protection and backup scope\n    When the operator produces source backups and safely verifies restoration/export\n    Then a recoverable baseline and evidence exist before any target migration\n  Scenario: Preserve data and identity continuity\n    Given approved target account and reversible migration plan\n    When a candidate migration is evaluated\n    Then records object references score behavior identity-linked ownership callbacks and denied access are preserved\n    And rollback is concrete and no original source is removed\n\nAwait separate approval for source-protection deployment, backup/resource access, target bootstrap and actual migration; no full-admin proposal. Related marketing issueapricityweb-e02316.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
+  "description": "As the owner, I want a concrete migration plan before moving the application.\n\nFeature: Review recoverable target account data and identity migration\n  Scenario: Observable acceptance\n    Given the read-only Legacy inventory and no approved dedicated account\n    When a migration plan is reviewed\n    Then target account backup/recovery identity continuity callbacks validation and rollback are explicitly approved while all existing data remains preserved\n\nPlanning only. No new implementation, deployment, paid call or permission is authorized by this record.\n\n## Current next-step plan \u2014 2026-10-17\n\nBackups and reversibility precede migration. Prior inventory5b6177f reports21tables/~37,704items,32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning; no new live inspection is performed in this task. PR67 draft2546b7d proposes protections but remains unmerged/undeployed with a failing semantic-contract check.\n\nFeature: Recoverable migration planning\n  Scenario: Prove recovery before copying application data\n    Given an approved exact source-protection and backup scope\n    When the operator produces source backups and safely verifies restoration/export\n    Then a recoverable baseline and evidence exist before any target migration\n  Scenario: Preserve data and identity continuity\n    Given approved target account and reversible migration plan\n    When a candidate migration is evaluated\n    Then records object references score behavior identity-linked ownership callbacks and denied access are preserved\n    And rollback is concrete and no original source is removed\n\nAwait separate approval for source-protection deployment, backup/resource access, target bootstrap and actual migration; no full-admin proposal. Related marketing issueapricityweb-e02316.\n\nAuthority: Ryan requested this plan as the permanent Kanbus record. This action updates documentation only. The desired product outcomes are requested priorities, not claims of implementation or hosted acceptance. Existing implementation owners retain their approvals; recommendations needing further scope, release, permission or migration direction stay explicitly gated. No feature code, deployment, paid call, permission change or unrelated merge is performed here.",
   "type": "story",
   "status": "blocked",
   "priority": 2,
@@ -17,6 +17,7 @@
       "text": "2026-10-16 reconciliation: Status describes remaining acceptance, not implementation authorization.",
       "created_at": "2026-10-16T20:46:54.569952Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
@@ -32,6 +33,7 @@
       "text": "2026-10-17 next-step plan recorded in the description. Backups and reversibility precede migration. Prior inventory5b6177f reports21tables/~37,704items,32,069S3objects/~8GiB/~2users, no listed backups/PITR/versioning; no new live inspection is performed in this task. PR67 draft2546b7d proposes protections but remains unmerged/undeployed with a failing semantic-contract check.\n\nFeature: Recoverable migration planning\n  Scenario: Prove recovery before copying application data\n    Given an approved exact source-protection and backup scope\n    When the operator produces source backups and safely verifies restoration/export\n    Then a recoverable baseline and evidence exist before any target migration\n  Scenario: Preserve data and identity continuity\n    Given approved target account and reversible migration plan\n    When a candidate migration is evaluated\n    Then records object references score behavior identity-linked ownership callbacks and denied access are preserved\n    And rollback is concrete and no original source is removed\n\nAwait separate approval for source-protection deployment, backup/resource access, target bootstrap and actual migration; no full-admin proposal. Related marketing issueapricityweb-e02316.",
       "created_at": "2026-10-17T06:22:48.405075Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "gpt-6.1-sol",
@@ -40,11 +42,31 @@
           "reasoning_effort": "medium"
         }
       }
+    },
+    {
+      "id": "81ce6db6-cd26-400d-add0-bce718a5d4e7",
+      "author": "unknown",
+      "text": "2026-10-19 handoff status (Claude project thread, taken over by another agent).\nDECIDED by Ryan: full migration (not the light path); reuse an EXISTING org account, not a new one; target is apricity-production, account 873363353715, AWS CLI profile \"Endymion\" on Ryan's M1 Mac; no Legacy backup step needed (Ryan has a local copy). Plan doc: https://claude.ai/code/artifact/4dfe5cad-f156-4437-87a8-532e42cd510c\nAWS ACCESS RULE: cloud sessions never get AWS credentials (key creation is blocked; CLI login is interactive with Ryan's thumbprint). Every AWS command must run on Ryan's M1 Mac in a Remote Control session (folder ~/Projects/Chattic.us). Cloud agents only write code, PRs and plans.\nDONE: draft PR AnthusAI/Apricity#67 (play callback URLs, retain/deletion-protection/PITR/versioning in CDK) and draft PR AnthusAI/Apricity-web#1 (marketing CloudFormation pipeline, publishing off by default). Neither is merged. Nothing in any AWS account has been changed.\nSTALLED: a read-only check of apricity-production on Ryan's Mac was started 2026-10-17 16:33Z; no result was ever reported (the Remote Control session flapped offline/online repeatedly through 2026-10-17 18:58Z and then the session record was lost). Treat the account contents (CDK bootstrap, existing resources, Amplify, CodeConnections) as UNKNOWN until re-inspected.\nOPEN PROBLEMS: (1) #67 had a failing Semantic ground contracts check and an unrelated Rust test failure; last known head 2546b7d, CI statuses currently report none. Re-run and fix. (2) Plan step 5 uses DynamoDB export-to-S3, which requires PITR on the source tables, but the plan dropped Legacy PITR/backups; resolve this contradiction (either enable PITR on Legacy with Ryan's approval, or use a scan/batch-writer copy). (3) #67 promoted to main deploys to Legacy; do not promote without Ryan's approval.\nNEXT: re-run the read-only inspection of 873363353715 on the Mac; fix CI on #67 and merge to develop only; then ask Ryan for explicit word approval of each AWS step, one at a time (plan steps 3-9). No AWS action without his explicit approval.\n",
+      "created_at": "2026-10-19T16:44:46.250865Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff",
+        "settings": {}
+      }
     }
   ],
   "created_at": "2026-10-16T20:46:54.377266Z",
-  "updated_at": "2026-10-17T06:22:48.405098Z",
+  "updated_at": "2026-10-19T16:44:46.251025Z",
   "closed_at": null,
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {
+    "project_label": "apricitus",
+    "source": "shared"
+  },
   "agent": {
     "platform": "codex",
     "model": "gpt-6.1-sol",
@@ -53,10 +75,5 @@
       "reasoning_effort": "medium"
     }
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
-  "custom": {
-    "project_label": "apricitus",
-    "source": "shared"
-  }
+  "agent_assignment": null
 }
