@@ -59,10 +59,17 @@
       "text": "2026-10-19 read-only inspection of apricity-production (873363353715, new CLI profile apricity-production): CDK bootstrapped in us-east-1 (v32); no Amplify app, no CodeConnections, no anth.us zone (still in Legacy). Account still holds the Chattic.us development environment (11 Chatticus* stacks, develop.chattic.us zones, Cognito pool, CloudFront, 14 Lambdas, 2 tables); Ryan says it is being moved out, delete nothing. Ryan chose scan + batch-write for the data copy (no PITR on Legacy); plan doc updated.",
       "created_at": "2026-10-19T19:05:05.578437Z",
       "comment_type": "default"
+    },
+    {
+      "id": "bbbab228-cbff-4280-8941-ed766b3dfcc3",
+      "author": "home",
+      "text": "2026-10-19: backend prep (apex-first play callback URLs; PITR, deletion protection and retain on tables/user pool; versioned, kept files bucket) landed on develop in a4da7f1d via PR 71, which superseded draft #67. Not on main: promoting it releases these settings to Legacy and needs Ryan's go-ahead (plan step 2).",
+      "created_at": "2026-10-19T21:38:52.338332Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-10-16T20:46:54.377266Z",
-  "updated_at": "2026-10-19T19:05:05.578475Z",
+  "updated_at": "2026-10-19T21:38:52.338449Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
