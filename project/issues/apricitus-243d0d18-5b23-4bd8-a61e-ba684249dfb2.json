@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-243d0d18-5b23-4bd8-a61e-ba684249dfb2",
+  "title": "cluster_bridge tests flake in CI with 503 from the spawned script",
+  "description": "Seen on PR 71 run 39328209333 (2026-10-19) and likely the 'unrelated Rust failure' on PR 67: cluster_bridge::tests::direct_harmless_child_returns_only_the_envelope_body and curator_controls_are_disabled_by_default_and_use_only_startup_identity got (503, service unavailable) while develop passed the same code a minute earlier. Both tests write an executable script and run it at once; suspected ETXTBSY race (another test thread forks while the write fd is open), so the spawn fails and maps to 503. Confirm by surfacing the spawn error, then make the helper race-free (e.g. retry spawn on ETXTBSY in the test helper or invoke via /bin/sh).",
+  "type": "bug",
+  "status": "open",
+  "priority": 2,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-19T21:36:24.347698Z",
+  "updated_at": "2026-10-19T21:36:28.321099Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}
