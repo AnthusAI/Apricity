@@ -70,6 +70,10 @@ def _requirements() -> dict[str, str]:
 
 def _semantic_typescript_tests() -> set[str]:
     paths = set((ROOT / "web" / "test").rglob("semantic-*.test.ts"))
+    # The cluster suite is part of the semantic ground (the CI job also runs
+    # test_cluster_*.py and test_audio_clusters.py), so its TS tests count too.
+    paths.update((ROOT / "web" / "test").rglob("cluster-*.test.ts"))
+    paths.update((ROOT / "web" / "test").rglob("audio-clusters.test.ts"))
     paths.update((ROOT / "web" / "amplify" / "semantic").glob("*.test.ts"))
     return {path.relative_to(ROOT / "web").as_posix() for path in paths}
 
