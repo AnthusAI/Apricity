@@ -17,22 +17,26 @@
       "text": "Investigate with a controlled same-key/register/rhythm/effects comparison, measure actual source pitch/noise, and attribute score components before proposing analyzer changes. Prior diagnosis is a hypothesis rather than an established cause.",
       "created_at": "2026-09-30T21:45:55.082977Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Sol"
+        "name": "Sol",
+        "settings": {}
       }
     },
     {
       "id": "145e7a77-af10-4016-88db-536b9d87c25d",
       "author": "home",
-      "text": "Investigation completed; no production analyzer changes yet. Independently reproduced C95.298 versus identical audio without events100. Confirmed first event-bearing stem is forced into bass role and written chord metadata vanishes without solver fit. Raw spectral flatness50–4000Hz A0.0000027/B0.0241/C0.0435 supports greater broadband content in original C; A has only1.14% energy near its first8 declared C4 harmonics, suggesting unreliable root/polyphonic source rather than merely noise. Original drafts used different MIDI, durations and effects. New controlled auditions compile identical D3 E3 C3 C2 G2 at0/2/4/6/8s with1s durations and matched envelopes/effects/loudness. Original C cannot fit that register under +/-24semitones; C2 explicitly substitutes hold-9 Eb2. Synthetic clean sine, mismatched-pitch sine, and noise checks at each root pass; descriptors are not a taste score. C2 rendered tuning30–35c low versus raw5c low needs separate manifest-correction investigation. Local report: renders/signal-investigation/controlled/REPORT.md; diagnostic script and JSON alongside it. Acceptance behaviors for repair: solo melody must not automatically count as bass; repeated multi-track checks must agree; written chord context must survive no solver-fit voices; report zero/nonapplicable cross-stem clash explicitly; pitch mismatch must remain distinct from noisy timbre. Bug remains in_progress until repairs land.",
+      "text": "Investigation completed; no production analyzer changes yet. Independently reproduced C95.298 versus identical audio without events100. Confirmed first event-bearing stem is forced into bass role and written chord metadata vanishes without solver fit. Raw spectral flatness50\u20134000Hz A0.0000027/B0.0241/C0.0435 supports greater broadband content in original C; A has only1.14% energy near its first8 declared C4 harmonics, suggesting unreliable root/polyphonic source rather than merely noise. Original drafts used different MIDI, durations and effects. New controlled auditions compile identical D3 E3 C3 C2 G2 at0/2/4/6/8s with1s durations and matched envelopes/effects/loudness. Original C cannot fit that register under +/-24semitones; C2 explicitly substitutes hold-9 Eb2. Synthetic clean sine, mismatched-pitch sine, and noise checks at each root pass; descriptors are not a taste score. C2 rendered tuning30\u201335c low versus raw5c low needs separate manifest-correction investigation. Local report: renders/signal-investigation/controlled/REPORT.md; diagnostic script and JSON alongside it. Acceptance behaviors for repair: solo melody must not automatically count as bass; repeated multi-track checks must agree; written chord context must survive no solver-fit voices; report zero/nonapplicable cross-stem clash explicitly; pitch mismatch must remain distinct from noisy timbre. Bug remains in_progress until repairs land.",
       "created_at": "2026-09-30T21:54:28.853609Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Sol"
+        "name": "Sol",
+        "settings": {}
       }
     },
     {
@@ -41,10 +45,12 @@
       "text": "Using the investigation diagnostics for a listening trial: select LibertyBell hold-12 (B) for expected-pitch support and lower broadband content than original C, without treating the old harmony objective as a timbre ranking. Re-run source/note diagnostics and audition the existing controlled B score bars1-3. No production analyzer change or cloud publish in this trial.",
       "created_at": "2026-10-10T09:18:56.756763Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Sol"
+        "name": "Sol",
+        "settings": {}
       }
     },
     {
@@ -53,25 +59,43 @@
       "text": "User requested Apricity-native previews because inline audio is not playable. Attempted scripts/lab list --target cloud before publishing a listening cycle. Read-only command stalled; process sample confirms apple_native_keyring_store CredentialApi get_password/get_secret waiting on macOS IPC. No cloud upload or cycle created. Need saved-login keychain access to complete native preview publishing; do not claim publication succeeded.",
       "created_at": "2026-10-10T09:22:28.225071Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Sol"
+        "name": "Sol",
+        "settings": {}
+      }
+    },
+    {
+      "id": "0d283cb3-6a85-4f2e-b6b7-8382a8832da7",
+      "author": "unknown",
+      "text": "2026-10-19 status: bug is real and unfixed (check.rs treats the first event-bearing stem, even a lone melody, as bass). Parent apricitus-ad7a11 is a finished audition experiment, and a prior review proposed closing it and moving this bug back to open; Ryan has not answered, so no status change was made. The 2026-10-10 listening trial stalled on a macOS keychain prompt (scripts/lab list --target cloud); that needs Ryan's Mac keychain access.\n",
+      "created_at": "2026-10-19T16:44:48.317593Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff",
+        "settings": {}
       }
     }
   ],
   "created_at": "2026-09-30T13:13:20.879697Z",
-  "updated_at": "2026-10-10T09:22:28.225098Z",
+  "updated_at": "2026-10-19T16:44:48.317786Z",
   "closed_at": null,
-  "agent": {
-    "platform": "codex",
-    "model": "GPT-5",
-    "name": "root"
-  },
   "right_now_summary": "The team is running a controlled listening trial; native preview publishing awaits macOS keychain access.",
   "right_now_updated_at": "2026-10-10T09:22:31.507959Z",
   "custom": {
     "project_label": "apricitus",
     "source": "shared"
-  }
+  },
+  "agent": {
+    "platform": "codex",
+    "model": "GPT-5",
+    "name": "root",
+    "settings": {}
+  },
+  "agent_assignment": null
 }
