@@ -1,0 +1,25 @@
+{
+  "id": "apricitus-6ee9db06-9031-4685-95de-faeee7798236",
+  "title": "Semantic CI guard rejects the cluster tests in test:semantic",
+  "description": "develop CI 'Semantic ground contracts' has failed since 2026-10-10: analysis/tests/test_semantic_ci.py requires test:semantic to list exactly web/test/semantic-*.test.ts plus amplify/semantic/*.test.ts, but develop added test/audio-clusters.test.ts and test/cluster-curator.test.ts. The semantic-ground job already runs the cluster Python tests, so the guard should accept the cluster TS tests too.",
+  "type": "bug",
+  "status": "in_progress",
+  "priority": 1,
+  "assignee": null,
+  "creator": null,
+  "parent": null,
+  "labels": [],
+  "dependencies": [],
+  "comments": [],
+  "created_at": "2026-10-19T19:05:10.261953Z",
+  "updated_at": "2026-10-19T19:05:19.797185Z",
+  "closed_at": null,
+  "agent": {
+    "platform": "claude_code",
+    "model": "Opus 5.5",
+    "name": "Claude Code"
+  },
+  "right_now_summary": null,
+  "right_now_updated_at": null,
+  "custom": {}
+}

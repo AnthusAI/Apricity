@@ -34,10 +34,36 @@
         "model": "GPT-6",
         "name": "Semantic Audio Features"
       }
+    },
+    {
+      "id": "1bb41bf7-9251-495c-86b9-e62078a924e5",
+      "author": "unknown",
+      "text": "2026-10-19 status: stale since 2026-09-30. Browser q8 parity is below 0.98 for bass (0.9776) and metal (0.9740). A same-model fp32 precision evaluation was authorized 2026-09-30 but no result is recorded. Decision needed from Ryan: continue (run the fp32 evaluation) or park browser embeddings. If parked, close this epic and children apricitus-e46692, 5bb1f3, 497ce7. Not closed because Ryan has not decided.\n",
+      "created_at": "2026-10-19T16:44:47.628067Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff"
+      }
+    },
+    {
+      "id": "ce0eb11e-7703-4256-b315-748418bdc8d6",
+      "author": "home",
+      "text": "2026-10-19: Ryan chose to run the fp32 parity evaluation (authorized 2026-09-30, never run) before deciding.",
+      "created_at": "2026-10-19T19:05:05.664483Z",
+      "comment_type": "default"
+    },
+    {
+      "id": "da569bed-e54f-4339-865b-7a68b45dd877",
+      "author": "home",
+      "text": "Correction 2026-10-19: the fp32 evaluation already ran on 2026-09-30 (c1088e7e, sub-task apricitus-4c8a86 closed; fixture fixtures/semantic-audio/browser-parity-fp32.json; design/semantic-audio.md). Same pinned Xenova export, fp32 WASM: all six cosines >= 0.999999999997, top-20 retention 1.0 over 48 audio vectors, desktop warm p95 58.82 ms; first-use download ~502 MB vs 127 MB for q8. Desktop parity gate is met. Still not evaluated: designated-mobile p95 (<= 5 s) and reviewed listening judgments. c1088e7e is on develop, not yet on main.",
+      "created_at": "2026-10-19T19:06:57.074357Z",
+      "comment_type": "default"
     }
   ],
   "created_at": "2026-09-30T18:40:00.366530Z",
-  "updated_at": "2026-09-30T20:00:09.848976Z",
+  "updated_at": "2026-10-19T19:06:57.074388Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

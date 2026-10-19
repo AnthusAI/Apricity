@@ -17,10 +17,12 @@
       "text": "Accepted summaries prerequisite aaf18292. Dispatch immutable draft ground-run pipeline: current semantic corpus+canonical catalog -> deduplicated snapshot -> actual pinnedalgorithms -> summaries -> deterministic runmanifest/artifacts. GroundCLI lab semantic cluster supports acceptedpresets; catalog required to revalidate current entities. Draft creation/repeat never writes publishedpointer or listeningapproval. Separate explicit publication control and customparams remain dependentM5 integration; parent cannot close for draft-only packet. No new audio/model/cloud/UI/no manualpublish.",
       "created_at": "2026-09-30T22:47:54.924203Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Semantic Audio Features"
+        "name": "Semantic Audio Features",
+        "settings": {}
       }
     },
     {
@@ -29,10 +31,12 @@
       "text": "Ground draft pipeline landed5e5edbdb and subtask36e98e closed. Actual full-library useful-preset run succeeded9b93b212145610689bffc1a611ae20b52d5b0fdec8bef5a6950b1b3e2ed81a31, immutable manifest in local semantic/clusters/runs. First run exited2 only because /tmp is a system symlink; rerun with /private/tmp canonical path completed (handle82371terminal0). Qualitypending, no listening approval/publishedpointer. Explicit publication/M5 controls stillunfinished; paused byuser.",
       "created_at": "2026-09-30T23:59:50.524575Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Semantic Audio Features"
+        "name": "Semantic Audio Features",
+        "settings": {}
       }
     },
     {
@@ -41,10 +45,12 @@
       "text": "Restored the real-library useful preset draft in persistent ignored preview storage on2026-10-05. CLI exited0 with runf54c7404c5a06f1158e02db2ab280e32c7d8987795efcd0a876f8d2a7f44d0b2:27219deduplicated regions,576clusters,5275outliers; qualityReview pending/state draft. Manifest under renders/semantic-audio-preview/library.apricity/semantic/clusters/runs/<runId>/manifest.json. No published pointer, no listening/coherence approval, and no public cluster UI yet. Prior temporary artifact was absent; this is a new current-corpus run, not a claimed recovery of old bytes.",
       "created_at": "2026-10-05T14:14:49.494943Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Semantic Audio Features"
+        "name": "Semantic Audio Features",
+        "settings": {}
       }
     },
     {
@@ -53,10 +59,12 @@
       "text": "The reproducibility fix a200a5fc introduces carried algorithm version umap-random-init-seed42-v1. Recompute the current real local corpus into a separate immutable pending-review draft; preserve prior run bytes and leave publication pointer absent. This is ground analysis only, not curator approval or public rollout. Root will capture run identity, model/version, counts and pending quality state.",
       "created_at": "2026-10-05T14:58:26.734097Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Semantic Audio Features"
+        "name": "Semantic Audio Features",
+        "settings": {}
       }
     },
     {
@@ -65,22 +73,40 @@
       "text": "Fresh real-library draft completed a66b94482498f1db3d411e6822c048caa6a98662bb0c51117b97749f9faffca1:27219deduplicatedregions,591clusters,5472outliers. Manifest carries apricity-audio-clusters=umap-random-init-seed42-v1 plus pinneddependencies. State draft qualityReview pending. Prior f54c7404 run preserved; no publication/listeningapproval performed.",
       "created_at": "2026-10-05T15:04:34.543898Z",
       "comment_type": "default",
+      "data": {},
       "agent": {
         "platform": "codex",
         "model": "GPT-6",
-        "name": "Semantic Audio Features"
+        "name": "Semantic Audio Features",
+        "settings": {}
+      }
+    },
+    {
+      "id": "c482d27d-eb4a-449f-a41d-da573f724473",
+      "author": "unknown",
+      "text": "2026-10-19 status: still waiting on Ryan's listening/coherence review of draft run a66b9448 (591 clusters, 5472 outliers, 27219 deduplicated regions, quality review pending, nothing published). No progress since 2026-10-05. Nothing blocks it on the engineering side; the next agent should ask Ryan to do the listening review, then publish via the explicit publish step. Publishing the live sound explorer also needs AWS, which means the Mac (see apricitus-45bcc4d0).\n",
+      "created_at": "2026-10-19T16:44:46.935616Z",
+      "comment_type": "default",
+      "data": {},
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff",
+        "settings": {}
       }
     }
   ],
   "created_at": "2026-09-30T18:43:43.287061Z",
-  "updated_at": "2026-10-05T15:04:34.543929Z",
+  "updated_at": "2026-10-19T16:44:46.935800Z",
   "closed_at": null,
+  "right_now_summary": "An immutable draft run exists, but explicit publication and listening approval are still pending.",
+  "right_now_updated_at": "2026-10-05T15:04:36.465134Z",
+  "custom": {},
   "agent": {
     "platform": "codex",
     "model": "GPT-6",
-    "name": "Semantic Audio Features"
+    "name": "Semantic Audio Features",
+    "settings": {}
   },
-  "right_now_summary": "An immutable draft run exists, but explicit publication and listening approval are still pending.",
-  "right_now_updated_at": "2026-10-05T15:04:36.465134Z",
-  "custom": {}
+  "agent_assignment": null
 }

@@ -3,7 +3,7 @@
   "title": "Harmony checker misranks single-voice timbre auditions",
   "description": "Confirmed by reproducing CLI output: isolated voices A/B/C receive consonance 86.71/93.22/95.30 despite this being an inappropriate timbre ranking. check.rs selects the first event-bearing stem as bass, including a sole melody and unordered multiple candidates. Cross-stem clash is zero here; the remaining penalty is bass-semitone energy, not clarity. Removing event metadata from unchanged C audio raises its score to 100. Render metadata also loses written chords when harmonic solver fit is absent, disabling target/coverage context. Repair bass identification and harmony metadata; expose metric components and applicability. Separate expected-pitch accuracy, stability and broadband descriptors from musical taste. The original A/B/C comparison also changed register, lengths and effects; controlled same-MIDI experiments and synthetic checks are recorded in the investigation comment. Do not add a generic within-stem noise/self-clash quality penalty.",
   "type": "bug",
-  "status": "in_progress",
+  "status": "open",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -58,10 +58,22 @@
         "model": "GPT-6",
         "name": "Sol"
       }
+    },
+    {
+      "id": "0d283cb3-6a85-4f2e-b6b7-8382a8832da7",
+      "author": "unknown",
+      "text": "2026-10-19 status: bug is real and unfixed (check.rs treats the first event-bearing stem, even a lone melody, as bass). Parent apricitus-ad7a11 is a finished audition experiment, and a prior review proposed closing it and moving this bug back to open; Ryan has not answered, so no status change was made. The 2026-10-10 listening trial stalled on a macOS keychain prompt (scripts/lab list --target cloud); that needs Ryan's Mac keychain access.\n",
+      "created_at": "2026-10-19T16:44:48.317593Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude-code",
+        "model": "claude-sonnet-5-5",
+        "name": "handoff"
+      }
     }
   ],
   "created_at": "2026-09-30T13:13:20.879697Z",
-  "updated_at": "2026-10-10T09:22:28.225098Z",
+  "updated_at": "2026-10-19T19:05:05.071138Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
