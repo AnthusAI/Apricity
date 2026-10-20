@@ -1,6 +1,5 @@
 """Per-sample "fit-feature" sidecar: precomputed per-beat / quarter-beat audio features used by
-the stochastic mash-up optimizer's compile-informed surrogate (Kanbus apricitus-798704; design in
-the apricitus-7e51f2 epic's first comment, section 2b).
+the stochastic mash-up optimizer's compile-informed surrogate.
 
 For each sample manifest `<file>.apricity.json` this module computes a sidecar
 `<file>.fitfeat.npz` on the sample's own beat grid (`manifest["rhythm"]["beats"]`, a list of `N`

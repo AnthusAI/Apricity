@@ -1,7 +1,6 @@
 """Harmony v2 Phase 2 Python reference: the chord-following EQ's band design and its RBJ peaking
-biquad bank. This is the *reference* `HarmonicBank` (Rust, `crates/apricity-dsp/src/fx.rs`,
-Kanbus `apricitus-35c9f3`) is checked for parity against. Design: Kanbus epic `apricitus-445cae`,
-`spec-harmony-v2.md` sec 4.
+biquad bank. This is the *reference* `HarmonicBank` (Rust, `crates/apricity-dsp/src/fx.rs`)
+is checked for parity against. Design: `spec-harmony-v2.md` sec 4.
 
 Deliberately does not use `scipy.signal` for the filter: its peaking-EQ coefficient formulas
 round differently from the RBJ Audio EQ Cookbook formula `Biquad::set` implements, so this file

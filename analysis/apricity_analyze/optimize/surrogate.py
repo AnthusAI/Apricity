@@ -10,7 +10,7 @@ share their formulas with `layer.py`'s L1 terms (`term_masking`, `term_rhythm_on
 the same way the chroma term already is: walk the compiled event's `warp` map and index the
 source's own sidecar arrays. A sample with no sidecar falls back to `masking=0.0`/`rhythm=0.0` for
 that track only (documented, not silently dropped -- see `_track_quarter_vectors`'s `has_sidecar`
-flag; see Kanbus apricitus-798704 for how the sidecar-coverage gap was found and tracked). The
+flag). The
 analytic gain step (L-BFGS-B over volume/hp) is still not implemented; volume/hp are small
 discrete genes searched at L0 (see `genome.py`).
 """

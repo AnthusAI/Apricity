@@ -108,7 +108,7 @@ def render_bar35(out_dir: pathlib.Path, samples_root: pathlib.Path = DEFAULT_SAM
 
 
 # The release binary (`BINARY`, used by `render_bar35` above) predates `stems.json`'s `bass` and
-# `events` fields (Kanbus `apricitus-a164db`'s Phase 1 task 1, merged since); the COMBINED
+# `events` fields, which were added later; the COMBINED
 # chord-recognition pipeline (`harmony2_ref.analyze_stems_dir`) needs both -- it reads the score's
 # own bass instead of re-deriving one from audio (sec 2.3, "ground truth first"). Only the debug
 # profile has them until the workspace's release binary is rebuilt.

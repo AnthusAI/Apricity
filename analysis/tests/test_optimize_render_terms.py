@@ -1,4 +1,4 @@
-"""Render-fidelity contribution/composite (Kanbus apricitus-a9ad5b round 2, fixing the "null gate
+"""Render-fidelity contribution/composite (the fix for the "null gate
 is impossible by construction" finding): `null_render_terms` + `render_composite` land on exactly
 `J=100`, computed via the same function every candidate goes through (not hard-coded); a synthetic
 candidate that fills an empty spectral gap with no clash CAN clear the delta=2 margin; a clashing

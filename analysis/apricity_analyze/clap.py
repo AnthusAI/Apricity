@@ -1,6 +1,5 @@
-"""CLAP audio/text embeddings (Kanbus apricitus-798704, the stochastic mash-up optimizer's Phase
-1 CLAP decision -- genre/timbre fit is the compile-informed surrogate's blind spot; see the
-apricitus-7e51f2 epic's first comment, end of section 4 and open question 5).
+"""CLAP audio/text embeddings (the stochastic mash-up optimizer's Phase
+1 CLAP decision -- genre/timbre fit is the compile-informed surrogate's blind spot).
 
 Checkpoint: `laion/clap-htsat-unfused` (Hugging Face `transformers`' `ClapModel`), chosen by
 comparing candidate checkpoints' download size via the HF API (`hf_model_size`) without

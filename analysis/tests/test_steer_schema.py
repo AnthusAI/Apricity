@@ -1,5 +1,5 @@
-"""`apricity steer`'s output validates against `schema/steer.schema.json` (Kanbus
-apricitus-c46688). Renders a small `--bars --stems` window of `examples/ave-emerge.apr`, runs
+"""`apricity steer`'s output validates against `schema/steer.schema.json`.
+Renders a small `--bars --stems` window of `examples/ave-emerge.apr`, runs
 `apricity steer` on it, validates the result, then deletes the render (no audio in git, and
 renders aren't kept on disk between test runs)."""
 

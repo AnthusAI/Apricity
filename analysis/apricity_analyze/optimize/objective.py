@@ -94,6 +94,6 @@ DELTA_MARGIN_DEFAULT = 2.0
 # quality while still being worth having. `WHOLE_MIX_MARGIN` is the tie-tolerance below which a
 # candidate is rejected as a net loss rather than a near-tie. It is calibrated against recorded
 # listening verdicts, not guessed or derived analytically -- see the verdict log
-# (`renders/log.jsonl`) and Kanbus apricitus-a9ad5b / apricitus-dbed5c for how it was set and
+# (`renders/log.jsonl`) for how it was set and
 # re-validated.
 WHOLE_MIX_MARGIN = -2.0

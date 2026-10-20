@@ -14,7 +14,7 @@ NAMES = {"public-domain": "Public domain", "cc0-1.0": "CC0 1.0", "cc-by-3.0": "C
 def classify(url: str | None) -> tuple[str | None, str]:
     """(license code or None, plain reason). Code is None when Apricity can't use it.
 
-    `"public-domain-statement"` (Kanbus apricitus-a9ad5b): a free-text `rights` field that plainly
+    `"public-domain-statement"`: a free-text `rights` field that plainly
     states public domain, not a `creativecommons.org`/`publicdomain.zero` *URL* -- e.g. a
     `sources.json` entry might read:
       "Public domain (composition pre-1923; recording is a work of the U.S. Government)."
@@ -24,7 +24,7 @@ def classify(url: str | None) -> tuple[str | None, str]:
     Before this, `classify()` only recognized CC/PDM *URLs*, so every one of the above came back
     "unrecognized license" -- which meant `region_candidates()`'s `_license_ok` rejected any
     sample whose catalog entry used a plain-text public-domain statement instead of a URL, even
-    once its directory scan covered every source family (see Kanbus apricitus-a9ad5b). Matched
+    once its directory scan covered every source family. Matched
     case-insensitively on the statement *starting*
     with "public domain" (so a caveat like the LoC one above, or "no known copyright", is not
     swept in by this rule alone) or containing "work of the u.s. government" anywhere (a federal

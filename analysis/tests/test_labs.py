@@ -1,4 +1,4 @@
-"""Labs (Kanbus apricitus-e59a0b): `lab start|list|attach` against a temp local library, and
+"""Labs: `lab start|list|attach` against a temp local library, and
 against the cloud CLI shell-out (`apricity lab ...` / `apricity cycle attach`), with `run_json`
 faked so nothing here spawns a real subprocess or touches the network."""
 

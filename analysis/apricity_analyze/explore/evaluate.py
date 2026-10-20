@@ -106,7 +106,7 @@ class Evaluator:
 def delete_cache(ev: "Evaluator", text: str, bars: tuple[int, int] | None = None) -> None:
     """Delete one candidate's cached render (`.apr`, `.wav`, `.stems/` and the small `.json`
     result) once its metrics have been extracted, so a run with many losing candidates doesn't
-    keep every one of their renders on disk (Kanbus apricitus-ae80d4: an 8-candidate explorer run
+    keep every one of their renders on disk (an 8-candidate explorer run
     reached 3.8 GB and tripped the disk watchdog). Deleting the `.json` too -- not just the audio
     -- matters: it forces a fresh render if this exact (text, bars) is ever evaluated again,
     rather than returning a cache hit that points at a stems dir which no longer exists."""

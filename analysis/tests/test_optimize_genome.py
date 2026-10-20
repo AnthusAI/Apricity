@@ -1,4 +1,4 @@
-"""Genome round trips (Kanbus apricitus-a9ad5b): every role's `Genome.text()` output compiles,
+"""Genome round trips (optimizer): every role's `Genome.text()` output compiles,
 `track.add_part` is idempotent-ish under recast (removes the old block first), and `sample`/
 `mutate`/`crossover` stay within the declared gene domains."""
 

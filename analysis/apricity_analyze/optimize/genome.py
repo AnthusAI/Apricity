@@ -51,7 +51,7 @@ OCTAVES = (2, 3, 4)
 ROLE_OCTAVES: dict[str, tuple[int, ...]] = {"bass": (1, 2), "pad": (2, 3), "stab": (3, 4)}
 VOLUMES = (-12.0, -9.0, -6.0, -3.0, 0.0)
 HPS: tuple[float | None, ...] = (None, 120.0, 180.0, 300.0)
-# The chord-following EQ (spec-harmony-v2.md sec 4.7, Kanbus apricitus-db34ad): `None` most of
+# The chord-following EQ (spec-harmony-v2.md sec 4.7): `None` most of
 # the time (it's an extra effect, not a default), else one of the three presets the user asked
 # the optimizer be free to explore -- not only the invisible `cleanup` one.
 HARMONICS: tuple[str | None, ...] = (None, None, None, "cleanup", "resonant", "comb")

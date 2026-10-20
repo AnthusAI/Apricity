@@ -52,8 +52,7 @@ class Archive:
         (source, entry window, role), not source alone. This matters because deduping on source
         alone can collapse the L1 pool to a handful of candidates: when the top of the ranking is
         dominated by a few (source, window) combinations scoring near-identically, a source-only
-        cap discards almost everything else regardless of how high the cap is raised (see Kanbus
-        apricitus-a9ad5b). When both `max_per_source` and `key_fn`/`max_per_key` are given, an
+        cap discards almost everything else regardless of how high the cap is raised. When both `max_per_source` and `key_fn`/`max_per_key` are given, an
         entry must clear both caps."""
         ranked = sorted(self.all_entries(), key=lambda e: (-e.J, e.genome.key()))
         kept: list[Entry] = []

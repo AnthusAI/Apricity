@@ -1,5 +1,5 @@
 """Tests for the fit-feature sidecar (`apricity_analyze.features`) and the CLAP embeddings
-(`apricity_analyze.clap`), Kanbus apricitus-798704.
+(`apricity_analyze.clap`).
 
 The feature-extraction tests build one short synthetic signal on a known 1-second beat grid: a
 60 Hz tone for the first half (tonal, bass-heavy) and white noise for the second half (non-tonal),

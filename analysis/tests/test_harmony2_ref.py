@@ -1,4 +1,4 @@
-"""Acceptance tests for `apricity_analyze.harmony2_ref` (Kanbus `apricitus-e5cb09`, Harmony v2
+"""Acceptance tests for `apricity_analyze.harmony2_ref` (Harmony v2
 Phase 1 task 2). Synthetic fixtures (sec 5.3 of `spec-harmony-v2.md`) are built IN MEMORY at test
 time by `tests/fixtures/harmony2/generate.py` -- no audio is committed anywhere in this repo
 (`.gitignore` blocks `*.wav`; a checked-in fixture would silently vanish on a fresh clone and
@@ -10,7 +10,7 @@ present.
 Also regenerates `tests/fixtures/harmony2/expected.json` (per-fixture activations, cents, and
 notes -- numbers only, no audio, fine to commit) from the synthetic fixtures and diffs it against
 the checked-in copy, so a drift on either side of the Rust parity test (`apricity-harmony`,
-`crates/apricity-harmony/tests/synth.rs` + `tests/parity.rs`, Kanbus `apricitus-c7ffff`) is caught
+`crates/apricity-harmony/tests/synth.rs` + `tests/parity.rs`) is caught
 here first.
 """
 
@@ -178,7 +178,7 @@ def test_bass_stem_sanity_real_emerge_bar35(tmp_path):
 
 # --------------------------------------------------------------------------- Harmony v2 Phase 1 task 4:
 # chord recognition, Q, objective_v2, the v1 port and guards (sec 2.4-2.6 of spec-harmony-v2.md,
-# Kanbus apricitus-a164db)
+# Harmony v2 Phase 1 task 4)
 
 
 def _tone(name: str, octave: int, amp: float, v: np.ndarray | None = None) -> np.ndarray:
@@ -330,7 +330,7 @@ def test_lounge_fixture_ranks_emerge_first_with_q_weight_10():
     """Acceptance test (sec 5.1 of spec-harmony-v2.md): of a set of bright-loop swaps rendered
     over the same window, the candidate the listener preferred must rank FIRST by `objective_v2`,
     even though v1 alone did not rank it first (evidence for the preference and the v1 gap lives
-    in the Kanbus task and `renders/log.jsonl`, not here). Replays the committed
+    in `renders/log.jsonl`, not here). Replays the committed
     `lounge_summaries.json` fixture (no audio, no render) built by rendering the real windows
     once."""
     fixture = json.loads((FIXTURES / "lounge_summaries.json").read_text())
@@ -342,7 +342,7 @@ def test_lounge_fixture_ranks_emerge_first_with_q_weight_10():
 def test_cycle2_fixture_ranks_the_incumbent_keep_first_with_q_weight_10():
     """Acceptance test (sec 5.2): of a set of bright-loop candidates, the listener's preferred
     incumbent must rank first by `objective_v2` at weight 10, matching both v1 and the recorded
-    verdict (see the Kanbus task and `renders/log.jsonl` for the verdict itself). Replays the
+    verdict (see `renders/log.jsonl` for the verdict itself). Replays the
     committed `cycle2_summaries.json` fixture (no audio, no render)."""
     fixture = json.loads((FIXTURES / "cycle2_summaries.json").read_text())
     scores = {name: _replay_window(song)["objective_v2"] for name, song in fixture.items()}

@@ -1,4 +1,4 @@
-"""The 16-bar audition form (Kanbus apricitus-dbed5c): judge a candidate layer the way the user
+"""The 16-bar audition form: judge a candidate layer the way the user
 actually listens to it, not by rendering (and keeping) a full 40-bar take.
 
     apricity render <candidate.apr> --bars W -o tmp.wav --stems tmp.stems   # once
@@ -15,7 +15,7 @@ across all of W for the audition render only -- the source `.apr` file on disk i
 
 Everything is rendered exactly once (`--bars W --stems`); the WAV and stems directory are deleted
 as soon as the audition (and, with `--check`, the harmony objective) have been computed from them
--- only the final `.m4a` and a small JSON of numbers survive (Kanbus apricitus-ae80d4: the explorer
+-- only the final `.m4a` and a small JSON of numbers survive (the explorer
 and, before it, the optimizer, blew the disk by keeping renders around).
 """
 

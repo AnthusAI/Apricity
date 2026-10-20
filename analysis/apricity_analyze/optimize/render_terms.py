@@ -1,4 +1,4 @@
-"""Render-fidelity scoring for L1 (Kanbus apricitus-a9ad5b): the positive **contribution**
+"""Render-fidelity scoring for L1: the positive **contribution**
 term (spec section 4) computed from the actual rendered stems, plus a rendered composite `J` that
 puts a candidate and the null control ("nothing added") on the *same* scale.
 
