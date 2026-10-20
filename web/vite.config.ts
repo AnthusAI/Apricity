@@ -1,5 +1,30 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import { fileURLToPath } from "node:url";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { PAGES } from "./src/route.ts";
+import { robotsTxt, routeFile, routeHtml, sitemapXml } from "./scripts/static-routes.ts";
+
+// After the build, give every client route its own document (<route>/index.html) and write the crawler files,
+// so a deep link answers 200 from the static host instead of redirecting to a directory that is not there.
+const staticRoutes = (): Plugin => {
+  let outDir = "dist";
+  return {
+    name: "static-routes",
+    apply: "build",
+    configResolved: (config) => void (outDir = config.build.outDir),
+    closeBundle() {
+      const index = readFileSync(join(outDir, "index.html"), "utf8");
+      for (const page of PAGES.filter((p) => p !== "home")) {
+        const file = join(outDir, routeFile(page));
+        mkdirSync(dirname(file), { recursive: true });
+        writeFileSync(file, routeHtml(index, page));
+      }
+      writeFileSync(join(outDir, "robots.txt"), robotsTxt());
+      writeFileSync(join(outDir, "sitemap.xml"), sitemapXml());
+    },
+  };
+};
 
 // The data, files and engine come from the local backend: `apricity serve --library` (or the older
 // Python server) on :5181, or on APRICITY_API_PORT. It answers amplify_outputs.json with this dev
@@ -20,6 +45,7 @@ export default defineConfig({
     fs: { allow: [fileURLToPath(new URL(".", import.meta.url)), fileURLToPath(new URL("../docs", import.meta.url))] },
   },
   preview: { headers: isolation },
+  plugins: [staticRoutes()],
   worker: { format: "es" },
   build: { target: "es2022" },
 });
