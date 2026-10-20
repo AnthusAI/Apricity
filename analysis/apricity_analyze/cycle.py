@@ -1,6 +1,6 @@
 """Listening cycles: publish a blind A/B/C/D round of a score's candidates, and pull the verdict back.
 
-The human-in-the-loop loop (Kanbus apricitus-2101dd): the local explorer (`scripts/explore.py`) leaves
+The human-in-the-loop loop: the local explorer (`scripts/explore.py`) leaves
 finalists; `cycle.py publish` makes each one a fork Score (tagged "candidate", folder "cycles/<id>"),
 uploads its cached render, and writes a `ListeningCycle` with the incumbent as one lettered option among
 them, letters shuffled so nobody knows which is which. A person rates the options and saves a verdict in
@@ -266,7 +266,7 @@ class LocalBackend:
         cyc = {**cyc, "status": "closed", "closedAt": closed_at, "updatedAt": now_iso()}
         self._write("ListeningCycle", cycle_id, cyc)
 
-    # ----------------------------------------------------------------------- labs (apricitus-e59a0b)
+    # ----------------------------------------------------------------------- labs
 
     def create_lab(self, scene_score_id: str, title: str, brief: str | None = None) -> dict:
         lab_id = new_lab_id()

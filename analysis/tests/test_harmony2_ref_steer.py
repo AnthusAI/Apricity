@@ -1,4 +1,4 @@
-"""`apricity_analyze.harmony2_ref.build_steer_report` (Kanbus apricitus-c46688, Harmony v2 Phase 1
+"""`apricity_analyze.harmony2_ref.build_steer_report` (Harmony v2 Phase 1
 Task 6's Python side). Renders a small `--bars --stems` window of `examples/ave-emerge.apr` (real
 audio; skips when the sample library isn't checked out, same convention as
 `tests/fixtures/harmony2/emerge_fixture.py`) and checks the report's shape and its agreement with

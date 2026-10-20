@@ -1,7 +1,7 @@
 """Harmony v2 Python reference: octave-aware note salience and chord recognition.
 
-This is the *reference* `apricity-harmony` (Rust, Kanbus `apricitus-c7ffff`) is checked against
-for parity. Design: Kanbus epic `apricitus-445cae`, `spec-harmony-v2.md` secs 2.1-2.3, 2.7, 5.3.
+This is the *reference* `apricity-harmony` (Rust) is checked against
+for parity. Design: `spec-harmony-v2.md` secs 2.1-2.3, 2.7, 5.3.
 
 Deliberately does **not** use `librosa.cqt`: its kernel normalisation and windowing differ from a
 straight Brown & Puckette (1992) sparse-kernel CQT, so the two implementations (this file and
@@ -448,7 +448,7 @@ SPACING_REGISTER_MIDI = 48  # C3
 def q_spacing(notes_by_stem: dict[str, list[int]], allow_maj7_under_bass: bool = True) -> float:
     """`1 - (pairs of sounding notes <= SPACING_MAX_SEMITONES apart below C3, per note below C3)`
     (sec 2.5). A major 7th sitting a semitone under the bass is treated as colour, not mud (a
-    listening decision recorded on Kanbus apricitus-445cae): with `allow_maj7_under_bass` (the
+    listening decision): with `allow_maj7_under_bass` (the
     default), a semitone-apart pair (`d == 1`) between two different stems, both below C3, is left
     out of the pair count; any other close low pair (major 2nds through major 3rds) still counts."""
     all_notes: list[tuple[str, int]] = [(stem, n) for stem, ns in notes_by_stem.items() for n in ns]
@@ -813,7 +813,7 @@ def analyze_stems_dir(stems_dir, target_sr: int = SR) -> dict:
     return {"spans": spans_out, "window": window_objective(spans_out, span_mass), "stems": list(stem_beat_activation)}
 
 
-# --------------------------------------------------------------------------- the steering report (sec 3, Kanbus apricitus-c46688)
+# --------------------------------------------------------------------------- the steering report (sec 3)
 #
 # `build_steer_report` is the reference `apricity steer <stems dir> [--against written|heard]`
 # writes (sec 3.1's schema draft): `analyze_stems_dir`'s per-span chord/Q/objective plus per-stem

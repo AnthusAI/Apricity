@@ -1,4 +1,4 @@
-"""Deterministic sidecar v2 freshness and preprocessing tests (apricitus-dbcb9b)."""
+"""Deterministic sidecar v2 freshness and preprocessing tests."""
 
 from __future__ import annotations
 

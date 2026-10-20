@@ -49,7 +49,7 @@ def test_cache_hit_does_not_re_render(tmp_path, monkeypatch):
 
 
 def test_delete_cache_removes_apr_wav_stems_and_json_but_not_baseline(tmp_path, monkeypatch):
-    """Kanbus apricitus-ae80d4: a losing candidate's render must not linger in `.cache/` once its
+    """A losing candidate's render must not linger in `.cache/` once its
     metrics have been read. `baseline.json` (the run's one shared reference point) lives outside
     `.cache/` and must survive."""
 

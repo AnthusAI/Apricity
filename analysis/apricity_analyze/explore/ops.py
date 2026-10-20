@@ -30,7 +30,7 @@ OP_NAMES = frozenset({
     "track.harmonic",
 })
 
-# The chord-following EQ's presets (spec-harmony-v2.md sec 4.7, Kanbus apricitus-db34ad). The
+# The chord-following EQ's presets (spec-harmony-v2.md sec 4.7). The
 # optimizer may try any of them, the creative ones as well as the invisible cleanup.
 HARMONIC_PRESETS = {
     "cleanup": "harmonic cut 6dB tolerance 20c harmonics 6 range 100..3k glide 60ms",
@@ -477,7 +477,7 @@ def track_add_part(text: str, *, track: str, clip_line: str, track_lines: list[s
     """Append (or, when `recast`, first remove then append) one new part: a `clip <track> = ...`
     line, an optional `kit <track> ...` block (for a sliced-kit role), and a `track <track> ...`
     block (`track_lines[0]` is the declaration; the rest are its indented continuation lines).
-    This is the optimizer's one structural op (Kanbus apricitus-a9ad5b): it never edits another
+    This is the optimizer's one structural op: it never edits another
     part, so re-proposing the same genome twice is idempotent up to `recast`'s remove-then-add."""
     lines = _lines(text)
     if recast:

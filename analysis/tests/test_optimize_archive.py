@@ -1,4 +1,4 @@
-"""MAP-Elites archive determinism and the objective's null-control gating (Kanbus apricitus-a9ad5b
+"""MAP-Elites archive determinism and the objective's null-control gating (optimizer
 acceptance tests 1 and 3): inserting the same entries in a different order produces the same
 top-N, capacity per cell is respected, and the null control's composite is the fixed `J=100`
 anchor every finalist's `delta = J - J_null >= 2` margin is measured against."""

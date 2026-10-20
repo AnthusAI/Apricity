@@ -264,7 +264,7 @@ def inner_loop(base_text: str, *, role: str, evaluator: evaluate_mod.Evaluator, 
                 "guard_violations": c_tr.guard_violations, "accepted": accept, "error": c_tr.error,
             })
             if accept:
-                # Disk (apricitus-ae80d4): the old current's render is never read again once a
+                # Disk: the old current's render is never read again once a
                 # better one replaces it (`tr` is about to be reassigned) -- delete it now rather
                 # than at the end of the whole outer loop. The *new* current (`c_tr`/`c_ho`)
                 # stays cached: the top of the next sweep reads `tr.stems_dir`.
@@ -326,7 +326,7 @@ def outer_loop(base_text: str, *, role: str, cast_list: list[candidates_mod.Cand
     # Top 4, diversity: at most one survivor per source recording.
     top4 = diverse_top_n([(c, t) for (c, t), r in ranked if r.ok], 4, source_of=lambda item: item[0].source)
 
-    # Disk (apricitus-ae80d4): stage 1 renders every cast's training-window audio, but only the
+    # Disk: stage 1 renders every cast's training-window audio, but only the
     # top 4 ever get read again (by stage 2's inner_loop, which re-evaluates and gets a cache
     # hit). Delete the losing casts' renders right away instead of leaving them in .cache for the
     # rest of the run -- an 8-candidate run kept every one of them and hit 3.8 GB.
@@ -367,7 +367,7 @@ def outer_loop(base_text: str, *, role: str, cast_list: list[candidates_mod.Cand
     wav_path = pathlib.Path(best["result"].stems_dir).parent / (pathlib.Path(best["result"].stems_dir).stem + ".wav") if best["result"].stems_dir else None
     notebook.finalize_best(best["text"], wav_path)
 
-    # Disk (apricitus-ae80d4): stage 3's full renders (the biggest ones -- a whole song's worth of
+    # Disk: stage 3's full renders (the biggest ones -- a whole song's worth of
     # stems each) are only needed to pick `best` and write the leaderboard/best.wav/best.apr,
     # all done above. The Evaluator's own `baseline.json` (the incumbent's shared reference
     # objective) lives outside `.cache/` and is untouched by this; every candidate's `.cache`

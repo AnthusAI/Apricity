@@ -1,4 +1,4 @@
-"""`scripts/optimize.py`'s score-derived helpers (Kanbus apricitus-2fafca): section detection and
+"""`scripts/optimize.py`'s score-derived helpers: section detection and
 positive-control derivation must come from whatever score is passed in, not be tied to one
 example's structure or clip names. Checked against more than one example score, none of them
 hard-coded into the helpers themselves.

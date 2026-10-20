@@ -5,11 +5,11 @@ warp maps, key, notes), then describe a piece as a score, and Apricity warps eve
 transposes each so that together they sound the chords you ask for. It speaks a DAW's language:
 samples, clips, slices, kits and pads, group and return tracks ([Coming from Live](docs/concepts.md#coming-from-live)).
 
-Status: **Phase 5 in progress**: the Apricity text language, automatic markup (sections, loops, one-shots), sampler-style kits (slices and pads), step patterns and flips are in. So is the mixer: effects (EQ, compression with sidechain, drive, lo-fi, noise gate, width, reverb, delay), volume, pan, sends, group and return tracks, and a loudness-targeted master ([design/mixer.md](design/mixer.md)). The vocabulary follows the usual DAW words ([design/vocabulary.md](design/vocabulary.md)). In progress: the curation loop ([design/framework.md](design/framework.md)); then the Swift app.
+Status: **working end to end**, with the web app live at [apricity.anth.us](https://apricity.anth.us). The Apricity text language, automatic markup (sections, loops, one-shots), sampler-style kits (slices and pads), step patterns and flips are in. So is the mixer: effects (EQ, compression with sidechain, drive, lo-fi, noise gate, width, reverb, delay), volume, pan, sends, group and return tracks, and a loudness-targeted master ([design/mixer.md](design/mixer.md)). The vocabulary follows the usual DAW words ([design/vocabulary.md](design/vocabulary.md)). Also in: the curation loop (listening cycles and labs; [design/framework.md](design/framework.md)) and Harmony v2 chord recognition. Planned: the Swift app.
 
 ## Documentation
 
-Start with **[docs/](docs/README.md)** (also in the web app's **Docs** tab):
+Start with **[docs/](docs/README.md)** (also in the web app's **Help** tab):
 [Concepts](docs/concepts.md) · [The Apricity language](docs/language.md) · [YAML scores](docs/yaml.md) ·
 [Chords and keys](docs/chords.md) · [Tools](docs/tools.md) · [Glossary](docs/glossary.md).
 
@@ -21,13 +21,17 @@ Start with **[docs/](docs/README.md)** (also in the web app's **Docs** tab):
 | `schema/` | JSON Schemas; `sample-manifest.schema.json` is the contract between analysis and engine |
 | `crates/apricity-theory` | Pitch classes, keys and modes, roman numerals (`iv` ≠ `IV`), chord symbols, Camelot, key finding, the harmony solver |
 | `crates/apricity-score` | Score format (strict; every mistake reported with its location), clips by a saved clip, beats, seconds or `pick`, compile → timeline |
+| `crates/apricity-harmony` | Harmony v2: octave-aware note salience (CQT + NNLS) and chord recognition, checked against the Python reference |
+| `crates/apricity-data` | Domain logic as pure functions: ids, ranking, markup merge |
+| `crates/apricity-sources` | Downloads, verifies and removes predefined public-domain audio sources |
 | `crates/apricity-engine` | Render ahead, mix live: the `Renderer` pre-warps events into an `Arrangement` (cached, so edits re-render only what changed); the real-time `Mixer` loops it and swaps new arrangements in at the bar line with a crossfade. Never allocates on the audio thread. Builds for wasm. |
-| `crates/apricity-cli` | `apricity compile`, `explain`, `render`, `play` |
+| `crates/apricity-cli` | The `apricity` command: `compile`, `explain`, `render`, `play`, `fmt`, `check`, `steer`, `serve`, `sources`, `sync`, `migrate`, plus the signed-in cloud commands (`login`, `score`, `sample`, `lab`, `cycle`) |
 | `examples/` | Scores. `iv-of-ab-minor.yaml` is the first milestone |
 | `crates/apricity-dsp` | Rubber Band (vendored, single-file build) behind a safe Rust API: offline stretch, pitch shift, warp markers via key-frame maps |
 | `crates/apricity-web` | C-ABI WebAssembly surface for the browser: compiler (page), renderer (workers), mixer (AudioWorklet) |
 | `web/` | The web app (Vite + TypeScript, CodeMirror) |
 | `analysis/apricity_analyze/server.py` | Local API server: samples, files, saving clips/markers and scores, upload + analysis |
+| `crates/apricity-daw` | Test fixtures for the DAW-interchange work only; not a crate yet (excluded from the workspace) |
 | `vendor/rubberband` | Rubber Band Library v4.0.0 (git submodule, GPL) |
 
 ## Building
@@ -135,10 +139,13 @@ npm --prefix web install && npm --prefix web run dev                     # app o
 
 Or build once (`npm --prefix web run build`) and open http://localhost:5181, served by the Python server alone.
 
-- **Library**: every analyzed sample with tempo, steadiness, key over time and tuning. Drag on the waveform to
+The tabs are **Scores**, **Beats**, **Chords** and **Melodies** (a score lives under the tab of its kind), **Clips**,
+**Samples**, **Sounds** and **Help**. Home, Listen (blind A/B rounds), Labs, Tags and Search are pages too.
+
+- **Samples** and **Clips**: every analyzed sample with tempo, steadiness, key over time and tuning. Drag on the waveform to
   select (snaps to beats; ⌥ for free), make clips, name them, and save them with the sample.
-  "Copy for score" gives you the `clip` line. Drop audio files on the sidebar to add and analyze them.
-- **Score**: edit `.apr` or YAML; it compiles as you type (problems marked in the editor), shows the chord strip and how
+  "Copy for score" gives you the `clip` line.
+- **Scores** (and Beats, Chords, Melodies): edit `.apr` or YAML; it compiles as you type (problems marked in the editor), shows the chord strip and how
   every clip was transposed, and the **Flow** view traces every note back to its sample. Press play (or Space): edits land at the next bar. ⌘S saves.
 
 How the browser runs it: the page compiles (wasm); a pool of render workers warps events with Rubber Band

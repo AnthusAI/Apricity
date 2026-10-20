@@ -1,4 +1,4 @@
-"""Harmony v2 backtest harness (Kanbus `apricitus-85ebc7`, Task 7 of Harmony v2 Phase 1), as an
+"""Harmony v2 backtest harness (Task 7 of Harmony v2 Phase 1), as an
 importable module -- moved out of `scripts/harmony-backtest.py`'s `main()` so `lab backtest` and
 the script (now a thin wrapper) share one implementation.
 
@@ -42,7 +42,7 @@ class VerdictSet:
 
 # The two verdict sets the design's own validation identified as harmony-shaped (the others in
 # `renders/log.jsonl` are about arrangement or instrumentation, not chord/register fit, or have no
-# render on disk to re-check). See the Kanbus epic and `renders/log.jsonl` for the verdicts
+# render on disk to re-check). See `renders/log.jsonl` for the verdicts
 # themselves -- this file only names which candidate rendered from which score.
 def verdict_sets() -> list[VerdictSet]:
     d = BACKTEST_SCORES

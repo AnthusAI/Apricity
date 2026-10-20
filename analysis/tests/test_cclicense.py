@@ -28,7 +28,7 @@ def test_licenses_we_refuse_say_why(url, why):
     assert code is None and why in reason
 
 
-# Round 3 (Kanbus apricitus-a9ad5b review): free-text `rights` statements, taken verbatim from
+# Free-text `rights` statements, taken verbatim from
 # samples/sources.json's real loc/, citizen-dj/ and marine-band/ entries (confirmed by inspection
 # during the review), not URLs -- `classify()` only recognized CC/PDM URLs before this.
 @pytest.mark.parametrize("rights,code", [
@@ -56,7 +56,7 @@ def test_free_text_that_only_hedges_or_says_free_to_use_still_unrecognized(right
 
 def test_source_json_folders_now_pass_the_license_filter():
     """End-to-end: every real `loc/`, `citizen-dj/` and `marine-band/` rights string this repo's
-    `samples/sources.json` actually carries (as of the apricitus-a9ad5b round-2 report) now
+    `samples/sources.json` actually carries (as of when these statements were added) now
     resolves through the same path `explore.candidates._license_ok` uses, confirming the
     directory-widening from round 2 can actually reach non-ccMixter families now that this
     module recognizes their license statements."""

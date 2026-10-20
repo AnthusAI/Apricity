@@ -1,4 +1,4 @@
-"""Tests for `apricity_analyze.audition_form` (Kanbus apricitus-dbed5c): the 16-bar audition
+"""Tests for `apricity_analyze.audition_form`: the 16-bar audition
 assembly on synthetic stems, the comment-safe `bars` rewrite, and that a full `build_audition`
 call leaves no WAV or stems directory behind. All synthetic/monkeypatched, so these run fast
 without a real `apricity` render.

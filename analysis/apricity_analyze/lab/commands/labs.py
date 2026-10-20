@@ -1,4 +1,4 @@
-"""`lab start|list|attach`: labs (Kanbus apricitus-e59a0b) group the listening cycles published while
+"""`lab start|list|attach`: labs group the listening cycles published while
 working one scene. `--target cloud` shells out to `apricity lab ...` / `apricity cycle attach` (the
 authenticated cloud CLI -- `apricity login`, crates/apricity-cli/src/cloud.rs -- so `owner` is set
 server-side and this never touches AWS credentials itself); `--target local` writes to the library

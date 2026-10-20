@@ -1,10 +1,10 @@
-"""Acceptance tests for `apricity_analyze.harmonic_ref` (Kanbus `apricitus-ddc14b`, Harmony v2
+"""Acceptance tests for `apricity_analyze.harmonic_ref` (Harmony v2
 Phase 2 task 8: the chord-following EQ's band design and RBJ biquad bank reference). The 4-chord
 fixture (`tests/fixtures/harmonic/generate.py`) is built in memory at test time -- no audio is
 committed anywhere (`.gitignore` blocks `*.wav`). Regenerates `tests/fixtures/harmonic/
 expected.json` (band lists per span, output checksums/summary stats for three presets -- numbers
 only) and diffs it against the checked-in copy, so a drift on either side of the Rust parity test
-(`crates/apricity-dsp/src/fx.rs`'s `HarmonicBank`, Kanbus `apricitus-35c9f3`) is caught here first.
+(`crates/apricity-dsp/src/fx.rs`'s `HarmonicBank`) is caught here first.
 """
 
 from __future__ import annotations

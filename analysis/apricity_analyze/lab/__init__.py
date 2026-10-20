@@ -1,4 +1,4 @@
-"""`lab`: one agent-friendly front door for the Apricity music tools (Kanbus apricitus-daebf8).
+"""`lab`: one agent-friendly front door for the Apricity music tools.
 
 See `analysis/apricity_analyze/lab/context.py` for the shared setup (binary discovery, sample
 linking, temp render management) and `analysis/apricity_analyze/lab/commands/` for each

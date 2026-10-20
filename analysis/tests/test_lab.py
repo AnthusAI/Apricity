@@ -1,4 +1,4 @@
-"""Tests for `lab` (Kanbus apricitus-daebf8): the dispatcher, the shared context (binary discovery,
+"""Tests for `lab`: the dispatcher, the shared context (binary discovery,
 sample linking), and the measure/try path on a small example score."""
 
 from __future__ import annotations

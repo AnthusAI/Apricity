@@ -1,4 +1,4 @@
-"""Ops edit only a line's code, never its trailing comment (apricitus-ab3291): cycle2-bright's
+"""Ops edit only a line's code, never its trailing comment (a regression): cycle2-bright's
 `clip.root` wrote `root G1` inside the comment, so the fix was silently a no-op. Pure text tests, so
 they run without a release binary."""
 
