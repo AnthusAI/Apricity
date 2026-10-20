@@ -44,7 +44,6 @@ cargo test -p apricity-dsp                              # native
 scripts/fetch-tools.sh                                # wasi-sdk into .tools/
 cargo test -p apricity-dsp --target wasm32-wasip1       # same tests as wasm, run by Node's WASI
 cargo build -p apricity-web --release --target wasm32-wasip1
-node spikes/web-audio/serve.mjs                       # http://localhost:5180
 ```
 
 Analysis (Python 3.12):
