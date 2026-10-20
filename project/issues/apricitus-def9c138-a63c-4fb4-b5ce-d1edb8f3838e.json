@@ -10,9 +10,22 @@
   "parent": "apricitus-9cbb4b91-ce37-4415-a0fe-0c4c58130d02",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "1f37ad6a-fb8f-436d-bc2c-b1eaf5fead48",
+      "author": "home",
+      "text": "Board sync 2026-10-20: status unchanged (in_progress, not closable). Closed children: 89a75e (lazy encoder worker), 9c0405 (query normalisation), c709ec (hybrid results). Still open: e711eb (verify first-use downloads and failure recovery) and story 2dc2d0. e711eb has not started; it depends on the M0 browser parity and mobile evidence on apricitus-e46692. No commits since 2026-10-05.",
+      "created_at": "2026-10-20T13:18:16.524907Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "drift-fix"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:40:00.889731Z",
-  "updated_at": "2026-09-30T20:57:06.349459Z",
+  "updated_at": "2026-10-20T13:18:16.524926Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",

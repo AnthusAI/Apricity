@@ -3,7 +3,7 @@
   "title": "Annotate the preset XML: pad notes, sampler fields, warp markers and file references",
   "description": "## Intent\n\nTurn the reference files into answers: which XML elements and values a kit preset needs, one question at a time (see the M0 epic's list).\n\n## Steps\n\n- Unzip each reference file (`gunzip -c`) and diff the two presets that differ by one setting; record the element that changed and how its value is encoded.\n- Answer, with the element paths: pad receiving note encoding and pad 1's note; sampler root key, transpose, detune units; volume units (linear or dB); sample start/end units (frames at the file's rate?); playback mode values; how warp markers inside the sampler are stored (seconds/beats pairs as in a clip?); file reference fields (absolute, relative, relative-to what; are size or checksum fields required).\n- Try a hand-trimmed preset (remove optional elements) and load it in the DAW to find the minimal set; keep the trimmed file as `minimal-kit.adg` in the same fixture folder.\n- Velocity: find the sampler's velocity-to-volume setting that best matches Apricity's `velocity_db` curve (crates/apricity-score/src/compile.rs); write the comparison table.\n\n## Out of scope\n\nProduct code. The clip folder's naming scheme (drafted in the design note task).\n\n## Verification\n\nA comment per question with the element path, an excerpt of the XML (element names only where needed), and the reference file it came from. The trimmed preset loads in the DAW (owner confirms in a comment).\n\n## Release\n\n`chore(<this task id>): annotate the preset format` (fixture only). Not breaking.\n\n## Dependencies\n\nBlocked by the reference-files task in this epic.",
   "type": "task",
-  "status": "in_progress",
+  "status": "blocked",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -167,10 +167,22 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "65474ef6-bf31-44ce-9b62-fd0b016ee73e",
+      "author": "home",
+      "text": "Board sync 2026-10-20: set to blocked. Every step that can be done without the DAW landed on develop on 2026-09-26 (71d06e08 DAW set format spike, 0e258d04 sidecar spike, 1243880e drum rack preset spike) and the comments above record it. What remains needs the licensed DAW install on Ryan's Mac, which is not installed; there is no commit or comment since 2026-09-26. Unblock when the install exists, then follow the owner steps in design/daw-presets.md ('Owner checklist'). Left: load the three candidate presets to settle the minimal set (Q1) and relinking (Q5), then the velocity measurement (Q6).",
+      "created_at": "2026-10-20T13:18:16.281931Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "drift-fix"
+      }
     }
   ],
   "created_at": "2026-09-26T21:59:39.038883Z",
-  "updated_at": "2026-09-26T23:19:04.106335Z",
+  "updated_at": "2026-10-20T13:18:16.281978Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

@@ -3,7 +3,7 @@
   "title": "Owner saves reference .asd and .alc files from the DAW for the generated test WAVs",
   "description": "## Intent\nReal-format fixtures: sidecar files saved by the DAW itself, for the generated test WAVs. A machine cannot do this; the owner (or an agent driving the owner's DAW with permission) does, once.\n\n## Steps (manual, in the DAW)\n1. Generate the audio: `python3 scripts/daw-fixture-audio.py --out ~/daw-fixtures`.\n2. For each WAV, drag it into an audio track, then:\n   - `steady-120.wav`: warp on, mode Complex, set markers so beat 1.1.1 is the first downbeat (pickup before it); press the clip view's Save → `steady-120.wav.asd`. Drag the clip to the browser → `steady-120.alc`.\n   - `steady-120.wav` again, edited: move the marker at bar 3 beat 1 later by about 100 ms, Save → `steady-120-edited.wav.asd` (rename after saving).\n   - `tempo-change.wav`: markers at each beat including the one at beat 6.5; Save → `.asd`; also export `.alc`.\n   - `detuned.wav`: mode Beats, detune -30 cents, loop 2 bars → `.alc`.\n   - `free-time.wav`: warp off → `.asd` and `.alc`.\n3. Write down the DAW version and, for each file, the markers the DAW shows (seconds, beat) in `fixtures/README.md` (table).\n4. Put the sidecars (never the WAVs) in a folder the spike can read; M1 moves them into `crates/apricity-daw/tests/fixtures/`.\n\n## Done when\nEvery file above exists, the README table lists the markers the DAW showed, and the DAW version is recorded. Comment the folder path here.\n\n## Depends on\nThe fixture audio generator chore (same epic).",
   "type": "chore",
-  "status": "in_progress",
+  "status": "blocked",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -32,10 +32,22 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "be80e6b7-843a-4866-a3ac-250f2c45342a",
+      "author": "home",
+      "text": "Board sync 2026-10-20: set to blocked. Every step that can be done without the DAW landed on develop on 2026-09-26 (71d06e08 DAW set format spike, 0e258d04 sidecar spike, 1243880e drum rack preset spike) and the comments above record it. What remains needs the licensed DAW install on Ryan's Mac, which is not installed; there is no commit or comment since 2026-09-26. Unblock when the install exists, then follow the owner steps in design/daw-sidecars.md ('Owner test'). This card is the owner's own step: save the reference .asd and .alc files.",
+      "created_at": "2026-10-20T13:18:15.661614Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "drift-fix"
+      }
     }
   ],
   "created_at": "2026-09-26T21:59:43.889122Z",
-  "updated_at": "2026-09-26T23:29:46.589030Z",
+  "updated_at": "2026-10-20T13:18:15.661649Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

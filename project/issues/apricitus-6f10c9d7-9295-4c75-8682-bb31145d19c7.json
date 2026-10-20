@@ -3,7 +3,7 @@
   "title": "Reference sets saved by the DAW for every mapped feature (fixtures, no audio)",
   "description": "## Intent\n\nCapture ground truth: reference sets saved by the DAW itself, covering everything the export will write.\n\n## Steps\n\n1. Generate the audio the reference sets point to: a throwaway script (scratchpad, not committed) writes a 4-bar 120 BPM click-plus-tone WAV (48 kHz, 16-bit) and a second, differently named WAV in a subfolder with the same file name, to see how the DAW collects clashing names.\n2. The owner (manual, needs the DAW) saves these sets with \"collect all and save\":\n   - `empty.als`: new set, nothing changed.\n   - `clip.als`: one audio track, one arrangement clip, warped, 3 warp markers moved, transpose +5, detune -23 ct, gain -6 dB; a second clip reversed; a third in Re-Pitch mode; tempo 99.5, time signature 3/4, loop brace bars 1-4, two locators named `IV` and `V7`, scale set to F mixolydian if available.\n   - `mix.als`: a group inside a group, a return track, a send at -12 dB, track volume +3 dB, pan 30 R.\n   - `devices.als`: one track per stock device (EQ Eight with low cut, shelves and peaks; Compressor with sidechain from another track; Limiter; Saturator; Redux; Gate; Utility with width; Reverb; Delay synced and unsynced with ping pong; Auto Filter 12 dB low-pass), each with non-default values.\n   - `automation.als`: envelopes on volume, pan, a send, EQ Eight high cut, Compressor dry/wet; one ramp and one step.\n3. Record in a comment the DAW version used and whether the previous major version opens each set.\n\n## Output\n\n`crates/apricity-daw/tests/fixtures/reference/*.als` plus `README.md` there listing what each file contains and the regenerating script's parameters. No audio committed.\n\n## Verification\n\n`git ls-files crates/apricity-daw/tests/fixtures` lists only `.als` and `.md`; `gunzip -t` succeeds on each `.als`.\n\n## Release\n\n`chore(<this task's id>): reference sets for the DAW set format`. Not a breaking change.",
   "type": "task",
-  "status": "in_progress",
+  "status": "blocked",
   "priority": 2,
   "assignee": null,
   "creator": null,
@@ -57,10 +57,22 @@
           "thinking_level": "high"
         }
       }
+    },
+    {
+      "id": "b6faf6cb-caef-4875-9478-d5e686027c85",
+      "author": "home",
+      "text": "Board sync 2026-10-20: set to blocked. Every step that can be done without the DAW landed on develop on 2026-09-26 (71d06e08 DAW set format spike, 0e258d04 sidecar spike, 1243880e drum rack preset spike) and the comments above record it. What remains needs the licensed DAW install on Ryan's Mac, which is not installed; there is no commit or comment since 2026-09-26. Unblock when the install exists, then follow the owner steps in design/daw-set.md ('Owner steps'): the owner saves empty/clip/mix/devices/automation sets.",
+      "created_at": "2026-10-20T13:18:15.783933Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "drift-fix"
+      }
     }
   ],
   "created_at": "2026-09-26T22:06:24.927300Z",
-  "updated_at": "2026-09-26T23:22:09.422858Z",
+  "updated_at": "2026-10-20T13:18:15.783958Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",

@@ -10,9 +10,22 @@
   "parent": "apricitus-9cbb4b91-ce37-4415-a0fe-0c4c58130d02",
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "2ad96c5c-74f1-42f4-865f-93412594788f",
+      "author": "home",
+      "text": "Board sync 2026-10-20: status unchanged (in_progress, not closable). All ten task/bug/chore children are closed (last product commits 2026-10-05: 988c3c69 guarded retrieval runtime, 9c9e115a scoped AWS reads, ea7d892c cloud auth). Story d95740 is still open. Remaining per the right-now note: live deployment, ANN recall and retrieval gates, which need AWS access from Ryan's M1 Mac (see the 2026-10-10 wind-down comment on apricitus-9cbb4b). No commits since 2026-10-05.",
+      "created_at": "2026-10-20T13:18:16.484586Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "claude_code",
+        "model": "claude-opus-5-5",
+        "name": "drift-fix"
+      }
+    }
+  ],
   "created_at": "2026-09-30T18:40:00.538979Z",
-  "updated_at": "2026-09-30T20:31:18.150689Z",
+  "updated_at": "2026-10-20T13:18:16.484604Z",
   "closed_at": null,
   "agent": {
     "platform": "codex",
