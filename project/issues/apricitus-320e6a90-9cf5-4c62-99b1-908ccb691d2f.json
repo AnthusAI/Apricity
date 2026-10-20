@@ -3,17 +3,25 @@
   "title": "apricity.anth.us deep links (/scores, /beats, /about) redirect to /x/ paths that return 404 instead of serving the SPA",
   "description": "**Problem**\nDeep links on https://apricity.anth.us, such as /scores, /beats and /about, answer 301 to a trailing-slash path, and that path answers 404 with the SPA shell as the body. Anyone who opens or refreshes a deep link gets a 404 status, and search engines and link checkers treat the pages as missing.\n\n**Evidence**\n- `curl -s -o /dev/null -w '%{http_code} %{redirect_url}' https://apricity.anth.us/scores` returns `301 https://apricity.anth.us/scores/`.\n- `curl -sL -o /dev/null -w '%{http_code}' https://apricity.anth.us/scores` returns 404 (2026-10-20).\n- customHttp.yml has headers only; there is no rewrite rule.\n\n**Fix**\nAdd an Amplify rewrite so SPA routes return 200 with index.html (for example a `/<*>` to `/index.html` rewrite with status 200 that excludes asset extensions), and drop the trailing-slash redirect for those routes.\n\n**How to verify**\n`curl -sL -o /dev/null -w '%{http_code}' https://apricity.anth.us/scores` returns 200, and the same for /beats and /about.\n\nSource: Anthus repo audit, 2026-10-20.",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "fd158fda-8ec5-4bc8-90e7-34fe1df4eae6",
+      "author": "home",
+      "text": "Fixed on develop via PR 73 (76e1aaf1): every top-level route builds to <route>/index.html (200 after Amplify's trailing-slash 301), plus robots.txt, sitemap.xml, favicon.ico. Live only after develop is promoted to main. Deep item links (/scores/<file>, /samples/<key>) still need the Amplify SPA rewrite rule; that is in the migration plan for the new Amplify app (step 3).",
+      "created_at": "2026-10-20T13:13:52.298507Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-20T04:30:48.292978Z",
-  "updated_at": "2026-10-20T04:30:48.293035Z",
-  "closed_at": null,
+  "updated_at": "2026-10-20T13:13:52.327946Z",
+  "closed_at": "2026-10-20T13:13:52.327917Z",
   "agent": {
     "platform": "claude_code",
     "model": "claude-opus-5-5",
