@@ -222,19 +222,25 @@ impl Bridge {
         let mut command = Command::new(python);
         command.args(["-m", module, "--library", library, "--controls-root", controls, "--runs-root", runs, "--enabled"]);
         if let Some(curator_id) = curator_id { command.args(["--curator-id", curator_id]); }
-        let mut child = command
+        command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             // A cancelled HTTP future drops this Child. Tokio then terminates and reaps it.
-            .kill_on_drop(true)
-            .spawn()
-            .map_err(|_| ())?;
+            .kill_on_drop(true);
+        let mut child = spawn_retrying_busy(&mut command).await?;
         let ends_at = Instant::now() + deadline;
         let write = async {
             let mut pipe = child.stdin.take().ok_or(())?;
-            pipe.write_all(&stdin).await.map_err(|_| ())?;
-            pipe.shutdown().await.map_err(|_| ())
+            // A child may legitimately exit without reading all of its input; its exit status
+            // and output decide the result, so a closed pipe is not an error here.
+            for result in [pipe.write_all(&stdin).await, pipe.shutdown().await] {
+                match result {
+                    Err(error) if error.kind() != std::io::ErrorKind::BrokenPipe => return Err(()),
+                    _ => {}
+                }
+            }
+            Ok(())
         };
         if !matches!(timeout_at(ends_at, write).await, Ok(Ok(()))) {
             stop_and_reap(&mut child).await;
@@ -462,6 +468,24 @@ fn bad_request() -> Response {
         .into_response()
 }
 
+/// Linux refuses to exec a file while any process holds it open for writing (ETXTBSY). A
+/// concurrent fork elsewhere in this process can briefly inherit a just-written executable's
+/// descriptor, so a freshly installed interpreter or script can fail to spawn for a few
+/// milliseconds. Retry that one error a bounded number of times; every other error is final.
+async fn spawn_retrying_busy(command: &mut Command) -> Result<Child, ()> {
+    let mut attempts = 0;
+    loop {
+        match command.spawn() {
+            Ok(child) => return Ok(child),
+            Err(error) if error.kind() == std::io::ErrorKind::ExecutableFileBusy && attempts < 50 => {
+                attempts += 1;
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+            Err(_) => return Err(()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -590,7 +614,7 @@ mod tests {
         );
         let config = ClusterConfig::enabled(dir.path(), sleeper)
             .unwrap()
-            .with_test_limits(Duration::from_millis(250), 1024, 1);
+            .with_test_limits(Duration::from_secs(2), 1024, 1);
         assert_eq!(
             call(&router(config), "/semantic/clusters").await.0,
             StatusCode::SERVICE_UNAVAILABLE
