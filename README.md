@@ -197,4 +197,4 @@ action to upsert its records into AppSync.
 
 ## License
 
-GPL-2.0-or-later (Apricity links Rubber Band, which is GPL).
+GPL-2.0-or-later (Apricity links Rubber Band, which is GPL). The license text is in [LICENSE](LICENSE).
