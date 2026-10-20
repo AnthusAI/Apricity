@@ -63,7 +63,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The implementation landed, 54 tests pass, and actual corpus generation is ongoing under M1.",
+  "right_now_updated_at": "2026-10-20T22:55:01.870957Z",
   "custom": {}
 }

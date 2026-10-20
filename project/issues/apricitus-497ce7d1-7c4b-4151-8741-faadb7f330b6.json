@@ -92,7 +92,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The scaffold tests pass, but q8 fails M0 and browser, listening, and mobile acceptance evidence is unmeasured.",
+  "right_now_updated_at": "2026-10-20T22:54:56.099084Z",
   "custom": {}
 }

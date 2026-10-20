@@ -39,7 +39,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "All six epic contracts and 43 Gherkin scenarios landed; the initial runner found 43 undefined scenarios.",
+  "right_now_updated_at": "2026-10-20T22:55:06.489428Z",
   "custom": {}
 }

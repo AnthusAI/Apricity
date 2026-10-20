@@ -80,7 +80,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The publisher/export packet passed verification, but live AWS and ground coverage/retrieval gates remain open.",
+  "right_now_updated_at": "2026-10-20T22:55:35.954258Z",
   "custom": {}
 }

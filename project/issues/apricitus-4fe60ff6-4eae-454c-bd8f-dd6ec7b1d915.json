@@ -70,7 +70,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "FP32 meets desktop parity, but mobile performance and listening evidence remain unmeasured.",
+  "right_now_updated_at": "2026-10-20T22:55:11.661520Z",
   "custom": {}
 }

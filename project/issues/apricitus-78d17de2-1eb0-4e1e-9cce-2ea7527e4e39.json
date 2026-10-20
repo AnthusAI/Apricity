@@ -39,7 +39,7 @@
     "model": "GPT-6",
     "name": "Semantic Audio Features"
   },
-  "right_now_summary": null,
-  "right_now_updated_at": null,
+  "right_now_summary": "The task landed on develop; 15 unit tests and one Gherkin scenario passed, while model and browser gates remain",
+  "right_now_updated_at": "2026-10-20T22:55:05.096776Z",
   "custom": {}
 }
