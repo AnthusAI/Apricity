@@ -3,17 +3,25 @@
   "title": "cluster_bridge tests flake in CI with 503 from the spawned script",
   "description": "Seen on PR 71 run 39328209333 (2026-10-19) and likely the 'unrelated Rust failure' on PR 67: cluster_bridge::tests::direct_harmless_child_returns_only_the_envelope_body and curator_controls_are_disabled_by_default_and_use_only_startup_identity got (503, service unavailable) while develop passed the same code a minute earlier. Both tests write an executable script and run it at once; suspected ETXTBSY race (another test thread forks while the write fd is open), so the spawn fails and maps to 503. Confirm by surfacing the spawn error, then make the helper race-free (e.g. retry spawn on ETXTBSY in the test helper or invoke via /bin/sh).",
   "type": "bug",
-  "status": "open",
+  "status": "closed",
   "priority": 2,
   "assignee": null,
   "creator": null,
   "parent": null,
   "labels": [],
   "dependencies": [],
-  "comments": [],
+  "comments": [
+    {
+      "id": "c7259a60-43c5-4f89-9dd8-96c103720b04",
+      "author": "home",
+      "text": "Landed on develop via PR 72 (MERGED ea2c8cd5): child stdin BrokenPipe no longer maps to 503, and spawn retries ETXTBSY (bounded). CI green.",
+      "created_at": "2026-10-20T01:48:31.246210Z",
+      "comment_type": "default"
+    }
+  ],
   "created_at": "2026-10-19T21:36:24.347698Z",
-  "updated_at": "2026-10-19T21:36:28.321099Z",
-  "closed_at": null,
+  "updated_at": "2026-10-20T01:48:31.295403Z",
+  "closed_at": "2026-10-20T01:48:31.295369Z",
   "agent": {
     "platform": "claude_code",
     "model": "Opus 5.5",
