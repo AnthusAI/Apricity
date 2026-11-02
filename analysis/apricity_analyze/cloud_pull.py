@@ -26,7 +26,7 @@ from decimal import Decimal
 from typing import Callable, Iterable
 
 MODELS = ("Rating", "Comment", "Handle")
-#: the production tables' suffix (Amplify app d2n7w4kwqyfwn4, branch main)
+#: the production tables' suffix (the Amplify app's main branch)
 TABLE_SUFFIX = "-nd3uprkpafehvjszmnn44mr7fi-NONE"
 
 
