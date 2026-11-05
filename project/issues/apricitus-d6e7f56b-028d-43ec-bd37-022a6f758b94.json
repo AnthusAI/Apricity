@@ -56,10 +56,22 @@
         "model": "GPT-6",
         "name": "Live 11 Set Export"
       }
+    },
+    {
+      "id": "c649acdd-5b98-4c1e-8f8a-514bc83a8684",
+      "author": "ryan",
+      "text": "Owner opened the generated proof on Live 11.3.43 and reported missing audio. Live log confirms document load and failure to open click-tone.wav. Read-only Live session inspection confirms 99.5 BPM, 4/4, loop 0–16, and four editable audio clips on track tone at 0–4, 4–8, 8–12 and 12–16. Terra is tracing the media reference and will recheck after moving the project.",
+      "created_at": "2026-11-05T21:45:39.775799Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Live 11 Set Export"
+      }
     }
   ],
   "created_at": "2026-09-26T22:06:25.057756Z",
-  "updated_at": "2026-11-05T20:47:49.781830Z",
+  "updated_at": "2026-11-05T21:45:39.776448Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
