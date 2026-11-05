@@ -1,7 +1,8 @@
 # Reference sets: the DAW set format (spike apricitus-f838a3)
 
-Ground truth for `design/daw-set.md`. Every `.als` here was written by the DAW itself and is kept
-byte for byte as published (gzipped XML; `gunzip -c <file> | less` to read). No audio is committed:
+Reference data for `design/daw-set.md`. The public `.als` files were written by the DAW and are kept
+byte for byte as published; the owner-saved empty set is sanitized as documented below (gzipped XML;
+`gunzip -c <file> | less` to read). No audio is committed:
 the sets point at audio on their authors' machines, and the owner's reference sets will point at the
 synthetic WAVs that `scripts/daw-reference-audio.py` regenerates.
 
@@ -12,8 +13,8 @@ with the licensed install, see "Owner steps" in the design note) are added besid
 
 | File | DAW version (header) | What it shows | Source |
 |---|---|---|---|
-| `public-12.3.7-minimal.als` | 12.3.7, `MinorVersion="12.0_12300"` | The DAW's default set, edited and re-saved: 2 MIDI tracks, 2 audio tracks, returns A (Reverb) and B (Delay), 8 scenes, 5 locators, tempo and time-signature automation on the main track (tempo 120 → 90, time signatures 4/4, 3/4, 6/8, 4/4). No audio clips. The skeleton for the proof set. | [1] |
-| `public-12.2.1-techno.als` | 12.2.1, `MinorVersion="12.0_12203"` | 12 warped arrangement audio clips (Beats mode, transpose −7 on two), a group track with 6 audio tracks, 2 returns (Reverb, Delay), 5 Compressors on other tracks, all keyed from the `Kick` track (`AudioIn/Track.19/PostFxOut`). Collected samples (`RelativePathType` 3, `Samples/Imported/…`). The clip template for the proof set. | [2] |
+| `public-12.3.7-minimal.als` | 12.3.7, `MinorVersion="12.0_12300"` | The DAW's default set, edited and re-saved: 2 MIDI tracks, 2 audio tracks, returns A (Reverb) and B (Delay), 8 scenes, 5 locators, tempo and time-signature automation on the main track (tempo 120 → 90, time signatures 4/4, 3/4, 6/8, 4/4). No audio clips. 12.x reference only. | [1] |
+| `public-12.2.1-techno.als` | 12.2.1, `MinorVersion="12.0_12203"` | 12 warped arrangement audio clips (Beats mode, transpose −7 on two), a group track with 6 audio tracks, 2 returns (Reverb, Delay), 5 Compressors on other tracks, all keyed from the `Kick` track (`AudioIn/Track.19/PostFxOut`). Collected samples (`RelativePathType` 3, `Samples/Imported/…`). 12.x clip reference only. | [2] |
 | `public-12.2-broom-bap.als` | 12.2, `MinorVersion="12.0_12203"` | 135 arrangement audio clips (Beats and Complex, warped and unwarped, transpose +7, clip gain below 0 dB), 2 group tracks, 4 returns with sends, EQ Eight (×12), Compressor, Glue Compressor, Limiter (on the main track), Saturator, Utility, automation envelopes on sends, volume and EQ Eight bands (ramps and jumps). | [2] |
 
 Sources (cited by owner and GitHub repository id, because the repository names contain the vendor's
@@ -42,9 +43,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Files under other licences (GPL-3.0, AGPL-3.0, none) were read in a scratchpad and are only cited in
 the design note, never copied here.
 
+## Live 11 empty reference (2026-11-05)
+
+`owner-11.3.43-empty.als` is an empty set saved in Live 11 Suite 11.3.43, header
+`MajorVersion=5`, `MinorVersion=11.0_11300`, `SchemaChangeCount=7`. It has two MIDI tracks,
+two audio tracks, two returns and no clips. To avoid committing an unrelated absolute user path,
+the two occurrences of a legacy Simple Delay preset's absolute path and the corresponding relative
+path were cleared after saving; gzip was regenerated deterministically. It is therefore a sanitized
+reference, **not byte-for-byte the original**. The sanitized copy supplied the skeleton of a generated set that Live opened and played. No audio
+is committed. The user also confirmed playback from a relocated copy whose absolute sample path was
+nonexistent, with a type-3 project-relative path and empty `Ableton Project Info` directory. See the
+design note for the exact proof and its limits. An owner-authored nondefault Arrangement clip and a
+measured timing and pitch A/B remain required for final CLI acceptance.
+
 ## Still to come from the licensed install
 
-`empty.als`, `clip.als`, `mix.als`, `devices.als`, `automation.als`, saved by the owner as described
+`clip.als`, `mix.als`, `devices.als`, `automation.als`, saved by the owner as described
 in `design/daw-set.md` ("Owner steps"), pointing at:
 
 ```sh

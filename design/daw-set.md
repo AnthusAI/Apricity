@@ -1,15 +1,52 @@
 # The DAW set format (`.als`): ground truth and the Apricity mapping (spike, 2026-09-26)
 
-Status: **spike apricitus-f838a3, M0 of the initiative apricitus-6edba8.** Written from sets the DAW
-saved that were published in public repositories, because the DAW is not installed on the development
-Mac yet (the owner said not to wait). Everything that rests only on public files is marked
-*provisional*. It gets re-checked against the owner's own reference sets when the licensed install
-arrives: see [Owner steps](#owner-steps) and [Re-check when the licensed install arrives](#re-check-when-the-licensed-install-arrives).
-Only the proof set's opening and listening test waits on the DAW.
+Status: **spike apricitus-f838a3, M0 of initiative apricitus-6edba8: format proof accepted for
+M1.** The installed target is Live 11.3.43. The original 12.x research below remains provisional
+for Live 11; the evidence and remaining CLI acceptance checks follow.
 
 Words: "the DAW" is the target DAW. A *set* is its `.als` document. The *root element* is the XML
 document element, which is named after the vendor. This note never spells that name out: writers copy
 the element from the template and never type it.
+
+## Live 11 format proof (2026-11-05)
+
+The owner saved an empty set in Live 11 Suite 11.3.43; the sanitized reference and its provenance
+are documented in the fixture README. The scratch proof uses this Live 11 skeleton and a locally
+installed Live 11 factory Session clip placed into the Arrangement event list. It was compiled from
+the deterministic synthetic click-tone sample at 99.5 BPM, 4/4, with four events, +5 semitones,
+−23 cents, −8 dB gain and four chord labels. The sample, render and proof are under ignored
+`renders/daw-proof-synthetic/`; no factory clip or audio is committed.
+
+Live opened the generated set. Read-only Live inspection confirmed tempo 99.5, meter 4/4, loop on
+from beat 0 to 16, and audio clip spans 0–4, 4–8, 8–12 and 12–16. The initial version had a type-3
+relative sample reference, blank absolute `Path`, and no project marker; Live reported the audio
+missing. These conditions changed together in the successful variant, so the cause was not isolated.
+
+The user opened and played a variant with `RelativePathType=3`, relative path
+`Samples/Imported/click-tone.wav`, an absolute path to the existing copied WAV, `OriginalCrc=0`,
+`LastModDate=0`, and an empty `Ableton Project Info` folder. They heard the synthetic tone and clicks.
+A second copy retained the project marker and WAV but changed all four absolute paths to a deliberately
+nonexistent old project location. The user opened it and reported the same tone and clicks. Its XML
+matches the successful variant except for those four absolute paths. This establishes that this
+particular relative-path configuration resolved audio after relocation, without the original absolute
+path existing. It does not establish whether a nonempty absolute fallback or project marker is required
+for the initial open. The relocation set's SHA-256 is
+`15a10a7491ed6963c21de8ba3479b029e6f27b0449b968597d78c441074ccbc5`; the synthetic WAV's is
+`90ea7bebd04c40eabdcba7183b3c8f45fbf710bf7cd5a7383e7c7c25710e9aad`.
+
+For M1, use the tested Live 11 skeleton and project structure: an empty `Ableton Project Info`
+directory, a collected WAV under `Samples/Imported`, a type-3 relative path and a real absolute
+fallback. Copy the Live 11 clip shape rather than the 12.x skeleton. This is a format proof, not a
+measured A/B: capture an owner-authored Arrangement clip with nondefault warp, transpose, detune,
+gain, tempo, meter, loop and locators, and compare precise timing and pitch against an Apricity
+render before final CLI acceptance. Locator display, per-event offsets, nondefault meter, levels,
+other clip modes and effects are not proven by hearing the tone and clicks. The factory return-device
+preset paths were cleared in the scratch set; Live opened and played it, but other parameter mappings
+and broader ID allocation remain unverified.
+
+The prior March Blues proof and 12.x target assumptions below describe the earlier spike; its source
+WAVs are absent from this checkout. Sections below describe 12.x evidence unless explicitly marked as
+Live 11, and must not override the tested target and packaging above.
 
 ## Evidence
 
@@ -44,14 +81,14 @@ Read a fixture with `gunzip -c crates/apricity-daw/tests/fixtures/reference/set/
 
 | # | Question | Answer | Confidence |
 |---|---|---|---|
-| 1 | Skeleton and version header | Start from the DAW's own default set of the target version and copy its header verbatim. One file cannot open in both the current and the previous major version: a 12 set uses `MainTrack` and `AudioOut/Main` where 11 used `MasterTrack` and `AudioOut/Master`, and an older DAW refuses a newer set. | header shape: confirmed on 8 versions; the exact target header waits on the owner's `empty.als` |
+| 1 | Skeleton and version header | Start from the DAW's own default set of the target version and copy its header verbatim. One file cannot open in both the current and the previous major version: a 12 set uses `MainTrack` and `AudioOut/Main` where 11 used `MasterTrack` and `AudioOut/Master`, and an older DAW refuses a newer set. | Live 11.3.43 owner empty header captured; 12.x details below are provisional for 11 |
 | 2 | Ids | One set-wide pointee space (`AutomationTarget`, `ModulationTarget`, `*ModulationTarget`, `Pointee`, `ControllerTargets.N`): unique, all below `NextPointeeId`. Every other `Id` is local to its list. Track `Id`s are unique among tracks and are what routing strings and `TrackGroupId` point at. | confirmed (F1, F3) |
 | 3 | Arrangement audio clip | `AudioClip@Time` and `CurrentStart`/`CurrentEnd` in beats; `Loop` in clip beats when warped, in seconds when not; `WarpMarkers` = (`SecTime` s, `BeatTime` beats) plus a trailing marker 1/32 beat on; `WarpMode` 0 Beats, 1 Tones, 2 Texture, 3 Re-Pitch, 4 Complex, 5 REX, 6 Complex Pro; `PitchCoarse` ±48 st; `PitchFine` −50…49 ct; `SampleVolume` linear gain; no reverse flag (reverse is a processed file); `FileRef` by `RelativePathType` + `RelativePath` + absolute `Path`. | mostly confirmed; clip-gain maximum, fades and name clashes provisional |
 | 4 | Tempo, time signature, loop, locators, scale | Tempo and time signature sit on the main track's mixer, with an arrangement envelope whose sentinel event overrides `Manual`; time signature id = 99·log2(den) + num − 1; loop brace in `Transport`; `Locators/Locators/Locator`; `ScaleInformation` Root 0–11 and Name as an index (1 = Minor, 3 = Mixolydian). | confirmed except the scale index table (provisional) |
 | 5 | Mixer | Group membership via `TrackGroupId` + `AudioOut/GroupTrack`; returns inside `Tracks` after the others; one `TrackSendHolder` per return; volume and send are linear gain (volume 0.000316…1.995 = −70…+6 dB, send …1 = 0 dB); pan −1…1; sidechain `AudioIn/Track.<id>/PostFxOut`. | confirmed; pan law unknown |
 | 6 | Stock devices | EQ Eight, Compressor, Limiter, Saturator, Utility, Reverb, Delay and Auto Filter confirmed on 12.x; Gate on 11.0.12 only; Redux from a GPL dataset only. Table below. | see per device |
 | 7 | Automation | `AutomationEnvelope` on the track that owns the parameter, `PointeeId` = the parameter's `AutomationTarget@Id`, `FloatEvent`/`EnumEvent` (`Time` in beats, `Value` in the parameter's own units), first event at the sentinel time −63072000; linear between events; a step is two events at the same time; optional Bézier `CurveControl*`. | confirmed (F1, F3) |
-| 8 | Approach | Template-and-patch. The proof set is built and deterministic; it waits on the DAW to be opened. | decision (below); proof pending |
+| 8 | Approach | Template-and-patch. A Live 11 synthetic proof opened and played after relocation. | format proof accepted; measured A/B and authored clip remain |
 
 ## Document tree (12.x)
 
@@ -115,7 +152,7 @@ Smallest skeleton: unknown for a set generated from nothing. The DAW's own defau
 patches `DefaultLiveSet.als` and adds audio clips with only 14 of the 49 `AudioClip` children a 12.2 clip has
 (S3, the generator module's docstring). That suggests the DAW fills defaults for missing children, but
 nobody here has verified it (*provisional*). The skeleton is therefore the DAW's own default set for
-the target version, from the owner's `empty.als`. Until that exists, F1 serves.
+the target version, from the owner's sanitized empty set. F1 is a 12.x reference only.
 
 Invariants a writer must keep (F1, F3; S7 `document.ts` `gridIsConsistent`):
 - every track's `MainSequencer/ClipSlotList` has one `ClipSlot` per `Scenes/Scene` (8 in F1);
@@ -321,13 +358,12 @@ offset for delay; share (0–1) → `DryWet` 0–1 unchanged.
 
 ## 8. Approach: template-and-patch, and the proof set
 
-The proof set (task apricitus-d6e7f5) was built by a throwaway scratchpad script from
+The prior spike reported a proof set (task apricitus-d6e7f5) built by a throwaway scratchpad script from
 `apricity compile examples/march-blues.apr` (4 tracks, 56 notes). It uses F1 as the skeleton (its
 first audio track cloned per Apricity track, its returns kept) and F2's arrangement `AudioClip` as the
 clip template (`AudioClip` children are identical in 12.2, 12.2.1, 12.2.6 and 12.3.2). Output:
 `renders/daw-proof/March Blues Proof Project/March Blues Proof.als` (git-ignored, byte-identical on
-two runs), with `march-blues-apricity-render.wav` beside it for the A/B. Opening it needs the DAW
-(owner steps below).
+two runs), with `march-blues-apricity-render.wav` beside it for the A/B. That artifact and its source WAVs are absent on this checkout; it was not opened here.
 
 ## Apricity → set mapping
 
@@ -382,9 +418,9 @@ Writers never touch `Timeline.warnings` or `ChordSpan.fit`.
 Dated 2026-09-26. The initiative's decisions (apricitus-6edba8, comment "Decisions on the open
 questions") are applied as follows; nothing in the evidence makes any of them impossible.
 
-1. **Target version: the current 12.x installed on the owner's machine**; the header and every template
-   element are copied from that install's default set. Writing for 11 as well is impossible in one
-   file (section 1), which the initiative's decision already rules out.
+1. **Target version: Live 11.3.43 currently installed on the owner's machine**; the header and every template
+   element are copied from target-version references. The 11 and 12 structures differ (section 1), so
+   do not use the 12.x skeleton for the 11 target.
 2. **Overlapping notes: a `GroupTrack` named after the Apricity track, holding `AudioTrack`s
    `<track> 1`, `<track> 2`, …**, filled greedily with the fewest tracks. The track's mix (devices,
    pan, sends, automation) goes on the group; members sit at 0 dB and centre.
@@ -402,7 +438,7 @@ questions") are applied as follows; nothing in the evidence makes any of them im
    copied from sets the DAW saved (the owner's reference sets), then patched and renumbered. The
    evidence supports it: the DAW's documents carry about 200 KB of view state no one documents, 10.x
    rejects unknown attributes, and a third party's template-derived sets open in 12.4.3 (S3). Nothing
-   supports generating every element. The proof set tests this; if the DAW rejects it, revisit here.
+   supports generating every element. The Live 11 proof above tests a narrow instance; the authored clip and measured A/B remain acceptance work.
 9. **Tuning plus transposition**: add them in cents and split into `PitchCoarse` plus `PitchFine` in
    −50…49. `PitchCoarse` covers ±48 semitones; a note beyond that is a located error (march-blues
    uses −5…+7 semitones and −10…+33 cents).
