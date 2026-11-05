@@ -75,10 +75,22 @@
         "model": "claude-opus-5-5",
         "name": "Claude Code"
       }
+    },
+    {
+      "id": "ed7c1d48-b254-4ca9-b5be-0d87adde1845",
+      "author": "ryan",
+      "text": "M0 starts with a Live 11.3.43 empty set and edited Arrangement clip reference, then a throwaway proof based on a compiled synthetic score. March Blues WAVs are absent locally. Verify opens, audio resolves after moving the collected project, and timing and pitch agree with the Apricity render. Defer the mix, devices and automation reference sets to their respective milestones. Keep audio out of Git. Review the proof before assigning M1 specs.",
+      "created_at": "2026-11-05T20:03:32.474159Z",
+      "comment_type": "default",
+      "agent": {
+        "platform": "codex",
+        "model": "GPT-6",
+        "name": "Live 11 Set Export"
+      }
     }
   ],
   "created_at": "2026-09-26T22:05:36.499263Z",
-  "updated_at": "2026-09-27T01:42:07.560664Z",
+  "updated_at": "2026-11-05T20:03:32.474903Z",
   "closed_at": null,
   "agent": {
     "platform": "claude_code",
