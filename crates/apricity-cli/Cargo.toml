@@ -10,6 +10,7 @@ name = "apricity"
 path = "src/main.rs"
 
 [dependencies]
+apricity-daw.workspace = true
 apricity-data = { workspace = true, features = ["storage"] }
 apricity-dsp.workspace = true
 apricity-engine = { workspace = true, features = ["decode"] }
@@ -29,6 +30,9 @@ url = "2"
 webbrowser = "1.2"
 cpal = "0.18"
 hound = "3"
+tempfile = "3"
+pathdiff = "0.2"
+symphonia = { version = "0.5", default-features = false, features = ["mp3", "wav", "pcm", "flac", "ogg", "vorbis", "aiff"] }
 axum = "0.7"
 chrono = "0.4"
 tokio = { version = "1", features = ["rt-multi-thread", "net", "fs", "process", "time"] }
@@ -42,3 +46,11 @@ virtuus-appsync = { git = "https://github.com/AnthusAI/Virtuus.git", branch = "d
 tempfile = "3"
 tower = { version = "0.4", features = ["util"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+cucumber = "0.21"
+futures = "0.3"
+flate2 = "1"
+roxmltree = "0.20"
+
+[[test]]
+name = "daw_set"
+harness = false

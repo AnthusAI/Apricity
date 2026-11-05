@@ -30,6 +30,13 @@ Apricity uses a DAW's words wherever it can, and each word means one thing.
 | **volume**, **pan**, **transpose**, **detune** | the same | A track's fader, its place left to right, its pitch in semitones and in cents. |
 | **score** | Live Set | The written piece, in the `.apr` language or YAML. |
 
+## Exporting to Live
+
+A compiled timeline can be exported as an editable Live 11 arrangement. Clips,
+warp and pitch settings, tempo, meter and chord locators are represented in the
+set. Export reports features it cannot represent; it is not a rendered mix.
+By default the project collects its referenced audio for portability.
+
 ## Samples and analysis
 
 A **sample** is one audio file: a whole march, a 30-second archive excerpt, or a **stem** (just the

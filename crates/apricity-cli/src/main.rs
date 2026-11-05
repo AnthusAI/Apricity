@@ -1,6 +1,7 @@
 //! `apricity`: compile, explain and render Apricity scores.
 
 mod check;
+mod daw_export;
 mod cloud;
 mod cluster_bridge;
 mod migrate;
@@ -30,6 +31,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
+    /// Export an editable Ableton Live 11 set.
+    Export {
+        #[arg(long, required = true)]
+        daw_set: PathBuf,
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+        #[arg(long)]
+        library: Option<PathBuf>,
+        #[arg(long)]
+        no_collect: bool,
+        #[arg(long)]
+        force: bool,
+    },
     /// Validate a score and print its compiled timeline as JSON.
     Compile {
         score: PathBuf,
@@ -619,13 +633,13 @@ fn main() -> ExitCode {
         | Cmd::Sample { .. }
         | Cmd::Lab { .. }
         | Cmd::Cycle { .. } => unreachable!(),
-        Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } => score,
+        Cmd::Compile { score, .. } | Cmd::Explain { score } | Cmd::Render { score, .. } | Cmd::Export { daw_set: score, .. } => score,
     };
     let compiled = match &cli.cmd {
         Cmd::Render {
             library: Some(library),
             ..
-        } => compile_from_library(score, library),
+        } | Cmd::Export { library: Some(library), .. } => compile_from_library(score, library),
         _ => apricity_score::compile_file(score),
     };
     let tl = match compiled {
@@ -638,7 +652,11 @@ fn main() -> ExitCode {
                 if errors.len() == 1 { "" } else { "s" }
             );
             for e in errors {
-                eprintln!("  ✗ {e}");
+                if matches!(cli.cmd, Cmd::Export { .. }) && e.contains("does not exist") {
+                    eprintln!("  ✗ missing source: {e}");
+                } else {
+                    eprintln!("  ✗ {e}");
+                }
             }
             return ExitCode::FAILURE;
         }
@@ -659,6 +677,13 @@ fn main() -> ExitCode {
         | Cmd::Sample { .. }
         | Cmd::Lab { .. }
         | Cmd::Cycle { .. } => unreachable!(),
+        Cmd::Export { daw_set, out, no_collect, force, .. } => {
+            for warning in &tl.warnings { eprintln!("  ! {warning}"); }
+            if let Err(e) = daw_export::run(&tl, &daw_set, out.as_deref(), no_collect, force) {
+                eprintln!("  ✗ {e}");
+                return ExitCode::FAILURE;
+            }
+        }
         Cmd::Compile { out, .. } => {
             let json = serde_json::to_string_pretty(&tl).unwrap();
             match out {

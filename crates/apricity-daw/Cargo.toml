@@ -1,0 +1,10 @@
+[package]
+name = "apricity-daw"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+apricity-score.workspace = true
+flate2 = "1"
+roxmltree = "0.20"

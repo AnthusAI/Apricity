@@ -12,6 +12,11 @@ The one-time listening pass over a [sample](#sample) that produces its [manifest
 
 A fully rendered loop of the whole piece: each track's [events](#event) placed in time and run through its [effects](#effect), plus the [group](#group-track) and [return tracks](#return-track). The [mixer](#mixer) plays arrangements and swaps in new ones.
 
+### Ableton Live Set
+
+An `.als` document containing an editable Live arrangement. Apricity can export
+a Live 11 set with collected audio; see [Tools](tools.md#export-an-ableton-live-11-set).
+
 ### Audition
 
 Playing part of a clip as-is in the Library, to hear it before using it.

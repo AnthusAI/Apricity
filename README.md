@@ -25,13 +25,13 @@ Start with **[docs/](docs/README.md)** (also in the web app's **Help** tab):
 | `crates/apricity-data` | Domain logic as pure functions: ids, ranking, markup merge |
 | `crates/apricity-sources` | Downloads, verifies and removes predefined public-domain audio sources |
 | `crates/apricity-engine` | Render ahead, mix live: the `Renderer` pre-warps events into an `Arrangement` (cached, so edits re-render only what changed); the real-time `Mixer` loops it and swaps new arrangements in at the bar line with a crossfade. Never allocates on the audio thread. Builds for wasm. |
-| `crates/apricity-cli` | The `apricity` command: `compile`, `explain`, `render`, `play`, `fmt`, `check`, `steer`, `serve`, `sources`, `sync`, `migrate`, plus the signed-in cloud commands (`login`, `score`, `sample`, `lab`, `cycle`) |
+| `crates/apricity-cli` | The `apricity` command: `compile`, `explain`, `render`, `export`, `play`, `fmt`, `check`, `steer`, `serve`, `sources`, `sync`, `migrate`, plus the signed-in cloud commands (`login`, `score`, `sample`, `lab`, `cycle`) |
 | `examples/` | Scores. `iv-of-ab-minor.yaml` is the first milestone |
 | `crates/apricity-dsp` | Rubber Band (vendored, single-file build) behind a safe Rust API: offline stretch, pitch shift, warp markers via key-frame maps |
 | `crates/apricity-web` | C-ABI WebAssembly surface for the browser: compiler (page), renderer (workers), mixer (AudioWorklet) |
 | `web/` | The web app (Vite + TypeScript, CodeMirror) |
 | `analysis/apricity_analyze/server.py` | Local API server: samples, files, saving clips/markers and scores, upload + analysis |
-| `crates/apricity-daw` | Test fixtures for the DAW-interchange work only; not a crate yet (excluded from the workspace) |
+| `crates/apricity-daw` | Ableton Live 11 arrangement set serialization |
 | `vendor/rubberband` | Rubber Band Library v4.0.0 (git submodule, GPL) |
 
 ## Building

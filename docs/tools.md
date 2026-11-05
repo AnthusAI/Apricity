@@ -161,3 +161,17 @@ cargo test -p apricity-dsp --target wasm32-wasip1   # the DSP tests again, as We
 node web/test/wasm.test.mjs                # compile → render → mix in WebAssembly
 (cd analysis && PYTHONPATH=. .venv/bin/python -m pytest tests)   # analysis, manifests, server
 ```
+
+## Export an Ableton Live 11 set
+
+```sh
+apricity export --daw-set score.apr
+apricity export --daw-set score.apr -o "My Project" --library library
+apricity export --daw-set score.apr -o arrangement.als --no-collect --force
+```
+
+By default this creates `score Project/score.als` and collects referenced audio in
+`Samples/Imported`. An output folder receives `<score-stem>.als`; an `.als` path
+is used exactly. `--no-collect` references the original files instead. Existing
+sets require `--force`. The command reports unsupported events and omitted features;
+review the set in Live before relying on it as a replacement for a render.
